@@ -1,15 +1,9 @@
 import React, { ReactElement } from "react"
-import {
-  StyleProp,
-  TextStyle,
-  TouchableOpacity,
-  TouchableOpacityProps,
-  View,
-  ViewStyle,
-} from "react-native"
+import { StyleProp, TextStyle, TouchableOpacity, TouchableOpacityProps, View, ViewStyle } from "react-native"
+
+import { Text, TextProps } from "../components"
 import { colors, spacing } from "../theme"
 import { Icon, IconTypes } from "./Icon"
-import { Text, TextProps } from "./Text"
 
 export interface ListItemProps extends TouchableOpacityProps {
   /**

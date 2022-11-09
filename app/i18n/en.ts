@@ -42,6 +42,8 @@ const en = {
     hint: "Hint: you can use any email address and your favorite password :)",
   },
   connectScreen: {
+    welcome: "Welcome!!",
+    detail: "Thank you for using OpenBookshelf. Please set up your Calibre URL first.",
     connectDetail: "Set the Calibre URL.",
     connect: "Connect"
   },

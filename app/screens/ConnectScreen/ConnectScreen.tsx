@@ -1,14 +1,14 @@
 import { observer } from "mobx-react-lite"
 import React, { FC, useEffect, useMemo, useRef, useState } from "react"
 import { TextInput, TextStyle, ViewStyle } from "react-native"
-import { Button, Icon, Screen, Text, TextField, TextFieldAccessoryProps } from "../../components"
+import { Button, Icon, Screen, TextField, TextFieldAccessoryProps, Heading, Text, } from "../../components"
 import { useStores } from "../../models"
 import { AppStackScreenProps } from "../../navigators"
 import { colors, spacing } from "../../theme"
 
-interface LoginScreenProps extends AppStackScreenProps<"Login"> {}
+interface ConnectScreenProps extends AppStackScreenProps<"Login"> {}
 
-export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen(_props) {
+export const ConnectScreen: FC<ConnectScreenProps> = observer((_props) => {
   const authPasswordInput = useRef<TextInput>()
   const [isAuthPasswordHidden, setIsAuthPasswordHidden] = useState(true)
   const [isSubmitted, setIsSubmitted] = useState(false)
@@ -77,8 +77,8 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen(_
       contentContainerStyle={$screenContentContainer}
       safeAreaEdges={["top", "bottom"]}
     >
-      <Text testID="login-heading" tx="loginScreen.signIn" preset="heading" style={$signIn} />
-      <Text tx="loginScreen.enterDetails" preset="subheading" style={$enterDetails} />
+      <Heading testID="connect-heading" tx="connectScreen.welcome" />
+      <Text tx="connectScreen.detail" />
       {attemptsCount > 2 && <Text tx="loginScreen.hint" size="sm" weight="light" style={$hint} />}
 
       <TextField
@@ -128,14 +128,6 @@ const $screenContentContainer: ViewStyle = {
   paddingHorizontal: spacing.large,
 }
 
-const $signIn: TextStyle = {
-  marginBottom: spacing.small,
-}
-
-const $enterDetails: TextStyle = {
-  marginBottom: spacing.large,
-}
-
 const $hint: TextStyle = {
   color: colors.tint,
   marginBottom: spacing.medium,
@@ -145,8 +137,3 @@ const $textField: ViewStyle = {
   marginBottom: spacing.large,
 }
 
-const $tapButton: ViewStyle = {
-  marginTop: spacing.extraSmall,
-}
-
-// @demo remove-file
