@@ -1,7 +1,7 @@
 import { observer } from "mobx-react-lite"
 import React, { FC, useEffect, useMemo, useRef, useState } from "react"
 import { TextInput, TextStyle, ViewStyle } from "react-native"
-import { Button, Icon, Screen, TextField, TextFieldAccessoryProps, Heading, Text, } from "../../components"
+import { Button, Icon, Screen, TextField, TextFieldAccessoryProps, Heading, Text, RootContainer, } from "../../components"
 import { useStores } from "../../models"
 import { AppStackScreenProps } from "../../navigators"
 import { colors, spacing } from "../../theme"
@@ -72,11 +72,7 @@ export const ConnectScreen: FC<ConnectScreenProps> = observer((_props) => {
   }, [])
 
   return (
-    <Screen
-      preset="auto"
-      contentContainerStyle={$screenContentContainer}
-      safeAreaEdges={["top", "bottom"]}
-    >
+    <RootContainer>
       <Heading testID="connect-heading" tx="connectScreen.welcome" />
       <Text tx="connectScreen.detail" />
       {attemptsCount > 2 && <Text tx="loginScreen.hint" size="sm" weight="light" style={$hint} />}
@@ -119,14 +115,9 @@ export const ConnectScreen: FC<ConnectScreenProps> = observer((_props) => {
         onPress={login}
         width={"full"}
       />
-    </Screen>
+    </RootContainer>
   )
 })
-
-const $screenContentContainer: ViewStyle = {
-  paddingVertical: spacing.huge,
-  paddingHorizontal: spacing.large,
-}
 
 const $hint: TextStyle = {
   color: colors.tint,
