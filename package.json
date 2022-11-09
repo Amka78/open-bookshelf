@@ -30,7 +30,9 @@
     "expo:ios": "expo start --ios",
     "expo:web": "expo start --web",
     "expo:build:detox": "detox build -c ios.sim.expo",
-    "expo:test:detox": "./bin/downloadExpoApp.sh && detox test --configuration ios.sim.expo"
+    "expo:test:detox": "./bin/downloadExpoApp.sh && detox test --configuration ios.sim.expo",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook"
   },
   "overrides": {
     "react-error-overlay": "6.0.9"
@@ -59,6 +61,7 @@
     "mobx": "6.6.0",
     "mobx-react-lite": "3.4.0",
     "mobx-state-tree": "5.1.5",
+    "native-base": "^3.4.21",
     "react": "18.0.0",
     "react-native": "0.69.6",
     "react-native-bootsplash": "4.3.2",
@@ -79,6 +82,15 @@
     "@react-native-community/cli-platform-ios": "^8.0.2",
     "@rnx-kit/metro-config": "^1.2.32",
     "@rnx-kit/metro-resolver-symlinks": "0.1.21",
+    "@storybook/addon-actions": "^6.5.13",
+    "@storybook/addon-essentials": "^6.5.13",
+    "@storybook/addon-interactions": "^6.5.13",
+    "@storybook/addon-links": "^6.5.13",
+    "@storybook/addon-react-native-web": "^0.0.19",
+    "@storybook/builder-webpack4": "^6.5.13",
+    "@storybook/manager-webpack4": "^6.5.13",
+    "@storybook/react": "^6.5.13",
+    "@storybook/testing-library": "^0.0.13",
     "@types/i18n-js": "3.8.2",
     "@types/jest": "26.0.19",
     "@types/react": "^17",
@@ -87,6 +99,7 @@
     "@typescript-eslint/parser": "5.28.0",
     "babel-jest": "26.6.3",
     "babel-loader": "8.2.5",
+    "babel-plugin-react-native-web": "^0.18.10",
     "detox": "19.12.1",
     "detox-expo-helpers": "0.6.0",
     "eslint": "8.17.0",
