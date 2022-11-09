@@ -1,5 +1,5 @@
 export * from "./AutoImage"
-export * from "./Button"
+export * from "./Button/Button"
 export * from "./Card"
 export * from "./Header"
 export * from "./Icon"

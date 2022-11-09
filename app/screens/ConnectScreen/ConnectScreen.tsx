@@ -1,10 +1,10 @@
 import { observer } from "mobx-react-lite"
 import React, { FC, useEffect, useMemo, useRef, useState } from "react"
 import { TextInput, TextStyle, ViewStyle } from "react-native"
-import { Button, Icon, Screen, Text, TextField, TextFieldAccessoryProps } from "../components"
-import { useStores } from "../models"
-import { AppStackScreenProps } from "../navigators"
-import { colors, spacing } from "../theme"
+import { Button, Icon, Screen, Text, TextField, TextFieldAccessoryProps } from "../../components"
+import { useStores } from "../../models"
+import { AppStackScreenProps } from "../../navigators"
+import { colors, spacing } from "../../theme"
 
 interface LoginScreenProps extends AppStackScreenProps<"Login"> {}
 
@@ -114,11 +114,10 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen(_
       />
 
       <Button
-        testID="login-button"
-        tx="loginScreen.tapToSignIn"
-        style={$tapButton}
-        preset="reversed"
+        testID="connect-button"
+        tx="connectScreen.connect"
         onPress={login}
+        width={"full"}
       />
     </Screen>
   )
