@@ -1,9 +1,9 @@
-import { Button as Template } from "native-base"
-import React, { ComponentProps } from "react"
+import { Button as Template, IButtonProps } from "native-base"
+import React from "react"
 
 import { MessageKey, translate } from "../../i18n"
 
-export type ButtonProps = ComponentProps<typeof Template> & {
+export type ButtonProps = IButtonProps & {
   tx?: MessageKey
 }
 export function Button(props: ButtonProps) {
