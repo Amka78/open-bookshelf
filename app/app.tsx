@@ -21,6 +21,7 @@ import * as storage from "./utils/storage"
 import { customFontsToLoad } from "./theme"
 import { setupReactotron } from "./services/reactotron"
 import Config from "./config"
+import { NativeBaseProvider } from "native-base"
 
 // Set up Reactotron, which is a free desktop app for inspecting and debugging
 // React Native apps. Learn more here: https://github.com/infinitered/reactotron
@@ -77,12 +78,14 @@ function App(props: AppProps) {
   // otherwise, we're ready to render the app
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+      <NativeBaseProvider>
       <ErrorBoundary catchErrors={Config.catchErrors}>
         <AppNavigator
           initialState={initialNavigationState}
           onStateChange={onNavigationStateChange}
         />
       </ErrorBoundary>
+      </NativeBaseProvider>
     </SafeAreaProvider>
   )
 }
