@@ -1488,6 +1488,25 @@
     xcode "^3.0.0"
     xml-js "^1.6.11"
 
+"@expo/dev-server@0.1.120":
+  version "0.1.120"
+  resolved "https://registry.yarnpkg.com/@expo/dev-server/-/dev-server-0.1.120.tgz#0c7aff4e29d98298214129127f5df951cb7b81dd"
+  integrity sha512-x5/jCv0EOpz6FyehXpI5bgDQTVsGZYvgISkAw7n60RhtG+aid6N2CCR9SDMCH70XaUpFnfTW9qvderpCEj7Puw==
+  dependencies:
+    "@expo/bunyan" "4.0.0"
+    "@expo/metro-config" "~0.4.0"
+    "@expo/osascript" "2.0.33"
+    body-parser "1.19.0"
+    chalk "^4.0.0"
+    connect "^3.7.0"
+    fs-extra "9.0.0"
+    node-fetch "^2.6.0"
+    open "^8.3.0"
+    resolve-from "^5.0.0"
+    semver "7.3.2"
+    serialize-error "6.0.0"
+    temp-dir "^2.0.0"
+
 "@expo/dev-server@~0.1.120":
   version "0.1.123"
   resolved "https://registry.yarnpkg.com/@expo/dev-server/-/dev-server-0.1.123.tgz#71304323b47db9ce300b9a774571ef2312b9d581"
