@@ -55,5 +55,4 @@ export function translate(message: MessageKey, options?: i18n.TranslateOptions) 
     }
   }
   return currentLocaleValue
-
 }
