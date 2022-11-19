@@ -7,8 +7,5 @@ export type ButtonProps = IButtonProps & {
   tx?: MessageKey
 }
 export function Button(props: ButtonProps) {
-
-  return <Template {...props}  >
-    {props.tx ? translate(props.tx) : props.children}
-  </Template>
+  return <Template {...props}>{props.tx ? translate(props.tx) : props.children}</Template>
 }
