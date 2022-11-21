@@ -16,7 +16,8 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "paths": {
-      "@r2-opds-js/*": ["node_modules/r2-opds-js/dist/es8-es2017/src/*"]
+      "@r2-opds-js/*": ["node_modules/r2-opds-js/dist/es8-es2017/src/*"],
+      "@r2-utils-js/*": ["node_modules/r2-utils-js/dist/es8-es2017/src/*"]
     }
   },
   "exclude": ["node_modules"],
