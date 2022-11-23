@@ -14,11 +14,7 @@
     "target": "esnext",
     "lib": ["esnext", "dom"],
     "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "paths": {
-      "@r2-opds-js/*": ["node_modules/r2-opds-js/dist/es8-es2017/src/*"],
-      "@r2-utils-js/*": ["node_modules/r2-utils-js/dist/es8-es2017/src/*"]
-    }
+    "resolveJsonModule": true
   },
   "exclude": ["node_modules"],
   "include": ["index.js", "App.js", "app", "test"],
