@@ -9,7 +9,7 @@ import { ConnectType } from "./types/ConnectType"
 
 export const ConnectScreen: FC = observer(() => {
   const form = useForm<ConnectType>()
-  const { settingStore } = useStores()
+  const { settingStore, opdsRootStore } = useStores()
 
   return (
     <RootContainer>
@@ -19,10 +19,10 @@ export const ConnectScreen: FC = observer(() => {
           <Text tx="connectScreen.detail" marginTop={"5"} />
           <Box marginTop={"7"}>
             <FormInput
+              control={form.control}
               defaultValue={settingStore.baseUrl}
               placeholderTx={"connectScreen.placeHolder"}
               rules={{ required: true }}
-              control={form.control}
               name={"url"}
             />
           </Box>
@@ -33,7 +33,7 @@ export const ConnectScreen: FC = observer(() => {
             testID="connect-button"
             tx="connectScreen.connect"
             onPress={form.handleSubmit(async (data) => {
-              settingStore.connect(data.url)
+              settingStore.setUrl(data.url)
             })}
             width={"full"}
           />

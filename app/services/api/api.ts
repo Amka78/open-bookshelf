@@ -5,18 +5,15 @@
  * See the [Backend API Integration](https://github.com/infinitered/ignite/blob/master/docs/Backend-API-Integration.md)
  * documentation for more details.
  */
-import {
-  ApiResponse, // @demo remove-current-line
-  ApisauceInstance,
-  create,
-} from "apisauce"
+import { ApiResponse, ApisauceInstance, create } from "apisauce"
+
 import Config from "../../config"
-import { GeneralApiProblem, getGeneralApiProblem } from "./apiProblem" // @demo remove-current-line
+import { GeneralApiProblem, getGeneralApiProblem } from "./apiProblem"
+
 import type {
   ApiConfig,
   ApiFeedResponse, // @demo remove-current-line
 } from "./api.types"
-import type { EpisodeSnapshotIn } from "../../models/Episode" // @demo remove-current-line
 
 /**
  * Configuring the apisauce instance.
@@ -52,21 +49,22 @@ export class Api {
     this.apisauce.setBaseURL(baseUrl)
   }
 
-  // @demo remove-block-start
   /**
-   * Gets a list of recent React Native Radio episodes.
+   * Connnect OPDS Server
+   *
+   * @returns {(Promise<{ kind: "ok"; data: any } | GeneralApiProblem>)}
+   * @memberof Api
    */
-  async connect(): Promise<{ kind: "ok" } | GeneralApiProblem> {
+  async connect(): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
     // make the api call
     const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get("")
 
-    console.log(response)
     if (!response.ok) {
       const problem = getGeneralApiProblem(response)
       if (problem) return problem
     }
 
-    return { kind: "ok" }
+    return { kind: "ok", data: response.data }
   }
 }
 
