@@ -17,6 +17,12 @@
     "resolveJsonModule": true
   },
   "exclude": ["node_modules"],
-  "include": ["index.js", "App.js", "app", "test"],
+  "include": [
+    "index.js",
+    "App.js",
+    "app",
+    "test",
+    "stories/ConnectScreen/ConnnectScreen.stories.tsx"
+  ],
   "extends": "expo/tsconfig.base"
 }
