@@ -1,5 +1,5 @@
 import { api } from "../../services/api"
-import { OpdsRootStore } from "./OpdsRootStore"
+import { OpdsModel } from "./OpdsRootStore"
 
 const sampleXml = `<?xml version='1.0' encoding='utf-8'?>
 <feed xmlns=\"http://www.w3.org/2005/Atom\" xmlns:dc=\"http://purl.org/dc/terms/\" xmlns:opds=\"http://opds-spec.org/2010/catalog\">
@@ -81,14 +81,14 @@ const sampleXml = `<?xml version='1.0' encoding='utf-8'?>
 
 describe("OpdsRootStore test", () => {
   test("initialize OPDS", async () => {
-    const store = OpdsRootStore.create()
+    const store = OpdsModel.create()
 
     // @ts-ignore
-    api.connect = async () => {
+    api.loadOPDS = async () => {
       return { kind: "ok", data: sampleXml }
     }
 
-    await store.initialize()
+    await store.load()
 
     expect(store.title).toBe("calibre ライブラリ")
     expect(store.subtitle).toBe("ライブラリにある本")

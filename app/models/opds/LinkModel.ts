@@ -1,4 +1,4 @@
-import { types } from "mobx-state-tree"
+import { types, Instance } from "mobx-state-tree"
 import { CopiesModel, IndirectAcquisitionModel, AvailabilityModel } from "./"
 
 export const HoldsModel = types.model("HoldsModel").props({
@@ -31,3 +31,5 @@ export const LinkModel = types
       opds.rel = rel
     },
   }))
+
+export interface Link extends Instance<typeof LinkModel> {}

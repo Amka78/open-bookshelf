@@ -55,9 +55,9 @@ export class Api {
    * @returns {(Promise<{ kind: "ok"; data: any } | GeneralApiProblem>)}
    * @memberof Api
    */
-  async connect(): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
+  async loadOPDS(path?: string): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
     // make the api call
-    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get("")
+    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get(path)
 
     if (!response.ok) {
       const problem = getGeneralApiProblem(response)

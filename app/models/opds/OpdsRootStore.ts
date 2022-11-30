@@ -8,8 +8,8 @@ import { AuthorModel, EntryModel, LinkModel } from "./"
 /**
  * Opds Root Information
  */
-export const OpdsRootStore = types
-  .model("OpdsRootStore")
+export const OpdsModel = types
+  .model("OpdsModel")
   .props({
     author: types.array(AuthorModel),
     id: types.maybeNull(types.string),
@@ -25,9 +25,19 @@ export const OpdsRootStore = types
   })
   .actions(withSetPropAction)
   .actions((opds) => ({
-    initialize: flow(function* () {
-      const response = yield api.connect()
+    reset: () => {
+      opds.author.clear()
+      opds.entry.clear()
+      opds.link.clear()
+    },
+  }))
+  .actions((opds) => ({
+    load: flow(function* (path?: string, initialize = true) {
+      const response = yield api.loadOPDS(path)
       if (response.kind === "ok") {
+        if (initialize) {
+          opds.reset()
+        }
         const xmlDom = new xmldom.DOMParser().parseFromString(response.data)
 
         const feedChildren = xmlDom.getElementsByTagName("feed").item(0).childNodes
@@ -35,27 +45,38 @@ export const OpdsRootStore = types
           const node = feedChildren.item(index) as Element
           const nodeName = node.nodeName
           if (opds[nodeName] !== undefined) {
-            console.log(nodeName)
-            if (nodeName === "link") {
-              setAttributes(node, opds.link, LinkModel)
-            } else if (nodeName === "author") {
-              setElements(node, opds.author, AuthorModel)
-            } else if (nodeName === "entry") {
-              setElements(node, opds.entry, EntryModel)
-            } else if (nodeName === "updated") {
-              opds[nodeName] = new Date(node.firstChild.nodeValue)
-            } else {
-              opds[nodeName] = node.firstChild.nodeValue
-            }
+            setState(nodeName, node, opds)
           }
         }
       }
     }),
   }))
 
-export interface OpdsRoot extends Instance<typeof OpdsRootStore> {}
-export interface OpdsRootSnapshotOut extends SnapshotOut<typeof OpdsRootStore> {}
-export interface OpdsRootSnapshotIn extends SnapshotIn<typeof OpdsRootStore> {}
+export interface OpdsRoot extends Instance<typeof OpdsModel> {}
+export interface OpdsRootSnapshotOut extends SnapshotOut<typeof OpdsModel> {}
+export interface OpdsRootSnapshotIn extends SnapshotIn<typeof OpdsModel> {}
+
+function setState(nodeName: string, node: Element, opds) {
+  if (nodeName === "link") {
+    setAttributes(node, opds.link, LinkModel)
+  } else if (nodeName === "author") {
+    setElements(node, opds.author, AuthorModel)
+  } else if (nodeName === "entry") {
+    setElements(node, opds.entry, EntryModel)
+  } else if (nodeName === "updated" || nodeName === "published") {
+    opds[nodeName] = new Date(node.firstChild.nodeValue)
+  } else {
+    opds[nodeName] = node.firstChild.nodeValue
+  }
+
+  if (node.attributes.length > 0) {
+    const attibuteName =
+      nodeName + node.attributes[0].nodeName[0].toUpperCase() + node.attributes[0].nodeName.slice(1)
+    if (opds[attibuteName] !== undefined) {
+      opds[attibuteName] = node.attributes[0].nodeValue
+    }
+  }
+}
 
 function setElements(xmlNode: Element, list, modelRef) {
   const elements = xmlNode.childNodes
@@ -66,29 +87,28 @@ function setElements(xmlNode: Element, list, modelRef) {
     const element = elements.item(i) as Element
     const nodeName = element.nodeName
     if (model[nodeName] !== undefined) {
-      if (nodeName === "link") {
-        setAttributes(element, model[nodeName], LinkModel)
-      } else {
-        const nodeValue = element.firstChild.nodeValue
-        if (nodeName === "updated") {
-          model[nodeName] = new Date(nodeValue)
-        } else {
-          model[nodeName] = nodeValue
-        }
-
-        if (element.attributes.length > 0) {
-          const attibuteName =
-            nodeName +
-            element.attributes[0].nodeName[0].toUpperCase() +
-            element.attributes[0].nodeName.slice(1)
-          if (model[attibuteName] !== undefined) {
-            model[attibuteName] = element.attributes[0].nodeValue
-          }
-        }
-      }
+      setState(nodeName, element, model)
     }
   }
 }
+
+export const OpdsChildrenModel = types.model("OpdsChildrenModel").props({
+  linkPath: types.maybeNull(types.string),
+  opds: types.maybeNull(OpdsModel),
+})
+
+export interface OpdsChildren extends Instance<typeof OpdsChildrenModel> {}
+export const OpdsRootStore = types
+  .model("OpdsRootStre")
+  .props({
+    root: types.optional(OpdsModel, {}),
+    children: types.array(OpdsChildrenModel),
+  })
+  .actions((self) => ({
+    add: (child: OpdsChildren) => {
+      self.children.push(child)
+    },
+  }))
 
 function setAttributes(xmlNode: Element, list, modelRef) {
   const attributes = xmlNode.attributes

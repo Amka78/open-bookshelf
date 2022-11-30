@@ -1,9 +1,9 @@
-import { types } from "mobx-state-tree"
+import { types, Instance } from "mobx-state-tree"
 
 import { AuthorModel, CategoryModel, LinkModel } from "./"
 
 export const EntryModel = types.model("EntryModel").props({
-  authors: types.array(AuthorModel),
+  author: types.array(AuthorModel),
   bibFrameDistributionProviderName: types.maybeNull(types.string),
   categories: types.array(CategoryModel),
   title: types.maybeNull(types.string),
@@ -29,3 +29,4 @@ export const EntryModel = types.model("EntryModel").props({
   schemaRatingAdditionalType: types.maybeNull(types.string),
   schemaAdditionalType: types.maybeNull(types.string),
 })
+export interface Entry extends Instance<typeof EntryModel> {}

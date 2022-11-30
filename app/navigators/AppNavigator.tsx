@@ -1,27 +1,24 @@
-/**
- * The app navigator (formerly "AppNavigator" and "MainNavigator") is used for the primary
- * navigation flows of your app.
- * Generally speaking, it will contain an auth flow (registration, login, forgot password)
- * and a "main" flow which the user will use once logged in.
- */
 import {
   DarkTheme,
   DefaultTheme,
   NavigationContainer,
-  NavigatorScreenParams, // @demo remove-current-line
+  NavigatorScreenParams,
 } from "@react-navigation/native"
-import { createNativeStackNavigator } from "@react-navigation/native-stack"
+import {
+  createNativeStackNavigator,
+  NativeStackNavigationProp,
+} from "@react-navigation/native-stack"
 import { StackScreenProps } from "@react-navigation/stack"
 import { observer } from "mobx-react-lite"
-import React from "react"
+import React, { useEffect, useState } from "react"
 import { useColorScheme } from "react-native"
+
 import Config from "../config"
-import { useStores } from "../models" // @demo remove-current-line
-import {
-  ConnectScreen,
-  WelcomeScreen,
-} from "../screens"
-import { DemoNavigator, DemoTabParamList } from "./DemoNavigator" // @demo remove-current-line
+import { useStores } from "../models"
+import { Link } from "../models/opds"
+import { AcquisitionScreen, ConnectScreen, OPDSRootScreen } from "../screens"
+import { api } from "../services/api"
+import { DemoTabParamList } from "./DemoNavigator"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 
 /**
@@ -39,9 +36,12 @@ import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
  */
 export type AppStackParamList = {
   Welcome: undefined
-  Connect: undefined // @demo remove-current-line
-  Demo: NavigatorScreenParams<DemoTabParamList> // @demo remove-current-line
-  // 🔥 Your screens go here
+  Connect: undefined
+  Demo: NavigatorScreenParams<DemoTabParamList>
+  OPDSRoot: undefined
+  Acquisition: {
+    link: Link
+  }
 }
 
 /**
@@ -57,34 +57,20 @@ export type AppStackScreenProps<T extends keyof AppStackParamList> = StackScreen
 
 // Documentation: https://reactnavigation.org/docs/stack-navigator/
 const Stack = createNativeStackNavigator<AppStackParamList>()
-
+export type ApppNavigationProp = NativeStackNavigationProp<AppStackParamList>
 const AppStack = observer(function AppStack() {
-  // @demo remove-block-start
-  const {
-    authenticationStore: { isAuthenticated },
-  } = useStores()
+  const { settingStore } = useStores()
+  useEffect(() => {
+    if (settingStore.api.baseUrl) {
+      api.setUrl(settingStore.api.baseUrl)
+    }
+  }, [])
 
-  // @demo remove-block-end
   return (
-    <Stack.Navigator
-      screenOptions={{ headerShown: false }}
-      initialRouteName={isAuthenticated ? "Welcome" : "Connect"} // @demo remove-current-line
-    >
-      {/* @demo remove-block-start */}
-      {isAuthenticated ? (
-        <>
-          {/* @demo remove-block-end */}
-          <Stack.Screen name="Welcome" component={WelcomeScreen} />
-          {/* @demo remove-block-start */}
-          <Stack.Screen name="Demo" component={DemoNavigator} />
-        </>
-      ) : (
-        <>
-          <Stack.Screen name="Connect" component={ConnectScreen} />
-        </>
-      )}
-      {/* @demo remove-block-end */}
-      {/** 🔥 Your screens go here */}
+    <Stack.Navigator screenOptions={{ headerShown: true }} initialRouteName={"Connect"}>
+      <Stack.Screen name="OPDSRoot" component={OPDSRootScreen} />
+      <Stack.Screen name="Connect" component={ConnectScreen} />
+      <Stack.Screen name="Acquisition" component={AcquisitionScreen} />
     </Stack.Navigator>
   )
 })
