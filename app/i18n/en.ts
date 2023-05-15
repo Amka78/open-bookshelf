@@ -46,7 +46,8 @@ const en = {
     detail: "Thank you for using OpenBookshelf. Please set up your Calibre URL first.",
     connectDetail: "Set the Calibre URL.",
     connect: "Connect",
-    placeHolder: "(http or https)://{Address}:{Port}"
+    placeHolder: "(http or https)://{Address}:{Port}",
+    checkbox: "use opds?",
   },
   demoNavigator: {
     componentsTab: "Components",

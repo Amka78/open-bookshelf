@@ -64,6 +64,8 @@ export class Api {
       if (problem) return problem
     }
 
+    console.log(response.data)
+
     return { kind: "ok", data: response.data }
   }
 }

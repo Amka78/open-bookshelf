@@ -10,7 +10,7 @@ import {
 } from "@react-navigation/native-stack"
 import { StackScreenProps } from "@react-navigation/stack"
 import { observer } from "mobx-react-lite"
-import React, { useEffect, useState } from "react"
+import React, { useEffect } from "react"
 import { useColorScheme } from "react-native"
 
 import Config from "../config"

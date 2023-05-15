@@ -4,6 +4,7 @@ import { api } from "../services/api"
 const ApiModel = types.model("ApiModel").props({
   baseUrl: types.maybe(types.string),
   initialPath: types.maybeNull(types.string),
+  isOpds: types.maybe(types.boolean),
 })
 
 export const SettingStoreModel = types
@@ -12,8 +13,8 @@ export const SettingStoreModel = types
     api: types.optional(ApiModel, {}),
   })
   .actions((store) => ({
-    async setUrl(baseUrl: string) {
-      if (baseUrl.match("/opds")) {
+    async setConnectionSetting(baseUrl: string, type: boolean) {
+      if (type) {
         store.api.baseUrl = baseUrl.replace("/opds", "")
         store.api.initialPath = "/opds"
         api.setUrl(store.api.baseUrl)

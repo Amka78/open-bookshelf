@@ -1,13 +1,16 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons"
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
+import ExpoFastImage from "expo-fast-image"
 import { observer } from "mobx-react-lite"
-import React, { FC, useEffect, useState } from "react"
 import { Box } from "native-base"
-import { FlatList, Flex, Image, ListItem, RootContainer, Text, Icon } from "../../components"
+import React, { FC, useEffect, useState } from "react"
+
+import { FlatList, Flex, Icon, Image, ListItem, RootContainer, Text } from "../../components"
 import { useStores } from "../../models"
 import { Entry } from "../../models/opds"
 import { OpdsChildrenModel, OpdsModel, OpdsRoot } from "../../models/opds/OpdsRootStore"
 import { ApppNavigationProp, AppStackParamList } from "../../navigators"
-import { MaterialCommunityIcons } from "@expo/vector-icons"
+
 type AcquisitionScreenRouteProp = RouteProp<AppStackParamList, "Acquisition">
 export const AcquisitionScreen: FC = observer(() => {
   const { opdsRootStore, settingStore } = useStores()
@@ -49,7 +52,7 @@ export const AcquisitionScreen: FC = observer(() => {
       headerTitle(props) {
         return (
           <Flex direction="row" alignItems={"center"}>
-            <Image
+            <ExpoFastImage
               source={{
                 uri: `${settingStore.api.baseUrl}${currentOpds?.icon}`,
               }}
@@ -71,26 +74,58 @@ export const AcquisitionScreen: FC = observer(() => {
       return value.rel === "http://opds-spec.org/image/thumbnail"
     })
 
+    let bottomText = ""
+
+    if (item.contentType === "text") {
+      bottomText = item.content
+    } else {
+      item.author.forEach((value) => {
+        if (bottomText === "") {
+          bottomText = value.name
+        } else {
+          bottomText += `,${value.name}`
+        }
+      })
+    }
+
     return (
       <ListItem
         LeftComponent={
-          <>
-            <Image
-              source={{ uri: thumbnail && `${settingStore.api.baseUrl}${thumbnail.href}` }}
-              style={{ height: 50, width: 30 }}
-              resizeMode={"contain"}
-            />
-            <Box marginLeft={"1"}>
-              <Text fontSize={"lg"} lineBreakMode="tail" numberOfLines={1}>
-                {item.title}
-              </Text>
-              <Text fontSize={"md"} marginTop={"0.5"}>
-                {item.author.length > 0 ? item.author[0]?.name : ""}
-              </Text>
-            </Box>
-            <Icon as={MaterialCommunityIcons} name="arrow-down-thin-circle-outline" />
-          </>
+          <Flex flexDirection={"row"} width={"full"}>
+            <Flex flexDirection={"row"} width={"5/6"}>
+              {item.contentType !== "text" && (
+                <ExpoFastImage
+                  source={{ uri: thumbnail && `${settingStore.api.baseUrl}${thumbnail.href}` }}
+                  style={{ height: 50, width: 30 }}
+                  resizeMode={"contain"}
+                />
+              )}
+              <Box marginLeft={"1"}>
+                <Text fontSize={"lg"} lineBreakMode="tail" numberOfLines={1}>
+                  {item.title}
+                </Text>
+                <Text fontSize={"md"} marginTop={"0.5"}>
+                  {bottomText}
+                </Text>
+              </Box>
+            </Flex>
+            {item.contentType !== "text" && (
+              <Icon
+                as={MaterialCommunityIcons}
+                name="arrow-down-thin-circle-outline"
+                size={"lg"}
+                position={"absolute"}
+                top={"1.5"}
+                right={"0.5"}
+              />
+            )}
+          </Flex>
         }
+        onPress={() => {
+          if (item.contentType === "text") {
+            navigation.push("Acquisition", { link: item.link[0] })
+          }
+        }}
       />
     )
   }

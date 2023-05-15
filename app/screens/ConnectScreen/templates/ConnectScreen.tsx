@@ -1,7 +1,15 @@
 import React from "react"
 import { useForm } from "react-hook-form"
 import { Box } from "native-base"
-import { Button, Flex, FormInput, Heading, RootContainer, Text } from "../../../components"
+import {
+  Button,
+  Flex,
+  FormCheckbox,
+  FormInput,
+  Heading,
+  RootContainer,
+  Text,
+} from "../../../components"
 import { ConnectType } from "../types/ConnectType"
 
 export type ConnectScreenProps = {
@@ -17,6 +25,7 @@ export function ConnectScreen(props: ConnectScreenProps) {
           <Heading testID="connect-heading" tx="connectScreen.welcome" />
           <Text tx="connectScreen.detail" marginTop={"5"} />
           <Box marginTop={"7"}>
+            <FormCheckbox name={"type"} tx={"connectScreen.checkbox"} control={form.control} />
             <FormInput
               control={form.control}
               defaultValue={props.baseUrl}

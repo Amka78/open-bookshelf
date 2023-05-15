@@ -15,7 +15,8 @@ export const ConnectScreen: FC = observer(() => {
         settingStore.api.baseUrl ? `${settingStore.api.baseUrl}${settingStore.api.initialPath}` : ""
       }
       onConnectPress={(data) => {
-        settingStore.setUrl(data.url)
+        console.log(data)
+        settingStore.setConnectionSetting(data.url, data.isOPDS)
         navigation.navigate("OPDSRoot")
       }}
     />
