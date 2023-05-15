@@ -16,7 +16,7 @@ import { useColorScheme } from "react-native"
 import Config from "../config"
 import { useStores } from "../models"
 import { Link } from "../models/opds"
-import { AcquisitionScreen, ConnectScreen, OPDSRootScreen } from "../screens"
+import { AcquisitionScreen, CalibreRootScreen, ConnectScreen, OPDSRootScreen } from "../screens"
 import { api } from "../services/api"
 import { DemoTabParamList } from "./DemoNavigator"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
@@ -39,6 +39,7 @@ export type AppStackParamList = {
   Connect: undefined
   Demo: NavigatorScreenParams<DemoTabParamList>
   OPDSRoot: undefined
+  CalibreRoot: undefined
   Acquisition: {
     link: Link
   }
@@ -71,6 +72,7 @@ const AppStack = observer(function AppStack() {
       <Stack.Screen name="OPDSRoot" component={OPDSRootScreen} />
       <Stack.Screen name="Connect" component={ConnectScreen} />
       <Stack.Screen name="Acquisition" component={AcquisitionScreen} />
+      <Stack.Screen name="CalibreRoot" component={CalibreRootScreen} />
     </Stack.Navigator>
   )
 })

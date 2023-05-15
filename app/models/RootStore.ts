@@ -3,6 +3,7 @@ import { AuthenticationStoreModel } from "./AuthenticationStore" // @demo remove
 import { EpisodeStoreModel } from "./EpisodeStore" // @demo remove-current-line
 import { OpdsRootStore } from "./opds/OpdsRootStore"
 import { SettingStoreModel } from "./SettingStore"
+import { CalibreRootStore } from "./CalibreRootStore"
 
 /**
  * A RootStore model.
@@ -12,6 +13,7 @@ export const RootStoreModel = types.model("RootStore").props({
   episodeStore: types.optional(EpisodeStoreModel, {}), // @demo remove-current-line
   settingStore: types.optional(SettingStoreModel, {}),
   opdsRootStore: types.optional(OpdsRootStore, {}),
+  calibreRootStore: types.optional(CalibreRootStore, {}),
 })
 
 /**

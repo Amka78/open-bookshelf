@@ -17,7 +17,7 @@ export const ConnectScreen: FC = observer(() => {
       onConnectPress={(data) => {
         console.log(data)
         settingStore.setConnectionSetting(data.url, data.isOPDS)
-        navigation.navigate("OPDSRoot")
+        navigation.navigate(data.isOPDS ? "OPDSRoot" : "CalibreRoot")
       }}
     />
   )

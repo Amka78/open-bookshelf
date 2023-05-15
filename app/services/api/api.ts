@@ -68,6 +68,26 @@ export class Api {
 
     return { kind: "ok", data: response.data }
   }
+
+  /**
+   * Initialize Calibre
+   *
+   * @returns {(Promise<{ kind: "ok"; data: any } | GeneralApiProblem>)}
+   * @memberof Api
+   */
+  async initializeCalibre(): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
+    // make the api call
+    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get(`/interface-data/update`)
+
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response)
+      if (problem) return problem
+    }
+
+    console.log(response.data)
+
+    return { kind: "ok", data: response.data }
+  }
 }
 
 // Singleton instance of the API for convenience
