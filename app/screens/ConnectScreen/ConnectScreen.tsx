@@ -11,9 +11,7 @@ export const ConnectScreen: FC = observer(() => {
   const navigation = useNavigation<ApppNavigationProp>()
   return (
     <Template
-      baseUrl={
-        settingStore.api.baseUrl ? `${settingStore.api.baseUrl}${settingStore.api.initialPath}` : ""
-      }
+      baseUrl={settingStore.api.baseUrl ? `${settingStore.api.baseUrl}` : ""}
       onConnectPress={(data) => {
         console.log(data)
         settingStore.setConnectionSetting(data.url, data.isOPDS)

@@ -84,7 +84,25 @@ export class Api {
       if (problem) return problem
     }
 
-    console.log(response.data)
+    return { kind: "ok", data: response.data }
+  }
+
+  /**
+   * Initialize Library
+   *
+   * @returns {(Promise<{ kind: "ok"; data: any } | GeneralApiProblem>)}
+   * @memberof Api
+   */
+  async initializeLibrary(library: string): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
+    // make the api call
+    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get(
+      `interface-data/books-init?library_id=${library}`,
+    )
+
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response)
+      if (problem) return problem
+    }
 
     return { kind: "ok", data: response.data }
   }

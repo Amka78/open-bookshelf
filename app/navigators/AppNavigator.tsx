@@ -16,10 +16,17 @@ import { useColorScheme } from "react-native"
 import Config from "../config"
 import { useStores } from "../models"
 import { Link } from "../models/opds"
-import { AcquisitionScreen, CalibreRootScreen, ConnectScreen, OPDSRootScreen } from "../screens"
+import {
+  AcquisitionScreen,
+  CalibreRootScreen,
+  ConnectScreen,
+  OPDSRootScreen,
+  LibraryScreen,
+} from "../screens"
 import { api } from "../services/api"
 import { DemoTabParamList } from "./DemoNavigator"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
+import { convertAbsoluteToRem } from "native-base/lib/typescript/theme/tools"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -40,6 +47,7 @@ export type AppStackParamList = {
   Demo: NavigatorScreenParams<DemoTabParamList>
   OPDSRoot: undefined
   CalibreRoot: undefined
+  Library: undefined
   Acquisition: {
     link: Link
   }
@@ -62,6 +70,7 @@ export type ApppNavigationProp = NativeStackNavigationProp<AppStackParamList>
 const AppStack = observer(function AppStack() {
   const { settingStore } = useStores()
   useEffect(() => {
+    console.log("called useEffect")
     if (settingStore.api.baseUrl) {
       api.setUrl(settingStore.api.baseUrl)
     }
@@ -73,6 +82,7 @@ const AppStack = observer(function AppStack() {
       <Stack.Screen name="Connect" component={ConnectScreen} />
       <Stack.Screen name="Acquisition" component={AcquisitionScreen} />
       <Stack.Screen name="CalibreRoot" component={CalibreRootScreen} />
+      <Stack.Screen name="Library" component={LibraryScreen} />
     </Stack.Navigator>
   )
 })
