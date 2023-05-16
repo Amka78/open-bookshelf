@@ -10,11 +10,11 @@ import {
   TouchableOpacity,
   TouchableOpacityProps,
   View,
-  ViewStyle
+  ViewStyle,
 } from "react-native"
 import Animated, { FadeIn, useAnimatedStyle, withTiming } from "react-native-reanimated"
 
-import { Text, TextProps } from "../components"
+import { Text, TextProps } from "../components/Text/Text"
 import { colors, spacing } from "../theme"
 import { iconRegistry } from "./Icon"
 

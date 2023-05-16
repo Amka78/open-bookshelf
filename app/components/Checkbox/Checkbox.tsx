@@ -8,7 +8,7 @@ export type ICheckboxProps = TemplateProps & {
 export const Checkbox = forwardRef((props: ICheckboxProps, ref) => {
   return (
     // @ts-ignore
-    <Template {...props} ref={ref} alignItems={"center"}>
+    <Template {...props} ref={ref}>
       {props.tx ? translate(props.tx) : props.children}
     </Template>
   )

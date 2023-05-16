@@ -1,6 +1,8 @@
-import { types, Instance } from "mobx-state-tree"
+import { Instance, types } from "mobx-state-tree"
 
-import { AuthorModel, CategoryModel, LinkModel } from "./"
+import { AuthorModel } from "./AuthorModel"
+import { CategoryModel } from "./CategoryModel"
+import { LinkModel } from "./LinkModel"
 
 export const EntryModel = types.model("EntryModel").props({
   author: types.array(AuthorModel),

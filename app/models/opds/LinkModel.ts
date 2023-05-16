@@ -1,5 +1,8 @@
-import { types, Instance } from "mobx-state-tree"
-import { CopiesModel, IndirectAcquisitionModel, AvailabilityModel } from "./"
+import { Instance, types } from "mobx-state-tree"
+
+import { AvailabilityModel } from "./AvailabilityModel"
+import { CopiesModel } from "./CopiesModel"
+import { IndirectAcquisitionModel } from "./IndirectAcquisitionModel"
 
 export const HoldsModel = types.model("HoldsModel").props({
   total: types.number,

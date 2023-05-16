@@ -1,7 +1,15 @@
 import React, { ComponentType, forwardRef, Ref, useImperativeHandle, useRef } from "react"
-import { StyleProp, TextInput, TextInputProps, TextStyle, TouchableOpacity, View, ViewStyle } from "react-native"
+import {
+  StyleProp,
+  TextInput,
+  TextInputProps,
+  TextStyle,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from "react-native"
 
-import { Text, TextProps } from "../components"
+import { Text, TextProps } from "../components/Text/Text"
 import { isRTL, translate } from "../i18n"
 import { colors, spacing, typography } from "../theme"
 

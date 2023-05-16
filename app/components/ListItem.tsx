@@ -8,7 +8,7 @@ import {
   ViewStyle,
 } from "react-native"
 
-import { Text, TextProps } from "../components"
+import { Text, TextProps } from "../components/Text/Text"
 import { colors, spacing } from "../theme"
 import { Icon, IconTypes } from "./Icon"
 

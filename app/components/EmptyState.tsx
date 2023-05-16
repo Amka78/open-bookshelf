@@ -1,7 +1,8 @@
 import React from "react"
 import { Image, ImageProps, ImageStyle, StyleProp, TextStyle, View, ViewStyle } from "react-native"
 
-import { Button, ButtonProps, Text, TextProps } from "../components"
+import { Button, ButtonProps } from "../components/Button/Button"
+import { Text, TextProps } from "../components/Text/Text"
 import { translate } from "../i18n"
 import { spacing } from "../theme"
 
