@@ -2,7 +2,6 @@ import { flow, Instance, SnapshotIn, SnapshotOut, types, getParent } from "mobx-
 
 import { api } from "../services/api"
 import { withSetPropAction } from "./helpers/withSetPropAction"
-import { useStyledSystemPropsResolver } from "native-base"
 
 const FormatSizeModel = types.model("FormatSizeModel").props({
   id: types.identifier,
@@ -13,14 +12,14 @@ export const MetadataModel = types.model("MetadataModel").props({
   sharpFixed: types.maybeNull(types.boolean),
   authorSort: types.maybeNull(types.string),
   authors: types.array(types.string),
-  formatSizes: types.map(FormatSizeModel),
+  //formatSizes: types.map(FormatSizeModel),
   formats: types.array(types.string),
-  lastModified: types.maybeNull(types.Date),
+  lastModified: types.maybeNull(types.string),
   seriesIndex: types.maybeNull(types.number),
   size: types.maybeNull(types.number),
   sort: types.maybeNull(types.string),
   tags: types.array(types.string),
-  timestamp: types.maybeNull(types.Date),
+  timestamp: types.maybeNull(types.string),
   title: types.maybeNull(types.string),
   uuid: types.maybeNull(types.string),
 })
@@ -31,7 +30,7 @@ export const LibraryModel = types
     id: types.identifier,
     metaData: types.maybeNull(MetadataModel),
     path: types.array(types.string),
-    hash: types.maybeNull(types.string),
+    hash: types.maybeNull(types.number),
   })
   .actions(withSetPropAction)
   .actions((root) => ({
@@ -127,13 +126,13 @@ export const CalibreRootStore = types
             authors: metaData.authors,
             authorSort: metaData.author_sort,
             formats: metaData.formats,
-            lastModified: new Date(metaData.last_modified),
+            lastModified: metaData.last_modified,
             seriesIndex: metaData.series_index,
             sharpFixed: metaData["#fixed"],
             size: metaData.size,
             sort: metaData.sort,
             tags: metaData.tags,
-            timestamp: new Date(metaData.timestamp),
+            timestamp: metaData.timestamp,
             title: metaData.title,
             uuid: metaData.uuid,
           })

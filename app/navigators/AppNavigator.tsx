@@ -22,11 +22,12 @@ import {
   ConnectScreen,
   OPDSRootScreen,
   LibraryScreen,
+  ViewerScreen,
 } from "../screens"
 import { api } from "../services/api"
 import { DemoTabParamList } from "./DemoNavigator"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
-import { convertAbsoluteToRem } from "native-base/lib/typescript/theme/tools"
+import { Library } from "../models/CalibreRootStore"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -50,6 +51,9 @@ export type AppStackParamList = {
   Library: undefined
   Acquisition: {
     link: Link
+  }
+  Viewer: {
+    library: Library
   }
 }
 
@@ -78,11 +82,12 @@ const AppStack = observer(function AppStack() {
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: true }} initialRouteName={"Connect"}>
-      <Stack.Screen name="OPDSRoot" component={OPDSRootScreen} />
       <Stack.Screen name="Connect" component={ConnectScreen} />
+      <Stack.Screen name="OPDSRoot" component={OPDSRootScreen} />
       <Stack.Screen name="Acquisition" component={AcquisitionScreen} />
       <Stack.Screen name="CalibreRoot" component={CalibreRootScreen} />
       <Stack.Screen name="Library" component={LibraryScreen} />
+      <Stack.Screen name="Viewer" component={ViewerScreen} options={{ statusBarHidden: true }} />
     </Stack.Navigator>
   )
 })

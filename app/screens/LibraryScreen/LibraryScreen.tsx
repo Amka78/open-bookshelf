@@ -81,6 +81,7 @@ export const LibraryScreen: FC = observer(() => {
         }
         onPress={async () => {
           await item.convertBook()
+          navigation.navigate("Viewer", { library: item })
         }}
       />
     )
