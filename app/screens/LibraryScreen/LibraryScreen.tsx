@@ -7,9 +7,11 @@ import { FlatList, Flex, ListItem, RootContainer, Text } from "../../components"
 import { useStores } from "../../models"
 import { Library } from "../../models/CalibreRootStore"
 import { ApppNavigationProp } from "../../navigators"
+import ExpoFastImage from "expo-fast-image"
+import { StyleSheet } from "react-native"
 
 export const LibraryScreen: FC = observer(() => {
-  const { calibreRootStore } = useStores()
+  const { calibreRootStore, settingStore } = useStores()
 
   const navigation = useNavigation<ApppNavigationProp>()
 
@@ -59,6 +61,13 @@ export const LibraryScreen: FC = observer(() => {
         LeftComponent={
           <Flex flexDirection={"row"} width={"full"}>
             <Flex flexDirection={"row"} width={"5/6"}>
+              <ExpoFastImage
+                source={{
+                  uri: `${settingStore.api.baseUrl}/get/thumb/${item.id}/config?sz=300x400`,
+                }}
+                style={styles.coverImage}
+                resizeMode={"contain"}
+              />
               <Box marginLeft={"1"}>
                 <Text fontSize={"lg"} lineBreakMode="tail" numberOfLines={1}>
                   {item.metaData.title}
@@ -70,10 +79,8 @@ export const LibraryScreen: FC = observer(() => {
             </Flex>
           </Flex>
         }
-        onPress={() => {
-          /* if (item.contentType === "text") {
-            navigation.push("Acquisition", { link: item.link[0] })
-          } */
+        onPress={async () => {
+          await item.convertBook()
         }}
       />
     )
@@ -84,7 +91,7 @@ export const LibraryScreen: FC = observer(() => {
       <FlatList<Library>
         data={calibreRootStore.getSelectedLibrary()?.value.slice()}
         renderItem={renderItem}
-        estimatedItemSize={calibreRootStore.getSelectedLibrary()?.length}
+        estimatedItemSize={calibreRootStore.getSelectedLibrary()?.value.length}
         onRefresh={async () => {
           await initialize()
         }}
@@ -100,4 +107,8 @@ export const LibraryScreen: FC = observer(() => {
       />
     </RootContainer>
   )
+})
+
+const styles = StyleSheet.create({
+  coverImage: { height: 50, width: 30 },
 })

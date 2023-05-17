@@ -77,7 +77,9 @@ export class Api {
    */
   async initializeCalibre(): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
     // make the api call
-    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get(`/interface-data/update`)
+    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get(
+      `/interface-data/update?${Date.now}`,
+    )
 
     if (!response.ok) {
       const problem = getGeneralApiProblem(response)
@@ -96,7 +98,31 @@ export class Api {
   async initializeLibrary(library: string): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
     // make the api call
     const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get(
-      `interface-data/books-init?library_id=${library}`,
+      `interface-data/books-init?library_id=${library}&${Date.now}`,
+    )
+
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response)
+      if (problem) return problem
+    }
+
+    return { kind: "ok", data: response.data }
+  }
+
+  /**
+   * Check Book Converting
+   *
+   * @returns {(Promise<{ kind: "ok"; data: any } | GeneralApiProblem>)}
+   * @memberof Api
+   */
+  async CheckBookConverting(
+    libraryId: string,
+    bookId: string,
+    bookType: string,
+  ): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
+    // make the api call
+    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get(
+      `book-manifest/${bookId}/${bookType}?library_id=${libraryId}&${Date.now}`,
     )
 
     if (!response.ok) {

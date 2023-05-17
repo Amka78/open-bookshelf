@@ -1,7 +1,8 @@
-import { flow, Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
+import { flow, Instance, SnapshotIn, SnapshotOut, types, getParent } from "mobx-state-tree"
 
 import { api } from "../services/api"
 import { withSetPropAction } from "./helpers/withSetPropAction"
+import { useStyledSystemPropsResolver } from "native-base"
 
 const FormatSizeModel = types.model("FormatSizeModel").props({
   id: types.identifier,
@@ -24,10 +25,57 @@ export const MetadataModel = types.model("MetadataModel").props({
   uuid: types.maybeNull(types.string),
 })
 
-export const LibraryModel = types.model("LibraryModel").props({
-  id: types.identifier,
-  metaData: types.maybeNull(MetadataModel),
-})
+export const LibraryModel = types
+  .model("LibraryModel")
+  .props({
+    id: types.identifier,
+    metaData: types.maybeNull(MetadataModel),
+    path: types.array(types.string),
+    hash: types.maybeNull(types.string),
+  })
+  .actions(withSetPropAction)
+  .actions((root) => ({
+    convertBook: flow(function* () {
+      const libraryMap = getParent(root) as LibraryMap
+      const interval = setInterval(async () => {
+        const response = await api.CheckBookConverting(
+          libraryMap.id,
+          root.id,
+          root.metaData.formats[0],
+        )
+
+        console.log(response)
+        if (response.kind !== "ok") {
+          clearInterval(interval)
+        } else {
+          if (response.data.files !== undefined) {
+            clearInterval(interval)
+
+            let pathList = []
+            Object.keys(response.data.files).forEach((value) => {
+              console.log(value)
+
+              if (response.data.spine[0] !== value) {
+                pathList.push(value)
+              }
+            })
+
+            if (root.metaData.formats[0] === "CBZ") {
+              pathList = pathList.sort((a: string, b: string) => {
+                const aNum = Number(a.split(" ")[0])
+                const bNum = Number(b.split(" ")[0])
+
+                return aNum - bNum
+              })
+            }
+
+            root.setProp("path", pathList)
+            root.setProp("hash", response.data.book_hash.mtime)
+          }
+        }
+      }, 600)
+    }),
+  }))
 export interface Library extends Instance<typeof LibraryModel> {}
 export interface LibrarySnapshotOut extends SnapshotOut<typeof LibraryModel> {}
 export interface LibrarySnapshotIn extends SnapshotIn<typeof LibraryModel> {}
@@ -97,8 +145,6 @@ export const CalibreRootStore = types
             id: key,
             metaData: metaDataModel,
           })
-
-          console.log(selectedLibrary.value)
         })
       }
     }),
