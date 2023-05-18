@@ -1,4 +1,12 @@
-import { flow, Instance, SnapshotIn, SnapshotOut, types, getParent } from "mobx-state-tree"
+import {
+  flow,
+  Instance,
+  SnapshotIn,
+  SnapshotOut,
+  types,
+  getParent,
+  TypeOfValue,
+} from "mobx-state-tree"
 
 import { api } from "../services/api"
 import { withSetPropAction } from "./helpers/withSetPropAction"
@@ -27,7 +35,7 @@ export const MetadataModel = types.model("MetadataModel").props({
 export const LibraryModel = types
   .model("LibraryModel")
   .props({
-    id: types.identifier,
+    id: types.identifierNumber,
     metaData: types.maybeNull(MetadataModel),
     path: types.array(types.string),
     hash: types.maybeNull(types.number),
@@ -79,9 +87,18 @@ export interface Library extends Instance<typeof LibraryModel> {}
 export interface LibrarySnapshotOut extends SnapshotOut<typeof LibraryModel> {}
 export interface LibrarySnapshotIn extends SnapshotIn<typeof LibraryModel> {}
 
+export const SearchSettingModel = types.model("SearchSettingModel").props({
+  offset: types.maybeNull(types.number),
+  query: types.maybeNull(types.string),
+  sort: types.maybeNull(types.string),
+  sortOrder: types.maybeNull(types.string),
+  totalNum: types.maybeNull(types.number),
+})
+
 export const LibraryMapModel = types.model("LibrayMapModel").props({
   id: types.identifier,
   value: types.array(LibraryModel),
+  searchSetting: types.maybeNull(SearchSettingModel),
 })
 
 export interface LibraryMap extends Instance<typeof LibraryMapModel> {}
@@ -113,38 +130,30 @@ export const CalibreRootStore = types
         })
       }
     }),
-    initializeLibrary: flow(function* () {
-      const response = yield api.initializeLibrary(root.selectedLibraryId)
+    searchtLibrary: flow(function* () {
+      const response = yield api.getLibrary(root.selectedLibraryId)
 
-      const responseMetadata = response.data.metadata
-      console.log("get metadata")
       if (response.kind === "ok") {
-        Object.keys(responseMetadata).forEach((key: string) => {
-          const metaData = responseMetadata[key]
-
-          const metaDataModel = MetadataModel.create({
-            authors: metaData.authors,
-            authorSort: metaData.author_sort,
-            formats: metaData.formats,
-            lastModified: metaData.last_modified,
-            seriesIndex: metaData.series_index,
-            sharpFixed: metaData["#fixed"],
-            size: metaData.size,
-            sort: metaData.sort,
-            tags: metaData.tags,
-            timestamp: metaData.timestamp,
-            title: metaData.title,
-            uuid: metaData.uuid,
-          })
-          const selectedLibrary = root.libraryMap.find((value) => {
-            return value.id === root.selectedLibraryId
-          })
-
-          selectedLibrary.value.push({
-            id: key,
-            metaData: metaDataModel,
-          })
+        const selectedLibrary = root.libraryMap.find((value) => {
+          return value.id === root.selectedLibraryId
         })
+        selectedLibrary.value.clear()
+        setSearchResult(response, selectedLibrary)
+      }
+    }),
+    searchMoreLibrary: flow(function* () {
+      const selectedLibrary = getSelectedLibrary(root)
+      const response = yield api.getMoreLibrary(root.selectedLibraryId, {
+        offset: selectedLibrary.searchSetting.offset,
+        query: selectedLibrary.searchSetting.query ? selectedLibrary.searchSetting.query : "",
+        sort: selectedLibrary.searchSetting.sort,
+        sort_order: selectedLibrary.searchSetting.sortOrder,
+        vl: "",
+      })
+
+      if (response.kind === "ok") {
+        console.log(response.data)
+        setSearchResult(response, selectedLibrary)
       }
     }),
     setSelectedLibraryId: (libraryId: string) => {
@@ -160,3 +169,43 @@ export const CalibreRootStore = types
 export interface CalibreRoot extends Instance<typeof CalibreRootStore> {}
 export interface CalibreRootSnapshotOut extends SnapshotOut<typeof CalibreRootStore> {}
 export interface CalibreRootSnapshotIn extends SnapshotIn<typeof CalibreRootStore> {}
+function getSelectedLibrary(root): LibraryMap {
+  return root.libraryMap.find((value) => {
+    return value.id === root.selectedLibraryId
+  })
+}
+
+function setSearchResult(response: any, selectedLibrary: LibraryMap) {
+  selectedLibrary.searchSetting = SearchSettingModel.create({
+    offset: response.data.search_result.num + response.data.search_result.offset,
+    query: response.data.search_result.query ? response.data.search_result.query : "",
+    sort: response.data.search_result.sort,
+    sortOrder: response.data.search_result.sort_order,
+    totalNum: response.data.search_result.total_num
+      ? response.data.search_result.total_num
+      : selectedLibrary.searchSetting.totalNum,
+  })
+  response.data.search_result.book_ids.forEach((key: number) => {
+    const metaData = response.data.metadata[key]
+
+    const metaDataModel = MetadataModel.create({
+      authors: metaData.authors,
+      authorSort: metaData.author_sort,
+      formats: metaData.formats,
+      lastModified: metaData.last_modified,
+      seriesIndex: metaData.series_index,
+      sharpFixed: metaData["#fixed"],
+      size: metaData.size,
+      sort: metaData.sort,
+      tags: metaData.tags,
+      timestamp: metaData.timestamp,
+      title: metaData.title,
+      uuid: metaData.uuid,
+    })
+
+    selectedLibrary.value.push({
+      id: key,
+      metaData: metaDataModel,
+    })
+  })
+}

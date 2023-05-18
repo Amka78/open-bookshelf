@@ -90,17 +90,42 @@ export class Api {
   }
 
   /**
-   * Initialize Library
+   * get Library
    *
    * @returns {(Promise<{ kind: "ok"; data: any } | GeneralApiProblem>)}
    * @memberof Api
    */
-  async initializeLibrary(library: string): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
+  async getLibrary(library: string): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
     // make the api call
     const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get(
-      `interface-data/books-init?library_id=${library}&${Date.now}`,
+      `interface-data/books-init?library_id=${library}&sort=timestamp.desc&${Date.now}`,
     )
 
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response)
+      if (problem) return problem
+    }
+
+    return { kind: "ok", data: response.data }
+  }
+
+  /**
+   * get mote library
+   *
+   * @returns {(Promise<{ kind: "ok"; data: any } | GeneralApiProblem>)}
+   * @memberof Api
+   */
+  async getMoreLibrary(
+    library: string,
+    json,
+  ): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
+    // make the api call
+    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.post(
+      `interface-data/more-books?library_id=${library}`,
+      json,
+    )
+
+    console.log(response)
     if (!response.ok) {
       const problem = getGeneralApiProblem(response)
       if (problem) return problem
@@ -117,7 +142,7 @@ export class Api {
    */
   async CheckBookConverting(
     libraryId: string,
-    bookId: string,
+    bookId: number,
     bookType: string,
   ): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
     // make the api call
