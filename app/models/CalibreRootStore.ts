@@ -51,28 +51,27 @@ export const LibraryModel = types
           root.metaData.formats[0],
         )
 
-        console.log(response)
         if (response.kind !== "ok") {
           clearInterval(interval)
         } else {
           if (response.data.files !== undefined) {
             clearInterval(interval)
 
-            let pathList = []
-            Object.keys(response.data.files).forEach((value) => {
-              console.log(value)
+            console.log("convert start")
+            const spineResponse = await api.getLibraryInformation(
+              libraryMap.id,
+              root.id,
+              root.metaData.formats[0],
+              root.metaData.size,
+              response.data.book_hash.mtime,
+              response.data.spine[0],
+            )
 
-              if (response.data.spine[0] !== value) {
-                pathList.push(value)
-              }
-            })
+            const pathList = []
 
-            if (root.metaData.formats[0] === "CBZ") {
-              pathList = pathList.sort((a: string, b: string) => {
-                const aNum = Number(a.split(" ")[0])
-                const bNum = Number(b.split(" ")[0])
-
-                return aNum - bNum
+            if (spineResponse.kind === "ok") {
+              Object.values(spineResponse.data.tree.c[1].c).forEach((path: any) => {
+                pathList.push(path.a[2][1])
               })
             }
 

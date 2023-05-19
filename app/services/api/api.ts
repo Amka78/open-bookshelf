@@ -157,6 +157,33 @@ export class Api {
 
     return { kind: "ok", data: response.data }
   }
+
+  /**
+   * Get library information
+   *
+   * @returns {(Promise<{ kind: "ok"; data: any } | GeneralApiProblem>)}
+   * @memberof Api
+   */
+  async getLibraryInformation(
+    libraryId: string,
+    bookId: number,
+    bookType: string,
+    bookSize: number,
+    hash: number,
+    spine: string,
+  ): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
+    // make the api call
+    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get(
+      `book-file/${bookId}/${bookType}/${bookSize}/${hash}/${spine}?library_id=${libraryId}&${Date.now}`,
+    )
+
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response)
+      if (problem) return problem
+    }
+
+    return { kind: "ok", data: response.data }
+  }
 }
 
 // Singleton instance of the API for convenience
