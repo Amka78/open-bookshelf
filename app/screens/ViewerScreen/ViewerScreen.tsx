@@ -84,12 +84,14 @@ export const ViewerScreen: FC = observer(() => {
 
   const firstPage = (
     <Pressable
-      onPress={() => {
-        console.log("called")
-
+      onPress={(e) => {
         const nextPage = pageNum - 2
 
         setPageNum(nextPage > 0 ? nextPage : 0)
+        setShowMenu(false)
+      }}
+      onLongPress={() => {
+        setShowMenu(true)
       }}
       style={{ alignItems: "flex-start", flex: 1 }}
     >
@@ -99,17 +101,20 @@ export const ViewerScreen: FC = observer(() => {
             `${settingStore.api.baseUrl}/book-file/${library.id}/${library.metaData.formats[0]}/${library.metaData.size}/${library.hash}/${library.path[pageNum]}?library_id=${calibreRootStore.selectedLibraryId}`,
           ),
         }}
-        style={{ height: "100%", width: 600 }}
-        resizeMode={"contain"}
+        style={{ height: "100%", width: "70%" }}
+        resizeMode={"cover"}
       />
     </Pressable>
   )
 
   const secondPage = (
     <Pressable
-      onPress={() => {
-        console.log("called")
+      onPress={(e) => {
         setPageNum(pageNum + 2)
+        setShowMenu(false)
+      }}
+      onLongPress={() => {
+        setShowMenu(true)
       }}
       style={{ alignItems: "flex-end", flex: 1 }}
     >
@@ -123,8 +128,8 @@ export const ViewerScreen: FC = observer(() => {
             }`,
           ),
         }}
-        style={{ height: "100%", width: 600 }}
-        resizeMode={"contain"}
+        style={{ height: "100%", width: "70%" }}
+        resizeMode={"cover"}
       />
     </Pressable>
   )
@@ -135,7 +140,7 @@ export const ViewerScreen: FC = observer(() => {
     viewer = singlePage
   } else {
     viewer = (
-      <HStack space={2} justifyItems={"center"}>
+      <HStack>
         {secondPage}
         {firstPage}
       </HStack>
@@ -150,17 +155,23 @@ export const ViewerScreen: FC = observer(() => {
       bottom={0}
       height={"10%"}
       alignItems={"center"}
+      justifyContent={"center"}
       backgroundColor={"white"}
     >
       <Slider
         w="3/4"
-        maxW="300"
+        maxW="900"
         defaultValue={pageNum}
         minValue={-library.path.length}
         maxValue={0}
         step={1}
         onChange={(v) => {
-          setPageNum(v * -1)
+          let pageNum = v * -1
+
+          if (isWidthScreen && pageNum % 2 === 0) {
+            pageNum--
+          }
+          setPageNum(pageNum)
         }}
         isReversed={true}
       >
