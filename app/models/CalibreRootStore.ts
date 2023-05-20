@@ -129,8 +129,8 @@ export const CalibreRootStore = types
         })
       }
     }),
-    searchtLibrary: flow(function* () {
-      const response = yield api.getLibrary(root.selectedLibraryId)
+    searchtLibrary: flow(function* (searchText: string) {
+      const response = yield api.getLibrary(root.selectedLibraryId, searchText)
 
       if (response.kind === "ok") {
         const selectedLibrary = root.libraryMap.find((value) => {

@@ -95,10 +95,15 @@ export class Api {
    * @returns {(Promise<{ kind: "ok"; data: any } | GeneralApiProblem>)}
    * @memberof Api
    */
-  async getLibrary(library: string): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
+  async getLibrary(
+    library: string,
+    searchText: string,
+  ): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
     // make the api call
     const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get(
-      `interface-data/books-init?library_id=${library}&sort=timestamp.desc&${Date.now}`,
+      `interface-data/books-init?library_id=${library}${
+        searchText ? `&search=${searchText}` : ""
+      }&sort=timestamp.desc&${Date.now}`,
     )
 
     if (!response.ok) {

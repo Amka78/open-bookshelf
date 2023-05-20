@@ -1,14 +1,14 @@
 import { useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import { Box, useBreakpointValue } from "native-base"
-import React, { FC, useEffect } from "react"
+import React, { FC, useEffect, useState } from "react"
 
 import { FlatList, Flex, ListItem, RootContainer, Text } from "../../components"
 import { useStores } from "../../models"
 import { Library } from "../../models/CalibreRootStore"
 import { ApppNavigationProp } from "../../navigators"
 import ExpoFastImage from "expo-fast-image"
-import { StyleSheet, TouchableOpacity } from "react-native"
+import { StyleSheet, TouchableOpacity, useWindowDimensions } from "react-native"
 
 export const LibraryScreen: FC = observer(() => {
   const { calibreRootStore, settingStore } = useStores()
@@ -20,27 +20,27 @@ export const LibraryScreen: FC = observer(() => {
     xl: true,
   })
 
-  const initialize = async () => {
-    await calibreRootStore.searchtLibrary()
+  const search = async (searchQuery?: string) => {
+    await calibreRootStore.searchtLibrary(searchQuery)
   }
 
   useEffect(() => {
-    initialize()
+    search()
   }, [])
 
   useEffect(() => {
     navigation.setOptions({
-      headerTitle(props) {
-        return (
-          <Flex direction="row" alignItems={"center"}>
-            <Text color="white" paddingLeft={"2.5"} fontSize={"2xl"}>
-              {calibreRootStore.selectedLibraryId}
-            </Text>
-          </Flex>
-        )
+      headerTitle: calibreRootStore.selectedLibraryId,
+      headerSearchBarOptions: {
+        hideWhenScrolling: true,
+        onSearchButtonPress: (e) => {
+          search(e.nativeEvent.text)
+        },
       },
     })
   }, [])
+
+  const window = useWindowDimensions()
 
   const renderItem = ({ item }: { item: Library }) => {
     console.log(item)
@@ -55,7 +55,6 @@ export const LibraryScreen: FC = observer(() => {
     })
 
     const onPress = async () => {
-      console.log("press called")
       await item.convertBook()
       navigation.navigate("Viewer", { library: item })
     }
@@ -65,13 +64,15 @@ export const LibraryScreen: FC = observer(() => {
     if (isWidthScreen) {
       listItem = (
         <TouchableOpacity onPress={onPress}>
-          <ExpoFastImage
-            source={{
-              uri: `${settingStore.api.baseUrl}/get/thumb/${item.id}/config?sz=300x400`,
-            }}
-            style={{ height: 400, width: 300 }}
-            resizeMode={"cover"}
-          />
+          <Box marginX={"2"} marginTop={"2"}>
+            <ExpoFastImage
+              source={{
+                uri: `${settingStore.api.baseUrl}/get/thumb/${item.id}/config?sz=300x400`,
+              }}
+              style={{ height: 320, width: 240 }}
+              resizeMode={"stretch"}
+            />
+          </Box>
         </TouchableOpacity>
       )
     } else {
@@ -111,16 +112,15 @@ export const LibraryScreen: FC = observer(() => {
       data={calibreRootStore.getSelectedLibrary()?.value.slice()}
       renderItem={renderItem}
       estimatedItemSize={calibreRootStore.getSelectedLibrary()?.value.length}
-      numColumns={isWidthScreen ? 7 : 1}
+      numColumns={isWidthScreen ? Math.floor(window.width / 242) : 1}
       onRefresh={
         isWidthScreen
           ? undefined
           : async () => {
-              await initialize()
+              await search()
             }
       }
       onEndReached={async () => {
-        console.log("onEndReached called")
         await calibreRootStore.searchMoreLibrary()
       }}
     />
