@@ -1,12 +1,5 @@
-import {
-  flow,
-  Instance,
-  SnapshotIn,
-  SnapshotOut,
-  types,
-  getParent,
-  TypeOfValue,
-} from "mobx-state-tree"
+import { id } from "date-fns/locale"
+import { flow, getParent, Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 
 import { api } from "../services/api"
 import { withSetPropAction } from "./helpers/withSetPropAction"
@@ -94,10 +87,16 @@ export const SearchSettingModel = types.model("SearchSettingModel").props({
   totalNum: types.maybeNull(types.number),
 })
 
+export const SortFieldModel = types.model("SortFieldModel").props({
+  id: types.identifier,
+  name: types.string,
+})
+
 export const LibraryMapModel = types.model("LibrayMapModel").props({
   id: types.identifier,
   value: types.array(LibraryModel),
   searchSetting: types.maybeNull(SearchSettingModel),
+  sortField: types.array(SortFieldModel),
 })
 
 export interface LibraryMap extends Instance<typeof LibraryMapModel> {}
