@@ -1,4 +1,5 @@
 import React, { useState } from "react"
+import { FlatList as Origin } from "react-native"
 import { FlashList, FlashListProps } from "@shopify/flash-list"
 import { Spinner } from "native-base"
 
@@ -7,7 +8,7 @@ export function FlatList<T>(props: FlatListProps<T>) {
   const [loading, setLoading] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   return (
-    <FlashList
+    <Origin
       {...props}
       onMomentumScrollBegin={() => {
         setLoading(true)
