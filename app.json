@@ -5,7 +5,7 @@
     "name": "OpenBookShelf",
     "slug": "OpenBookShelf",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/app-icon-all.png",
     "splash": {
       "image": "./assets/images/splash-logo-all.png",
