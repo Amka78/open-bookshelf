@@ -1,13 +1,17 @@
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import ExpoFastImage from "expo-fast-image"
 import { observer } from "mobx-react-lite"
-import { HStack, useBreakpointValue, Box, Slider, Text, VStack } from "native-base"
+import { HStack, useBreakpointValue, Box, Slider, Text, VStack, IconButton } from "native-base"
 import React, { FC, useEffect, useState } from "react"
-import { Pressable } from "react-native"
+import { Pressable, useWindowDimensions } from "react-native"
 import { GestureHandlerRootView, PanGestureHandler } from "react-native-gesture-handler"
 
 import { useStores } from "../../models"
 import { ApppNavigationProp, AppStackParamList } from "../../navigators"
+import { MaterialIcons } from "@expo/vector-icons"
+import PageFlipper from "react-native-page-flipper"
+import * as ScreenOrientation from "expo-screen-orientation"
+import useOrientation from "../../hooks/useOrientation"
 
 type ViewerScreenRouteProp = RouteProp<AppStackParamList, "Viewer">
 export const ViewerScreen: FC = observer(() => {
@@ -22,6 +26,10 @@ export const ViewerScreen: FC = observer(() => {
   const [direction, setDirection] = useState<"left" | "right">(null)
 
   const [showMenu, setShowMenu] = useState(false)
+
+  const orientation = useOrientation()
+
+  const [useAnimation, setUseAnimation] = useState(true)
   const isWidthScreen = useBreakpointValue({
     base: false,
     lg: true,
@@ -32,6 +40,20 @@ export const ViewerScreen: FC = observer(() => {
     navigation.setOptions({
       headerTitle: `${route.params.library.metaData.title}`,
       headerShown: showMenu,
+      headerRight: (props) => {
+        return (
+          <IconButton
+            colorScheme="black"
+            _icon={{
+              as: MaterialIcons,
+              name: "animation",
+            }}
+            onPress={() => {
+              setUseAnimation(!useAnimation)
+            }}
+          />
+        )
+      },
     })
   }, [showMenu])
 
@@ -134,12 +156,19 @@ export const ViewerScreen: FC = observer(() => {
     </Pressable>
   )
 
-  let viewer = null
+  let fixedViewer = null
 
-  if (pageNum === 0 || !isWidthScreen) {
-    viewer = singlePage
+  if (
+    pageNum === 0 ||
+    !(
+      isWidthScreen ||
+      orientation === ScreenOrientation.Orientation.LANDSCAPE_LEFT ||
+      orientation === ScreenOrientation.Orientation.LANDSCAPE_RIGHT
+    )
+  ) {
+    fixedViewer = singlePage
   } else {
-    viewer = (
+    fixedViewer = (
       <HStack>
         {secondPage}
         {firstPage}
@@ -185,9 +214,27 @@ export const ViewerScreen: FC = observer(() => {
       </Text>
     </VStack>
   )
+
+  const animationViewer = {
+    /* <PageFlipper
+      data={library.path.map((value) => {
+        return encodeURI(
+          `${settingStore.api.baseUrl}/book-file/${library.id}/${library.metaData.formats[0]}/${library.metaData.size}/${library.hash}/${value}?library_id=${calibreRootStore.selectedLibraryId}`,
+        )
+      })}
+      pageSize={{
+        height: 334, // the size of the images I plan to render (used simply to calculate ratio)
+        width: 210,
+      }}
+      portrait={true}
+      renderPage={(data) => (
+        <ExpoFastImage source={{ uri: data }} style={{ height: "100%", width: "100%" }} />
+      )}
+    /> */
+  }
   return (
     <>
-      {viewer}
+      {/*useAnimation ? animationViewer :*/ fixedViewer}
       {showMenu ? footer : null}
     </>
   )
