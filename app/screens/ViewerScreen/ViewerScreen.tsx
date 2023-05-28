@@ -12,6 +12,7 @@ import { MaterialIcons } from "@expo/vector-icons"
 import PageFlipper from "react-native-page-flipper"
 import * as ScreenOrientation from "expo-screen-orientation"
 import useOrientation from "../../hooks/useOrientation"
+import { SwipeGestureHandler } from "../../components"
 
 type ViewerScreenRouteProp = RouteProp<AppStackParamList, "Viewer">
 export const ViewerScreen: FC = observer(() => {
@@ -23,7 +24,6 @@ export const ViewerScreen: FC = observer(() => {
 
   const library = route.params.library
   const [pageNum, setPageNum] = useState(0)
-  const [direction, setDirection] = useState<"left" | "right">(null)
 
   const [showMenu, setShowMenu] = useState(false)
 
@@ -58,50 +58,37 @@ export const ViewerScreen: FC = observer(() => {
   }, [showMenu])
 
   const singlePage = (
-    <GestureHandlerRootView>
-      <PanGestureHandler
-        onGestureEvent={(event) => {
-          if (event.nativeEvent.translationX > 0) {
-            setDirection("left")
-          } else {
-            setDirection("right")
-          }
-        }}
-        onEnded={() => {
-          if (direction === "left") {
-            goToNextPage(pageNum, route.params.library.path.length, setPageNum)
-          } else if (direction === "right") {
-            if (pageNum > 0) {
-              setPageNum(pageNum - 1)
-            }
-          }
+    <SwipeGestureHandler
+      onSwipeEnded={() => {
+        setShowMenu(false)
+      }}
+      onLeftSwipe={() => {
+        goToNextPage(pageNum, route.params.library.path.length, setPageNum, 1)
+      }}
+      onRightSwipe={() => {
+        goToPreviousPage(pageNum, setPageNum, 1)
+      }}
+    >
+      <Pressable
+        onPress={() => {
+          goToNextPage(pageNum, route.params.library.path.length, setPageNum, 1)
           setShowMenu(false)
-          setDirection(null)
+        }}
+        onLongPress={() => {
+          setShowMenu(true)
         }}
       >
-        <Pressable
-          onPress={() => {
-            goToNextPage(pageNum, route.params.library.path.length, setPageNum)
-            setShowMenu(false)
+        <ExpoFastImage
+          source={{
+            uri: encodeURI(
+              `${settingStore.api.baseUrl}/book-file/${library.id}/${library.metaData.formats[0]}/${library.metaData.size}/${library.hash}/${library.path[pageNum]}?library_id=${calibreRootStore.selectedLibraryId}`,
+            ),
           }}
-          onLongPress={() => {
-            setShowMenu(true)
-          }}
-        >
-          <ExpoFastImage
-            source={{
-              uri: encodeURI(
-                `${settingStore.api.baseUrl}/book-file/${library.id}/${library.metaData.formats[0]}/${library.metaData.size}/${library.hash}/${library.path[pageNum]}?library_id=${calibreRootStore.selectedLibraryId}`,
-              ),
-            }}
-            style={{ height: "100%" }}
-            resizeMode={"contain"}
-          />
-        </Pressable>
-      </PanGestureHandler>
-    </GestureHandlerRootView>
-
-    /* </Pressable> */
+          style={{ height: "100%" }}
+          resizeMode={"contain"}
+        />
+      </Pressable>
+    </SwipeGestureHandler>
   )
 
   const firstPage = (
@@ -169,10 +156,22 @@ export const ViewerScreen: FC = observer(() => {
     fixedViewer = singlePage
   } else {
     fixedViewer = (
-      <HStack>
-        {secondPage}
-        {firstPage}
-      </HStack>
+      <SwipeGestureHandler
+        onLeftSwipe={() => {
+          goToNextPage(pageNum, route.params.library.path.length, setPageNum, 2)
+        }}
+        onRightSwipe={() => {
+          goToPreviousPage(pageNum, setPageNum, 2)
+        }}
+        onSwipeEnded={() => {
+          setShowMenu(false)
+        }}
+      >
+        <HStack>
+          {secondPage}
+          {firstPage}
+        </HStack>
+      </SwipeGestureHandler>
     )
   }
 
@@ -239,10 +238,21 @@ export const ViewerScreen: FC = observer(() => {
     </>
   )
 })
+function goToPreviousPage(
+  pageNum: number,
+  setPageNum: React.Dispatch<React.SetStateAction<number>>,
+  transitionPages: number,
+) {
+  if (pageNum > 0) {
+    setPageNum(pageNum - transitionPages)
+  }
+}
+
 function goToNextPage(
   pageNum: number,
   totalPage: number,
   setPageNum: React.Dispatch<React.SetStateAction<number>>,
+  transitionPages: number,
 ) {
-  if (pageNum < totalPage) setPageNum(pageNum + 1)
+  if (pageNum < totalPage) setPageNum(pageNum + transitionPages)
 }
