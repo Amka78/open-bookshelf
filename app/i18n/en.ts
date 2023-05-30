@@ -127,6 +127,9 @@ const en = {
         "No favorites have been added yet. Tap the heart on an episode to add it to your favorites!",
     },
   },
+  bookImage: {
+    loading: "Preparing to read the book.",
+  },
   // @demo remove-block-end
 }
 
