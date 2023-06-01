@@ -35,7 +35,7 @@ export function BookDescriptionItem(props: BookDescriptionItemProps) {
     <ListItem
       LeftComponent={
         <Flex flexDirection={"row"} width={"full"}>
-          <Flex flexDirection={"row"} width={"5/6"}>
+          <Flex flexDirection={"row"} width={"5/6"} marginLeft={2}>
             <ExpoFastImage
               source={{
                 uri: props.source,
@@ -43,7 +43,7 @@ export function BookDescriptionItem(props: BookDescriptionItemProps) {
               style={styles.coverImage}
               resizeMode={"contain"}
             />
-            <Box marginLeft={"1"}>
+            <Box marginLeft={"1.5"}>
               <Text fontSize={"lg"} lineBreakMode="tail" numberOfLines={1}>
                 {props.title}
               </Text>
