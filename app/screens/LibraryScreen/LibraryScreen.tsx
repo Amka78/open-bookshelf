@@ -5,7 +5,7 @@ import { Icon, IconButton, Stagger, useBreakpointValue, useDisclose, VStack } fr
 import React, { FC, useEffect, useState } from "react"
 import { useWindowDimensions } from "react-native"
 
-import { BookDescriptionItem, BookImageItem, FlatList } from "../../components"
+import { BookDescriptionItem, BookImageItem, FlatList, LibraryViewIcon } from "../../components"
 import { useStores } from "../../models"
 import { Library } from "../../models/CalibreRootStore"
 import { ApppNavigationProp } from "../../navigators"
@@ -76,14 +76,6 @@ export const LibraryScreen: FC = observer(() => {
     return listItem
   }
 
-  let libraryViewIcon
-
-  if (isWideScreen) {
-    libraryViewIcon = desktopViewStyle === "viewList" ? "view-list" : "view-grid"
-  } else {
-    libraryViewIcon = mobileViewStyle === "viewList" ? "view-list" : "view-grid"
-  }
-
   return (
     <>
       <FlatList<Library>
@@ -141,23 +133,8 @@ export const LibraryScreen: FC = observer(() => {
           right={isWideScreen ? 10 : 5}
           height={230}
         >
-          <IconButton
-            mb="4"
-            variant="solid"
-            bg="indigo.500"
-            colorScheme="indigo"
-            borderRadius="full"
-            icon={
-              <Icon
-                as={MaterialCommunityIcons}
-                size="6"
-                name={libraryViewIcon}
-                _dark={{
-                  color: "warmGray.50",
-                }}
-                color="warmGray.50"
-              />
-            }
+          <LibraryViewIcon
+            mode={isWideScreen ? desktopViewStyle : mobileViewStyle}
             onPress={() => {
               if (isWideScreen) {
                 setDesktopViewStyle(desktopViewStyle === "gridView" ? "viewList" : "gridView")
@@ -202,24 +179,6 @@ export const LibraryScreen: FC = observer(() => {
               />
             }
           />
-          {/*  <IconButton
-            mb="4"
-            variant="solid"
-            bg="red.500"
-            colorScheme="red"
-            borderRadius="full"
-            icon={
-              <Icon
-                as={MaterialIcons}
-                size="6"
-                name="photo-library"
-                _dark={{
-                  color: "warmGray.50",
-                }}
-                color="warmGray.50"
-              />
-            }
-          /> */}
         </VStack>
       </Stagger>
       <IconButton
