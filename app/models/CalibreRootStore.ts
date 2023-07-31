@@ -1,4 +1,3 @@
-import { id } from "date-fns/locale"
 import { flow, getParent, Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 
 import { api } from "../services/api"
@@ -35,57 +34,102 @@ export const LibraryModel = types
   })
   .actions(withSetPropAction)
   .actions((root) => ({
-    convertBook: flow(function* () {
-      const libraryMap = getParent(root) as LibraryMap
-      const interval = setInterval(async () => {
-        const response = await api.CheckBookConverting(
+    convertBook: flow(function* (onPostConvert: () => void) {
+      const libraryMap = getParent(root) as any
+
+      let response
+      while (response?.data?.files === undefined) {
+        response = yield api.CheckBookConverting(libraryMap.id, root.id, root.metaData.formats[0])
+        yield delay(6000)
+      }
+
+      const pathList = []
+
+      if (response.data.book_format !== "KF8") {
+        const spineResponse = yield api.getLibraryInformation(
           libraryMap.id,
           root.id,
           root.metaData.formats[0],
+          root.metaData.size,
+          response.data.book_hash.mtime,
+          response.data.spine[0],
         )
 
-        if (response.kind !== "ok") {
-          clearInterval(interval)
-        } else {
-          if (response.data.files !== undefined) {
-            clearInterval(interval)
-
-            console.log("convert start")
-            const spineResponse = await api.getLibraryInformation(
-              libraryMap.id,
-              root.id,
-              root.metaData.formats[0],
-              root.metaData.size,
-              response.data.book_hash.mtime,
-              response.data.spine[0],
-            )
-
-            const pathList = []
-
-            if (spineResponse.kind === "ok") {
-              Object.values(spineResponse.data.tree.c[1].c).forEach((path: any) => {
-                pathList.push(path.a[2][1])
+        if (spineResponse.kind === "ok") {
+          Object.values(spineResponse.data.tree.c[1].c).forEach((path: any) => {
+            if (response.data.book_format === "PDF") {
+              if (path !== undefined) {
+                if (path.c !== undefined) {
+                  if (path.c[1] !== undefined) {
+                    if (path.c[1].a !== undefined) {
+                      if (path.c[1].a[2]) {
+                        console.log(path.c[1].a[2][1])
+                        pathList.push(path.c[1].a[2][1])
+                      }
+                    }
+                  }
+                }
+              }
+              console.log("set")
+            } else {
+              Object.values(path.a).forEach((avalue) => {
+                if (avalue[0] === "data-calibre-src") {
+                  pathList.push(avalue[1])
+                }
               })
             }
-
-            root.setProp("path", pathList)
-            root.setProp("hash", response.data.book_hash.mtime)
-          }
+          })
         }
-      }, 600)
+
+        if (response.data.book_format === "EPUB") {
+          Object.values(response.data.spine).forEach((value: string, index) => {
+            if (index !== 0) {
+              const pagePath = value
+                .replace(".xhtml", ".jpg")
+                .replace("xhtml", "image")
+                .replace("text", "image")
+
+              const prefixImagePath = pagePath.replace("p", "i")
+
+              if (response.data.files[prefixImagePath]) {
+                pathList.push(prefixImagePath)
+                return
+              }
+
+              const numberOnlyPath = pagePath.replace("p-", "")
+              if (response.data.files[numberOnlyPath]) {
+                pathList.push(numberOnlyPath)
+                return
+              }
+              pathList.push(pagePath)
+            }
+          })
+        }
+      } else {
+        Object.values(response.data.spine).forEach((value) => {
+          pathList.push(value)
+        })
+      }
+
+      root.setProp("path", pathList)
+      root.setProp("hash", response.data.book_hash.mtime)
+      onPostConvert()
     }),
   }))
 export interface Library extends Instance<typeof LibraryModel> {}
 export interface LibrarySnapshotOut extends SnapshotOut<typeof LibraryModel> {}
 export interface LibrarySnapshotIn extends SnapshotIn<typeof LibraryModel> {}
 
-export const SearchSettingModel = types.model("SearchSettingModel").props({
-  offset: types.maybeNull(types.number),
-  query: types.maybeNull(types.string),
-  sort: types.maybeNull(types.string),
-  sortOrder: types.maybeNull(types.string),
-  totalNum: types.maybeNull(types.number),
-})
+export const SearchSettingModel = types
+  .model("SearchSettingModel")
+  .props({
+    offset: types.maybeNull(types.number),
+    query: types.maybeNull(types.string),
+    sort: types.maybeNull(types.string),
+    sortOrder: types.maybeNull(types.string),
+    totalNum: types.maybeNull(types.number),
+  })
+  .actions(withSetPropAction)
 
 export const SortFieldModel = types.model("SortFieldModel").props({
   id: types.identifier,
@@ -206,4 +250,17 @@ function setSearchResult(response: any, selectedLibrary: LibraryMap) {
       metaData: metaDataModel,
     })
   })
+
+  response.data.sortable_fields.forEach((value) => {
+    const sortField = SortFieldModel.create({
+      id: value[0],
+      name: value[1],
+    })
+
+    selectedLibrary.sortField.push(sortField)
+  })
+}
+
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
