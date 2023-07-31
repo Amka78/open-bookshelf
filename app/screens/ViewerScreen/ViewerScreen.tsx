@@ -40,7 +40,7 @@ export const ViewerScreen: FC = observer(() => {
     navigation.setOptions({
       headerTitle: `${route.params.library.metaData.title}`,
       headerShown: showMenu,
-      headerRight: (props) => {
+      headerRight: () => {
         return (
           <IconButton
             colorScheme="black"
@@ -189,17 +189,12 @@ export const ViewerScreen: FC = observer(() => {
       <Slider
         w="3/4"
         maxW="900"
-        defaultValue={pageNum}
+        defaultValue={pageNum * -1}
         minValue={-library.path.length}
         maxValue={0}
         step={1}
         onChange={(v) => {
-          let pageNum = v * -1
-
-          if (isWidthScreen && pageNum % 2 === 0) {
-            pageNum--
-          }
-          setPageNum(pageNum)
+          setPageNum(getSliderIndex(v, isWidthScreen))
         }}
         isReversed={true}
       >
@@ -238,13 +233,23 @@ export const ViewerScreen: FC = observer(() => {
     </>
   )
 })
+function getSliderIndex(v: number, isWidthScreen: boolean) {
+  let pageNum = v * -1
+
+  if (isWidthScreen && pageNum % 2 === 0) {
+    pageNum--
+  }
+  return pageNum
+}
+
 function goToPreviousPage(
   pageNum: number,
   setPageNum: React.Dispatch<React.SetStateAction<number>>,
   transitionPages: number,
 ) {
   if (pageNum > 0) {
-    setPageNum(pageNum - transitionPages)
+    const currentPage = pageNum - transitionPages
+    setPageNum(currentPage)
   }
 }
 
@@ -254,5 +259,8 @@ function goToNextPage(
   setPageNum: React.Dispatch<React.SetStateAction<number>>,
   transitionPages: number,
 ) {
-  if (pageNum < totalPage) setPageNum(pageNum + transitionPages)
+  if (pageNum < totalPage) {
+    const currentPage = pageNum + transitionPages
+    setPageNum(currentPage)
+  }
 }
