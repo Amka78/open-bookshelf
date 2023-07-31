@@ -1,7 +1,15 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons"
+import { FontAwesome, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
-import { Icon, IconButton, Stagger, useBreakpointValue, useDisclose, VStack } from "native-base"
+import {
+  Icon,
+  IconButton,
+  Stagger,
+  useBreakpointValue,
+  useDisclose,
+  VStack,
+  Menu,
+} from "native-base"
 import React, { FC, useEffect, useState } from "react"
 import { useWindowDimensions } from "react-native"
 
@@ -76,12 +84,14 @@ export const LibraryScreen: FC = observer(() => {
     return listItem
   }
 
+  const selectedLibrary = calibreRootStore.getSelectedLibrary()
+
   return (
     <>
       <FlatList<Library>
-        data={calibreRootStore.getSelectedLibrary()?.value.slice()}
+        data={selectedLibrary?.value.slice()}
         renderItem={renderItem}
-        estimatedItemSize={calibreRootStore.getSelectedLibrary()?.value.length}
+        estimatedItemSize={selectedLibrary?.value.length}
         numColumns={isWideScreen ? Math.floor(window.width / 242) : 1}
         onRefresh={
           isWideScreen
@@ -143,24 +153,41 @@ export const LibraryScreen: FC = observer(() => {
               }
             }}
           />
-          <IconButton
-            mb="4"
-            variant="solid"
-            bg="yellow.400"
-            colorScheme="yellow"
-            borderRadius="full"
-            icon={
-              <Icon
-                as={MaterialCommunityIcons}
-                _dark={{
-                  color: "warmGray.50",
-                }}
-                size="6"
-                name="microphone"
-                color="warmGray.50"
-              />
-            }
-          />
+          <Menu
+            w="190"
+            placement="left"
+            trigger={(triggerProps) => {
+              return (
+                <IconButton
+                  {...triggerProps}
+                  mb="4"
+                  variant="solid"
+                  bg="yellow.400"
+                  colorScheme="yellow"
+                  borderRadius="full"
+                  icon={
+                    <Icon
+                      as={MaterialCommunityIcons}
+                      _dark={{
+                        color: "warmGray.50",
+                      }}
+                      size="6"
+                      name="sort"
+                      color="warmGray.50"
+                    />
+                  }
+                />
+              )
+            }}
+          >
+            {selectedLibrary.sortField.map((value) => {
+              return (
+                <Menu.ItemOption value={value.id} key={value.id}>
+                  {value.name}
+                </Menu.ItemOption>
+              )
+            })}
+          </Menu>
           <IconButton
             mb="4"
             variant="solid"
