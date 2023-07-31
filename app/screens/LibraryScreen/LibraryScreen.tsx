@@ -13,7 +13,13 @@ import {
 import React, { FC, useEffect, useState } from "react"
 import { useWindowDimensions } from "react-native"
 
-import { BookDescriptionItem, BookImageItem, FlatList, LibraryViewIcon } from "../../components"
+import {
+  BookDescriptionItem,
+  BookImageItem,
+  FlatList,
+  LibraryViewIcon,
+  SortMenu,
+} from "../../components"
 import { useStores } from "../../models"
 import { Library } from "../../models/CalibreRootStore"
 import { ApppNavigationProp } from "../../navigators"
@@ -48,6 +54,7 @@ export const LibraryScreen: FC = observer(() => {
         hideWhenScrolling: true,
         onSearchButtonPress: (e) => {
           selectedLibrary.searchSetting.setProp("query", e.nativeEvent.text)
+          search()
         },
       },
     })
@@ -153,63 +160,23 @@ export const LibraryScreen: FC = observer(() => {
               }
             }}
           />
-          <Menu
-            w="190"
-            placement="left"
-            trigger={(triggerProps) => {
-              return (
-                <IconButton
-                  {...triggerProps}
-                  mb="4"
-                  variant="solid"
-                  bg="yellow.400"
-                  colorScheme="yellow"
-                  borderRadius="full"
-                  icon={
-                    <Icon
-                      as={MaterialCommunityIcons}
-                      _dark={{
-                        color: "warmGray.50",
-                      }}
-                      size="6"
-                      name="sort"
-                      color="warmGray.50"
-                    />
-                  }
-                />
-              )
-            }}
-          >
-            <Menu.OptionGroup
-              defaultValue={selectedLibrary.searchSetting.sort}
-              type="radio"
-              title="Sort"
-              onChange={(val) => {
-                if (val === selectedLibrary.searchSetting.sort) {
-                  selectedLibrary.searchSetting.setProp(
-                    "sortOrder",
-                    selectedLibrary.searchSetting.sortOrder === "desc" ? "asc" : "desc",
-                  )
-                } else {
-                  selectedLibrary.searchSetting.setProp("sort", val)
-                  selectedLibrary.searchSetting.setProp("sortOrder", "desc")
-                }
-                search()
-              }}
-            >
-              {selectedLibrary.sortField.map((value) => {
-                return (
-                  <>
-                    <Menu.ItemOption value={value.id} key={value.id}>
-                      {value.id === selectedLibrary.searchSetting.sort
-                        ? `${value.name}-${selectedLibrary.searchSetting.sortOrder}`
-                        : value.name}
-                    </Menu.ItemOption>
-                  </>
+          <SortMenu
+            selectedSort={selectedLibrary.searchSetting?.sort}
+            selectedSortOrder={selectedLibrary.searchSetting?.sortOrder}
+            field={selectedLibrary.sortField}
+            onSortChange={(val) => {
+              if (val === selectedLibrary.searchSetting.sort) {
+                selectedLibrary.searchSetting.setProp(
+                  "sortOrder",
+                  selectedLibrary.searchSetting.sortOrder === "desc" ? "asc" : "desc",
                 )
-              })}
-            </Menu.OptionGroup>
-          </Menu>
+              } else {
+                selectedLibrary.searchSetting.setProp("sort", val)
+                selectedLibrary.searchSetting.setProp("sortOrder", "desc")
+              }
+              search()
+            }}
+          />
           <IconButton
             mb="4"
             variant="solid"

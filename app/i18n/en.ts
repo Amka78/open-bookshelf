@@ -49,6 +49,11 @@ const en = {
     placeHolder: "(http or https)://{Address}:{Port}",
     checkbox: "use opds?",
   },
+  sortMenu: {
+    sort: "Sort",
+    asc: "ASC",
+    desc: "DESC",
+  },
   demoNavigator: {
     componentsTab: "Components",
     debugTab: "Debug",

@@ -135,6 +135,7 @@ export const SortFieldModel = types.model("SortFieldModel").props({
   id: types.identifier,
   name: types.string,
 })
+export interface SortField extends Instance<typeof SortFieldModel> {}
 
 export const LibraryMapModel = types.model("LibrayMapModel").props({
   id: types.identifier,
@@ -178,13 +179,9 @@ export const CalibreRootStore = types
       })
       const response = yield api.getLibrary(
         root.selectedLibraryId,
-        selectedLibrary.searchSetting.query ? selectedLibrary.searchSetting.query : "",
-        selectedLibrary.searchSetting.sort === ""
-          ? "timestamp"
-          : selectedLibrary.searchSetting.sort,
-        selectedLibrary.searchSetting.sortOrder === ""
-          ? "desc"
-          : selectedLibrary.searchSetting.sortOrder,
+        selectedLibrary.searchSetting ? selectedLibrary.searchSetting.query : "",
+        selectedLibrary.searchSetting ? selectedLibrary.searchSetting.sort : "timestamp",
+        selectedLibrary.searchSetting ? selectedLibrary.searchSetting.sortOrder : "desc",
       )
 
       if (response.kind === "ok") {
