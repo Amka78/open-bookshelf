@@ -1,14 +1,14 @@
-import { FontAwesome, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons"
+import { MaterialCommunityIcons } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import {
   Icon,
   IconButton,
+  Menu,
   Stagger,
   useBreakpointValue,
   useDisclose,
   VStack,
-  Menu,
 } from "native-base"
 import React, { FC, useEffect, useState } from "react"
 import { useWindowDimensions } from "react-native"
@@ -33,8 +33,8 @@ export const LibraryScreen: FC = observer(() => {
     xl: true,
   })
 
-  const search = async (searchQuery?: string) => {
-    await calibreRootStore.searchtLibrary(searchQuery)
+  const search = async () => {
+    await calibreRootStore.searchtLibrary()
   }
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export const LibraryScreen: FC = observer(() => {
       headerSearchBarOptions: {
         hideWhenScrolling: true,
         onSearchButtonPress: (e) => {
-          search(e.nativeEvent.text)
+          selectedLibrary.searchSetting.setProp("query", e.nativeEvent.text)
         },
       },
     })
@@ -180,13 +180,35 @@ export const LibraryScreen: FC = observer(() => {
               )
             }}
           >
-            {selectedLibrary.sortField.map((value) => {
-              return (
-                <Menu.ItemOption value={value.id} key={value.id}>
-                  {value.name}
-                </Menu.ItemOption>
-              )
-            })}
+            <Menu.OptionGroup
+              defaultValue={selectedLibrary.searchSetting.sort}
+              type="radio"
+              title="Sort"
+              onChange={(val) => {
+                if (val === selectedLibrary.searchSetting.sort) {
+                  selectedLibrary.searchSetting.setProp(
+                    "sortOrder",
+                    selectedLibrary.searchSetting.sortOrder === "desc" ? "asc" : "desc",
+                  )
+                } else {
+                  selectedLibrary.searchSetting.setProp("sort", val)
+                  selectedLibrary.searchSetting.setProp("sortOrder", "desc")
+                }
+                search()
+              }}
+            >
+              {selectedLibrary.sortField.map((value) => {
+                return (
+                  <>
+                    <Menu.ItemOption value={value.id} key={value.id}>
+                      {value.id === selectedLibrary.searchSetting.sort
+                        ? `${value.name}-${selectedLibrary.searchSetting.sortOrder}`
+                        : value.name}
+                    </Menu.ItemOption>
+                  </>
+                )
+              })}
+            </Menu.OptionGroup>
           </Menu>
           <IconButton
             mb="4"

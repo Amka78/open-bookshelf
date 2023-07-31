@@ -172,13 +172,22 @@ export const CalibreRootStore = types
         })
       }
     }),
-    searchtLibrary: flow(function* (searchText: string) {
-      const response = yield api.getLibrary(root.selectedLibraryId, searchText)
+    searchtLibrary: flow(function* () {
+      const selectedLibrary = root.libraryMap.find((value) => {
+        return value.id === root.selectedLibraryId
+      })
+      const response = yield api.getLibrary(
+        root.selectedLibraryId,
+        selectedLibrary.searchSetting.query ? selectedLibrary.searchSetting.query : "",
+        selectedLibrary.searchSetting.sort === ""
+          ? "timestamp"
+          : selectedLibrary.searchSetting.sort,
+        selectedLibrary.searchSetting.sortOrder === ""
+          ? "desc"
+          : selectedLibrary.searchSetting.sortOrder,
+      )
 
       if (response.kind === "ok") {
-        const selectedLibrary = root.libraryMap.find((value) => {
-          return value.id === root.selectedLibraryId
-        })
         selectedLibrary.value.clear()
         setSearchResult(response, selectedLibrary)
       }
@@ -251,6 +260,7 @@ function setSearchResult(response: any, selectedLibrary: LibraryMap) {
     })
   })
 
+  selectedLibrary.sortField.clear()
   response.data.sortable_fields.forEach((value) => {
     const sortField = SortFieldModel.create({
       id: value[0],
