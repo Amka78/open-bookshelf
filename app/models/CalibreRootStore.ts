@@ -147,28 +147,32 @@ export const NodeModel = types.model("NodeModel").props({
 export const CategoryTemplateModel = types.model("CategoryTemplateModel").props({
   category: types.string,
   name: types.string,
-  isCategory: types.boolean,
+  isCategory: types.maybe(types.boolean),
   count: types.number,
-  tooltip: types.string,
-  isEditable: types.boolean,
-  isSearchable: types.boolean,
+  isSearchable: types.maybe(types.boolean),
 })
 
-export const SubCategory = types.compose(
-  "SubCategoryModel",
-  types.model({
-    children: types.array(NodeModel),
-  }),
-  CategoryTemplateModel,
-)
+export const SubCategoryModel = types
+  .compose(
+    "SubCategoryModel",
+    types.model({
+      children: types.array(NodeModel),
+    }),
+    CategoryTemplateModel,
+  )
+  .actions(withSetPropAction)
 
-export const CategoryModel = types.compose(
-  "CategoryModel",
-  types.model({
-    subCategory: types.array(SubCategory),
-  }),
-  CategoryTemplateModel,
-)
+export const CategoryModel = types
+  .compose(
+    "CategoryModel",
+    types.model({
+      tooltip: types.maybe(types.string),
+      isEditable: types.boolean,
+      subCategory: types.array(SubCategoryModel),
+    }),
+    CategoryTemplateModel,
+  )
+  .actions(withSetPropAction)
 
 export const LibraryMapModel = types.model("LibrayMapModel").props({
   id: types.identifier,
@@ -204,6 +208,66 @@ export const CalibreRootStore = types
         root.libraryMap.clear()
         Object.keys(response.data.library_map).forEach((value: string) => {
           root.libraryMap.push({ id: value })
+        })
+      }
+    }),
+    getTagBrowser: flow(function* () {
+      const response = yield api.getTagBrowser(root.defaultLibraryId)
+      if (response.kind === "ok") {
+        const selectedLibrary = root.libraryMap.find((value) => {
+          return value.id === root.selectedLibraryId
+        })
+
+        selectedLibrary.tagBrowser.clear()
+
+        Object.values(response.data.root.children).forEach((value: any) => {
+          const category = response.data.item_map[value.id]
+
+          const categoryModel = CategoryModel.create({
+            category: category.category,
+            count: category.count,
+            isCategory: category.is_category,
+            isEditable: category.is_editable,
+            isSearchable: category.is_searchable,
+            name: category.name,
+            tooltip: category.tooltip,
+          })
+
+          const subCategoryArray = []
+          Object.values(value.children).forEach((subValue: any) => {
+            const subCateogy = response.data.item_map[subValue.id]
+
+            console.log(subCateogy)
+
+            const subCategoryModel = SubCategoryModel.create({
+              category: subCateogy.category,
+              count: subCateogy.count,
+              isCategory: subCateogy.is_category,
+              isSearchable: subCateogy.is_searchable,
+              name: subCateogy.name,
+            })
+
+            const nodeArray = []
+            Object.values(subValue.children).forEach((nodeValue: any) => {
+              const node = response.data.item_map[nodeValue.id]
+
+              const nodeModel = NodeModel.create({
+                avgRating: node.avg_rating,
+                count: node.count,
+                id: node.id,
+                name: node.name,
+              })
+
+              nodeArray.push(nodeModel)
+            })
+            subCategoryModel.setProp("children", nodeArray)
+
+            subCategoryArray.push(subCategoryModel)
+          })
+
+          categoryModel.setProp("subCategory", subCategoryArray)
+
+          selectedLibrary.tagBrowser.push(categoryModel)
         })
       }
     }),

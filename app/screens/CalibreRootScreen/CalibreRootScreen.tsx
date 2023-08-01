@@ -14,6 +14,7 @@ export const CalibreRootScreen: FC = observer(() => {
   const navigation = useNavigation<ApppNavigationProp>()
   const initialize = async () => {
     await calibreRootStore.initialize()
+    await calibreRootStore.getTagBrowser()
   }
 
   useEffect(() => {
