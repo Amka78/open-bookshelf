@@ -137,11 +137,45 @@ export const SortFieldModel = types.model("SortFieldModel").props({
 })
 export interface SortField extends Instance<typeof SortFieldModel> {}
 
+export const NodeModel = types.model("NodeModel").props({
+  id: types.number,
+  avgRating: types.number,
+  count: types.number,
+  name: types.string,
+})
+
+export const CategoryTemplateModel = types.model("CategoryTemplateModel").props({
+  category: types.string,
+  name: types.string,
+  isCategory: types.boolean,
+  count: types.number,
+  tooltip: types.string,
+  isEditable: types.boolean,
+  isSearchable: types.boolean,
+})
+
+export const SubCategory = types.compose(
+  "SubCategoryModel",
+  types.model({
+    children: types.array(NodeModel),
+  }),
+  CategoryTemplateModel,
+)
+
+export const CategoryModel = types.compose(
+  "CategoryModel",
+  types.model({
+    subCategory: types.array(SubCategory),
+  }),
+  CategoryTemplateModel,
+)
+
 export const LibraryMapModel = types.model("LibrayMapModel").props({
   id: types.identifier,
   value: types.array(LibraryModel),
   searchSetting: types.maybeNull(SearchSettingModel),
   sortField: types.array(SortFieldModel),
+  tagBrowser: types.array(CategoryModel),
 })
 
 export interface LibraryMap extends Instance<typeof LibraryMapModel> {}
