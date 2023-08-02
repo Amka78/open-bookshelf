@@ -2,21 +2,26 @@ import { MaterialCommunityIcons } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import {
+  Box,
+  Center,
+  HStack,
   Icon,
   IconButton,
   Menu,
+  ScrollView,
   Stagger,
   useBreakpointValue,
   useDisclose,
   VStack,
 } from "native-base"
-import React, { FC, useEffect, useState } from "react"
+import React, { FC, useEffect, useState, useMemo } from "react"
 import { useWindowDimensions } from "react-native"
 
 import {
   BookDescriptionItem,
   BookImageItem,
   FlatList,
+  LeftSideMenuItem,
   LibraryViewIcon,
   SortMenu,
 } from "../../components"
@@ -40,7 +45,7 @@ export const LibraryScreen: FC = observer(() => {
   })
 
   const search = async () => {
-    await calibreRootStore.searchtLibrary()
+    await calibreRootStore.searchLibrary()
   }
 
   useEffect(() => {
@@ -93,7 +98,7 @@ export const LibraryScreen: FC = observer(() => {
 
   const selectedLibrary = calibreRootStore.getSelectedLibrary()
 
-  return (
+  const LibraryCore = (
     <>
       <FlatList<Library>
         data={selectedLibrary?.value.slice()}
@@ -219,5 +224,56 @@ export const LibraryScreen: FC = observer(() => {
         }
       />
     </>
+  )
+
+  const leftSideMenu = useMemo(() => {
+    return selectedLibrary.tagBrowser.map((category) => {
+      return (
+        <LeftSideMenuItem name={category.name} count={category.count} key={category.name}>
+          {category.subCategory.map((subCategory) => {
+            return (
+              <LeftSideMenuItem
+                mode={"subCategory"}
+                count={subCategory.count}
+                name={subCategory.name}
+                key={subCategory.name}
+                onLastNodePress={async () => {
+                  selectedLibrary.searchSetting.setProp("query", subCategory.name)
+                  await search()
+                }}
+                selected={subCategory.name === selectedLibrary.searchSetting?.query}
+              >
+                {subCategory.children.map((node) => {
+                  return (
+                    <LeftSideMenuItem
+                      mode={"node"}
+                      count={node.count}
+                      name={node.name}
+                      key={node.name}
+                      onLastNodePress={async () => {
+                        selectedLibrary.searchSetting.setProp("query", node.name)
+                        await search()
+                      }}
+                      selected={node.name === selectedLibrary.searchSetting?.query}
+                    />
+                  )
+                })}
+              </LeftSideMenuItem>
+            )
+          })}
+        </LeftSideMenuItem>
+      )
+    })
+  }, [])
+
+  return isWideScreen ? (
+    <HStack flex="1">
+      <ScrollView backgroundColor={"white"} maxWidth={"32"}>
+        {leftSideMenu}
+      </ScrollView>
+      {LibraryCore}
+    </HStack>
+  ) : (
+    LibraryCore
   )
 })

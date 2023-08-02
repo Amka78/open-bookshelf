@@ -271,7 +271,7 @@ export const CalibreRootStore = types
         })
       }
     }),
-    searchtLibrary: flow(function* () {
+    searchLibrary: flow(function* () {
       const selectedLibrary = root.libraryMap.find((value) => {
         return value.id === root.selectedLibraryId
       })
