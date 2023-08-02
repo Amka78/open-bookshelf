@@ -74,7 +74,6 @@ export type ApppNavigationProp = NativeStackNavigationProp<AppStackParamList>
 const AppStack = observer(function AppStack() {
   const { settingStore } = useStores()
   useEffect(() => {
-    console.log("called useEffect")
     if (settingStore.api.baseUrl) {
       api.setUrl(settingStore.api.baseUrl)
     }

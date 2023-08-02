@@ -236,9 +236,6 @@ export const CalibreRootStore = types
           const subCategoryArray = []
           Object.values(value.children).forEach((subValue: any) => {
             const subCateogy = response.data.item_map[subValue.id]
-
-            console.log(subCateogy)
-
             const subCategoryModel = SubCategoryModel.create({
               category: subCateogy.category,
               count: subCateogy.count,

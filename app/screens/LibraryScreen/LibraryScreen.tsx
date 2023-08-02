@@ -100,22 +100,24 @@ export const LibraryScreen: FC = observer(() => {
 
   const LibraryCore = (
     <>
-      <FlatList<Library>
-        data={selectedLibrary?.value.slice()}
-        renderItem={renderItem}
-        estimatedItemSize={selectedLibrary?.value.length}
-        numColumns={isWideScreen ? Math.floor(window.width / 242) : 1}
-        onRefresh={
-          isWideScreen
-            ? undefined
-            : async () => {
-                await search()
-              }
-        }
-        onEndReached={async () => {
-          await calibreRootStore.searchMoreLibrary()
-        }}
-      />
+      {selectedLibrary ? (
+        <FlatList<Library>
+          data={selectedLibrary?.value.slice()}
+          renderItem={renderItem}
+          //estimatedItemSize={selectedLibrary?.value.length ? selectedLibrary.value.length : 0}
+          numColumns={isWideScreen ? Math.floor(window.width / 242) : 1}
+          onRefresh={
+            isWideScreen
+              ? undefined
+              : async () => {
+                  await search()
+                }
+          }
+          onEndReached={async () => {
+            await calibreRootStore.searchMoreLibrary()
+          }}
+        />
+      ) : null}
       <Stagger
         visible={isOpen}
         initial={{

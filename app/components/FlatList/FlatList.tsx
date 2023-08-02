@@ -1,6 +1,6 @@
 import React, { useState } from "react"
-import { FlatList as Origin } from "react-native"
-import { FlashList, FlashListProps } from "@shopify/flash-list"
+//import { FlatList as Origin } from "react-native"
+import { FlashList as Origin, FlashListProps } from "@shopify/flash-list"
 import { Spinner } from "native-base"
 
 export type FlatListProps<T> = FlashListProps<T>
