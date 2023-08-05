@@ -1,18 +1,15 @@
+import { MaterialIcons } from "@expo/vector-icons"
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import ExpoFastImage from "expo-fast-image"
+import * as ScreenOrientation from "expo-screen-orientation"
 import { observer } from "mobx-react-lite"
-import { HStack, useBreakpointValue, Box, Slider, Text, VStack, IconButton } from "native-base"
+import { HStack, IconButton, Slider, Text, useBreakpointValue, VStack } from "native-base"
 import React, { FC, useEffect, useState } from "react"
-import { Pressable, useWindowDimensions } from "react-native"
-import { GestureHandlerRootView, PanGestureHandler } from "react-native-gesture-handler"
 
+import { PagePressable, PageSwiper } from "../../components"
+import useOrientation from "../../hooks/useOrientation"
 import { useStores } from "../../models"
 import { ApppNavigationProp, AppStackParamList } from "../../navigators"
-import { MaterialIcons } from "@expo/vector-icons"
-import PageFlipper from "react-native-page-flipper"
-import * as ScreenOrientation from "expo-screen-orientation"
-import useOrientation from "../../hooks/useOrientation"
-import { SwipeGestureHandler } from "../../components"
 
 type ViewerScreenRouteProp = RouteProp<AppStackParamList, "Viewer">
 export const ViewerScreen: FC = observer(() => {
@@ -43,7 +40,6 @@ export const ViewerScreen: FC = observer(() => {
       headerRight: () => {
         return (
           <IconButton
-            colorScheme="black"
             _icon={{
               as: MaterialIcons,
               name: "animation",
@@ -57,26 +53,36 @@ export const ViewerScreen: FC = observer(() => {
     })
   }, [showMenu])
 
+  const onOpenMenu = () => {
+    setShowMenu(true)
+  }
+  const onCloseMenu = () => {
+    setShowMenu(false)
+  }
+
   const singlePage = (
-    <SwipeGestureHandler
-      onSwipeEnded={() => {
-        setShowMenu(false)
+    <PageSwiper
+      currentPage={pageNum}
+      onNextPageChanging={(nextPage) => {
+        setPageNum(nextPage)
       }}
-      onLeftSwipe={() => {
-        goToNextPage(pageNum, route.params.library.path.length, setPageNum, 1)
+      onPreviousPageChanging={(previousPage) => {
+        setPageNum(previousPage)
       }}
-      onRightSwipe={() => {
-        goToPreviousPage(pageNum, setPageNum, 1)
-      }}
+      onPageChanged={onCloseMenu}
+      totalPages={route.params.library.path.length}
+      transitionPage={1}
     >
-      <Pressable
-        onPress={() => {
-          goToNextPage(pageNum, route.params.library.path.length, setPageNum, 1)
-          setShowMenu(false)
+      <PagePressable
+        currentPage={pageNum}
+        direction="next"
+        onLongPress={onOpenMenu}
+        onPageChanged={onCloseMenu}
+        onPageChanging={(page) => {
+          setPageNum(page)
         }}
-        onLongPress={() => {
-          setShowMenu(true)
-        }}
+        totalPages={route.params.library.path.length}
+        transitionPages={1}
       >
         <ExpoFastImage
           source={{
@@ -87,21 +93,21 @@ export const ViewerScreen: FC = observer(() => {
           style={{ height: "100%" }}
           resizeMode={"contain"}
         />
-      </Pressable>
-    </SwipeGestureHandler>
+      </PagePressable>
+    </PageSwiper>
   )
 
   const firstPage = (
-    <Pressable
-      onPress={(e) => {
-        const nextPage = pageNum - 2
-
-        setPageNum(nextPage > 0 ? nextPage : 0)
-        setShowMenu(false)
+    <PagePressable
+      currentPage={pageNum}
+      direction="previous"
+      onLongPress={onOpenMenu}
+      onPageChanged={onCloseMenu}
+      onPageChanging={(page) => {
+        setPageNum(page)
       }}
-      onLongPress={() => {
-        setShowMenu(true)
-      }}
+      totalPages={route.params.library.path.length}
+      transitionPages={2}
       style={{ alignItems: "flex-start", flex: 1 }}
     >
       <ExpoFastImage
@@ -113,18 +119,20 @@ export const ViewerScreen: FC = observer(() => {
         style={{ height: "100%", width: "70%" }}
         resizeMode={"cover"}
       />
-    </Pressable>
+    </PagePressable>
   )
 
   const secondPage = (
-    <Pressable
-      onPress={(e) => {
-        setPageNum(pageNum + 2)
-        setShowMenu(false)
+    <PagePressable
+      currentPage={pageNum}
+      direction="next"
+      onLongPress={onOpenMenu}
+      onPageChanged={onCloseMenu}
+      onPageChanging={(page) => {
+        setPageNum(page)
       }}
-      onLongPress={() => {
-        setShowMenu(true)
-      }}
+      totalPages={route.params.library.path.length}
+      transitionPages={2}
       style={{ alignItems: "flex-end", flex: 1 }}
     >
       <ExpoFastImage
@@ -140,7 +148,7 @@ export const ViewerScreen: FC = observer(() => {
         style={{ height: "100%", width: "70%" }}
         resizeMode={"cover"}
       />
-    </Pressable>
+    </PagePressable>
   )
 
   let fixedViewer = null
@@ -156,22 +164,25 @@ export const ViewerScreen: FC = observer(() => {
     fixedViewer = singlePage
   } else {
     fixedViewer = (
-      <SwipeGestureHandler
-        onLeftSwipe={() => {
-          goToNextPage(pageNum, route.params.library.path.length, setPageNum, 2)
+      <PageSwiper
+        currentPage={pageNum}
+        onNextPageChanging={(nextPage) => {
+          setPageNum(nextPage)
         }}
-        onRightSwipe={() => {
-          goToPreviousPage(pageNum, setPageNum, 2)
-        }}
-        onSwipeEnded={() => {
+        onPageChanged={() => {
           setShowMenu(false)
         }}
+        onPreviousPageChanging={(previousPage) => {
+          setPageNum(previousPage)
+        }}
+        totalPages={route.params.library.path.length}
+        transitionPage={2}
       >
         <HStack>
           {secondPage}
           {firstPage}
         </HStack>
-      </SwipeGestureHandler>
+      </PageSwiper>
     )
   }
 
@@ -189,6 +200,7 @@ export const ViewerScreen: FC = observer(() => {
       <Slider
         w="3/4"
         maxW="900"
+        $PWD
         defaultValue={pageNum * -1}
         minValue={-library.path.length}
         maxValue={0}
@@ -240,27 +252,4 @@ function getSliderIndex(v: number, isWidthScreen: boolean) {
     pageNum--
   }
   return pageNum
-}
-
-function goToPreviousPage(
-  pageNum: number,
-  setPageNum: React.Dispatch<React.SetStateAction<number>>,
-  transitionPages: number,
-) {
-  if (pageNum > 0) {
-    const currentPage = pageNum - transitionPages
-    setPageNum(currentPage)
-  }
-}
-
-function goToNextPage(
-  pageNum: number,
-  totalPage: number,
-  setPageNum: React.Dispatch<React.SetStateAction<number>>,
-  transitionPages: number,
-) {
-  if (pageNum < totalPage) {
-    const currentPage = pageNum + transitionPages
-    setPageNum(currentPage)
-  }
 }

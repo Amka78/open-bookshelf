@@ -174,13 +174,25 @@ export const CategoryModel = types
   )
   .actions(withSetPropAction)
 
-export const LibraryMapModel = types.model("LibrayMapModel").props({
-  id: types.identifier,
-  value: types.array(LibraryModel),
-  searchSetting: types.maybeNull(SearchSettingModel),
-  sortField: types.array(SortFieldModel),
-  tagBrowser: types.array(CategoryModel),
-})
+export const ClientSettingModel = types
+  .model("ClientSettingModel")
+  .props({
+    id: types.identifierNumber,
+    readingStyle: types.string,
+  })
+  .actions(withSetPropAction)
+
+export const LibraryMapModel = types
+  .model("LibrayMapModel")
+  .props({
+    id: types.identifier,
+    value: types.array(LibraryModel),
+    searchSetting: types.maybeNull(SearchSettingModel),
+    sortField: types.array(SortFieldModel),
+    tagBrowser: types.array(CategoryModel),
+    clientSetting: types.array(ClientSettingModel),
+  })
+  .actions(withSetPropAction)
 
 export interface LibraryMap extends Instance<typeof LibraryMapModel> {}
 export interface LibraryMapSnapshotOut extends SnapshotOut<typeof LibraryMapModel> {}

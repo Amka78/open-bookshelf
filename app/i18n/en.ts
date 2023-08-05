@@ -54,11 +54,12 @@ const en = {
     asc: "ASC",
     desc: "DESC",
   },
-  demoNavigator: {
-    componentsTab: "Components",
-    debugTab: "Debug",
-    communityTab: "Community",
-    podcastListTab: "Podcast",
+  bookReadingStyle: {
+    title: "Book Reading Style",
+    singlePage: "Single Page",
+    facingPage: "Facing Page",
+    facingPageWithTitle: "Facing Page With Title",
+    verticalScroll: "VerticalScroll",
   },
   demoCommunityScreen: {
     title: "Connect with the community",

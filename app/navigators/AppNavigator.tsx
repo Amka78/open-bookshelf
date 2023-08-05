@@ -1,9 +1,4 @@
-import {
-  DarkTheme,
-  DefaultTheme,
-  NavigationContainer,
-  NavigatorScreenParams,
-} from "@react-navigation/native"
+import { DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/native"
 import {
   createNativeStackNavigator,
   NativeStackNavigationProp,
@@ -15,19 +10,19 @@ import { useColorScheme } from "react-native"
 
 import Config from "../config"
 import { useStores } from "../models"
+import { Library } from "../models/CalibreRootStore"
 import { Link } from "../models/opds"
 import {
   AcquisitionScreen,
   CalibreRootScreen,
   ConnectScreen,
-  OPDSRootScreen,
   LibraryScreen,
+  OPDSRootScreen,
   ViewerScreen,
 } from "../screens"
+import { PDFViewerScreen } from "../screens/PDFViewerScreen/PDFViewerScreen"
 import { api } from "../services/api"
-import { DemoTabParamList } from "./DemoNavigator"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
-import { Library } from "../models/CalibreRootStore"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -45,7 +40,6 @@ import { Library } from "../models/CalibreRootStore"
 export type AppStackParamList = {
   Welcome: undefined
   Connect: undefined
-  Demo: NavigatorScreenParams<DemoTabParamList>
   OPDSRoot: undefined
   CalibreRoot: undefined
   Library: undefined
@@ -53,6 +47,9 @@ export type AppStackParamList = {
     link: Link
   }
   Viewer: {
+    library: Library
+  }
+  PDFViewer: {
     library: Library
   }
 }
@@ -87,6 +84,11 @@ const AppStack = observer(function AppStack() {
       <Stack.Screen name="CalibreRoot" component={CalibreRootScreen} />
       <Stack.Screen name="Library" component={LibraryScreen} />
       <Stack.Screen name="Viewer" component={ViewerScreen} options={{ statusBarHidden: true }} />
+      <Stack.Screen
+        name="PDFViewer"
+        component={PDFViewerScreen}
+        options={{ statusBarHidden: true }}
+      />
     </Stack.Navigator>
   )
 })
@@ -101,7 +103,7 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
   return (
     <NavigationContainer
       ref={navigationRef}
-      theme={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+      theme={/*colorScheme === "dark" ? DarkTheme :*/ DefaultTheme}
       {...props}
     >
       <AppStack />

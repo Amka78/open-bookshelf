@@ -69,9 +69,13 @@ export const LibraryScreen: FC = observer(() => {
 
   const renderItem = ({ item }: { item: Library }) => {
     const onPress = async () => {
-      await item.convertBook(() => {
-        navigation.navigate("Viewer", { library: item })
-      })
+      if (item.metaData.formats[0] === "PDF") {
+        navigation.navigate("PDFViewer", { library: item })
+      } else {
+        await item.convertBook(() => {
+          navigation.navigate("Viewer", { library: item })
+        })
+      }
     }
 
     let listItem

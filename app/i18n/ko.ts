@@ -43,12 +43,6 @@ const ko: Translations = {
     tapToSignIn: "눌러서 로그인 하기!",
     hint: "힌트: 가장 좋아하는 암호와 아무런 아무 이메일 주소나 사용할 수 있어요 :)",
   },
-  demoNavigator: {
-    componentsTab: "컴포넌트",
-    debugTab: "디버그",
-    communityTab: "커뮤니티",
-    podcastListTab: "팟캐스트",
-  },
   demoCommunityScreen: {
     title: "커뮤니티와 함께해요",
     tagLine:
