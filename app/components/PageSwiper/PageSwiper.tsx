@@ -1,6 +1,6 @@
 import React, { useState } from "react"
-import { Gesture, GestureHandlerRootView, PanGestureHandler } from "react-native-gesture-handler"
 import { View } from "react-native"
+import { GestureHandlerRootView, PanGestureHandler } from "react-native-gesture-handler"
 
 export type PageSwiperProps = {
   onPageChanged?: () => void
@@ -10,32 +10,47 @@ export type PageSwiperProps = {
   currentPage: number
   totalPages: number
   transitionPage: number
+  pagingDirection: "left" | "right"
 }
 export function PageSwiper(props: PageSwiperProps) {
-  const [direction, setDirection] = useState<"left" | "right">(null)
+  const [swipeDirection, setSwipeDirection] = useState<"left" | "right">(null)
   return (
     <GestureHandlerRootView>
       <PanGestureHandler
         onGestureEvent={(event) => {
           if (event.nativeEvent.translationX > 0) {
-            setDirection("left")
+            setSwipeDirection("left")
           } else {
-            setDirection("right")
+            setSwipeDirection("right")
           }
         }}
         onEnded={() => {
-          if (direction === "left") {
-            props.onNextPageChanging(
-              goToNextPage(props.currentPage, props.totalPages, props.transitionPage),
-            )
-          } else if (direction === "right") {
-            props.onPreviousPageChanging(goToPreviousPage(props.currentPage, props.transitionPage))
+          if (swipeDirection === "left") {
+            if (props.pagingDirection === "left") {
+              props.onNextPageChanging(
+                goToNextPage(props.currentPage, props.totalPages, props.transitionPage),
+              )
+            } else {
+              props.onPreviousPageChanging(
+                goToPreviousPage(props.currentPage, props.transitionPage),
+              )
+            }
+          } else if (swipeDirection === "right") {
+            if (props.pagingDirection === "left") {
+              props.onPreviousPageChanging(
+                goToPreviousPage(props.currentPage, props.transitionPage),
+              )
+            } else {
+              props.onNextPageChanging(
+                goToNextPage(props.currentPage, props.totalPages, props.transitionPage),
+              )
+            }
           }
 
           if (props.onPageChanged) {
             props.onPageChanged()
           }
-          setDirection(null)
+          setSwipeDirection(null)
         }}
       >
         <View>{props.children}</View>

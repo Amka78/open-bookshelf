@@ -179,6 +179,7 @@ export const ClientSettingModel = types
   .props({
     id: types.identifierNumber,
     readingStyle: types.string,
+    pageDirection: types.string,
   })
   .actions(withSetPropAction)
 

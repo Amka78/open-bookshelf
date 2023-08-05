@@ -61,6 +61,7 @@ const en = {
     facingPageWithTitle: "Facing Page With Title",
     verticalScroll: "VerticalScroll",
   },
+  pageDirection: "Page Direction",
   demoCommunityScreen: {
     title: "Connect with the community",
     tagLine:

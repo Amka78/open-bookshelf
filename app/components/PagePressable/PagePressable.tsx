@@ -24,7 +24,10 @@ export function PagePressable(props: PagePressableProps) {
           currentPage = goToNextPage(props.currentPage, props.totalPages, props.transitionPages)
         }
         props.onPageChanging(currentPage)
-        props.onPageChanged()
+
+        if (props.onPageChanged) {
+          props.onPageChanged()
+        }
       }}
       onLongPress={props.onLongPress}
       style={props.style}
@@ -44,6 +47,8 @@ function goToPreviousPage(pageNum: number, transitionPages: number) {
 
 function goToNextPage(pageNum: number, totalPage: number, transitionPages: number) {
   let currentPage = pageNum
+  console.log(pageNum)
+  console.log(totalPage)
   if (pageNum < totalPage) {
     currentPage = pageNum + transitionPages
   }

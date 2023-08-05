@@ -7,7 +7,7 @@ import PDF from "react-native-pdf"
 import { useStores } from "../../models"
 import { AppStackParamList, ApppNavigationProp } from "../../navigators"
 import { MaterialCommunityIcons } from "@expo/vector-icons"
-import { HStack, Icon, Menu, Pressable } from "native-base"
+import { HStack, Icon, IconButton, Menu, Pressable } from "native-base"
 import { PagePressable, PageSwiper, Text } from "../../components"
 import { translate } from "../../i18n"
 import { ClientSettingModel } from "../../models/CalibreRootStore"
@@ -39,6 +39,7 @@ export const PDFViewerScreen = observer(() => {
     tempClientSetting = ClientSettingModel.create({
       id: route.params.library.id,
       readingStyle: "singlePage",
+      pageDirection: "left",
     })
   }
 
@@ -61,47 +62,66 @@ export const PDFViewerScreen = observer(() => {
       headerTitle: `${route.params.library.metaData.title}`,
       headerRight: () => {
         return (
-          <Menu
-            w="190"
-            trigger={(triggerProps) => {
-              return (
-                <Pressable {...triggerProps}>
-                  <HStack alignItems={"center"}>
-                    <Icon
-                      as={MaterialCommunityIcons}
-                      name={"book-settings"}
-                      color={"black"}
-                      _dark={{ color: "white" }}
-                      size={"7"}
-                    />
-                    <Text
-                      tx={`bookReadingStyle.${tempClientSetting.readingStyle}`}
-                      fontSize={"12"}
-                    />
-                  </HStack>
-                </Pressable>
-              )
-            }}
-          >
-            <Menu.Item onPress={() => setBookReadingStyle("singlePage")}>
-              {translate("bookReadingStyle.singlePage")}
-            </Menu.Item>
-            <Menu.Item onPress={() => setBookReadingStyle("facingPage")}>
-              {translate("bookReadingStyle.facingPage")}
-            </Menu.Item>
-            <Menu.Item onPress={() => setBookReadingStyle("facingPageWithTitle")}>
-              {translate("bookReadingStyle.facingPageWithTitle")}
-            </Menu.Item>
-            <Menu.Item onPress={() => setBookReadingStyle("verticalScroll")}>
-              {translate("bookReadingStyle.verticalScroll")}
-            </Menu.Item>
-          </Menu>
+          <HStack alignItems={"center"}>
+            <Menu
+              w="190"
+              trigger={(triggerProps) => {
+                return (
+                  <Pressable {...triggerProps}>
+                    <HStack alignItems={"center"}>
+                      <Icon
+                        as={MaterialCommunityIcons}
+                        name={"book-settings"}
+                        color={"black"}
+                        _dark={{ color: "white" }}
+                        size={"7"}
+                      />
+                      <Text
+                        tx={`bookReadingStyle.${tempClientSetting.readingStyle}`}
+                        fontSize={"12"}
+                      />
+                    </HStack>
+                  </Pressable>
+                )
+              }}
+            >
+              <Menu.Item onPress={() => setBookReadingStyle("singlePage")}>
+                {translate("bookReadingStyle.singlePage")}
+              </Menu.Item>
+              <Menu.Item onPress={() => setBookReadingStyle("facingPage")}>
+                {translate("bookReadingStyle.facingPage")}
+              </Menu.Item>
+              <Menu.Item onPress={() => setBookReadingStyle("facingPageWithTitle")}>
+                {translate("bookReadingStyle.facingPageWithTitle")}
+              </Menu.Item>
+              <Menu.Item onPress={() => setBookReadingStyle("verticalScroll")}>
+                {translate("bookReadingStyle.verticalScroll")}
+              </Menu.Item>
+            </Menu>
+            <Pressable
+              onPress={() => {
+                tempClientSetting.setProp(
+                  "pageDirection",
+                  tempClientSetting.pageDirection === "left" ? "right" : "left",
+                )
+              }}
+            >
+              <HStack alignItems="center">
+                <Icon
+                  as={MaterialCommunityIcons}
+                  name={`arrow-${tempClientSetting.pageDirection}-bold`}
+                  color={"black"}
+                  _dark={{ color: "white" }}
+                  size={"7"}
+                />
+                <Text tx="pageDirection" fontSize={"12"} />
+              </HStack>
+            </Pressable>
+          </HStack>
         )
       },
     })
-  }, [tempClientSetting.readingStyle])
-
-  console.log(source)
+  }, [tempClientSetting.readingStyle, tempClientSetting.pageDirection])
 
   const isFacing =
     tempClientSetting.readingStyle === "facingPage" ||
@@ -112,21 +132,24 @@ export const PDFViewerScreen = observer(() => {
       source={source}
       style={styles.pdf}
       onLoadComplete={(numberOfPages) => {
+        console.log("totalPage")
+        console.log(totalPages)
         setTotalPages(numberOfPages)
       }}
       onPageChanged={(page) => {
         console.log(page)
-        setPageNum(page)
+        //setPageNum(page)
       }}
       horizontal={tempClientSetting.readingStyle !== "verticalScroll"}
       trustAllCerts={false}
       enablePaging={true}
-      singlePage={isFacing}
       page={isFacing ? pageNum : undefined}
+      fitPolicy={1}
     />
   )
 
   const onPageChange = (page) => {
+    console.log(page)
     setPageNum(page)
   }
   if (isFacing) {
@@ -138,6 +161,7 @@ export const PDFViewerScreen = observer(() => {
           onPreviousPageChanging={onPageChange}
           totalPages={totalPages}
           transitionPage={1}
+          pagingDirection={tempClientSetting.pageDirection}
         >
           <PagePressable
             currentPage={pageNum}
@@ -145,6 +169,7 @@ export const PDFViewerScreen = observer(() => {
             onPageChanging={onPageChange}
             totalPages={totalPages}
             transitionPages={1}
+            style={{ flex: 1 }}
           >
             {page}
           </PagePressable>
@@ -158,23 +183,26 @@ export const PDFViewerScreen = observer(() => {
           onPreviousPageChanging={onPageChange}
           totalPages={totalPages}
           transitionPage={2}
+          pagingDirection={tempClientSetting.pageDirection}
         >
-          <HStack>
+          <HStack style={{ flex: 1 }}>
             <PagePressable
               currentPage={pageNum}
-              direction="previous"
+              direction={tempClientSetting.pageDirection === "left" ? "next" : "previous"}
               onPageChanging={onPageChange}
               totalPages={totalPages}
               transitionPages={2}
+              style={{ flex: 1, alignItems: "flex-end" }}
             >
               {page}
             </PagePressable>
             <PagePressable
               currentPage={pageNum}
-              direction="next"
+              direction={tempClientSetting.pageDirection === "left" ? "previous" : "next"}
               onPageChanging={onPageChange}
               totalPages={totalPages}
               transitionPages={2}
+              style={{ flex: 1, alignItems: "flex-start" }}
             >
               <PDF
                 source={source}
@@ -183,6 +211,7 @@ export const PDFViewerScreen = observer(() => {
                 enablePaging={true}
                 singlePage={true}
                 page={pageNum + 1}
+                fitPolicy={1}
               />
             </PagePressable>
           </HStack>
@@ -202,6 +231,6 @@ const styles = StyleSheet.create({
   pdf: {
     flex: 1,
     height: Dimensions.get("window").height,
-    width: Dimensions.get("window").width,
+    width: Dimensions.get("window").width / 2.6,
   },
 })
