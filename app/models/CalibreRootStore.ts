@@ -182,6 +182,7 @@ export const ClientSettingModel = types
     pageDirection: types.string,
   })
   .actions(withSetPropAction)
+export interface ClientSetting extends Instance<typeof ClientSettingModel> {}
 
 export const LibraryMapModel = types
   .model("LibrayMapModel")

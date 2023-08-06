@@ -1,15 +1,16 @@
-import { MaterialIcons } from "@expo/vector-icons"
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import ExpoFastImage from "expo-fast-image"
 import * as ScreenOrientation from "expo-screen-orientation"
 import { observer } from "mobx-react-lite"
-import { HStack, IconButton, Slider, Text, useBreakpointValue, VStack } from "native-base"
+import { HStack, Slider, Text, useBreakpointValue, VStack } from "native-base"
 import React, { FC, useEffect, useState } from "react"
 
-import { PagePressable, PageSwiper } from "../../components"
+import { PagePressable, PageSwiper, ViewerMenu } from "../../components"
 import useOrientation from "../../hooks/useOrientation"
 import { useStores } from "../../models"
+import { ClientSettingModel } from "../../models/CalibreRootStore"
 import { ApppNavigationProp, AppStackParamList } from "../../navigators"
+import { BookReadingStyleType } from "../../type/types"
 
 type ViewerScreenRouteProp = RouteProp<AppStackParamList, "Viewer">
 export const ViewerScreen: FC = observer(() => {
@@ -33,19 +34,43 @@ export const ViewerScreen: FC = observer(() => {
     xl: true,
   })
 
+  const selectedLibrary = calibreRootStore.getSelectedLibrary()
+
+  let tempClientSetting = selectedLibrary.clientSetting?.find((value) => {
+    return value.id === route.params.library.id
+  })
+
+  if (!tempClientSetting) {
+    tempClientSetting = ClientSettingModel.create({
+      id: route.params.library.id,
+      readingStyle: "singlePage",
+      pageDirection: "left",
+    })
+  }
+
+  const setBookReadingStyle = (style: BookReadingStyleType) => {
+    tempClientSetting.setProp("readingStyle", style)
+    const storedClientSetting = selectedLibrary.clientSetting.find((value) => {
+      return value.id === route.params.library.id
+    })
+
+    if (!storedClientSetting) {
+      const array = selectedLibrary.clientSetting.slice()
+
+      array.push(tempClientSetting)
+      selectedLibrary.setProp("clientSetting", array)
+    }
+  }
   useEffect(() => {
     navigation.setOptions({
       headerTitle: `${route.params.library.metaData.title}`,
       headerShown: showMenu,
       headerRight: () => {
         return (
-          <IconButton
-            _icon={{
-              as: MaterialIcons,
-              name: "animation",
-            }}
-            onPress={() => {
-              setUseAnimation(!useAnimation)
+          <ViewerMenu
+            clientSetting={tempClientSetting}
+            onSelectReadingStyle={(readingStyle) => {
+              setBookReadingStyle(readingStyle)
             }}
           />
         )
@@ -155,6 +180,7 @@ export const ViewerScreen: FC = observer(() => {
 
   if (
     pageNum === 0 ||
+    tempClientSetting.readingStyle === "singlePage" ||
     !(
       isWidthScreen ||
       orientation === ScreenOrientation.Orientation.LANDSCAPE_LEFT ||

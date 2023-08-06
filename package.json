@@ -138,7 +138,6 @@
     "jest-circus": "26",
     "jest-environment-node": "26",
     "jest-expo": "^49.0.0",
-    "metro-config": "^0.77.0",
     "metro-react-native-babel-preset": "0.71.1",
     "metro-source-map": "0.71.1",
     "mocha": "6",

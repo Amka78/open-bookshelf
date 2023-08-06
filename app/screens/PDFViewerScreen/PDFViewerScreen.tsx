@@ -1,21 +1,18 @@
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
+import { HStack } from "native-base"
 import React, { useEffect, useState } from "react"
 import { Dimensions, StyleSheet, View } from "react-native"
 import PDF from "react-native-pdf"
 
+import { PagePressable, PageSwiper, ViewerMenu } from "../../components"
 import { useStores } from "../../models"
-import { AppStackParamList, ApppNavigationProp } from "../../navigators"
-import { MaterialCommunityIcons } from "@expo/vector-icons"
-import { HStack, Icon, IconButton, Menu, Pressable } from "native-base"
-import { PagePressable, PageSwiper, Text } from "../../components"
-import { translate } from "../../i18n"
 import { ClientSettingModel } from "../../models/CalibreRootStore"
-import { convertAbsoluteToRem } from "native-base/lib/typescript/theme/tools"
+import { ApppNavigationProp, AppStackParamList } from "../../navigators"
+import { BookReadingStyleType } from "../../type/types"
 
 type PDFViewerScreenRouteProp = RouteProp<AppStackParamList, "Viewer">
 
-type BookReadingStyleType = "singlePage" | "facingPage" | "facingPageWithTitle" | "verticalScroll"
 export const PDFViewerScreen = observer(() => {
   const { settingStore, calibreRootStore } = useStores()
   const route = useRoute<PDFViewerScreenRouteProp>()
@@ -23,7 +20,6 @@ export const PDFViewerScreen = observer(() => {
 
   const [totalPages, setTotalPages] = useState(0)
   const [pageNum, setPageNum] = useState(1)
-  const [swiping, setSwiping] = useState(false)
 
   const selectedLibrary = calibreRootStore.getSelectedLibrary()
   const source = {
@@ -62,62 +58,13 @@ export const PDFViewerScreen = observer(() => {
       headerTitle: `${route.params.library.metaData.title}`,
       headerRight: () => {
         return (
-          <HStack alignItems={"center"}>
-            <Menu
-              w="190"
-              trigger={(triggerProps) => {
-                return (
-                  <Pressable {...triggerProps}>
-                    <HStack alignItems={"center"}>
-                      <Icon
-                        as={MaterialCommunityIcons}
-                        name={"book-settings"}
-                        color={"black"}
-                        _dark={{ color: "white" }}
-                        size={"7"}
-                      />
-                      <Text
-                        tx={`bookReadingStyle.${tempClientSetting.readingStyle}`}
-                        fontSize={"12"}
-                      />
-                    </HStack>
-                  </Pressable>
-                )
-              }}
-            >
-              <Menu.Item onPress={() => setBookReadingStyle("singlePage")}>
-                {translate("bookReadingStyle.singlePage")}
-              </Menu.Item>
-              <Menu.Item onPress={() => setBookReadingStyle("facingPage")}>
-                {translate("bookReadingStyle.facingPage")}
-              </Menu.Item>
-              <Menu.Item onPress={() => setBookReadingStyle("facingPageWithTitle")}>
-                {translate("bookReadingStyle.facingPageWithTitle")}
-              </Menu.Item>
-              <Menu.Item onPress={() => setBookReadingStyle("verticalScroll")}>
-                {translate("bookReadingStyle.verticalScroll")}
-              </Menu.Item>
-            </Menu>
-            <Pressable
-              onPress={() => {
-                tempClientSetting.setProp(
-                  "pageDirection",
-                  tempClientSetting.pageDirection === "left" ? "right" : "left",
-                )
-              }}
-            >
-              <HStack alignItems="center">
-                <Icon
-                  as={MaterialCommunityIcons}
-                  name={`arrow-${tempClientSetting.pageDirection}-bold`}
-                  color={"black"}
-                  _dark={{ color: "white" }}
-                  size={"7"}
-                />
-                <Text tx="pageDirection" fontSize={"12"} />
-              </HStack>
-            </Pressable>
-          </HStack>
+          <ViewerMenu
+            clientSetting={tempClientSetting}
+            onSelectReadingStyle={(readingStyle) => {
+              console.log(readingStyle)
+              setBookReadingStyle(readingStyle)
+            }}
+          />
         )
       },
     })
@@ -176,6 +123,18 @@ export const PDFViewerScreen = observer(() => {
         </PageSwiper>
       )
     } else {
+      const page1 = page
+      const page2 = (
+        <PDF
+          source={source}
+          style={styles.pdf}
+          trustAllCerts={false}
+          enablePaging={true}
+          singlePage={true}
+          page={pageNum + 1}
+          fitPolicy={1}
+        />
+      )
       page = (
         <PageSwiper
           currentPage={pageNum}
@@ -194,7 +153,7 @@ export const PDFViewerScreen = observer(() => {
               transitionPages={2}
               style={{ flex: 1, alignItems: "flex-end" }}
             >
-              {page}
+              {tempClientSetting.pageDirection === "left" ? page2 : page1}
             </PagePressable>
             <PagePressable
               currentPage={pageNum}
@@ -204,15 +163,7 @@ export const PDFViewerScreen = observer(() => {
               transitionPages={2}
               style={{ flex: 1, alignItems: "flex-start" }}
             >
-              <PDF
-                source={source}
-                style={styles.pdf}
-                trustAllCerts={false}
-                enablePaging={true}
-                singlePage={true}
-                page={pageNum + 1}
-                fitPolicy={1}
-              />
+              {tempClientSetting.pageDirection === "left" ? page1 : page2}
             </PagePressable>
           </HStack>
         </PageSwiper>
