@@ -61,6 +61,10 @@ export const LibraryScreen: FC = observer(() => {
           selectedLibrary.searchSetting.setProp("query", e.nativeEvent.text)
           search()
         },
+        onClose: () => {
+          selectedLibrary.searchSetting.setProp("query", "")
+          search()
+        },
       },
     })
   }, [])
