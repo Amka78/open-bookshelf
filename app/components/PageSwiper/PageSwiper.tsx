@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { View } from "react-native"
+import { View, ViewStyle } from "react-native"
 import { GestureHandlerRootView, PanGestureHandler } from "react-native-gesture-handler"
 
 export type PageSwiperProps = {
@@ -11,11 +11,12 @@ export type PageSwiperProps = {
   totalPages: number
   transitionPage: number
   pagingDirection: "left" | "right"
+  style: ViewStyle
 }
 export function PageSwiper(props: PageSwiperProps) {
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right">(null)
   return (
-    <GestureHandlerRootView>
+    <GestureHandlerRootView style={props.style}>
       <PanGestureHandler
         onGestureEvent={(event) => {
           if (event.nativeEvent.translationX > 0) {
@@ -53,7 +54,7 @@ export function PageSwiper(props: PageSwiperProps) {
           setSwipeDirection(null)
         }}
       >
-        <View>{props.children}</View>
+        <View style={props.style}>{props.children}</View>
       </PanGestureHandler>
     </GestureHandlerRootView>
   )

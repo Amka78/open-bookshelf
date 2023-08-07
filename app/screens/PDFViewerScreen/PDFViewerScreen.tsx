@@ -20,6 +20,7 @@ export const PDFViewerScreen = observer(() => {
 
   const [totalPages, setTotalPages] = useState(0)
   const [pageNum, setPageNum] = useState(1)
+  const [imageSize, setImageSize] = useState(undefined)
 
   const selectedLibrary = calibreRootStore.getSelectedLibrary()
   const source = {
@@ -77,11 +78,13 @@ export const PDFViewerScreen = observer(() => {
   let page = (
     <PDF
       source={source}
-      style={styles.pdf}
-      onLoadComplete={(numberOfPages) => {
-        console.log("totalPage")
-        console.log(totalPages)
+      style={[styles.page, imageSize]}
+      onLoadComplete={(numberOfPages, path, size) => {
         setTotalPages(numberOfPages)
+
+        if (!imageSize) {
+          setImageSize({ height: size.height, width: size.width })
+        }
       }}
       onPageChanged={(page) => {
         console.log(page)
@@ -91,7 +94,6 @@ export const PDFViewerScreen = observer(() => {
       trustAllCerts={false}
       enablePaging={true}
       page={isFacing ? pageNum : undefined}
-      fitPolicy={1}
     />
   )
 
@@ -109,6 +111,7 @@ export const PDFViewerScreen = observer(() => {
           totalPages={totalPages}
           transitionPage={1}
           pagingDirection={tempClientSetting.pageDirection}
+          style={styles.page}
         >
           <PagePressable
             currentPage={pageNum}
@@ -116,7 +119,7 @@ export const PDFViewerScreen = observer(() => {
             onPageChanging={onPageChange}
             totalPages={totalPages}
             transitionPages={1}
-            style={{ flex: 1 }}
+            style={styles.page}
           >
             {page}
           </PagePressable>
@@ -127,12 +130,11 @@ export const PDFViewerScreen = observer(() => {
       const page2 = (
         <PDF
           source={source}
-          style={styles.pdf}
+          style={[styles.page, imageSize]}
           trustAllCerts={false}
           enablePaging={true}
           singlePage={true}
           page={pageNum + 1}
-          fitPolicy={1}
         />
       )
       page = (
@@ -143,6 +145,7 @@ export const PDFViewerScreen = observer(() => {
           totalPages={totalPages}
           transitionPage={2}
           pagingDirection={tempClientSetting.pageDirection}
+          style={{ flex: 1, height: "100%", width: "100%" }}
         >
           <HStack style={{ flex: 1 }}>
             <PagePressable
@@ -151,7 +154,7 @@ export const PDFViewerScreen = observer(() => {
               onPageChanging={onPageChange}
               totalPages={totalPages}
               transitionPages={2}
-              style={{ flex: 1, alignItems: "flex-end" }}
+              style={{ alignItems: "flex-end" }}
             >
               {tempClientSetting.pageDirection === "left" ? page2 : page1}
             </PagePressable>
@@ -161,7 +164,7 @@ export const PDFViewerScreen = observer(() => {
               onPageChanging={onPageChange}
               totalPages={totalPages}
               transitionPages={2}
-              style={{ flex: 1, alignItems: "flex-start" }}
+              style={(styles.page, { alignItems: "flex-start" })}
             >
               {tempClientSetting.pageDirection === "left" ? page1 : page2}
             </PagePressable>
@@ -179,9 +182,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-start",
   },
-  pdf: {
+  page: {
     flex: 1,
-    height: Dimensions.get("window").height,
-    width: Dimensions.get("window").width / 2.6,
+    height: "100%",
+    width: "100%",
   },
 })
