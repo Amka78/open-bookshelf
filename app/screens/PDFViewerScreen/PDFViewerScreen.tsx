@@ -1,15 +1,14 @@
+import { PagePressable, PageSwiper, ViewerMenu } from "@/components"
+import { useStores } from "@/models"
+import { ClientSettingModel } from "@/models/CalibreRootStore"
+import { ApppNavigationProp, AppStackParamList } from "@/navigators"
+import { BookReadingStyleType } from "@/type/types"
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import { HStack } from "native-base"
 import React, { useEffect, useState } from "react"
-import { Dimensions, StyleSheet, View } from "react-native"
+import { StyleSheet, View } from "react-native"
 import PDF from "react-native-pdf"
-
-import { PagePressable, PageSwiper, ViewerMenu } from "../../components"
-import { useStores } from "../../models"
-import { ClientSettingModel } from "../../models/CalibreRootStore"
-import { ApppNavigationProp, AppStackParamList } from "../../navigators"
-import { BookReadingStyleType } from "../../type/types"
 
 type PDFViewerScreenRouteProp = RouteProp<AppStackParamList, "Viewer">
 

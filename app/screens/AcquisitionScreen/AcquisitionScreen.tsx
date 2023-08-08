@@ -1,15 +1,14 @@
+import { FlatList, Flex, Icon, ListItem, RootContainer, Text } from "@/components"
+import { useStores } from "@/models"
+import { Entry } from "@/models/opds"
+import { OpdsChildrenModel, OpdsModel, OpdsRoot } from "@/models/opds/OpdsRootStore"
+import { ApppNavigationProp, AppStackParamList } from "@/navigators"
 import { MaterialCommunityIcons } from "@expo/vector-icons"
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import ExpoFastImage from "expo-fast-image"
 import { observer } from "mobx-react-lite"
 import { Box } from "native-base"
 import React, { FC, useEffect, useState } from "react"
-
-import { FlatList, Flex, Icon, Image, ListItem, RootContainer, Text } from "../../components"
-import { useStores } from "../../models"
-import { Entry } from "../../models/opds"
-import { OpdsChildrenModel, OpdsModel, OpdsRoot } from "../../models/opds/OpdsRootStore"
-import { ApppNavigationProp, AppStackParamList } from "../../navigators"
 
 type AcquisitionScreenRouteProp = RouteProp<AppStackParamList, "Acquisition">
 export const AcquisitionScreen: FC = observer(() => {

@@ -1,4 +1,4 @@
-import { api } from "../../services/api"
+import { api } from "@/services/api"
 import { OpdsModel } from "./OpdsRootStore"
 
 const sampleXml = `<?xml version='1.0' encoding='utf-8'?>

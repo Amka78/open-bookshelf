@@ -1,10 +1,8 @@
 import { ComponentMeta } from "@storybook/react"
 import { NativeBaseProvider } from "native-base"
 import React from "react"
-import { View } from "react-native"
 import { initialWindowMetrics, SafeAreaProvider } from "react-native-safe-area-context"
 
-import { INITIAL_VIEWPORTS } from "@storybook/addon-viewport"
 import { ConnectScreen } from "../../app/screens/ConnectScreen/templates/ConnectScreen"
 
 export default {

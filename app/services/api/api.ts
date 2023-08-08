@@ -7,7 +7,7 @@
  */
 import { ApiResponse, ApisauceInstance, create } from "apisauce"
 
-import Config from "../../config"
+import Config from "@/config"
 import { GeneralApiProblem, getGeneralApiProblem } from "./apiProblem"
 
 import type {

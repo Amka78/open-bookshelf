@@ -1,9 +1,8 @@
+import { translate } from "@/i18n"
+import { SortField } from "@/models/CalibreRootStore"
 import { MaterialCommunityIcons } from "@expo/vector-icons"
 import { Icon, IconButton, Menu } from "native-base"
 import React from "react"
-
-import { SortField } from "../../models/CalibreRootStore"
-import { translate } from "../../i18n"
 
 export type SortMenuProps = {
   selectedSort: string

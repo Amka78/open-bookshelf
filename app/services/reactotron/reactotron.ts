@@ -12,16 +12,17 @@
  *
  * @refresh reset
  */
-import { Platform } from "react-native"
-import { Reactotron } from "./reactotronClient"
-import { ArgType } from "reactotron-core-client"
+import { RootStore } from "@/models/RootStore"
+import { goBack, navigate, resetRoot } from "@/navigators/navigationUtilities"
+import { clear } from "@/utils/storage"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { onSnapshot } from "mobx-state-tree"
+import { Platform } from "react-native"
+import { ArgType } from "reactotron-core-client"
 import { mst } from "reactotron-mst"
-import { RootStore } from "../../models/RootStore"
-import { clear } from "../../utils/storage"
-import { ReactotronConfig, DEFAULT_REACTOTRON_CONFIG } from "./reactotronConfig"
-import { goBack, resetRoot, navigate } from "../../navigators/navigationUtilities"
+
+import { Reactotron } from "./reactotronClient"
+import { DEFAULT_REACTOTRON_CONFIG, ReactotronConfig } from "./reactotronConfig"
 import { fakeReactotron } from "./reactotronFake"
 
 /**
@@ -98,7 +99,7 @@ export function setupReactotron(customConfig: ReactotronConfig = {}) {
 
     // configure reactotron
     Reactotron.configure({
-      name: config.name || require("../../../package.json").name,
+      name: config.name || require("@/../package.json").name,
       host: config.host,
     })
 

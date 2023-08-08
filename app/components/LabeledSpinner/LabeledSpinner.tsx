@@ -1,8 +1,8 @@
+import { MessageKey } from "@/i18n"
 import { Center, HStack, Spinner, VStack } from "native-base"
 import React from "react"
 import { StyleProp, ViewStyle } from "react-native"
 
-import { MessageKey } from "../../i18n"
 import { Heading } from "../Heading/Heading"
 
 export type LabeledSpinnerProps = {

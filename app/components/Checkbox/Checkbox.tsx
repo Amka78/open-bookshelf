@@ -1,7 +1,8 @@
 /* eslint-disable react/display-name */
-import React, { forwardRef } from "react"
+import { MessageKey, translate } from "@/i18n"
 import { Checkbox as Template, ICheckboxProps as TemplateProps } from "native-base"
-import { MessageKey, translate } from "../../i18n"
+import React, { forwardRef } from "react"
+
 export type ICheckboxProps = TemplateProps & {
   tx: MessageKey
 }

@@ -1,6 +1,6 @@
-import React, { ComponentProps } from "react"
+import { MessageKey, translate } from "@/i18n"
 import { Menu } from "native-base"
-import { MessageKey, translate } from "../../i18n"
+import React, { ComponentProps } from "react"
 
 export type MenuItemProps = ComponentProps<typeof Menu.Item> & {
   tx?: MessageKey

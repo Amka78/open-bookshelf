@@ -7,6 +7,9 @@
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/images/app-icon-all.png",
+    "experiments": {
+      "tsconfigPaths": true
+    },
     "splash": {
       "image": "./assets/images/splash-logo-all.png",
       "resizeMode": "contain",

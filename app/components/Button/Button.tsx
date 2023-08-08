@@ -1,7 +1,6 @@
+import { MessageKey, translate } from "@/i18n"
 import { Button as Template, IButtonProps } from "native-base"
 import React from "react"
-
-import { MessageKey, translate } from "../../i18n"
 
 export type ButtonProps = IButtonProps & {
   tx?: MessageKey

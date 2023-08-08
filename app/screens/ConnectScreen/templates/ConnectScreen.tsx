@@ -1,15 +1,8 @@
+import { Button, Flex, FormCheckbox, FormInput, Heading, RootContainer, Text } from "@/components"
+import { Box } from "native-base"
 import React from "react"
 import { useForm } from "react-hook-form"
-import { Box } from "native-base"
-import {
-  Button,
-  Flex,
-  FormCheckbox,
-  FormInput,
-  Heading,
-  RootContainer,
-  Text,
-} from "../../../components"
+
 import { ConnectType } from "../types/ConnectType"
 
 export type ConnectScreenProps = {

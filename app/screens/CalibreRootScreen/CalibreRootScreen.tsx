@@ -1,12 +1,11 @@
+import { FlatList, ListItem, RootContainer, Text } from "@/components"
+import { useStores } from "@/models"
+import { LibraryMap } from "@/models/CalibreRootStore"
+import { ApppNavigationProp } from "@/navigators"
 import { useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import React, { FC, useEffect } from "react"
 import { View } from "react-native"
-
-import { FlatList, ListItem, RootContainer, Text } from "../../components"
-import { useStores } from "../../models"
-import { LibraryMap } from "../../models/CalibreRootStore"
-import { ApppNavigationProp } from "../../navigators"
 
 export const CalibreRootScreen: FC = observer(() => {
   const { calibreRootStore } = useStores()

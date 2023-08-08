@@ -1,7 +1,7 @@
 import { flow, Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 import * as xmldom from "xmldom"
 
-import { api } from "../../services/api"
+import { api } from "@/services/api"
 import { withSetPropAction } from "../helpers/withSetPropAction"
 import { AuthorModel, EntryModel, LinkModel } from "./"
 

@@ -1,13 +1,12 @@
+import { FlatList, Flex, ListItem, RootContainer, Text } from "@/components"
+import { useStores } from "@/models"
+import { Entry } from "@/models/opds"
+import { ApppNavigationProp } from "@/navigators"
 import { useNavigation } from "@react-navigation/native"
 import ExpoFastImage from "expo-fast-image"
 import { observer } from "mobx-react-lite"
 import React, { FC, useEffect } from "react"
 import { View } from "react-native"
-
-import { FlatList, Flex, ListItem, RootContainer, Text } from "../../components"
-import { useStores } from "../../models"
-import { Entry } from "../../models/opds"
-import { ApppNavigationProp } from "../../navigators"
 
 export const OPDSRootScreen: FC = observer(() => {
   const { opdsRootStore, settingStore } = useStores()

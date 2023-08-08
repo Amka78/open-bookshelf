@@ -1,7 +1,7 @@
 /* eslint-disable react/display-name */
+import { MessageKey, translate } from "@/i18n"
+import { IInputProps, Input as Template } from "native-base"
 import React, { forwardRef } from "react"
-import { Input as Template, IInputProps } from "native-base"
-import { MessageKey, translate } from "../../i18n"
 
 export type InputProps = IInputProps & {
   placeholderTx?: MessageKey

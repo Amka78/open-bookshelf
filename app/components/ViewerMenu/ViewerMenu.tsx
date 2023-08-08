@@ -1,9 +1,9 @@
+import { ClientSetting } from "@/models/CalibreRootStore"
 import { MaterialCommunityIcons } from "@expo/vector-icons"
 import { Icon, Menu } from "native-base"
 import React from "react"
 import { Pressable } from "react-native"
 
-import { ClientSetting } from "../../models/CalibreRootStore"
 import { HStack } from "../HStack/HStack"
 import { MenuItem } from "../MenuItem/MenuItem"
 import { Text } from "../Text/Text"

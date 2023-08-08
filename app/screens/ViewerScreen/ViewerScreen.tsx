@@ -1,16 +1,15 @@
+import { PagePressable, PageSwiper, ViewerMenu } from "@/components"
+import useOrientation from "@/hooks/useOrientation"
+import { useStores } from "@/models"
+import { ClientSettingModel } from "@/models/CalibreRootStore"
+import { ApppNavigationProp, AppStackParamList } from "@/navigators"
+import { BookReadingStyleType } from "@/type/types"
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import ExpoFastImage from "expo-fast-image"
 import * as ScreenOrientation from "expo-screen-orientation"
 import { observer } from "mobx-react-lite"
 import { HStack, Slider, Text, useBreakpointValue, VStack } from "native-base"
 import React, { FC, useEffect, useState } from "react"
-
-import { PagePressable, PageSwiper, ViewerMenu } from "../../components"
-import useOrientation from "../../hooks/useOrientation"
-import { useStores } from "../../models"
-import { ClientSettingModel } from "../../models/CalibreRootStore"
-import { ApppNavigationProp, AppStackParamList } from "../../navigators"
-import { BookReadingStyleType } from "../../type/types"
 
 type ViewerScreenRouteProp = RouteProp<AppStackParamList, "Viewer">
 export const ViewerScreen: FC = observer(() => {
@@ -76,7 +75,7 @@ export const ViewerScreen: FC = observer(() => {
         )
       },
     })
-  }, [showMenu])
+  }, [showMenu, tempClientSetting.pageDirection, tempClientSetting.readingStyle])
 
   const onOpenMenu = () => {
     setShowMenu(true)
@@ -97,6 +96,7 @@ export const ViewerScreen: FC = observer(() => {
       onPageChanged={onCloseMenu}
       totalPages={route.params.library.path.length}
       transitionPage={1}
+      pagingDirection={tempClientSetting.pageDirection}
     >
       <PagePressable
         currentPage={pageNum}
@@ -203,6 +203,7 @@ export const ViewerScreen: FC = observer(() => {
         }}
         totalPages={route.params.library.path.length}
         transitionPage={2}
+        pagingDirection={tempClientSetting.pageDirection}
       >
         <HStack>
           {secondPage}
