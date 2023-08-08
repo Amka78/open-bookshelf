@@ -11,18 +11,20 @@
  */
 import "./i18n"
 import "./utils/ignoreWarnings"
+
 import { useFonts } from "expo-font"
+import { NativeBaseProvider } from "native-base"
 import React from "react"
+import { View } from "react-native"
 import { initialWindowMetrics, SafeAreaProvider } from "react-native-safe-area-context"
+
+import Config from "./config"
 import { useInitialRootStore } from "./models"
 import { AppNavigator, useNavigationPersistence } from "./navigators"
 import { ErrorBoundary } from "./screens/ErrorScreen/ErrorBoundary"
-import * as storage from "./utils/storage"
-import { customFontsToLoad } from "./theme"
 import { setupReactotron } from "./services/reactotron"
-import Config from "./config"
-import { NativeBaseProvider } from "native-base"
-import { View } from "react-native"
+import { customFontsToLoad } from "./theme"
+import * as storage from "./utils/storage"
 
 // Set up Reactotron, which is a free desktop app for inspecting and debugging
 // React Native apps. Learn more here: https://github.com/infinitered/reactotron
@@ -81,7 +83,7 @@ function App(props: AppProps) {
   // otherwise, we're ready to render the app
 
   if (storybookEnabled) {
-    const StorybookUI = require("../.storybook").default
+    const StorybookUI = require("../.storybook/native").default
     return (
       <View style={{ flex: 1 }}>
         <StorybookUI />
