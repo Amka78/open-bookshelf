@@ -22,6 +22,7 @@ import { customFontsToLoad } from "./theme"
 import { setupReactotron } from "./services/reactotron"
 import Config from "./config"
 import { NativeBaseProvider } from "native-base"
+import { View } from "react-native"
 
 // Set up Reactotron, which is a free desktop app for inspecting and debugging
 // React Native apps. Learn more here: https://github.com/infinitered/reactotron
@@ -43,6 +44,8 @@ export const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
 interface AppProps {
   hideSplashScreen: () => Promise<void>
 }
+
+const storybookEnabled = process.env.EXPO_PUBLIC_STORYBOOK_ENABLED === "true"
 
 /**
  * This is the root component of our app.
@@ -76,15 +79,25 @@ function App(props: AppProps) {
   if (!rehydrated || !isNavigationStateRestored || !areFontsLoaded) return null
 
   // otherwise, we're ready to render the app
+
+  if (storybookEnabled) {
+    const StorybookUI = require("../.storybook").default
+    return (
+      <View style={{ flex: 1 }}>
+        <StorybookUI />
+      </View>
+    )
+  }
+
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <NativeBaseProvider>
-      <ErrorBoundary catchErrors={Config.catchErrors}>
-        <AppNavigator
-          initialState={initialNavigationState}
-          onStateChange={onNavigationStateChange}
-        />
-      </ErrorBoundary>
+        <ErrorBoundary catchErrors={Config.catchErrors}>
+          <AppNavigator
+            initialState={initialNavigationState}
+            onStateChange={onNavigationStateChange}
+          />
+        </ErrorBoundary>
       </NativeBaseProvider>
     </SafeAreaProvider>
   )

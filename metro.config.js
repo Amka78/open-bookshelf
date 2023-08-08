@@ -20,6 +20,7 @@ if (isExpo) {
    * https://github.com/infinitered/ignite/issues/1904#issuecomment-1054535068
    */
   metroConfig = getDefaultExpoConfig(__dirname)
+  defaultConfig.resolver.resolverMainFields.unshift("sbmodern")
 } else {
   /**
    * Vanilla metro config - we're using a custom metro config because we want to support symlinks
@@ -46,6 +47,7 @@ if (isExpo) {
          */
         resolveRequest: MetroSymlinksResolver(),
         assetExts: [...defaultConfig.resolver.assetExts, "bin"],
+        resolverMainFields: ["sbmodern", "react-native", "browser", "main"],
       },
     })
   })()
