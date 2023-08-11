@@ -1,34 +1,27 @@
 import React from "react"
-import { View } from "react-native"
+import { ComponentMeta, ComponentStoryObj } from "@storybook/react-native"
 import { Button } from "@/components"
-import { NativeBaseProvider } from "native-base"
+import { ComponentHolder } from "./ComponentHolder"
 
-const ButtonMeta = {
+export default {
   title: "Button",
   component: Button,
-  argTypes: {
-    onPress: { action: "pressed the button" },
-  },
+  decorators: [
+    (Story) => (
+      <ComponentHolder>
+        <Story />
+      </ComponentHolder>
+    ),
+  ],
+} as ComponentMeta<typeof Button>
+
+type ButtonStory = ComponentStoryObj<typeof Button>
+
+export const Basic: ButtonStory = {
   args: {
     tx: "connectScreen.connect",
   },
-  decorators: [
-    (Story) => (
-      <View style={{ alignItems: "center", justifyContent: "center", flex: 1 }}>
-        <NativeBaseProvider>
-          <Story />
-        </NativeBaseProvider>
-      </View>
-    ),
-  ],
-}
-
-export default ButtonMeta
-
-export const Basic = {}
-
-export const AnotherExample = {
-  args: {
-    text: "Another example",
+  argTypes: {
+    onPress: { action: "pressed the button" },
   },
 }
