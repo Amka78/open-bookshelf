@@ -10,8 +10,8 @@ import { Text } from "../Text/Text"
 export type BookDescriptionItemProps = {
   source: string
   title: string
-  authors: []
-  onPress: () => void
+  authors: string[]
+  onPress: () => Promise<void>
 }
 
 export function BookDescriptionItem(props: BookDescriptionItemProps) {
@@ -36,13 +36,7 @@ export function BookDescriptionItem(props: BookDescriptionItemProps) {
       LeftComponent={
         <Flex flexDirection={"row"} width={"full"}>
           <Flex flexDirection={"row"} width={"5/6"} marginLeft={2}>
-            <ExpoFastImage
-              source={{
-                uri: props.source,
-              }}
-              style={styles.coverImage}
-              resizeMode={"contain"}
-            />
+            <ExpoFastImage source={props.source} style={styles.coverImage} resizeMode={"contain"} />
             <Box marginLeft={"1.5"}>
               <Text fontSize={"lg"} lineBreakMode="tail" numberOfLines={1}>
                 {props.title}
@@ -65,5 +59,5 @@ export function BookDescriptionItem(props: BookDescriptionItemProps) {
 
 const styles = StyleSheet.create({
   coverImage: { height: 50, width: 30 },
-  spinnerSize: { height: 50, width: "100%" },
+  spinnerSize: { height: 56, width: "100%" },
 })

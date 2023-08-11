@@ -89,7 +89,7 @@ export const LibraryScreen: FC = observer(() => {
     } else {
       listItem = (
         <BookDescriptionItem
-          source={imageUrl}
+          source={{ uri: imageUrl }}
           onPress={onPress}
           authors={item.metaData.authors}
           title={item.metaData.title}
