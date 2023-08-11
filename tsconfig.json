@@ -27,7 +27,7 @@
     "app",
     "test",
     "stories/ConnectScreen/ConnnectScreen.stories.tsx",
-    ".storybook/stories/Button.stories.tsx"
+    ".storybook/stories/*"
   ],
   "extends": "expo/tsconfig.base"
 }

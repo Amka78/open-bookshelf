@@ -1,7 +1,7 @@
-import React from "react"
 import { Box } from "@/components"
 import { NativeBaseProvider } from "native-base"
-import { background } from "native-base/lib/typescript/theme/styled-system"
+import React from "react"
+
 export type ComponentHolderProps = {
   children: React.ReactNode
 }

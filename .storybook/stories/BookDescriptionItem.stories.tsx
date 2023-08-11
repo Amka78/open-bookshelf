@@ -1,8 +1,9 @@
-import React from "react"
+import { BookDescriptionItem } from "@/components"
+import { delay } from "@/utils/delay"
 import { ComponentMeta, ComponentStoryObj } from "@storybook/react-native"
-import { BookDescriptionItem } from "../../app/components"
+import React from "react"
+
 import { ComponentHolder } from "./ComponentHolder"
-import { delay } from "../../app/utils/delay"
 
 export default {
   title: "BookDescriptionItem",
