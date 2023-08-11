@@ -51,6 +51,8 @@ const getStories = () => {
     "./.storybook/stories/BookDescriptionItem.stories.tsx": require("../stories/BookDescriptionItem.stories"),
     "./.storybook/stories/BookImageItem.stories.tsx": require("../stories/BookImageItem.stories"),
     "./.storybook/stories/Checkbox.stories.tsx": require("../stories/Checkbox.stories"),
+    "./.storybook/stories/Heading.stories.tsx": require("../stories/Heading.stories"),
+    "./.storybook/stories/screens/ConnectScreen.stories.tsx": require("../stories/screens/ConnectScreen.stories"),
   }
 }
 
