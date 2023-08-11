@@ -17,9 +17,9 @@ export default {
   ],
 } as ComponentMeta<typeof BookDescriptionItem>
 
-type ButtonStory = ComponentStoryObj<typeof BookDescriptionItem>
+type BookDescriptionItemStory = ComponentStoryObj<typeof BookDescriptionItem>
 
-export const Basic: ButtonStory = {
+export const Basic: BookDescriptionItemStory = {
   args: {
     authors: ["SampleAuthor1", "SampleAuthor2"],
     title: "SampleBookTitle",

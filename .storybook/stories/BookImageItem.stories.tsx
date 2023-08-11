@@ -17,9 +17,9 @@ export default {
   ],
 } as ComponentMeta<typeof BookImageItem>
 
-type ButtonStory = ComponentStoryObj<typeof BookImageItem>
+type BookImageItemStory = ComponentStoryObj<typeof BookImageItem>
 
-export const Basic: ButtonStory = {
+export const Basic: BookImageItemStory = {
   args: {
     source: require("../../assets/images/sample-image-1.png"),
     onPress: async () => {
