@@ -85,7 +85,7 @@ export const LibraryScreen: FC = observer(() => {
     const itemStyle = isWideScreen ? desktopViewStyle : mobileViewStyle
 
     if (itemStyle === "gridView") {
-      listItem = <BookImageItem source={imageUrl} onPress={onPress} />
+      listItem = <BookImageItem source={{ uri: imageUrl }} onPress={onPress} />
     } else {
       listItem = (
         <BookDescriptionItem

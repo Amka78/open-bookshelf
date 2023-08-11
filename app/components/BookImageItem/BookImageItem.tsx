@@ -28,13 +28,7 @@ export function BookImageItem(props: BookImageprops) {
             labelDirection="vertical"
           />
         ) : (
-          <ExpoFastImage
-            source={{
-              uri: props.source,
-            }}
-            style={styles.imageSize}
-            resizeMode={"stretch"}
-          />
+          <ExpoFastImage source={props.source} style={styles.imageSize} resizeMode={"stretch"} />
         )}
       </Box>
     </TouchableOpacity>
