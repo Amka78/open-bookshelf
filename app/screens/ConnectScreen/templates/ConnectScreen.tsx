@@ -4,6 +4,8 @@ import React from "react"
 import { useForm } from "react-hook-form"
 
 import { ConnectType } from "../types/ConnectType"
+import { useModal } from "react-native-modalfy"
+import { ModalStackParams } from "@/components/Modals/Types"
 
 export type ConnectScreenProps = {
   baseUrl: string
@@ -11,6 +13,7 @@ export type ConnectScreenProps = {
 }
 export function ConnectScreen(props: ConnectScreenProps) {
   const form = useForm<ConnectType>()
+  const modal = useModal<ModalStackParams>()
   return (
     <RootContainer>
       <Flex justify={"space-between"} flex={"1"}>
@@ -34,7 +37,13 @@ export function ConnectScreen(props: ConnectScreenProps) {
             testID="connect-button"
             tx="connectScreen.connect"
             onPress={form.handleSubmit(async (data) => {
-              props.onConnectPress(data)
+              try {
+                props.onConnectPress(data)
+              } catch {
+                modal.openModal("ErrorModal", {
+                  titleTx: "common.error",
+                })
+              }
             })}
             width={"full"}
           />

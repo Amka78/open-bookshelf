@@ -25,6 +25,8 @@ import { ErrorBoundary } from "./screens/ErrorScreen/ErrorBoundary"
 import { setupReactotron } from "./services/reactotron"
 import { customFontsToLoad } from "./theme"
 import * as storage from "./utils/storage"
+import { ModalProvider, createModalStack } from "react-native-modalfy"
+import { modalConfig } from "./components/Modals/ModalConfig"
 
 // Set up Reactotron, which is a free desktop app for inspecting and debugging
 // React Native apps. Learn more here: https://github.com/infinitered/reactotron
@@ -91,14 +93,17 @@ function App(props: AppProps) {
     )
   }
 
+  const stack = createModalStack(modalConfig, {})
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <NativeBaseProvider>
         <ErrorBoundary catchErrors={Config.catchErrors}>
-          <AppNavigator
-            initialState={initialNavigationState}
-            onStateChange={onNavigationStateChange}
-          />
+          <ModalProvider stack={stack}>
+            <AppNavigator
+              initialState={initialNavigationState}
+              onStateChange={onNavigationStateChange}
+            />
+          </ModalProvider>
         </ErrorBoundary>
       </NativeBaseProvider>
     </SafeAreaProvider>

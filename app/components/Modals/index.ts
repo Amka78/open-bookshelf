@@ -1,0 +1,5 @@
+export { Root } from "./Root"
+export { CloseButton } from "./CloseButton"
+export { Header } from "./Header"
+export { Body } from "./Body"
+export { Footer } from "./ModalFooter"

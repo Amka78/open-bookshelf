@@ -1,9 +1,10 @@
 const en = {
   common: {
-    ok: "OK!",
+    ok: "OK",
     cancel: "Cancel",
     back: "Back",
-    logOut: "Log Out", // @demo remove-current-line
+    logOut: "Log Out",
+    error: "Error",
   },
   errorScreen: {
     title: "Something went wrong!",
