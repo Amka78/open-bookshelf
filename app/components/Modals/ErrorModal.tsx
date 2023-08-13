@@ -27,7 +27,7 @@ export function ErrorModal(props: ErrorModalProps) {
           onPress={() => {
             props.modal.closeModal()
           }}
-          tx={"common.cancel"}
+          tx={"common.ok"}
         />
       </Footer>
     </Root>

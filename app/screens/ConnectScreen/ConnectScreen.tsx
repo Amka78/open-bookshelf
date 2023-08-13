@@ -12,8 +12,7 @@ export const ConnectScreen: FC = observer(() => {
   return (
     <Template
       baseUrl={settingStore.api.baseUrl ? `${settingStore.api.baseUrl}` : ""}
-      onConnectPress={(data) => {
-        console.log(data)
+      onConnectPress={async (data) => {
         settingStore.setConnectionSetting(data.url, data.isOPDS)
         navigation.navigate(data.isOPDS ? "OPDSRoot" : "CalibreRoot")
       }}

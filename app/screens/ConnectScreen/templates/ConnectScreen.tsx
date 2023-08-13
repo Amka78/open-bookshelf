@@ -1,19 +1,30 @@
-import { Button, Flex, FormCheckbox, FormInput, Heading, RootContainer, Text } from "@/components"
-import { Box } from "native-base"
-import React from "react"
+import {
+  Box,
+  Button,
+  Flex,
+  FormCheckbox,
+  FormInput,
+  Heading,
+  RootContainer,
+  Text,
+} from "@/components"
+import { ModalStackParams } from "@/components/Modals/Types"
+import { ApiError } from "@/models/exceptions/Exceptions"
+import React, { useState } from "react"
 import { useForm } from "react-hook-form"
+import { useModal } from "react-native-modalfy"
 
 import { ConnectType } from "../types/ConnectType"
-import { useModal } from "react-native-modalfy"
-import { ModalStackParams } from "@/components/Modals/Types"
 
 export type ConnectScreenProps = {
   baseUrl: string
-  onConnectPress: (data: ConnectType) => void
+  onConnectPress: (data: ConnectType) => Promise<void>
 }
 export function ConnectScreen(props: ConnectScreenProps) {
   const form = useForm<ConnectType>()
   const modal = useModal<ModalStackParams>()
+
+  const [isLoading, setIsLoading] = useState(false)
   return (
     <RootContainer>
       <Flex justify={"space-between"} flex={"1"}>
@@ -37,15 +48,20 @@ export function ConnectScreen(props: ConnectScreenProps) {
             testID="connect-button"
             tx="connectScreen.connect"
             onPress={form.handleSubmit(async (data) => {
+              setIsLoading(true)
               try {
-                props.onConnectPress(data)
-              } catch {
+                await props.onConnectPress(data)
+              } catch (ex) {
+                const apiError = ex as ApiError
                 modal.openModal("ErrorModal", {
-                  titleTx: "common.error",
+                  titleTx: apiError.errorTx,
+                  messageTx: apiError.descriptionTx,
                 })
               }
+              setIsLoading(false)
             })}
             width={"full"}
+            isLoading={isLoading}
           />
         </Flex>
       </Flex>

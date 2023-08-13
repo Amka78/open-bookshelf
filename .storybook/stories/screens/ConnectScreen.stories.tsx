@@ -1,5 +1,7 @@
 import { modalConfig } from "@/components/Modals/ModalConfig"
+import { ApiError } from "@/models/exceptions/Exceptions"
 import { ConnectScreen } from "@/screens/ConnectScreen/templates/ConnectScreen"
+import { delay } from "@/utils/delay"
 import { ComponentMeta, ComponentStoryObj } from "@storybook/react-native"
 import { NativeBaseProvider } from "native-base"
 import React from "react"
@@ -30,8 +32,20 @@ export default {
 type ConnectScreenStory = ComponentStoryObj<typeof ConnectScreen>
 export const Basic: ConnectScreenStory = {
   args: {
-    onConnectPress: () => {
-      throw new Error("test")
+    onConnectPress: async (data) => {
+      console.log(data)
+      await delay(1000)
+    },
+  },
+}
+export const CanNotConnect: ConnectScreenStory = {
+  args: {
+    baseUrl: "http://192.168.1.XX:XXXX",
+    onConnectPress: async (data) => {
+      throw new ApiError({
+        errorTx: "errors.canNotConnect",
+        descriptionTx: "errors.canNotConnectDescription",
+      })
     },
   },
 }

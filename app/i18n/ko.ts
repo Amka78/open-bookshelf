@@ -32,17 +32,6 @@ const ko: Translations = {
   errors: {
     invalidEmail: "잘못된 이메일 주소 입니다.",
   },
-  loginScreen: {
-    signIn: "로그인",
-    enterDetails:
-      "일급비밀 정보를 해제하기 위해 상세 정보를 입력하세요. 무엇이 기다리고 있는지 절대 모를겁니다. 혹은 알 수 있을지도 모르겠군요. 엄청 복잡한 뭔가는 아닙니다.",
-    emailFieldLabel: "이메일",
-    passwordFieldLabel: "비밀번호",
-    emailFieldPlaceholder: "이메일을 입력하세요",
-    passwordFieldPlaceholder: "엄청 비밀스러운 암호를 입력하세요",
-    tapToSignIn: "눌러서 로그인 하기!",
-    hint: "힌트: 가장 좋아하는 암호와 아무런 아무 이메일 주소나 사용할 수 있어요 :)",
-  },
   demoCommunityScreen: {
     title: "커뮤니티와 함께해요",
     tagLine:
@@ -65,54 +54,6 @@ const ko: Translations = {
     hireUs:
       "프로젝트 전체를 수행하든, 실무 교육을 통해 팀의 개발 속도에 박차를 가하든 상관없이, Infinite Red 는 React Native 프로젝트의 모든 분야의 에서 도움을 드릴 수 있습니다.",
     hireUsLink: "메세지 보내기",
-  },
-  demoShowroomScreen: {
-    jumpStart: "프로젝트를 바로 시작할 수 있는 컴포넌트들!",
-    lorem2Sentences:
-      "별 하나에 추억과, 별 하나에 사랑과, 별 하나에 쓸쓸함과, 별 하나에 동경(憧憬)과, 별 하나에 시와, 별 하나에 어머니, 어머니",
-    demoHeaderTxExample: "야호",
-    demoViaTxProp: "`tx` Prop 을 통해",
-    demoViaSpecifiedTxProp: "`{{prop}}Tx` Prop 을 통해",
-  },
-  demoDebugScreen: {
-    howTo: "사용방법",
-    title: "디버그",
-    tagLine:
-      "축하합니다. 여기 아주 고급스러운 React Native 앱 템플릿이 있습니다. 이 보일러 플레이트를 사용해보세요!",
-    reactotron: "Reactotron 으로 보내기",
-    reportBugs: "버그 보고하기",
-    demoList: "데모 목록",
-    demoPodcastList: "데모 팟캐스트 목록",
-    androidReactotronHint:
-      "만약에 동작하지 않는 경우, Reactotron 데스크탑 앱이 실행중인지 확인 후, 터미널에서 adb reverse tcp:9090 tcp:9090 을 실행한 다음 앱을 다시 실행해보세요.",
-    iosReactotronHint:
-      "만약에 동작하지 않는 경우, Reactotron 데스크탑 앱이 실행중인지 확인 후 앱을 다시 실행해보세요.",
-    macosReactotronHint:
-      "만약에 동작하지 않는 경우, Reactotron 데스크탑 앱이 실행중인지 확인 후 앱을 다시 실행해보세요.",
-    webReactotronHint:
-      "만약에 동작하지 않는 경우, Reactotron 데스크탑 앱이 실행중인지 확인 후 앱을 다시 실행해보세요.",
-    windowsReactotronHint:
-      "만약에 동작하지 않는 경우, Reactotron 데스크탑 앱이 실행중인지 확인 후 앱을 다시 실행해보세요.",
-  },
-  demoPodcastListScreen: {
-    title: "React Native 라디오 에피소드",
-    onlyFavorites: "즐겨찾기만 보기",
-    favoriteButton: "즐겨찾기",
-    unfavoriteButton: "즐겨찾기 해제",
-    accessibility: {
-      cardHint:
-        "에피소드를 들으려면 두 번 탭하세요. 이 에피소드를 좋아하거나 싫어하려면 두 번 탭하고 길게 누르세요.",
-      switch: "즐겨찾기를 사용하려면 스위치를 사용하세요.",
-      favoriteAction: "즐겨찾기 토글",
-      favoriteIcon: "좋아하는 에피소드",
-      unfavoriteIcon: "즐겨찾기하지 않은 에피소드",
-      publishLabel: "{{date}} 에 발행됨",
-      durationLabel: "소요시간: {{hours}}시간 {{minutes}}분 {{seconds}}초",
-    },
-    noFavoritesEmptyState: {
-      heading: "조금 텅 비어 있네요.",
-      content: "즐겨찾기가 없습니다. 에피소드에 있는 하트를 눌러서 즐겨찾기에 추가하세요.",
-    },
   },
   // @demo remove-block-end
 }

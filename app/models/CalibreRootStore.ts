@@ -223,6 +223,8 @@ export const CalibreRootStore = types
         Object.keys(response.data.library_map).forEach((value: string) => {
           root.libraryMap.push({ id: value })
         })
+      } else {
+        throw new Error()
       }
     }),
     getTagBrowser: flow(function* () {
