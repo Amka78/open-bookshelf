@@ -53,6 +53,7 @@ const getStories = () => {
     "./.storybook/stories/Checkbox.stories.tsx": require("../stories/Checkbox.stories"),
     "./.storybook/stories/Heading.stories.tsx": require("../stories/Heading.stories"),
     "./.storybook/stories/screens/ConnectScreen.stories.tsx": require("../stories/screens/ConnectScreen.stories"),
+    "./.storybook/stories/screens/CalibreRootScreen.stories.tsx": require("../stories/screens/CalibreRootScreen.stories"),
   }
 }
 

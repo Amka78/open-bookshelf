@@ -1,31 +1,18 @@
-import { modalConfig } from "@/components/Modals/ModalConfig"
 import { ApiError } from "@/models/exceptions/Exceptions"
 import { ConnectScreen } from "@/screens/ConnectScreen/templates/ConnectScreen"
 import { delay } from "@/utils/delay"
 import { ComponentMeta, ComponentStoryObj } from "@storybook/react-native"
-import { NativeBaseProvider } from "native-base"
 import React from "react"
-import { GestureHandlerRootView } from "react-native-gesture-handler"
-import { createModalStack, ModalProvider } from "react-native-modalfy"
-import { initialWindowMetrics, SafeAreaProvider } from "react-native-safe-area-context"
 
-const stack = createModalStack(modalConfig, {})
+import { ScreenContainer } from "./ScreenContainer"
+
 export default {
   component: ConnectScreen,
   decorators: [
     (Story) => (
-      <SafeAreaProvider
-        initialMetrics={initialWindowMetrics}
-        style={{ backgroundColor: "black", flex: 1 }}
-      >
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <NativeBaseProvider>
-            <ModalProvider stack={stack}>
-              <Story />
-            </ModalProvider>
-          </NativeBaseProvider>
-        </GestureHandlerRootView>
-      </SafeAreaProvider>
+      <ScreenContainer>
+        <Story />
+      </ScreenContainer>
     ),
   ],
 } as ComponentMeta<typeof ConnectScreen>
