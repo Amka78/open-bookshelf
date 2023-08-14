@@ -36,6 +36,8 @@ if (isExpo) {
 
   metroConfig = (async () => {
     const defaultConfig = await getDefaultConfig()
+
+    console.log(defaultConfig.resolver)
     return makeMetroConfig({
       projectRoot: __dirname,
       // watchFolders: [`${__dirname}/../..`], // for monorepos
@@ -48,6 +50,7 @@ if (isExpo) {
         resolveRequest: MetroSymlinksResolver(),
         assetExts: [...defaultConfig.resolver.assetExts, "bin"],
         resolverMainFields: ["sbmodern", "react-native", "browser", "main"],
+        sourceExts: [...defaultConfig.resolver.sourceExts, "mjs", "cjs"],
       },
     })
   })()

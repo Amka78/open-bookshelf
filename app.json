@@ -46,6 +46,7 @@
       "requireFullScreen": true
     },
     "web": {
+      "bundler": "metro",
       "favicon": "./assets/images/app-icon-web-favicon.png",
       "splash": {
         "image": "./assets/images/splash-logo-web.png",
