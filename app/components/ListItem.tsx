@@ -10,7 +10,6 @@ import {
 
 import { Text, TextProps } from "../components/Text/Text"
 import { colors, spacing } from "../theme"
-import { Icon, IconTypes } from "./Icon"
 
 export interface ListItemProps extends TouchableOpacityProps {
   /**
@@ -62,17 +61,9 @@ export interface ListItemProps extends TouchableOpacityProps {
    */
   style?: StyleProp<ViewStyle>
   /**
-   * Icon that should appear on the left.
-   */
-  leftIcon?: IconTypes
-  /**
    * An optional tint color for the left icon
    */
   leftIconColor?: string
-  /**
-   * Icon that should appear on the right.
-   */
-  rightIcon?: IconTypes
   /**
    * An optional tint color for the right icon
    */
@@ -90,7 +81,6 @@ export interface ListItemProps extends TouchableOpacityProps {
 }
 
 interface ListItemActionProps {
-  icon: IconTypes
   iconColor?: string
   Component?: ReactElement
   size: number
@@ -108,10 +98,8 @@ export function ListItem(props: ListItemProps) {
     children,
     height = 56,
     LeftComponent,
-    leftIcon,
     leftIconColor,
     RightComponent,
-    rightIcon,
     rightIconColor,
     style,
     text,
@@ -140,7 +128,6 @@ export function ListItem(props: ListItemProps) {
         <ListItemAction
           side="left"
           size={height}
-          icon={leftIcon}
           iconColor={leftIconColor}
           Component={LeftComponent}
         />
@@ -152,7 +139,6 @@ export function ListItem(props: ListItemProps) {
         <ListItemAction
           side="right"
           size={height}
-          icon={rightIcon}
           iconColor={rightIconColor}
           Component={RightComponent}
         />
@@ -162,27 +148,11 @@ export function ListItem(props: ListItemProps) {
 }
 
 function ListItemAction(props: ListItemActionProps) {
-  const { icon, Component, iconColor, size, side } = props
+  const { Component, iconColor, size, side } = props
 
   const $iconContainerStyles = [$iconContainer]
 
   if (Component) return Component
-
-  if (icon) {
-    return (
-      <Icon
-        size={24}
-        icon={icon}
-        color={iconColor}
-        containerStyle={[
-          $iconContainerStyles,
-          side === "left" && $iconContainerLeft,
-          side === "right" && $iconContainerRight,
-          { height: size },
-        ]}
-      />
-    )
-  }
 
   return null
 }
