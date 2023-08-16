@@ -34,6 +34,10 @@ export default {
     },
     updates: {
       fallbackToCacheTimeout: 0,
+      url: "https://u.expo.dev/53ae3c74-456c-46e1-bc15-f0604a49ea8f",
+    },
+    runtimeVersion: {
+      policy: "sdkVersion",
     },
     jsEngine: "hermes",
     assetBundlePatterns: ["**/*"],
@@ -77,6 +81,12 @@ export default {
         "expo-screen-orientation",
         {
           initialOrientation: "DEFAULT",
+        },
+      ],
+      [
+        "expo-updates",
+        {
+          username: "account-username",
         },
       ],
     ],
