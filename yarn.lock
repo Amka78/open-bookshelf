@@ -1301,6 +1301,16 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
+"@config-plugins/react-native-blob-util@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@config-plugins/react-native-blob-util/-/react-native-blob-util-6.0.0.tgz#dd8c7fab69cbcd4682e6bc6f92cb3fc63d10080e"
+  integrity sha512-9iQB5uGD+yD9sWuef7ouL44QQ5rE06WjmBXNOtzCPHADZdqu8YuRkJb3AArds2kaumQXoeruBqy7bjbp3BF0+g==
+
+"@config-plugins/react-native-pdf@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@config-plugins/react-native-pdf/-/react-native-pdf-6.0.0.tgz#0376c16a2565331b9eecf81949d8ee54ec61f5b8"
+  integrity sha512-qgKh0pc11wuaS1Rg90VnhzoajbC7S9wY86U9ui+mJtD/W9l9QZ2hJVE1EakG8w2huPFVan3eWkqKH+dtLbcEkQ==
+
 "@egjs/hammerjs@^2.0.17":
   version "2.0.17"
   resolved "https://registry.yarnpkg.com/@egjs/hammerjs/-/hammerjs-2.0.17.tgz#5dc02af75a6a06e4c2db0202cae38c9263895124"
@@ -3967,6 +3977,13 @@
     graceful-fs "^4.1.3"
     prompts "^2.4.0"
     semver "^6.3.0"
+
+"@react-native-community/datetimepicker@7.2.0":
+  version "7.2.0"
+  resolved "https://registry.yarnpkg.com/@react-native-community/datetimepicker/-/datetimepicker-7.2.0.tgz#db8c03dbf49bf3c24b06b617a8467d8b05511f62"
+  integrity sha512-dO1sQy83M/EvnHE2egto05iwXZX7EYn5f/VDMp6afZFRFXRiRo7CzB3VFg4B55gJRJMNBv06NYMLPM3SlpnEGQ==
+  dependencies:
+    invariant "^2.2.4"
 
 "@react-native-community/slider@4.4.2":
   version "4.4.2"

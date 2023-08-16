@@ -37,7 +37,6 @@ if (isExpo) {
   metroConfig = (async () => {
     const defaultConfig = await getDefaultConfig()
 
-    console.log(defaultConfig.resolver)
     return makeMetroConfig({
       projectRoot: __dirname,
       // watchFolders: [`${__dirname}/../..`], // for monorepos

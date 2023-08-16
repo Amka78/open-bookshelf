@@ -2,10 +2,37 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "APP_VARIANT": "development",
+        "EXPO_PUBLIC_STORYBOOK_ENABLED": "false"
+      },
+      "node": "20.5.1"
+    },
+    "storybookDev": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "APP_VARIANT": "storyDev",
+        "EXPO_PUBLIC_STORYBOOK_ENABLED": "true"
+      },
+      "node": "20.5.1"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "APP_VARIANT": "preview",
+        "EXPO_PUBLIC_STORYBOOK_ENABLED": "false"
+      },
+      "node": "20.5.1"
+    },
+    "previewDev": {
+      "distribution": "internal",
+      "env": {
+        "APP_VARIANT": "previewDev",
+        "EXPO_PUBLIC_STORYBOOK_ENABLED": "true"
+      },
+      "node": "20.5.1"
     },
     "production": {}
   }
