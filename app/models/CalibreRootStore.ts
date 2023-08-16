@@ -2,6 +2,7 @@ import { flow, getParent, Instance, SnapshotIn, SnapshotOut, types } from "mobx-
 
 import { api } from "../services/api"
 import { withSetPropAction } from "./helpers/withSetPropAction"
+import { ConvertApiErrorToException } from "./exceptions/Exceptions"
 
 const FormatSizeModel = types.model("FormatSizeModel").props({
   id: types.identifier,
@@ -173,6 +174,7 @@ export const CategoryModel = types
     CategoryTemplateModel,
   )
   .actions(withSetPropAction)
+export interface Category extends Instance<typeof CategoryModel> {}
 
 export const ClientSettingModel = types
   .model("ClientSettingModel")
@@ -215,6 +217,7 @@ export const CalibreRootStore = types
   .actions((root) => ({
     initialize: flow(function* () {
       const response = yield api.initializeCalibre()
+      console.log(response)
       if (response.kind === "ok") {
         root.defaultLibraryId = response.data.default_library_id
         root.numPerPage = response.data.num_per_page
@@ -224,7 +227,7 @@ export const CalibreRootStore = types
           root.libraryMap.push({ id: value })
         })
       } else {
-        throw new Error()
+        throw ConvertApiErrorToException(response)
       }
     }),
     getTagBrowser: flow(function* () {
