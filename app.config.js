@@ -89,6 +89,14 @@ export default {
           username: "account-username",
         },
       ],
+      [
+        "expo-build-properties",
+        {
+          android: {
+            usesCleartextTraffic: true,
+          },
+        },
+      ],
     ],
     extra: {
       eas: {
