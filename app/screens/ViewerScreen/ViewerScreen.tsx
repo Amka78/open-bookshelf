@@ -1,10 +1,10 @@
-import { BookPage, PageSwiper, ViewerMenu } from "@/components"
+import { BookPage, PageManager, PageSwiper, ViewerMenu } from "@/components"
 import { useViewer } from "@/hooks/useViewer"
 import { useStores } from "@/models"
 import { ApppNavigationProp, AppStackParamList } from "@/navigators"
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
-import { HStack, Slider, Text, VStack } from "native-base"
+import { HStack } from "native-base"
 import React, { FC, useEffect, useState } from "react"
 
 type ViewerScreenRouteProp = RouteProp<AppStackParamList, "Viewer">
@@ -151,53 +151,23 @@ export const ViewerScreen: FC = observer(() => {
     )
   }
 
-  const footer = (
-    <VStack
-      position={"absolute"}
-      left={0}
-      right={0}
-      bottom={0}
-      height={"10%"}
-      alignItems={"center"}
-      justifyContent={"center"}
-      backgroundColor={"white"}
-    >
-      <Slider
-        w="3/4"
-        maxW="900"
-        $PWD
-        defaultValue={pageNum * -1}
-        minValue={-library.path.length}
-        maxValue={0}
-        step={1}
-        onChange={(v) => {
-          setPageNum(getSliderIndex(v, viewerHook.orientation === "horizontal"))
-        }}
-        isReversed={true}
-      >
-        <Slider.Track>
-          <Slider.FilledTrack />
-        </Slider.Track>
-        <Slider.Thumb />
-      </Slider>
-      <Text textAlign="center">
-        {pageNum}/{library.path.length}
-      </Text>
-    </VStack>
-  )
-
   return (
     <>
       {fixedViewer}
-      {viewerHook.showMenu ? footer : null}
+      {viewerHook.showMenu ? (
+        <PageManager
+          currentPage={pageNum}
+          totalPage={library.path.length}
+          facing={
+            viewerHook.readingStyle === "facingPage" ||
+            viewerHook.readingStyle === "facingPageWithTitle"
+          }
+          onPageChange={(page) => {
+            setPageNum(page)
+          }}
+          reverse={viewerHook.pageDirection === "left"}
+        />
+      ) : null}
     </>
   )
 })
-function getSliderIndex(v: number, isWidthScreen: boolean) {
-  let pageNum = v * -1
-
-  if (isWidthScreen && pageNum % 2 === 0) {
-    pageNum--
-  }
-  return pageNum
-}

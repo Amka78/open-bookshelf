@@ -1,4 +1,4 @@
-import { PagePressable, PageSwiper, ViewerMenu } from "@/components"
+import { PageManager, PagePressable, PageSwiper, ViewerMenu } from "@/components"
 import { useViewer } from "@/hooks/useViewer"
 import { useStores } from "@/models"
 import { ApppNavigationProp, AppStackParamList } from "@/navigators"
@@ -157,7 +157,25 @@ export const PDFViewerScreen = observer(() => {
       )
     }
   }
-  return <View style={styles.container}>{page}</View>
+  return (
+    <>
+      <View style={styles.container}>{page}</View>
+      {viewerHook.showMenu ? (
+        <PageManager
+          currentPage={pageNum}
+          totalPage={totalPages}
+          facing={
+            viewerHook.readingStyle === "facingPage" ||
+            viewerHook.readingStyle === "facingPageWithTitle"
+          }
+          onPageChange={(page) => {
+            setPageNum(page)
+          }}
+          reverse={viewerHook.pageDirection === "left"}
+        />
+      ) : null}
+    </>
+  )
 })
 
 const styles = StyleSheet.create({
