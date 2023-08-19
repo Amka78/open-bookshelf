@@ -1,8 +1,7 @@
 import { PagePressable, PageSwiper, ViewerMenu } from "@/components"
+import { useViewer } from "@/hooks/useViewer"
 import { useStores } from "@/models"
-import { ClientSettingModel } from "@/models/CalibreRootStore"
 import { ApppNavigationProp, AppStackParamList } from "@/navigators"
-import { BookReadingStyleType } from "@/type/types"
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import { HStack } from "native-base"
@@ -13,7 +12,7 @@ import PDF from "react-native-pdf"
 type PDFViewerScreenRouteProp = RouteProp<AppStackParamList, "Viewer">
 
 export const PDFViewerScreen = observer(() => {
-  const { settingStore, calibreRootStore } = useStores()
+  const { settingStore } = useStores()
   const route = useRoute<PDFViewerScreenRouteProp>()
   const navigation = useNavigation<ApppNavigationProp>()
 
@@ -21,58 +20,36 @@ export const PDFViewerScreen = observer(() => {
   const [pageNum, setPageNum] = useState(1)
   const [imageSize, setImageSize] = useState(undefined)
 
-  const selectedLibrary = calibreRootStore.getSelectedLibrary()
   const source = {
     uri: `${settingStore.api.baseUrl}/get/PDF/${route.params.library.id}/config?content_disposition=inline`,
     cache: true,
   }
 
-  let tempClientSetting = selectedLibrary.clientSetting?.find((value) => {
-    return value.id === route.params.library.id
-  })
-
-  if (!tempClientSetting) {
-    tempClientSetting = ClientSettingModel.create({
-      id: route.params.library.id,
-      readingStyle: "singlePage",
-      pageDirection: "left",
-    })
-  }
-
-  const setBookReadingStyle = (style: BookReadingStyleType) => {
-    tempClientSetting.setProp("readingStyle", style)
-    const storedClientSetting = selectedLibrary.clientSetting.find((value) => {
-      return value.id === route.params.library.id
-    })
-
-    if (!storedClientSetting) {
-      const array = selectedLibrary.clientSetting.slice()
-
-      array.push(tempClientSetting)
-      selectedLibrary.setProp("clientSetting", array)
-    }
-  }
+  const viewerHook = useViewer()
 
   useEffect(() => {
     navigation.setOptions({
       headerTitle: `${route.params.library.metaData.title}`,
+      headerShown: viewerHook.showMenu,
       headerRight: () => {
         return (
           <ViewerMenu
-            clientSetting={tempClientSetting}
+            pageDirection={viewerHook.pageDirection}
+            readingStyle={viewerHook.readingStyle}
             onSelectReadingStyle={(readingStyle) => {
-              console.log(readingStyle)
-              setBookReadingStyle(readingStyle)
+              viewerHook.onSetBookReadingStyle(readingStyle)
+            }}
+            onSelectPageDirection={(pageDirection) => {
+              viewerHook.onSetPageDirection(pageDirection)
             }}
           />
         )
       },
     })
-  }, [tempClientSetting.readingStyle, tempClientSetting.pageDirection])
+  }, [viewerHook.showMenu, viewerHook.pageDirection, viewerHook.readingStyle])
 
   const isFacing =
-    tempClientSetting.readingStyle === "facingPage" ||
-    tempClientSetting.readingStyle === "facingPageWithTitle"
+    viewerHook.readingStyle === "facingPage" || viewerHook.readingStyle === "facingPageWithTitle"
 
   let page = (
     <PDF
@@ -84,12 +61,14 @@ export const PDFViewerScreen = observer(() => {
         if (!imageSize) {
           setImageSize({ height: size.height, width: size.width })
         }
+
+        console.log(size)
       }}
       onPageChanged={(page) => {
         console.log(page)
         //setPageNum(page)
       }}
-      horizontal={tempClientSetting.readingStyle !== "verticalScroll"}
+      horizontal={viewerHook.pageDirection !== "down"}
       trustAllCerts={false}
       enablePaging={true}
       page={isFacing ? pageNum : undefined}
@@ -109,13 +88,15 @@ export const PDFViewerScreen = observer(() => {
           onPreviousPageChanging={onPageChange}
           totalPages={totalPages}
           transitionPage={1}
-          pagingDirection={tempClientSetting.pageDirection}
+          pagingDirection={viewerHook.pageDirection}
           style={styles.page}
         >
           <PagePressable
             currentPage={pageNum}
             direction="next"
             onPageChanging={onPageChange}
+            onLongPress={viewerHook.onOpenMenu}
+            onPageChanged={viewerHook.onCloseMenu}
             totalPages={totalPages}
             transitionPages={1}
             style={styles.page}
@@ -143,29 +124,33 @@ export const PDFViewerScreen = observer(() => {
           onPreviousPageChanging={onPageChange}
           totalPages={totalPages}
           transitionPage={2}
-          pagingDirection={tempClientSetting.pageDirection}
-          style={{ flex: 1, height: "100%", width: "100%" }}
+          pagingDirection={viewerHook.pageDirection}
+          style={{ alignItems: "center" }}
         >
           <HStack style={{ flex: 1 }}>
             <PagePressable
               currentPage={pageNum}
-              direction={tempClientSetting.pageDirection === "left" ? "next" : "previous"}
+              direction={viewerHook.pageDirection === "left" ? "next" : "previous"}
               onPageChanging={onPageChange}
+              onPageChanged={viewerHook.onCloseMenu}
+              onLongPress={viewerHook.onOpenMenu}
               totalPages={totalPages}
               transitionPages={2}
               style={{ alignItems: "flex-end" }}
             >
-              {tempClientSetting.pageDirection === "left" ? page2 : page1}
+              {viewerHook.pageDirection === "left" ? page2 : page1}
             </PagePressable>
             <PagePressable
               currentPage={pageNum}
-              direction={tempClientSetting.pageDirection === "left" ? "previous" : "next"}
+              direction={viewerHook.pageDirection === "left" ? "previous" : "next"}
               onPageChanging={onPageChange}
+              onPageChanged={viewerHook.onCloseMenu}
+              onLongPress={viewerHook.onOpenMenu}
               totalPages={totalPages}
               transitionPages={2}
-              style={(styles.page, { alignItems: "flex-start" })}
+              style={{ alignItems: "flex-start" }}
             >
-              {tempClientSetting.pageDirection === "left" ? page1 : page2}
+              {viewerHook.pageDirection === "left" ? page1 : page2}
             </PagePressable>
           </HStack>
         </PageSwiper>
@@ -179,7 +164,6 @@ const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     flex: 1,
-    justifyContent: "flex-start",
   },
   page: {
     flex: 1,

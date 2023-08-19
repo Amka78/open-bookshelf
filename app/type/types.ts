@@ -1,5 +1,1 @@
-export type BookReadingStyleType =
-  | "singlePage"
-  | "facingPage"
-  | "facingPageWithTitle"
-  | "verticalScroll"
+export type BookReadingStyleType = "singlePage" | "facingPage" | "facingPageWithTitle"

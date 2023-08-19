@@ -1,4 +1,6 @@
-import { ClientSetting } from "@/models/CalibreRootStore"
+import { MessageKey } from "@/i18n"
+import { ClientSetting } from "@/models/calibre"
+import { BookReadingStyleType } from "@/type/types"
 import { MaterialCommunityIcons } from "@expo/vector-icons"
 import { Icon, Menu } from "native-base"
 import React from "react"
@@ -8,10 +10,11 @@ import { HStack } from "../HStack/HStack"
 import { MenuItem } from "../MenuItem/MenuItem"
 import { Text } from "../Text/Text"
 
-export type readingStyle = "singlePage" | "facingPage" | "facingPageWithTitle" | "verticalScroll"
 export type ViewerMenuProps = {
-  clientSetting: ClientSetting
-  onSelectReadingStyle: (readingStyle: readingStyle) => void
+  pageDirection: "left" | "right" | "down"
+  readingStyle: BookReadingStyleType
+  onSelectReadingStyle: (readingStyle: BookReadingStyleType) => void
+  onSelectPageDirection: (pageDirection) => void
 }
 export function ViewerMenu(props: ViewerMenuProps) {
   return (
@@ -29,7 +32,7 @@ export function ViewerMenu(props: ViewerMenuProps) {
                   _dark={{ color: "white" }}
                   size={"7"}
                 />
-                <Text tx={`bookReadingStyle.${props.clientSetting.readingStyle}`} fontSize={"12"} />
+                <Text tx={`bookReadingStyle.${props.readingStyle}` as MessageKey} fontSize={"12"} />
               </HStack>
             </Pressable>
           )
@@ -47,23 +50,25 @@ export function ViewerMenu(props: ViewerMenuProps) {
           onPress={() => props.onSelectReadingStyle("facingPageWithTitle")}
           tx="bookReadingStyle.facingPageWithTitle"
         />
-        <MenuItem
-          onPress={() => props.onSelectReadingStyle("verticalScroll")}
-          tx="bookReadingStyle.verticalScroll"
-        />
       </Menu>
       <Pressable
         onPress={() => {
-          props.clientSetting.setProp(
-            "pageDirection",
-            props.clientSetting.pageDirection === "left" ? "right" : "left",
-          )
+          let newPageDirectionSetting = "left"
+          switch (props.pageDirection) {
+            case "left":
+              newPageDirectionSetting = "right"
+              break
+            case "right":
+              newPageDirectionSetting = "down"
+              break
+          }
+          props.onSelectPageDirection(newPageDirectionSetting)
         }}
       >
         <HStack alignItems="center">
           <Icon
             as={MaterialCommunityIcons}
-            name={`arrow-${props.clientSetting.pageDirection}-bold`}
+            name={`arrow-${props.pageDirection}-bold`}
             color={"black"}
             _dark={{ color: "white" }}
             size={"7"}

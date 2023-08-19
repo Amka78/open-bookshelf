@@ -3,6 +3,7 @@ import { flow, getParent, Instance, SnapshotIn, SnapshotOut, types } from "mobx-
 import { api } from "../services/api"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { ConvertApiErrorToException } from "./exceptions/Exceptions"
+import { ClientSettingModel } from "./calibre"
 
 const FormatSizeModel = types.model("FormatSizeModel").props({
   id: types.identifier,
@@ -175,16 +176,6 @@ export const CategoryModel = types
   )
   .actions(withSetPropAction)
 export interface Category extends Instance<typeof CategoryModel> {}
-
-export const ClientSettingModel = types
-  .model("ClientSettingModel")
-  .props({
-    id: types.identifierNumber,
-    readingStyle: types.string,
-    pageDirection: types.string,
-  })
-  .actions(withSetPropAction)
-export interface ClientSetting extends Instance<typeof ClientSettingModel> {}
 
 export const LibraryMapModel = types
   .model("LibrayMapModel")

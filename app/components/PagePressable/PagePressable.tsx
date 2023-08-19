@@ -11,7 +11,7 @@ export type PagePressableProps = {
   currentPage: number
   totalPages: number
   transitionPages: number
-  style: ViewStyle
+  style?: ViewStyle
 }
 export function PagePressable(props: PagePressableProps) {
   return (
@@ -42,13 +42,15 @@ function goToPreviousPage(pageNum: number, transitionPages: number) {
   if (pageNum > 0) {
     currentPage = pageNum - transitionPages
   }
+
+  if (pageNum < 0) {
+    currentPage = 0
+  }
   return currentPage
 }
 
 function goToNextPage(pageNum: number, totalPage: number, transitionPages: number) {
   let currentPage = pageNum
-  console.log(pageNum)
-  console.log(totalPage)
   if (pageNum < totalPage) {
     currentPage = pageNum + transitionPages
   }

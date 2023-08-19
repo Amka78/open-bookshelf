@@ -1,14 +1,10 @@
-import { PagePressable, PageSwiper, ViewerMenu } from "@/components"
-import useOrientation from "@/hooks/useOrientation"
+import { BookPage, PageSwiper, ViewerMenu } from "@/components"
+import { useViewer } from "@/hooks/useViewer"
 import { useStores } from "@/models"
-import { ClientSettingModel } from "@/models/CalibreRootStore"
 import { ApppNavigationProp, AppStackParamList } from "@/navigators"
-import { BookReadingStyleType } from "@/type/types"
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
-import ExpoFastImage from "expo-fast-image"
-import * as ScreenOrientation from "expo-screen-orientation"
 import { observer } from "mobx-react-lite"
-import { HStack, Slider, Text, useBreakpointValue, VStack } from "native-base"
+import { HStack, Slider, Text, VStack } from "native-base"
 import React, { FC, useEffect, useState } from "react"
 
 type ViewerScreenRouteProp = RouteProp<AppStackParamList, "Viewer">
@@ -22,67 +18,28 @@ export const ViewerScreen: FC = observer(() => {
   const library = route.params.library
   const [pageNum, setPageNum] = useState(0)
 
-  const [showMenu, setShowMenu] = useState(false)
+  const viewerHook = useViewer()
 
-  const orientation = useOrientation()
-
-  const [useAnimation, setUseAnimation] = useState(true)
-  const isWidthScreen = useBreakpointValue({
-    base: false,
-    lg: true,
-    xl: true,
-  })
-
-  const selectedLibrary = calibreRootStore.getSelectedLibrary()
-
-  let tempClientSetting = selectedLibrary.clientSetting?.find((value) => {
-    return value.id === route.params.library.id
-  })
-
-  if (!tempClientSetting) {
-    tempClientSetting = ClientSettingModel.create({
-      id: route.params.library.id,
-      readingStyle: "singlePage",
-      pageDirection: "left",
-    })
-  }
-
-  const setBookReadingStyle = (style: BookReadingStyleType) => {
-    tempClientSetting.setProp("readingStyle", style)
-    const storedClientSetting = selectedLibrary.clientSetting.find((value) => {
-      return value.id === route.params.library.id
-    })
-
-    if (!storedClientSetting) {
-      const array = selectedLibrary.clientSetting.slice()
-
-      array.push(tempClientSetting)
-      selectedLibrary.setProp("clientSetting", array)
-    }
-  }
   useEffect(() => {
     navigation.setOptions({
       headerTitle: `${route.params.library.metaData.title}`,
-      headerShown: showMenu,
+      headerShown: viewerHook.showMenu,
       headerRight: () => {
         return (
           <ViewerMenu
-            clientSetting={tempClientSetting}
+            pageDirection={viewerHook.pageDirection}
+            readingStyle={viewerHook.readingStyle}
             onSelectReadingStyle={(readingStyle) => {
-              setBookReadingStyle(readingStyle)
+              viewerHook.onSetBookReadingStyle(readingStyle)
+            }}
+            onSelectPageDirection={(pageDirection) => {
+              viewerHook.onSetPageDirection(pageDirection)
             }}
           />
         )
       },
     })
-  }, [showMenu, tempClientSetting.pageDirection, tempClientSetting.readingStyle])
-
-  const onOpenMenu = () => {
-    setShowMenu(true)
-  }
-  const onCloseMenu = () => {
-    setShowMenu(false)
-  }
+  }, [viewerHook.showMenu, viewerHook.pageDirection, viewerHook.readingStyle])
 
   const singlePage = (
     <PageSwiper
@@ -93,99 +50,80 @@ export const ViewerScreen: FC = observer(() => {
       onPreviousPageChanging={(previousPage) => {
         setPageNum(previousPage)
       }}
-      onPageChanged={onCloseMenu}
+      onPageChanged={viewerHook.onCloseMenu}
       totalPages={route.params.library.path.length}
       transitionPage={1}
-      pagingDirection={tempClientSetting.pageDirection}
+      pagingDirection={viewerHook.pageDirection}
     >
-      <PagePressable
+      <BookPage
         currentPage={pageNum}
         direction="next"
-        onLongPress={onOpenMenu}
-        onPageChanged={onCloseMenu}
+        onLongPress={viewerHook.onOpenMenu}
+        onPageChanged={viewerHook.onCloseMenu}
         onPageChanging={(page) => {
           setPageNum(page)
         }}
         totalPages={route.params.library.path.length}
         transitionPages={1}
-      >
-        <ExpoFastImage
-          source={{
-            uri: encodeURI(
-              `${settingStore.api.baseUrl}/book-file/${library.id}/${library.metaData.formats[0]}/${library.metaData.size}/${library.hash}/${library.path[pageNum]}?library_id=${calibreRootStore.selectedLibraryId}`,
-            ),
-          }}
-          style={{ height: "100%" }}
-          resizeMode={"contain"}
-        />
-      </PagePressable>
-    </PageSwiper>
-  )
-
-  const firstPage = (
-    <PagePressable
-      currentPage={pageNum}
-      direction="previous"
-      onLongPress={onOpenMenu}
-      onPageChanged={onCloseMenu}
-      onPageChanging={(page) => {
-        setPageNum(page)
-      }}
-      totalPages={route.params.library.path.length}
-      transitionPages={2}
-      style={{ alignItems: "flex-start", flex: 1 }}
-    >
-      <ExpoFastImage
         source={{
           uri: encodeURI(
             `${settingStore.api.baseUrl}/book-file/${library.id}/${library.metaData.formats[0]}/${library.metaData.size}/${library.hash}/${library.path[pageNum]}?library_id=${calibreRootStore.selectedLibraryId}`,
           ),
         }}
-        style={{ height: "100%", width: "70%" }}
-        resizeMode={"cover"}
+        pageType="singlePage"
       />
-    </PagePressable>
+    </PageSwiper>
   )
 
-  const secondPage = (
-    <PagePressable
+  const firstPage = (
+    <BookPage
       currentPage={pageNum}
-      direction="next"
-      onLongPress={onOpenMenu}
-      onPageChanged={onCloseMenu}
+      direction="previous"
+      onLongPress={viewerHook.onOpenMenu}
+      onPageChanged={viewerHook.onCloseMenu}
       onPageChanging={(page) => {
         setPageNum(page)
       }}
       totalPages={route.params.library.path.length}
       transitionPages={2}
-      style={{ alignItems: "flex-end", flex: 1 }}
-    >
-      <ExpoFastImage
-        source={{
-          uri: encodeURI(
-            `${settingStore.api.baseUrl}/book-file/${library.id}/${library.metaData.formats[0]}/${
-              library.metaData.size
-            }/${library.hash}/${library.path[pageNum + 1]}?library_id=${
-              calibreRootStore.selectedLibraryId
-            }`,
-          ),
-        }}
-        style={{ height: "100%", width: "70%" }}
-        resizeMode={"cover"}
-      />
-    </PagePressable>
+      source={{
+        uri: encodeURI(
+          `${settingStore.api.baseUrl}/book-file/${library.id}/${library.metaData.formats[0]}/${library.metaData.size}/${library.hash}/${library.path[pageNum]}?library_id=${calibreRootStore.selectedLibraryId}`,
+        ),
+      }}
+      pageType="rightPage"
+    />
+  )
+  const secondPage = (
+    <BookPage
+      currentPage={pageNum}
+      direction="next"
+      onLongPress={viewerHook.onOpenMenu}
+      onPageChanged={viewerHook.onCloseMenu}
+      onPageChanging={(page) => {
+        setPageNum(page)
+      }}
+      totalPages={route.params.library.path.length}
+      transitionPages={2}
+      source={{
+        uri: encodeURI(
+          `${settingStore.api.baseUrl}/book-file/${library.id}/${library.metaData.formats[0]}/${
+            library.metaData.size
+          }/${library.hash}/${library.path[pageNum + 1]}?library_id=${
+            calibreRootStore.selectedLibraryId
+          }`,
+        ),
+      }}
+      pageType="leftPage"
+    />
   )
 
   let fixedViewer = null
 
   if (
-    pageNum === 0 ||
-    tempClientSetting.readingStyle === "singlePage" ||
-    !(
-      isWidthScreen ||
-      orientation === ScreenOrientation.Orientation.LANDSCAPE_LEFT ||
-      orientation === ScreenOrientation.Orientation.LANDSCAPE_RIGHT
-    )
+    (pageNum === 0 && viewerHook.readingStyle !== "facingPage") ||
+    (viewerHook.orientation === "vertical" && viewerHook.readingStyle !== "facingPage") ||
+    viewerHook.readingStyle === "singlePage"
   ) {
     fixedViewer = singlePage
   } else {
@@ -196,14 +134,14 @@ export const ViewerScreen: FC = observer(() => {
           setPageNum(nextPage)
         }}
         onPageChanged={() => {
-          setShowMenu(false)
+          viewerHook.onCloseMenu()
         }}
         onPreviousPageChanging={(previousPage) => {
           setPageNum(previousPage)
         }}
         totalPages={route.params.library.path.length}
         transitionPage={2}
-        pagingDirection={tempClientSetting.pageDirection}
+        pagingDirection={viewerHook.pageDirection}
       >
         <HStack>
           {secondPage}
@@ -233,7 +171,7 @@ export const ViewerScreen: FC = observer(() => {
         maxValue={0}
         step={1}
         onChange={(v) => {
-          setPageNum(getSliderIndex(v, isWidthScreen))
+          setPageNum(getSliderIndex(v, viewerHook.orientation === "horizontal"))
         }}
         isReversed={true}
       >
@@ -248,27 +186,10 @@ export const ViewerScreen: FC = observer(() => {
     </VStack>
   )
 
-  const animationViewer = {
-    /* <PageFlipper
-      data={library.path.map((value) => {
-        return encodeURI(
-          `${settingStore.api.baseUrl}/book-file/${library.id}/${library.metaData.formats[0]}/${library.metaData.size}/${library.hash}/${value}?library_id=${calibreRootStore.selectedLibraryId}`,
-        )
-      })}
-      pageSize={{
-        height: 334, // the size of the images I plan to render (used simply to calculate ratio)
-        width: 210,
-      }}
-      portrait={true}
-      renderPage={(data) => (
-        <ExpoFastImage source={{ uri: data }} style={{ height: "100%", width: "100%" }} />
-      )}
-    /> */
-  }
   return (
     <>
-      {/*useAnimation ? animationViewer :*/ fixedViewer}
-      {showMenu ? footer : null}
+      {fixedViewer}
+      {viewerHook.showMenu ? footer : null}
     </>
   )
 })

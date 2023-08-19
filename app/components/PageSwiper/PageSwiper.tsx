@@ -10,19 +10,27 @@ export type PageSwiperProps = {
   currentPage: number
   totalPages: number
   transitionPage: number
-  pagingDirection: "left" | "right"
-  style: ViewStyle
+  pagingDirection: "left" | "right" | "down"
+  style?: ViewStyle
 }
 export function PageSwiper(props: PageSwiperProps) {
-  const [swipeDirection, setSwipeDirection] = useState<"left" | "right">(null)
+  const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | "top" | "down">(null)
   return (
     <GestureHandlerRootView style={props.style}>
       <PanGestureHandler
         onGestureEvent={(event) => {
-          if (event.nativeEvent.translationX > 0) {
-            setSwipeDirection("left")
+          if (props.pagingDirection === "down") {
+            if (event.nativeEvent.translationY > 0) {
+              setSwipeDirection("top")
+            } else {
+              setSwipeDirection("down")
+            }
           } else {
-            setSwipeDirection("right")
+            if (event.nativeEvent.translationX > 0) {
+              setSwipeDirection("left")
+            } else {
+              setSwipeDirection("right")
+            }
           }
         }}
         onEnded={() => {
@@ -46,6 +54,12 @@ export function PageSwiper(props: PageSwiperProps) {
                 goToNextPage(props.currentPage, props.totalPages, props.transitionPage),
               )
             }
+          } else if (swipeDirection === "top") {
+            props.onPreviousPageChanging(goToPreviousPage(props.currentPage, props.transitionPage))
+          } else if (swipeDirection === "down") {
+            props.onNextPageChanging(
+              goToNextPage(props.currentPage, props.totalPages, props.transitionPage),
+            )
           }
 
           if (props.onPageChanged) {
@@ -64,6 +78,9 @@ function goToPreviousPage(pageNum: number, transitionPages: number) {
   let currentPage = pageNum
   if (pageNum > 0) {
     currentPage = pageNum - transitionPages
+  }
+  if (pageNum < 0) {
+    currentPage = 0
   }
   return currentPage
 }
