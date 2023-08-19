@@ -6,6 +6,8 @@ import {
   LibraryViewIcon,
   SortMenu,
 } from "@/components"
+import { modalConfig } from "@/components/Modals/ModalConfig"
+import { ModalStackParams } from "@/components/Modals/Types"
 import { useStores } from "@/models"
 import { Library } from "@/models/CalibreRootStore"
 import { ApppNavigationProp } from "@/navigators"
@@ -22,8 +24,9 @@ import {
   useDisclose,
   VStack,
 } from "native-base"
-import React, { FC, useEffect, useMemo, useState } from "react"
+import React, { FC, useEffect, useState } from "react"
 import { useWindowDimensions } from "react-native"
+import { useModal } from "react-native-modalfy"
 
 export type LibraryViewStyle = "gridView" | "viewList"
 export const LibraryScreen: FC = observer(() => {
@@ -33,6 +36,8 @@ export const LibraryScreen: FC = observer(() => {
   const [mobileViewStyle, setMovileViewStyle] = useState<LibraryViewStyle>("viewList")
   const [desktopViewStyle, setDesktopViewStyle] = useState<LibraryViewStyle>("gridView")
   const navigation = useNavigation<ApppNavigationProp>()
+
+  const modal = useModal<ModalStackParams>()
 
   const isWideScreen = useBreakpointValue({
     base: false,
@@ -45,6 +50,9 @@ export const LibraryScreen: FC = observer(() => {
   }
 
   useEffect(() => {
+    if (!calibreRootStore.selectedLibraryId) {
+      navigation.navigate("Connect")
+    }
     search()
   }, [])
 
@@ -68,13 +76,25 @@ export const LibraryScreen: FC = observer(() => {
   const window = useWindowDimensions()
 
   const renderItem = ({ item }: { item: Library }) => {
-    const onPress = async () => {
-      if (item.metaData.formats[0] === "PDF") {
+    const onItemPress = async (format: string) => {
+      if (format === "PDF") {
         navigation.navigate("PDFViewer", { library: item })
       } else {
         await item.convertBook(() => {
           navigation.navigate("Viewer", { library: item })
         })
+      }
+    }
+    const onPress = async () => {
+      if (item.metaData.formats.length > 1) {
+        modal.openModal("FormatSelectModal", {
+          formats: item.metaData.formats,
+          onSelectFormat: async (format) => {
+            await onItemPress(format)
+          },
+        })
+      } else {
+        await onItemPress(item.metaData.formats[0])
       }
     }
 
@@ -176,7 +196,7 @@ export const LibraryScreen: FC = observer(() => {
             selectedSortOrder={selectedLibrary.searchSetting?.sortOrder}
             field={selectedLibrary.sortField}
             onSortChange={(val) => {
-              if (val === selectedLibrary.searchSetting.sort) {
+              if (val === selectedLibrary.searchSetting?.sort) {
                 selectedLibrary.searchSetting.setProp(
                   "sortOrder",
                   selectedLibrary.searchSetting.sortOrder === "desc" ? "asc" : "desc",
@@ -232,45 +252,43 @@ export const LibraryScreen: FC = observer(() => {
     </>
   )
 
-  const leftSideMenu = useMemo(() => {
-    return selectedLibrary.tagBrowser.map((category) => {
-      return (
-        <LeftSideMenuItem name={category.name} count={category.count} key={category.name}>
-          {category.subCategory.map((subCategory) => {
-            return (
-              <LeftSideMenuItem
-                mode={"subCategory"}
-                count={subCategory.count}
-                name={subCategory.name}
-                key={subCategory.name}
-                onLastNodePress={async () => {
-                  selectedLibrary.searchSetting.setProp("query", subCategory.name)
-                  await search()
-                }}
-                selected={subCategory.name === selectedLibrary.searchSetting?.query}
-              >
-                {subCategory.children.map((node) => {
-                  return (
-                    <LeftSideMenuItem
-                      mode={"node"}
-                      count={node.count}
-                      name={node.name}
-                      key={node.name}
-                      onLastNodePress={async () => {
-                        selectedLibrary.searchSetting.setProp("query", node.name)
-                        await search()
-                      }}
-                      selected={node.name === selectedLibrary.searchSetting?.query}
-                    />
-                  )
-                })}
-              </LeftSideMenuItem>
-            )
-          })}
-        </LeftSideMenuItem>
-      )
-    })
-  }, [])
+  const leftSideMenu = selectedLibrary.tagBrowser.map((category) => {
+    return (
+      <LeftSideMenuItem name={category.name} count={category.count} key={category.name}>
+        {category.subCategory.map((subCategory) => {
+          return (
+            <LeftSideMenuItem
+              mode={"subCategory"}
+              count={subCategory.count}
+              name={subCategory.name}
+              key={subCategory.name}
+              onLastNodePress={async () => {
+                selectedLibrary.searchSetting.setProp("query", subCategory.name)
+                await search()
+              }}
+              selected={subCategory.name === selectedLibrary.searchSetting?.query}
+            >
+              {subCategory.children.map((node) => {
+                return (
+                  <LeftSideMenuItem
+                    mode={"node"}
+                    count={node.count}
+                    name={node.name}
+                    key={node.name}
+                    onLastNodePress={async () => {
+                      selectedLibrary.searchSetting.setProp("query", node.name)
+                      await search()
+                    }}
+                    selected={node.name === selectedLibrary.searchSetting?.query}
+                  />
+                )
+              })}
+            </LeftSideMenuItem>
+          )
+        })}
+      </LeftSideMenuItem>
+    )
+  })
 
   return isWideScreen ? (
     <HStack flex="1">

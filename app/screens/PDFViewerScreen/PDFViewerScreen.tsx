@@ -6,7 +6,7 @@ import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import { HStack } from "native-base"
 import React, { useEffect, useState } from "react"
-import { StyleSheet, View } from "react-native"
+import { StyleSheet, View, useWindowDimensions } from "react-native"
 import PDF from "react-native-pdf"
 
 type PDFViewerScreenRouteProp = RouteProp<AppStackParamList, "Viewer">
@@ -19,6 +19,8 @@ export const PDFViewerScreen = observer(() => {
   const [totalPages, setTotalPages] = useState(0)
   const [pageNum, setPageNum] = useState(1)
   const [imageSize, setImageSize] = useState(undefined)
+
+  const windowDimension = useWindowDimensions()
 
   const source = {
     uri: `${settingStore.api.baseUrl}/get/PDF/${route.params.library.id}/config?content_disposition=inline`,
@@ -59,14 +61,22 @@ export const PDFViewerScreen = observer(() => {
         setTotalPages(numberOfPages)
 
         if (!imageSize) {
-          setImageSize({ height: size.height, width: size.width })
-        }
+          let pdfHeight = size.height
+          let pdfWidth = size.width
 
-        console.log(size)
+          if (size.height > windowDimension.height) {
+            pdfWidth = (pdfWidth * size.height) / windowDimension.height
+            pdfHeight = windowDimension.height
+          }
+
+          if (pdfWidth > windowDimension.width) {
+            pdfWidth = windowDimension.width
+          }
+          setImageSize({ height: pdfHeight, width: pdfWidth })
+        }
       }}
       onPageChanged={(page) => {
         console.log(page)
-        //setPageNum(page)
       }}
       horizontal={viewerHook.pageDirection !== "down"}
       trustAllCerts={false}
@@ -136,7 +146,7 @@ export const PDFViewerScreen = observer(() => {
               onLongPress={viewerHook.onOpenMenu}
               totalPages={totalPages}
               transitionPages={2}
-              style={{ alignItems: "flex-end" }}
+              style={{ alignItems: "flex-end", flex: 1 }}
             >
               {viewerHook.pageDirection === "left" ? page2 : page1}
             </PagePressable>
@@ -148,7 +158,7 @@ export const PDFViewerScreen = observer(() => {
               onLongPress={viewerHook.onOpenMenu}
               totalPages={totalPages}
               transitionPages={2}
-              style={{ alignItems: "flex-start" }}
+              style={{ alignItems: "flex-start", flex: 1 }}
             >
               {viewerHook.pageDirection === "left" ? page1 : page2}
             </PagePressable>

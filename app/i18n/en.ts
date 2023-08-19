@@ -49,6 +49,11 @@ const en = {
   bookImage: {
     loading: "Preparing to read the book.",
   },
+  modal: {
+    formatSelectModal: {
+      title: "Select format.",
+    },
+  },
   // @demo remove-block-end
 }
 
