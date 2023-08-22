@@ -53,7 +53,7 @@ export const PDFViewerScreen = observer(() => {
   const isFacing =
     viewerHook.readingStyle === "facingPage" || viewerHook.readingStyle === "facingPageWithTitle"
 
-  let page = (
+  const firstPdf = (
     <PDF
       source={source}
       style={[styles.page, imageSize]}
@@ -78,10 +78,11 @@ export const PDFViewerScreen = observer(() => {
       onPageChanged={(page) => {
         console.log(page)
       }}
-      horizontal={viewerHook.pageDirection !== "down"}
+      horizontal={viewerHook.readingStyle !== "verticalScroll"}
       trustAllCerts={false}
       enablePaging={true}
       page={isFacing ? pageNum : undefined}
+      enableRTL={viewerHook.pageDirection === "left"}
     />
   )
 
@@ -89,6 +90,21 @@ export const PDFViewerScreen = observer(() => {
     console.log(page)
     setPageNum(page)
   }
+
+  let page = (
+    <PagePressable
+      currentPage={pageNum}
+      direction="next"
+      onPageChanging={onPageChange}
+      onLongPress={viewerHook.onOpenMenu}
+      onPageChanged={viewerHook.onCloseMenu}
+      totalPages={totalPages}
+      transitionPages={1}
+      style={styles.page}
+    >
+      {firstPdf}
+    </PagePressable>
+  )
   if (isFacing) {
     if (pageNum === 1) {
       page = (
@@ -101,22 +117,11 @@ export const PDFViewerScreen = observer(() => {
           pagingDirection={viewerHook.pageDirection}
           style={styles.page}
         >
-          <PagePressable
-            currentPage={pageNum}
-            direction="next"
-            onPageChanging={onPageChange}
-            onLongPress={viewerHook.onOpenMenu}
-            onPageChanged={viewerHook.onCloseMenu}
-            totalPages={totalPages}
-            transitionPages={1}
-            style={styles.page}
-          >
-            {page}
-          </PagePressable>
+          {page}
         </PageSwiper>
       )
     } else {
-      const page1 = page
+      const page1 = firstPdf
       const page2 = (
         <PDF
           source={source}

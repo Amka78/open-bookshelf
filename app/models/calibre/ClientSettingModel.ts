@@ -1,16 +1,13 @@
 import { Instance, types } from "mobx-state-tree"
 import { withSetPropAction } from "../helpers/withSetPropAction"
 
-const PageDirectionType = types.union(
-  types.literal("left"),
-  types.literal("right"),
-  types.literal("down"),
-)
+const PageDirectionType = types.union(types.literal("left"), types.literal("right"))
 
 export const BookReadingStyleType = types.union(
   types.literal("singlePage"),
   types.literal("facingPage"),
   types.literal("facingPageWithTitle"),
+  types.literal("verticalScroll"),
 )
 
 export const ClientSettingModel = types

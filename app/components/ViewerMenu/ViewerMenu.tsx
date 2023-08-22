@@ -1,5 +1,4 @@
 import { MessageKey } from "@/i18n"
-import { ClientSetting } from "@/models/calibre"
 import { BookReadingStyleType } from "@/type/types"
 import { MaterialCommunityIcons } from "@expo/vector-icons"
 import { Icon, Menu } from "native-base"
@@ -11,7 +10,7 @@ import { MenuItem } from "../MenuItem/MenuItem"
 import { Text } from "../Text/Text"
 
 export type ViewerMenuProps = {
-  pageDirection: "left" | "right" | "down"
+  pageDirection: "left" | "right"
   readingStyle: BookReadingStyleType
   onSelectReadingStyle: (readingStyle: BookReadingStyleType) => void
   onSelectPageDirection: (pageDirection) => void
@@ -50,19 +49,14 @@ export function ViewerMenu(props: ViewerMenuProps) {
           onPress={() => props.onSelectReadingStyle("facingPageWithTitle")}
           tx="bookReadingStyle.facingPageWithTitle"
         />
+        <MenuItem
+          onPress={() => props.onSelectReadingStyle("verticalScroll")}
+          tx="bookReadingStyle.verticalScroll"
+        />
       </Menu>
       <Pressable
         onPress={() => {
-          let newPageDirectionSetting = "left"
-          switch (props.pageDirection) {
-            case "left":
-              newPageDirectionSetting = "right"
-              break
-            case "right":
-              newPageDirectionSetting = "down"
-              break
-          }
-          props.onSelectPageDirection(newPageDirectionSetting)
+          props.onSelectPageDirection(props.pageDirection === "left" ? "right" : "left")
         }}
       >
         <HStack alignItems="center">
@@ -73,7 +67,9 @@ export function ViewerMenu(props: ViewerMenuProps) {
             _dark={{ color: "white" }}
             size={"7"}
           />
-          <Text tx="pageDirection" fontSize={"12"} />
+          {props.readingStyle !== "verticalScroll" ? (
+            <Text tx="pageDirection" fontSize={"12"} />
+          ) : null}
         </HStack>
       </Pressable>
     </HStack>

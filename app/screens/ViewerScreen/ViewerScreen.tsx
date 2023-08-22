@@ -53,7 +53,9 @@ export const ViewerScreen: FC = observer(() => {
       onPageChanged={viewerHook.onCloseMenu}
       totalPages={route.params.library.path.length}
       transitionPage={1}
-      pagingDirection={viewerHook.pageDirection}
+      pagingDirection={
+        viewerHook.readingStyle === "verticalScroll" ? "down" : viewerHook.pageDirection
+      }
     >
       <BookPage
         currentPage={pageNum}
@@ -123,7 +125,8 @@ export const ViewerScreen: FC = observer(() => {
   if (
     (pageNum === 0 && viewerHook.readingStyle !== "facingPage") ||
     (viewerHook.orientation === "vertical" && viewerHook.readingStyle !== "facingPage") ||
-    viewerHook.readingStyle === "singlePage"
+    viewerHook.readingStyle === "singlePage" ||
+    viewerHook.readingStyle === "verticalScroll"
   ) {
     fixedViewer = singlePage
   } else {
