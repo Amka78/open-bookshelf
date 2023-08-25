@@ -24,7 +24,7 @@ export type GeneralApiProblem =
   /**
    * Unable to find that resource.  This is a 404.
    */
-  | { kind: "not-found" }
+  | { kind: "not-found"; message?: string }
   /**
    * All other 4xx series errors.
    */
@@ -44,6 +44,7 @@ export type GeneralApiProblem =
  * @param response The api response.
  */
 export function getGeneralApiProblem(response: ApiResponse<any>): GeneralApiProblem | void {
+  console.log(response)
   switch (response.problem) {
     case "CONNECTION_ERROR":
       return { kind: "cannot-connect", temporary: true }
@@ -62,7 +63,7 @@ export function getGeneralApiProblem(response: ApiResponse<any>): GeneralApiProb
         case 403:
           return { kind: "forbidden" }
         case 404:
-          return { kind: "not-found" }
+          return { kind: "not-found", message: response.data }
         default:
           return { kind: "rejected" }
       }

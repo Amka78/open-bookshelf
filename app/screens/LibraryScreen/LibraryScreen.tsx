@@ -79,9 +79,13 @@ export const LibraryScreen: FC = observer(() => {
       if (format === "PDF") {
         navigation.navigate("PDFViewer", { library: item })
       } else {
-        await item.convertBook(() => {
-          navigation.navigate("Viewer", { library: item })
-        })
+        try {
+          await item.convertBook(format, () => {
+            navigation.navigate("Viewer", { library: item })
+          })
+        } catch (e) {
+          modal.openModal("ErrorModal", { message: e.message, titleTx: "errors.failedConvert" })
+        }
       }
     }
     const onPress = async () => {

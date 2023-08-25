@@ -4,6 +4,7 @@ import { api, BookManifestType } from "../services/api"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { ConvertApiErrorToException } from "./exceptions/Exceptions"
 import { ClientSettingModel } from "./calibre"
+import { GeneralApiProblem } from "@/services/api/apiProblem"
 
 const FormatSizeModel = types.model("FormatSizeModel").props({
   id: types.identifier,
@@ -42,9 +43,17 @@ export const LibraryModel = types
     convertBook: flow(function* (format: string, onPostConvert: () => void) {
       const libraryMap = getParent(root) as any
 
-      let response: { kind: "ok"; data: BookManifestType }
+      let response: { kind: "ok"; data: BookManifestType } | GeneralApiProblem
       while (response?.data?.job_status !== "finished") {
         response = yield api.CheckBookConverting(libraryMap.id, root.id, format)
+
+        if (response.kind !== "ok") {
+          if (response.kind === "not-found") {
+            throw new Error(response.message)
+          }
+          throw new Error()
+        }
+
         yield delay(6000)
       }
 
