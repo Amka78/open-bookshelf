@@ -44,7 +44,7 @@ export const LibraryModel = types
       const libraryMap = getParent(root) as any
 
       let response: { kind: "ok"; data: BookManifestType } | GeneralApiProblem
-      while (response?.data?.job_status !== "finished") {
+      while (response?.data?.files === undefined) {
         response = yield api.CheckBookConverting(libraryMap.id, root.id, format)
 
         if (response.kind !== "ok") {
@@ -52,13 +52,15 @@ export const LibraryModel = types
             throw new Error(response.message)
           }
           throw new Error()
+        } else {
+          if (response.data.job_status === "finished") {
+            if (response.data.traceback) {
+              throw new Error(response.data.traceback)
+            }
+          }
         }
 
         yield delay(6000)
-      }
-
-      if (response.data.traceback) {
-        throw new Error(response.data.traceback)
       }
 
       const pathList = []
@@ -366,15 +368,17 @@ function setSearchResult(response: any, selectedLibrary: LibraryMap) {
     })
   })
 
-  selectedLibrary.sortField.clear()
-  response.data.sortable_fields.forEach((value) => {
-    const sortField = SortFieldModel.create({
-      id: value[0],
-      name: value[1],
-    })
+  if (response.data.sortable_fields) {
+    selectedLibrary.sortField.clear()
+    response.data.sortable_fields.forEach((value) => {
+      const sortField = SortFieldModel.create({
+        id: value[0],
+        name: value[1],
+      })
 
-    selectedLibrary.sortField.push(sortField)
-  })
+      selectedLibrary.sortField.push(sortField)
+    })
+  }
 }
 
 function delay(ms: number) {
