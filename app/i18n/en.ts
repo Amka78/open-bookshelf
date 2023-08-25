@@ -24,6 +24,7 @@ const en = {
     canNotConnect: "Unable to connect to Calibre.",
     canNotConnectDescription:
       "Can't connect to Calibre, please check URL is correct and Calibre server is working.",
+    failedConvert: "Book conversion error",
   },
   connectScreen: {
     welcome: "Welcome!!",

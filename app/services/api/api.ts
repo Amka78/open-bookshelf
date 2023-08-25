@@ -12,7 +12,8 @@ import { GeneralApiProblem, getGeneralApiProblem } from "./apiProblem"
 
 import type {
   ApiConfig,
-  ApiFeedResponse, // @demo remove-current-line
+  ApiFeedResponse,
+  BookManifestType as ApiBookManifestType, // @demo remove-current-line
 } from "./api.types"
 
 /**
@@ -164,16 +165,16 @@ export class Api {
   /**
    * Check Book Converting
    *
-   * @returns {(Promise<{ kind: "ok"; data: any } | GeneralApiProblem>)}
+   * @returns {(Promise<{ kind: "ok"; data: ApiBookManifestType } | GeneralApiProblem>)}
    * @memberof Api
    */
   async CheckBookConverting(
     libraryId: string,
     bookId: number,
     bookType: string,
-  ): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
+  ): Promise<{ kind: "ok"; data: ApiBookManifestType } | GeneralApiProblem> {
     // make the api call
-    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get(
+    const response: ApiResponse<ApiBookManifestType> = await this.apisauce.get(
       `book-manifest/${bookId}/${bookType}?library_id=${libraryId}&${Date.now}`,
     )
 

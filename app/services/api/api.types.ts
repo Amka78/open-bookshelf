@@ -48,3 +48,10 @@ export interface ApiConfig {
    */
   timeout: number
 }
+
+export type BookManifestType = {
+  job_id?: number
+  job_status: "waiting" | "finished"
+  aborted?: boolean
+  traceback?: string
+}

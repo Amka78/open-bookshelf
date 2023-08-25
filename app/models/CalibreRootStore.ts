@@ -1,6 +1,6 @@
 import { flow, getParent, Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 
-import { api } from "../services/api"
+import { api, BookManifestType } from "../services/api"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { ConvertApiErrorToException } from "./exceptions/Exceptions"
 import { ClientSettingModel } from "./calibre"
@@ -33,16 +33,23 @@ export const LibraryModel = types
     metaData: types.maybeNull(MetadataModel),
     path: types.array(types.string),
     hash: types.maybeNull(types.number),
+    pageProgressionDirection: types.maybeNull(
+      types.union(types.literal("rtl"), types.literal("ltr")),
+    ),
   })
   .actions(withSetPropAction)
   .actions((root) => ({
-    convertBook: flow(function* (onPostConvert: () => void) {
+    convertBook: flow(function* (format: string, onPostConvert: () => void) {
       const libraryMap = getParent(root) as any
 
-      let response
-      while (response?.data?.files === undefined) {
-        response = yield api.CheckBookConverting(libraryMap.id, root.id, root.metaData.formats[0])
+      let response: { kind: "ok"; data: BookManifestType }
+      while (response?.data?.job_status !== "finished") {
+        response = yield api.CheckBookConverting(libraryMap.id, root.id, format)
         yield delay(6000)
+      }
+
+      if (response.data.traceback) {
+        throw new Error(response.data.traceback)
       }
 
       const pathList = []
@@ -51,7 +58,7 @@ export const LibraryModel = types
         const spineResponse = yield api.getLibraryInformation(
           libraryMap.id,
           root.id,
-          root.metaData.formats[0],
+          response.data.book_format,
           root.metaData.size,
           response.data.book_hash.mtime,
           response.data.spine[0],
@@ -59,27 +66,11 @@ export const LibraryModel = types
 
         if (spineResponse.kind === "ok") {
           Object.values(spineResponse.data.tree.c[1].c).forEach((path: any) => {
-            if (response.data.book_format === "PDF") {
-              if (path !== undefined) {
-                if (path.c !== undefined) {
-                  if (path.c[1] !== undefined) {
-                    if (path.c[1].a !== undefined) {
-                      if (path.c[1].a[2]) {
-                        console.log(path.c[1].a[2][1])
-                        pathList.push(path.c[1].a[2][1])
-                      }
-                    }
-                  }
-                }
+            Object.values(path.a).forEach((avalue) => {
+              if (avalue[0] === "data-calibre-src") {
+                pathList.push(avalue[1])
               }
-              console.log("set")
-            } else {
-              Object.values(path.a).forEach((avalue) => {
-                if (avalue[0] === "data-calibre-src") {
-                  pathList.push(avalue[1])
-                }
-              })
-            }
+            })
           })
         }
 
@@ -115,6 +106,10 @@ export const LibraryModel = types
 
       root.setProp("path", pathList)
       root.setProp("hash", response.data.book_hash.mtime)
+
+      if (response.data.page_progression_direction) {
+        root.setProp("pageProgressionDirection", response.data.page_progression_direction)
+      }
       onPostConvert()
     }),
   }))
