@@ -2,11 +2,10 @@ import {
   BookDescriptionItem,
   BookImageItem,
   FlatList,
-  LeftSideMenuItem,
+  LeftSideMenu,
   LibraryViewIcon,
   SortMenu,
 } from "@/components"
-import { modalConfig } from "@/components/Modals/ModalConfig"
 import { ModalStackParams } from "@/components/Modals/Types"
 import { useStores } from "@/models"
 import { Library } from "@/models/CalibreRootStore"
@@ -252,48 +251,17 @@ export const LibraryScreen: FC = observer(() => {
     </>
   )
 
-  const leftSideMenu = selectedLibrary.tagBrowser.map((category) => {
-    return (
-      <LeftSideMenuItem name={category.name} count={category.count} key={category.name}>
-        {category.subCategory.map((subCategory) => {
-          return (
-            <LeftSideMenuItem
-              mode={"subCategory"}
-              count={subCategory.count}
-              name={subCategory.name}
-              key={subCategory.name}
-              onLastNodePress={async () => {
-                selectedLibrary.searchSetting.setProp("query", subCategory.name)
-                await search()
-              }}
-              selected={subCategory.name === selectedLibrary.searchSetting?.query}
-            >
-              {subCategory.children.map((node) => {
-                return (
-                  <LeftSideMenuItem
-                    mode={"node"}
-                    count={node.count}
-                    name={node.name}
-                    key={node.name}
-                    onLastNodePress={async () => {
-                      selectedLibrary.searchSetting.setProp("query", node.name)
-                      await search()
-                    }}
-                    selected={node.name === selectedLibrary.searchSetting?.query}
-                  />
-                )
-              })}
-            </LeftSideMenuItem>
-          )
-        })}
-      </LeftSideMenuItem>
-    )
-  })
-
   return isWideScreen ? (
     <HStack flex="1">
       <ScrollView backgroundColor={"white"} maxWidth={"32"}>
-        {leftSideMenu}
+        <LeftSideMenu
+          onNodePress={async (name) => {
+            selectedLibrary.searchSetting.setProp("query", name)
+            await search()
+          }}
+          tagBrowser={selectedLibrary.tagBrowser}
+          selectedName={selectedLibrary.searchSetting?.query}
+        />
       </ScrollView>
       {LibraryCore}
     </HStack>
