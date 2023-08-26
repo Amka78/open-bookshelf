@@ -5,15 +5,16 @@
  * See the [Backend API Integration](https://github.com/infinitered/ignite/blob/master/docs/Backend-API-Integration.md)
  * documentation for more details.
  */
+import Config from "@/config"
 import { ApiResponse, ApisauceInstance, create } from "apisauce"
 
-import Config from "@/config"
 import { GeneralApiProblem, getGeneralApiProblem } from "./apiProblem"
 
 import type {
   ApiConfig,
   ApiFeedResponse,
-  BookManifestType as ApiBookManifestType, // @demo remove-current-line
+  ApiBookManifestType,
+  ApiCalibreInterfaceType, // @demo remove-current-line
 } from "./api.types"
 
 /**
@@ -73,12 +74,14 @@ export class Api {
   /**
    * Initialize Calibre
    *
-   * @returns {(Promise<{ kind: "ok"; data: any } | GeneralApiProblem>)}
+   * @returns {(Promise<{ kind: "ok"; data: ApiCalibreInterfaceType } | GeneralApiProblem>)}
    * @memberof Api
    */
-  async initializeCalibre(): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
+  async initializeCalibre(): Promise<
+    { kind: "ok"; data: ApiCalibreInterfaceType } | GeneralApiProblem
+  > {
     // make the api call
-    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get(
+    const response: ApiResponse<ApiCalibreInterfaceType> = await this.apisauce.get(
       `/interface-data/update?${Date.now}`,
     )
 

@@ -31,7 +31,6 @@ export interface ApiFeedResponse {
     description: string
     image: string
   }
-  items: EpisodeItem[]
 }
 
 /**
@@ -49,9 +48,104 @@ export interface ApiConfig {
   timeout: number
 }
 
-export type BookManifestType = {
+export type ApiBookManifestType = {
   job_id?: number
   job_status: "waiting" | "finished"
   aborted?: boolean
   traceback?: string
+}
+
+export type ApiCalibreInterfaceType = {
+  username?: string
+  output_format: string
+  input_formats: Record<string, boolean>
+  gui_pubdata_display_format: string
+  gui_timestamp_display_format: string
+  gui_last_modified_display_format: string
+  completion_mode: string
+  use_roman_numerals_for_series_number: boolean
+  translations: {
+    entiries: Record<string, string[]>
+    hash: string
+    language: string
+    plural_forms: string
+  }
+  icon_map: {
+    authors: string
+    series: string
+    formats: string
+    publisher: string
+    rating: string
+    news: string
+    tags: string
+    custom: string
+    user: string
+    search: string
+    identifiers: string
+    gst: string
+    languages: string
+    file_type_icons: {
+      default: string
+      dir: string
+      zero: string
+      jpeg: string
+      jpg: string
+      gif: string
+      png: string
+      bmp: string
+      cbz: string
+      cbr: string
+      svg: string
+      html: string
+      htmlz: string
+      htm: string
+      xhtml: string
+      xhtm: string
+      lig: string
+      lrf: string
+      lrx: string
+      pdf: string
+      pdr: string
+      rar: string
+      zip: string
+      txt: string
+      text: string
+      prc: string
+      azw: string
+      mobi: string
+      mbp: string
+      azw1: string
+      azw2: string
+      azw3: string
+      azw4: string
+      tpz: string
+      tan: string
+      epub: string
+      fb2: string
+      rtf: string
+      odt: string
+      snb: string
+      djv: string
+      djvu: string
+      xps: string
+      oxps: string
+      docx: string
+      opml: string
+    }
+    icon_path: string
+  }
+  custom_list_template: {
+    comments_fields: string[]
+    height: string
+    line: string[]
+    thumbnail: boolean
+    thumbnail_height: number
+  }
+  search_the_net_urls: string[]
+  num_per_page: number
+  default_book_list_mode: string
+  donate_link: string
+  lang_code_for_user_manual: string
+  library_map: Record<string, string>
+  default_library_id: string
 }

@@ -1,6 +1,6 @@
 import { flow, getParent, Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 
-import { api, BookManifestType } from "../services/api"
+import { api, ApiBookManifestType } from "../services/api"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { ConvertApiErrorToException } from "./exceptions/Exceptions"
 import { ClientSettingModel } from "./calibre"
@@ -43,7 +43,7 @@ export const LibraryModel = types
     convertBook: flow(function* (format: string, onPostConvert: () => void) {
       const libraryMap = getParent(root) as any
 
-      let response: { kind: "ok"; data: BookManifestType } | GeneralApiProblem
+      let response: { kind: "ok"; data: ApiBookManifestType } | GeneralApiProblem
       while (response?.data?.files === undefined) {
         response = yield api.CheckBookConverting(libraryMap.id, root.id, format)
 
