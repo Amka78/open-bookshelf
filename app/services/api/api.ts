@@ -14,7 +14,8 @@ import type {
   ApiConfig,
   ApiFeedResponse,
   ApiBookManifestType,
-  ApiCalibreInterfaceType, // @demo remove-current-line
+  ApiCalibreInterfaceType,
+  ApiTagBrowser, // @demo remove-current-line
 } from "./api.types"
 
 /**
@@ -80,7 +81,6 @@ export class Api {
   async initializeCalibre(): Promise<
     { kind: "ok"; data: ApiCalibreInterfaceType } | GeneralApiProblem
   > {
-    // make the api call
     const response: ApiResponse<ApiCalibreInterfaceType> = await this.apisauce.get(
       `/interface-data/update?${Date.now}`,
     )
@@ -105,7 +105,6 @@ export class Api {
     sort: string,
     sortOrder: string,
   ): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
-    // make the api call
     const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get(
       `interface-data/books-init?library_id=${library}${
         searchText ? `&search=${searchText}` : ""
@@ -130,7 +129,6 @@ export class Api {
     library: string,
     json,
   ): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
-    // make the api call
     const response: ApiResponse<ApiFeedResponse> = await this.apisauce.post(
       `interface-data/more-books?library_id=${library}`,
       json,
@@ -148,12 +146,13 @@ export class Api {
   /**
    * get Tag Browser
    *
-   * @returns {(Promise<{ kind: "ok"; data: any } | GeneralApiProblem>)}
+   * @returns {(Promise<{ kind: "ok"; data: ApiTagBrowser } | GeneralApiProblem>)}
    * @memberof Api
    */
-  async getTagBrowser(library: string): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
-    // make the api call
-    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get(
+  async getTagBrowser(
+    library: string,
+  ): Promise<{ kind: "ok"; data: ApiTagBrowser } | GeneralApiProblem> {
+    const response: ApiResponse<ApiTagBrowser> = await this.apisauce.get(
       `interface-data/tag-browser?collapse_at=25&hide_empty_categories=no&library_id=${library}&partition_method=first%20letter&sort_tags_by=name`,
     )
 

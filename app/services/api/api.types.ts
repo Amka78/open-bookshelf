@@ -2,25 +2,6 @@
  * These types indicate the shape of the data you expect to receive from your
  * API endpoint, assuming it's a JSON object like we have.
  */
-export interface EpisodeItem {
-  title: string
-  pubDate: string
-  link: string
-  guid: string
-  author: string
-  thumbnail: string
-  description: string
-  content: string
-  enclosure: {
-    link: string
-    type: string
-    length: number
-    duration: number
-    rating: { scheme: string; value: string }
-  }
-  categories: string[]
-}
-
 export interface ApiFeedResponse {
   status: string
   feed: {
@@ -148,4 +129,31 @@ export type ApiCalibreInterfaceType = {
   lang_code_for_user_manual: string
   library_map: Record<string, string>
   default_library_id: string
+}
+
+type Children = {
+  id: string
+  children: Children[]
+}
+
+type CategoryItemMap = {
+  category: true
+  name: string
+  is_category: true
+  count: number
+  tooltip: string
+  is_editable: boolean
+  is_searchable: boolean
+}
+
+type NodeItemMap = {
+  category: string
+  avg_rating: number
+  id: number
+  count: number
+  name: string
+}
+export type ApiTagBrowser = {
+  root: Children
+  item_map: Record<string, CategoryItemMap | NodeItemMap>
 }
