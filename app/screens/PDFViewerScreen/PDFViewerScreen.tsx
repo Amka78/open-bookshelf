@@ -56,21 +56,29 @@ export const PDFViewerScreen = observer(() => {
   const firstPdf = (
     <PDF
       source={source}
-      style={[styles.page, imageSize]}
+      style={[styles.page, { alignSelf: "center", justifyContent: "center" }, imageSize]}
       onLoadComplete={(numberOfPages, path, size) => {
         setTotalPages(numberOfPages)
 
         if (!imageSize) {
+          console.log(size)
+          console.log(windowDimension)
           let pdfHeight = size.height
           let pdfWidth = size.width
 
           if (size.height > windowDimension.height) {
-            pdfWidth = (pdfWidth * size.height) / windowDimension.height
+            pdfWidth = pdfWidth * (windowDimension.height / size.height)
             pdfHeight = windowDimension.height
           }
 
+          console.log(pdfWidth)
           if (pdfWidth > windowDimension.width) {
             pdfWidth = windowDimension.width
+          } else if (
+            viewerHook.readingStyle === "facingPage" ||
+            viewerHook.readingStyle === "facingPageWithTitle"
+          ) {
+            if (pdfWidth > windowDimension.width / 2) pdfWidth = windowDimension.width / 2
           }
           setImageSize({ height: pdfHeight, width: pdfWidth })
         }
@@ -95,7 +103,6 @@ export const PDFViewerScreen = observer(() => {
     <PagePressable
       currentPage={pageNum}
       direction="next"
-      onPageChanging={onPageChange}
       onLongPress={viewerHook.onOpenMenu}
       onPageChanged={viewerHook.onCloseMenu}
       totalPages={totalPages}
@@ -125,7 +132,7 @@ export const PDFViewerScreen = observer(() => {
       const page2 = (
         <PDF
           source={source}
-          style={[styles.page, imageSize]}
+          style={imageSize}
           trustAllCerts={false}
           enablePaging={true}
           singlePage={true}
@@ -142,7 +149,7 @@ export const PDFViewerScreen = observer(() => {
           pagingDirection={viewerHook.pageDirection}
           style={{ alignItems: "center" }}
         >
-          <HStack style={{ flex: 1 }}>
+          <HStack style={{ flex: 1, alignItems: "center" }}>
             <PagePressable
               currentPage={pageNum}
               direction={viewerHook.pageDirection === "left" ? "next" : "previous"}
@@ -151,7 +158,7 @@ export const PDFViewerScreen = observer(() => {
               onLongPress={viewerHook.onOpenMenu}
               totalPages={totalPages}
               transitionPages={2}
-              style={{ alignItems: "flex-end", flex: 1 }}
+              style={{ alignItems: "flex-end", height: "100%" }}
             >
               {viewerHook.pageDirection === "left" ? page2 : page1}
             </PagePressable>
@@ -163,7 +170,7 @@ export const PDFViewerScreen = observer(() => {
               onLongPress={viewerHook.onOpenMenu}
               totalPages={totalPages}
               transitionPages={2}
-              style={{ alignItems: "flex-start", flex: 1 }}
+              style={{ alignItems: "flex-start", height: "100%" }}
             >
               {viewerHook.pageDirection === "left" ? page1 : page2}
             </PagePressable>
