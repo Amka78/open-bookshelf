@@ -5,7 +5,7 @@ import { Pressable } from "native-base"
 export type PagePressableProps = {
   children: React.ReactNode
   direction: "previous" | "next"
-  onPageChanging: (page: number) => void
+  onPageChanging?: (page: number) => void
   onPageChanged: () => void
   onLongPress: () => void
   currentPage: number
@@ -16,14 +16,17 @@ export type PagePressableProps = {
 export function PagePressable(props: PagePressableProps) {
   return (
     <Pressable
-      onPress={() => {
+      onPress={(event) => {
         let currentPage = 0
-        if (props.direction === "previous") {
-          currentPage = goToPreviousPage(props.currentPage, props.transitionPages)
-        } else {
-          currentPage = goToNextPage(props.currentPage, props.totalPages, props.transitionPages)
+        if (props.onPageChanging) {
+          if (props.direction === "previous") {
+            currentPage = goToPreviousPage(props.currentPage, props.transitionPages)
+          } else {
+            currentPage = goToNextPage(props.currentPage, props.totalPages, props.transitionPages)
+          }
+
+          props.onPageChanging(currentPage)
         }
-        props.onPageChanging(currentPage)
 
         if (props.onPageChanged) {
           props.onPageChanged()

@@ -5,7 +5,6 @@ export type PageManagerProps = {
   currentPage: number
   totalPage: number
   onPageChange: (page: number) => void
-  facing: boolean
   reverse: boolean
 }
 
@@ -26,11 +25,12 @@ export function PageManager(props: PageManagerProps) {
         maxW="900"
         $PWD={props.reverse}
         defaultValue={props.reverse ? props.currentPage * -1 : props.currentPage}
-        minValue={props.reverse ? props.totalPage * -1 : props.totalPage}
+        minValue={props.reverse ? props.totalPage * -1 : 0}
         maxValue={props.reverse ? 0 : props.totalPage}
         step={1}
         onChange={(v) => {
-          props.onPageChange(getSliderIndex(v, props.facing))
+          const index = v < 0 ? v * -1 : v
+          props.onPageChange(index)
         }}
         isReversed={props.reverse}
       >
@@ -44,13 +44,4 @@ export function PageManager(props: PageManagerProps) {
       </Text>
     </VStack>
   )
-}
-
-function getSliderIndex(v: number, horizontal: boolean) {
-  let pageNum = v * -1
-
-  if (horizontal && pageNum % 2 === 0) {
-    pageNum--
-  }
-  return pageNum
 }

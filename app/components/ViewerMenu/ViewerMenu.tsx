@@ -54,24 +54,24 @@ export function ViewerMenu(props: ViewerMenuProps) {
           tx="bookReadingStyle.verticalScroll"
         />
       </Menu>
-      <Pressable
-        onPress={() => {
-          props.onSelectPageDirection(props.pageDirection === "left" ? "right" : "left")
-        }}
-      >
-        <HStack alignItems="center">
-          <Icon
-            as={MaterialCommunityIcons}
-            name={`arrow-${props.pageDirection}-bold`}
-            color={"black"}
-            _dark={{ color: "white" }}
-            size={"7"}
-          />
-          {props.readingStyle !== "verticalScroll" ? (
+      {props.readingStyle !== "verticalScroll" ? (
+        <Pressable
+          onPress={() => {
+            props.onSelectPageDirection(props.pageDirection === "left" ? "right" : "left")
+          }}
+        >
+          <HStack alignItems="center">
+            <Icon
+              as={MaterialCommunityIcons}
+              name={`arrow-${props.pageDirection}-bold`}
+              color={"black"}
+              _dark={{ color: "white" }}
+              size={"7"}
+            />
             <Text tx="pageDirection" fontSize={"12"} />
-          ) : null}
-        </HStack>
-      </Pressable>
+          </HStack>
+        </Pressable>
+      ) : null}
     </HStack>
   )
 }
