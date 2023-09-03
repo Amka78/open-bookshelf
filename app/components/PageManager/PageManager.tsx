@@ -6,10 +6,12 @@ export type PageManagerProps = {
   totalPage: number
   onPageChange: (page: number) => void
   reverse: boolean
+  visible: boolean
 }
 
 export function PageManager(props: PageManagerProps) {
-  return (
+  const pageNum = props.currentPage ? props.currentPage + 1 : 1
+  return props.visible ? (
     <VStack
       position={"absolute"}
       left={0}
@@ -40,8 +42,8 @@ export function PageManager(props: PageManagerProps) {
         <Slider.Thumb />
       </Slider>
       <Text textAlign="center">
-        {props.currentPage}/{props.totalPage}
+        {pageNum}/{props.totalPage}
       </Text>
     </VStack>
-  )
+  ) : undefined
 }

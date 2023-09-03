@@ -83,11 +83,15 @@ const AppStack = observer(function AppStack() {
       <Stack.Screen name="Acquisition" component={AcquisitionScreen} />
       <Stack.Screen name="CalibreRoot" component={CalibreRootScreen} />
       <Stack.Screen name="Library" component={LibraryScreen} />
-      <Stack.Screen name="Viewer" component={ViewerScreen} options={{ statusBarHidden: true }} />
+      <Stack.Screen
+        name="Viewer"
+        component={ViewerScreen}
+        options={{ statusBarHidden: true, headerShown: false }}
+      />
       <Stack.Screen
         name="PDFViewer"
         component={PDFViewerScreen}
-        options={{ statusBarHidden: true }}
+        options={{ statusBarHidden: true, headerShown: false }}
       />
     </Stack.Navigator>
   )

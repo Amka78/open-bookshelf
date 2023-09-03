@@ -2,7 +2,7 @@ import { MessageKey } from "@/i18n"
 import { BookReadingStyleType } from "@/type/types"
 import { MaterialCommunityIcons } from "@expo/vector-icons"
 import { Icon, Menu } from "native-base"
-import React from "react"
+import React, { useState } from "react"
 import { Pressable } from "react-native"
 
 import { HStack } from "../HStack/HStack"
@@ -16,6 +16,14 @@ export type ViewerMenuProps = {
   onSelectPageDirection: (pageDirection) => void
 }
 export function ViewerMenu(props: ViewerMenuProps) {
+  const [pageDirectionState, setPageDirectionState] = useState(props.pageDirection)
+  const [readingStyleState, setReadingStyleState] = useState(props.readingStyle)
+
+  const onUpdateReadingStyle = (readingStyle: BookReadingStyleType) => {
+    props.onSelectReadingStyle(readingStyle)
+    setReadingStyleState(readingStyle)
+  }
+
   return (
     <HStack>
       <Menu
@@ -31,39 +39,41 @@ export function ViewerMenu(props: ViewerMenuProps) {
                   _dark={{ color: "white" }}
                   size={"7"}
                 />
-                <Text tx={`bookReadingStyle.${props.readingStyle}` as MessageKey} fontSize={"12"} />
+                <Text tx={`bookReadingStyle.${readingStyleState}` as MessageKey} fontSize={"12"} />
               </HStack>
             </Pressable>
           )
         }}
       >
         <MenuItem
-          onPress={() => props.onSelectReadingStyle("singlePage")}
+          onPress={() => onUpdateReadingStyle("singlePage")}
           tx={"bookReadingStyle.singlePage"}
         />
         <MenuItem
-          onPress={() => props.onSelectReadingStyle("facingPage")}
+          onPress={() => onUpdateReadingStyle("facingPage")}
           tx="bookReadingStyle.facingPage"
         />
         <MenuItem
-          onPress={() => props.onSelectReadingStyle("facingPageWithTitle")}
+          onPress={() => onUpdateReadingStyle("facingPageWithTitle")}
           tx="bookReadingStyle.facingPageWithTitle"
         />
         <MenuItem
-          onPress={() => props.onSelectReadingStyle("verticalScroll")}
+          onPress={() => onUpdateReadingStyle("verticalScroll")}
           tx="bookReadingStyle.verticalScroll"
         />
       </Menu>
       {props.readingStyle !== "verticalScroll" ? (
         <Pressable
           onPress={() => {
-            props.onSelectPageDirection(props.pageDirection === "left" ? "right" : "left")
+            const direction = props.pageDirection === "left" ? "right" : "left"
+            props.onSelectPageDirection(direction)
+            setPageDirectionState(direction)
           }}
         >
           <HStack alignItems="center">
             <Icon
               as={MaterialCommunityIcons}
-              name={`arrow-${props.pageDirection}-bold`}
+              name={`arrow-${pageDirectionState}-bold`}
               color={"black"}
               _dark={{ color: "white" }}
               size={"7"}
