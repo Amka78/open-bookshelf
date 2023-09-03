@@ -3,7 +3,7 @@ import { useStores } from "@/models"
 import { Entry } from "@/models/opds"
 import { ApppNavigationProp } from "@/navigators"
 import { useNavigation } from "@react-navigation/native"
-import ExpoFastImage from "expo-fast-image"
+import { Image } from "expo-image"
 import { observer } from "mobx-react-lite"
 import React, { FC, useEffect } from "react"
 import { View } from "react-native"
@@ -18,10 +18,8 @@ export const OPDSRootScreen: FC = observer(() => {
       headerTitle(props) {
         return (
           <Flex direction="row" alignItems={"center"}>
-            <ExpoFastImage
-              source={{
-                uri: `${settingStore.api.baseUrl}${opdsRootStore.root.icon}`,
-              }}
+            <Image
+              source={`${settingStore.api.baseUrl}${opdsRootStore.root.icon}`}
               style={{ height: 30, width: 30 }}
               resizeMode={"cover"}
             />

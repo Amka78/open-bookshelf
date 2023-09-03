@@ -5,7 +5,7 @@ import { OpdsChildrenModel, OpdsModel, OpdsRoot } from "@/models/opds/OpdsRootSt
 import { ApppNavigationProp, AppStackParamList } from "@/navigators"
 import { MaterialCommunityIcons } from "@expo/vector-icons"
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
-import ExpoFastImage from "expo-fast-image"
+import { Image } from "expo-image"
 import { observer } from "mobx-react-lite"
 import { Box } from "native-base"
 import React, { FC, useEffect, useState } from "react"
@@ -51,10 +51,8 @@ export const AcquisitionScreen: FC = observer(() => {
       headerTitle(props) {
         return (
           <Flex direction="row" alignItems={"center"}>
-            <ExpoFastImage
-              source={{
-                uri: `${settingStore.api.baseUrl}${currentOpds?.icon}`,
-              }}
+            <Image
+              source={`${settingStore.api.baseUrl}${currentOpds?.icon}`}
               style={{ height: 30, width: 30 }}
               resizeMode={"cover"}
             />

@@ -1,4 +1,4 @@
-import ExpoFastImage from "expo-fast-image"
+import { Image } from "expo-image"
 import { Box, Flex } from "native-base"
 import React, { useState } from "react"
 import { StyleSheet } from "react-native"
@@ -36,7 +36,7 @@ export function BookDescriptionItem(props: BookDescriptionItemProps) {
       LeftComponent={
         <Flex flexDirection={"row"} width={"full"}>
           <Flex flexDirection={"row"} width={"5/6"} marginLeft={2}>
-            <ExpoFastImage source={props.source} style={styles.coverImage} resizeMode={"contain"} />
+            <Image source={props.source} style={styles.coverImage} resizeMode={"contain"} />
             <Box marginLeft={"1.5"}>
               <Text fontSize={"lg"} lineBreakMode="tail" numberOfLines={1}>
                 {props.title}

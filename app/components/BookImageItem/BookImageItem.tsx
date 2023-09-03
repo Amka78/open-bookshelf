@@ -1,4 +1,4 @@
-import ExpoFastImage from "expo-fast-image"
+import { Image } from "expo-image"
 import { Box } from "native-base"
 import React, { useState } from "react"
 import { StyleSheet, TouchableOpacity } from "react-native"
@@ -28,7 +28,7 @@ export function BookImageItem(props: BookImageprops) {
             labelDirection="vertical"
           />
         ) : (
-          <ExpoFastImage source={props.source} style={styles.imageSize} resizeMode={"stretch"} />
+          <Image source={props.source} style={styles.imageSize} resizeMode={"stretch"} />
         )}
       </Box>
     </TouchableOpacity>
