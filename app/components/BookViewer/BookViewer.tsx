@@ -1,17 +1,7 @@
-import {
-  Box,
-  HStack,
-  PageManager,
-  PagePressable,
-  PressableIcon,
-  Text,
-  ViewerHeader,
-  ViewerMenu,
-} from "@/components"
+import { Box, HStack, PageManager, PagePressable, ViewerHeader } from "@/components"
 import { useViewer } from "@/hooks/useViewer"
 import { ApppNavigationProp } from "@/navigators"
 import { BookReadingStyleType } from "@/type/types"
-import { MaterialCommunityIcons } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
 import { FlashList } from "@shopify/flash-list"
 import React, { useEffect, useRef, useState } from "react"
@@ -47,12 +37,19 @@ export function BookViewer(props: BookViewerProps) {
   }, [])
 
   const renderPage = (renderProps: RenderPageProps) => {
-    const alignItems =
-      renderProps.pageType === "singlePage"
-        ? "center"
-        : renderProps.pageType === "leftPage"
-        ? "flex-end"
-        : undefined
+    let alignItems
+
+    switch (renderProps.pageType) {
+      case "singlePage":
+        alignItems = "center"
+        break
+      case "leftPage":
+        alignItems = "flex-end"
+        break
+      case "rightPage":
+        alignItems = "flex-start"
+        break
+    }
     return (
       <PagePressable
         currentPage={scrollIndex}
@@ -86,20 +83,20 @@ export function BookViewer(props: BookViewerProps) {
         </Box>
       )
     } else {
-      const firstPage = renderPage({
-        page: item.page1,
-        direction: "previous",
-        pageType: "rightPage",
-      })
-      const secondPage = renderPage({
-        page: item.page2,
-        direction: "next",
+      const leftPage = renderPage({
+        page: viewerHook.pageDirection === "left" ? item.page2 : item.page1,
+        direction: viewerHook.pageDirection === "left" ? "next" : "previous",
         pageType: "leftPage",
+      })
+      const rightPage = renderPage({
+        page: viewerHook.pageDirection === "left" ? item.page1 : item.page2,
+        direction: viewerHook.pageDirection === "left" ? "previous" : "next",
+        pageType: "rightPage",
       })
       renderComp = (
         <HStack width={dimension.width} height={dimension.height}>
-          {secondPage}
-          {firstPage}
+          {leftPage}
+          {rightPage}
         </HStack>
       )
     }
@@ -176,25 +173,26 @@ export function BookViewer(props: BookViewerProps) {
         }}
       />
       {pages ? (
-        <FlashList<number | FacingPageType>
-          data={pages[viewerHook.readingStyle].slice()}
-          renderItem={renderItem}
-          horizontal={viewerHook?.readingStyle !== "verticalScroll"}
-          pagingEnabled={true}
-          inverted={
-            viewerHook.pageDirection === "left" && viewerHook.readingStyle !== "verticalScroll"
-          }
-          ref={flastListRef}
-          style={styles.viewerRoot}
-          onViewableItemsChanged={(info) => {
-            setScrollToIndex(info.changed[0].index)
-            viewerHook.onCloseMenu()
-          }}
-          viewabilityConfig={{
-            itemVisiblePercentThreshold: 100,
-          }}
-          estimatedItemSize={1920}
-        />
+        <Box style={styles.viewerRoot}>
+          <FlashList<number | FacingPageType>
+            data={pages[viewerHook.readingStyle].slice()}
+            renderItem={renderItem}
+            horizontal={viewerHook?.readingStyle !== "verticalScroll"}
+            pagingEnabled={true}
+            inverted={
+              viewerHook.pageDirection === "left" && viewerHook.readingStyle !== "verticalScroll"
+            }
+            ref={flastListRef}
+            onViewableItemsChanged={(info) => {
+              setScrollToIndex(info.changed[0].index)
+              viewerHook.onCloseMenu()
+            }}
+            viewabilityConfig={{
+              itemVisiblePercentThreshold: 100,
+            }}
+            estimatedItemSize={1920}
+          />
+        </Box>
       ) : null}
       <PageManager
         currentPage={currentPage}

@@ -4,7 +4,7 @@ import React from "react"
 import { HStack } from "../HStack/HStack"
 import { PressableIcon } from "../PressableIcon/PressableIcon"
 import { Text } from "../Text/Text"
-import { ObservableViewerMenu, ViewerMenu, ViewerMenuProps } from "../ViewerMenu/ViewerMenu"
+import { ViewerMenu, ViewerMenuProps } from "../ViewerMenu/ViewerMenu"
 
 export type ViewerHeaderProps = ViewerMenuProps & {
   visible: boolean
@@ -23,17 +23,17 @@ export function ViewerHeader(props: ViewerHeaderProps) {
       right={0}
       zIndex={1}
     >
-      <HStack flex={1} justifyContent={"flex-start"} marginLeft={"2"}>
+      <HStack flex={1} justifyContent={"flex-start"} marginLeft={"4"}>
         <PressableIcon
           as={MaterialCommunityIcons}
           name="arrow-left"
           onPress={props.onLeftArrowPress}
         />
-        <Text marginLeft={"2"} fontSize={"lg"}>
+        <Text marginLeft={"3"} fontSize={"lg"}>
           {props.headerTitle}
         </Text>
       </HStack>
-      <HStack flex={1} justifyContent={"flex-end"} marginRight={"2"}>
+      <HStack flex={1} justifyContent={"flex-end"} marginRight={"4"}>
         <ViewerMenu
           pageDirection={props.pageDirection}
           readingStyle={props.readingStyle}
