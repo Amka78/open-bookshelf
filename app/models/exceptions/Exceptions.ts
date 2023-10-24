@@ -1,4 +1,5 @@
 import { MessageKey } from "@/i18n"
+import { Api } from "@/services/api"
 import { GeneralApiProblem } from "@/services/api/apiProblem"
 
 type ApiErrorConstructoArgs = {
@@ -44,9 +45,6 @@ export function ConvertApiErrorToException(apiProblem: GeneralApiProblem) {
         errorTx: "errors.canNotConnect",
         descriptionTx: "errors.canNotConnectDescription",
       })
-
-      break
-
     default:
       break
   }
