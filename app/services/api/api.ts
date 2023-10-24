@@ -9,13 +9,16 @@ import Config from "@/config"
 import { ApiResponse, ApisauceInstance, create } from "apisauce"
 
 import { GeneralApiProblem, getGeneralApiProblem } from "./apiProblem"
+import parse from "./AuthenticateParser"
 
 import type {
   ApiConfig,
   ApiFeedResponse,
-  ApiBookManifestType,
+  ApiBookManifestStatusType,
   ApiCalibreInterfaceType,
-  ApiTagBrowser, // @demo remove-current-line
+  ApiTagBrowser,
+  ApiBookFile,
+  ApiBookManifestResultType, // @demo remove-current-line
 } from "./api.types"
 
 /**
@@ -33,6 +36,7 @@ export const DEFAULT_API_CONFIG: ApiConfig = {
 export class Api {
   apisauce: ApisauceInstance
   config: ApiConfig
+  authenticaion: Record<string, string>
 
   /**
    * Set up our API instance. Keep this lightweight!
@@ -81,6 +85,34 @@ export class Api {
   async initializeCalibre(): Promise<
     { kind: "ok"; data: ApiCalibreInterfaceType } | GeneralApiProblem
   > {
+    /*this.apisauce.setHeader(
+      "Authorization",
+      `Digest username="Hikaru", realm="calibre", nonce="415ac5608f2e9c690001:74d63386f75735e211e70a402f63c0f99232ed431575da10925b24baa0105b0b", uri="/interface-data/update/1c3bdc26caf3cb9a377550f0f6c19a9acaa23393?1693787767213", algorithm=MD5, response="f91781cb80149e898fcb0ef1c5fe7962", qop=auth, nc=00000001, cnonce="2c875dcb2ca74015"`,
+    )
+    const response: ApiResponse<ApiCalibreInterfaceType> = await this.apisauce.get(
+      `/interface-data/update/1c3bdc26caf3cb9a377550f0f6c19a9acaa23393?1693787767213`,
+      {},
+      {},
+    )
+
+    console.tron.log(response)
+
+    if (!response.ok) {
+      if (response.headers["www-authenticate"]) {
+        const parsed = parse(response.headers["www-authenticate"])
+
+        this.apisauce.setHeader(
+          "Authorization",
+          `Digest username="Hikaru", realm="calibre", nonce="415ac5608f2e9c690001:74d63386f75735e211e70a402f63c0f99232ed431575da10925b24baa0105b0b", uri="/interface-data/update/1c3bdc26caf3cb9a377550f0f6c19a9acaa23393?1693787767213", algorithm=MD5, response="f91781cb80149e898fcb0ef1c5fe7962", qop=auth, nc=00000001, cnonce="2c875dcb2ca74015"`,
+        )
+
+        console.tron.log(this.apisauce.headers)
+      }
+      const problem = getGeneralApiProblem(response)
+      if (problem) return problem
+    }
+
+    return { kind: "ok", data: response.data }*/
     const response: ApiResponse<ApiCalibreInterfaceType> = await this.apisauce.get(
       `/interface-data/update?${Date.now}`,
     )
@@ -167,18 +199,21 @@ export class Api {
   /**
    * Check Book Converting
    *
-   * @returns {(Promise<{ kind: "ok"; data: ApiBookManifestType } | GeneralApiProblem>)}
+   * @returns {(Promise<{ kind: "ok"; data: ApiBookManifestStatusType } | GeneralApiProblem>)}
    * @memberof Api
    */
   async CheckBookConverting(
     libraryId: string,
     bookId: number,
     bookType: string,
-  ): Promise<{ kind: "ok"; data: ApiBookManifestType } | GeneralApiProblem> {
+  ): Promise<
+    { kind: "ok"; data: ApiBookManifestStatusType | ApiBookManifestResultType } | GeneralApiProblem
+  > {
     // make the api call
-    const response: ApiResponse<ApiBookManifestType> = await this.apisauce.get(
-      `book-manifest/${bookId}/${bookType}?library_id=${libraryId}&${Date.now}`,
-    )
+    const response: ApiResponse<ApiBookManifestStatusType | ApiBookManifestResultType> =
+      await this.apisauce.get(
+        `book-manifest/${bookId}/${bookType}?library_id=${libraryId}&${Date.now}`,
+      )
 
     if (!response.ok) {
       const problem = getGeneralApiProblem(response)
@@ -191,7 +226,7 @@ export class Api {
   /**
    * Get library information
    *
-   * @returns {(Promise<{ kind: "ok"; data: any } | GeneralApiProblem>)}
+   * @returns {(Promise<{ kind: "ok"; data: ApiBookFile } | GeneralApiProblem>)}
    * @memberof Api
    */
   async getLibraryInformation(
@@ -201,9 +236,8 @@ export class Api {
     bookSize: number,
     hash: number,
     spine: string,
-  ): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
-    // make the api call
-    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get(
+  ): Promise<{ kind: "ok"; data: ApiBookFile } | GeneralApiProblem> {
+    const response: ApiResponse<ApiBookFile> = await this.apisauce.get(
       `book-file/${bookId}/${bookType}/${bookSize}/${hash}/${spine}?library_id=${libraryId}&${Date.now}`,
     )
 

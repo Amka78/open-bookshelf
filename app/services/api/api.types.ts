@@ -29,11 +29,85 @@ export interface ApiConfig {
   timeout: number
 }
 
-export type ApiBookManifestType = {
+export type ApiBookManifestStatusType = {
   job_id?: number
   job_status: "waiting" | "finished"
   aborted?: boolean
   traceback?: string
+}
+
+type BookManifestChildren = {
+  title: string
+  dest: string
+  flag?: string
+  children: BookManifestChildren[]
+  id: number
+}
+
+type HtmlFileType = {
+  mimetype: string
+  size: number
+  is_virtualized: boolean
+  is_html: true
+  length: number
+  has_maths: boolean
+  anchor_map: string[]
+}
+
+type ImageFileType = {
+  is_virtualized: boolean
+  size: number
+  mimetype: string
+  is_html: false
+}
+
+type MetadataType = {
+  formats: string[]
+  format_sizes: Record<string, number>
+  authors: string[]
+  laguages: string[]
+  publisher: string
+  author_sort: string
+  last_modified: string
+  series_index: number
+  sort: string
+  size: number
+  timestamp: string
+  title: string
+  uuid: string
+  lang_names: Record<string, string>
+}
+
+export type ApiBookManifestResultType = {
+  version: number
+  toc: {
+    title?: string
+    dest?: string
+    flag?: string
+    children: BookManifestChildren[]
+  }
+  book_format: string
+  spine: string[]
+  link_uid: string
+  book_hash: {
+    size: number
+    mtime: number
+    hash: string
+  }
+  is_comic: boolean
+  raster_cover_name: string
+  title_page_name: string
+  has_maths: false
+  total_length: number
+  spine_length: number
+  toc_anchor_map: Record<string, string[]>
+  landmarks: string[]
+  link_to_map: Record<string, Record<string, string[]>>
+  page_progression_direction: "rtl" | "ltr"
+  files: Record<string, ImageFileType | HtmlFileType>
+  metadata: MetadataType
+  last_read_positions: number[]
+  annotations_map: any
 }
 
 export type ApiCalibreInterfaceType = {
@@ -153,7 +227,43 @@ type NodeItemMap = {
   count: number
   name: string
 }
+
 export type ApiTagBrowser = {
   root: Children
   item_map: Record<string, CategoryItemMap | NodeItemMap>
+}
+
+export type ApiBookFile = {
+  version: number
+  tree: {
+    n: string
+    a: []
+    c: []
+  }
+  ns_map: string[]
+}
+
+export type FieldMetadata = {
+  table: string
+  column: string
+  link_column: string
+  category_sort: string
+  datatype: string
+}
+
+export type ApiBookInit = {
+  search_result: {
+    total_num: number
+    sort_order: "desc" | "asc"
+    num_book_without_search: number
+    offset: number
+    num: number
+    sort: string
+    base_url: string
+    query: string
+    library_id: string
+    book_ids: number[]
+    vl: string
+  }
+  sortable_fields: string[][]
 }
