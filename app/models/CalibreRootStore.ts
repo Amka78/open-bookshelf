@@ -1,31 +1,33 @@
 import { flow, getParent, Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 
-import { api, ApiBookManifestType } from "../services/api"
-import { withSetPropAction } from "./helpers/withSetPropAction"
-import { ConvertApiErrorToException } from "./exceptions/Exceptions"
+import { api, ApiBookManifestResultType } from "../services/api"
 import { ClientSettingModel } from "./calibre"
-import { GeneralApiProblem } from "@/services/api/apiProblem"
+import { ConvertApiErrorToException } from "./exceptions/Exceptions"
+import { withSetPropAction } from "./helpers/withSetPropAction"
 
 const FormatSizeModel = types.model("FormatSizeModel").props({
   id: types.identifier,
   size: types.maybeNull(types.number),
 })
 
-export const MetadataModel = types.model("MetadataModel").props({
-  sharpFixed: types.maybeNull(types.boolean),
-  authorSort: types.maybeNull(types.string),
-  authors: types.array(types.string),
-  //formatSizes: types.map(FormatSizeModel),
-  formats: types.array(types.string),
-  lastModified: types.maybeNull(types.string),
-  seriesIndex: types.maybeNull(types.number),
-  size: types.maybeNull(types.number),
-  sort: types.maybeNull(types.string),
-  tags: types.array(types.string),
-  timestamp: types.maybeNull(types.string),
-  title: types.maybeNull(types.string),
-  uuid: types.maybeNull(types.string),
-})
+export const MetadataModel = types
+  .model("MetadataModel")
+  .props({
+    sharpFixed: types.maybeNull(types.boolean),
+    authorSort: types.maybeNull(types.string),
+    authors: types.array(types.string),
+    formats: types.array(types.string),
+    lastModified: types.maybeNull(types.string),
+    seriesIndex: types.maybeNull(types.number),
+    size: types.maybeNull(types.number),
+    sort: types.maybeNull(types.string),
+    tags: types.array(types.string),
+    timestamp: types.maybeNull(types.string),
+    title: types.maybeNull(types.string),
+    uuid: types.maybeNull(types.string),
+    selectedFormat: types.maybeNull(types.string),
+  })
+  .actions(withSetPropAction)
 
 export const LibraryModel = types
   .model("LibraryModel")
@@ -43,7 +45,7 @@ export const LibraryModel = types
     convertBook: flow(function* (format: string, onPostConvert: () => void) {
       const libraryMap = getParent(root) as any
 
-      let response: { kind: "ok"; data: ApiBookManifestType } | GeneralApiProblem
+      let response
       while (response?.data?.files === undefined) {
         response = yield api.CheckBookConverting(libraryMap.id, root.id, format)
 
@@ -52,7 +54,7 @@ export const LibraryModel = types
             throw new Error(response.message)
           }
           throw new Error()
-        } else {
+        } else if ("job_status" in response.data) {
           if (response.data.job_status === "finished") {
             if (response.data.traceback) {
               throw new Error(response.data.traceback)
@@ -65,14 +67,16 @@ export const LibraryModel = types
 
       const pathList = []
 
-      if (response.data.book_format !== "KF8") {
+      const result: ApiBookManifestResultType = response.data
+
+      if (result.book_format !== "KF8") {
         const spineResponse = yield api.getLibraryInformation(
           libraryMap.id,
           root.id,
-          response.data.book_format,
+          result.book_format,
           root.metaData.size,
-          response.data.book_hash.mtime,
-          response.data.spine[0],
+          result.book_hash.mtime,
+          result.spine[0],
         )
 
         if (spineResponse.kind === "ok") {
@@ -223,6 +227,10 @@ export const CalibreRootStore = types
         Object.keys(response.data.library_map).forEach((value: string) => {
           root.libraryMap.push({ id: value })
         })
+
+        return true
+      } else if (response.kind === "unauthorized") {
+        return false
       } else {
         throw ConvertApiErrorToException(response)
       }

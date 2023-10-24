@@ -18,8 +18,9 @@ export const ConnectScreen: FC = observer(() => {
         if (data.isOPDS) {
           navigation.navigate("OPDSRoot")
         } else {
-          await calibreRootStore.initialize()
-          navigation.navigate("CalibreRoot")
+          if (await calibreRootStore.initialize()) {
+            navigation.navigate("CalibreRoot")
+          }
         }
       }}
     />

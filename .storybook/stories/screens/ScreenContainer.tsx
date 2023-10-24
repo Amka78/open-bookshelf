@@ -13,7 +13,7 @@ export function ScreenContainer(props: ScreenContainerProps) {
   return (
     <SafeAreaProvider
       initialMetrics={initialWindowMetrics}
-      style={{ backgroundColor: "black", flex: 1 }}
+      style={{ backgroundColor: "black", flex: 1, height: "100%" }}
     >
       <GestureHandlerRootView style={{ flex: 1 }}>
         <NativeBaseProvider>

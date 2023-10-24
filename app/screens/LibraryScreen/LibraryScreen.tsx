@@ -76,6 +76,7 @@ export const LibraryScreen: FC = observer(() => {
 
   const renderItem = ({ item }: { item: Library }) => {
     const onItemPress = async (format: string) => {
+      item.metaData.setProp("selectedFormat", format)
       if (format === "PDF") {
         navigation.navigate("PDFViewer", { library: item })
       } else {

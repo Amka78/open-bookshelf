@@ -18,7 +18,7 @@ export const ViewerScreen: FC = observer(() => {
     return (
       <BookPage
         source={encodeURI(
-          `${settingStore.api.baseUrl}/book-file/${library.id}/${library.metaData.formats[0]}/${
+          `${settingStore.api.baseUrl}/book-file/${library.id}/${library.metaData.selectedFormat}/${
             library.metaData.size
           }/${library.hash}/${library.path[props.page]}?library_id=${
             calibreRootStore.selectedLibraryId
