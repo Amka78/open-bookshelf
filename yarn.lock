@@ -19023,11 +19023,6 @@ react-native-modalfy@^3.5.2:
     react-is "^17.0.2"
     use-memo-one "^1.1.2"
 
-react-native-page-flipper@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/react-native-page-flipper/-/react-native-page-flipper-1.0.1.tgz#cabd1a4b006b0e699c5075a3a3d7daaa86b832ff"
-  integrity sha512-LDpmkut4p4Csc5B71XPDwci1HpX3VUqNuT/Uu1fOLMQLlxd6TpPaoIuYA8SUeUd9dFBhTH+fcpPyzUCQ4R2u6A==
-
 react-native-pdf@^6.7.1:
   version "6.7.1"
   resolved "https://registry.yarnpkg.com/react-native-pdf/-/react-native-pdf-6.7.1.tgz#198b8ec3e8f1025ceb43ddfc6bc5b422521c4411"
