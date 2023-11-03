@@ -28,6 +28,7 @@ import * as storage from "./utils/storage"
 import { ModalProvider, createModalStack } from "react-native-modalfy"
 import { modalConfig } from "./components/Modals/ModalConfig"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
+import Constants from 'expo-constants';
 
 // Set up Reactotron, which is a free desktop app for inspecting and debugging
 // React Native apps. Learn more here: https://github.com/infinitered/reactotron
@@ -49,8 +50,6 @@ export const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
 interface AppProps {
   hideSplashScreen: () => Promise<void>
 }
-
-const storybookEnabled = process.env.EXPO_PUBLIC_STORYBOOK_ENABLED === "true"
 
 /**
  * This is the root component of our app.
@@ -85,7 +84,7 @@ function App(props: AppProps) {
 
   // otherwise, we're ready to render the app
 
-  if (storybookEnabled) {
+  if (Constants.expoConfig.extra.storybookEnabled === "true") {
     const StorybookUI = require("../.storybook/native").default
     return (
       <View style={{ flex: 1 }}>

@@ -14,7 +14,7 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "APP_VARIANT": "storyDev",
+        "APP_VARIANT": "storybookDev",
         "EXPO_PUBLIC_STORYBOOK_ENABLED": "true"
       },
       "node": "20.5.1",
