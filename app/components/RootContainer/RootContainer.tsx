@@ -1,5 +1,6 @@
 import React from "react"
 import { Container as Template, IContainerProps, useBreakpointValue, Box } from "native-base"
+import { useWindowDimensions, Platform } from "react-native"
 
 export type ContainerProps = IContainerProps
 
@@ -9,6 +10,7 @@ export function RootContainer(props: ContainerProps) {
     lg: true,
     xl: true,
   })
+  const dim = useWindowDimensions()
 
   const Inner = (
     <Box
@@ -20,6 +22,7 @@ export function RootContainer(props: ContainerProps) {
       paddingX={"2.5"}
       paddingY={"3"}
       margin={"0"}
+      style={{ minHeight: Platform.OS === "web" ? dim.height : undefined }}
     />
   )
 
