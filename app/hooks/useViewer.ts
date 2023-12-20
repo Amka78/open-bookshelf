@@ -8,6 +8,7 @@ import { RouteProp, useRoute } from "@react-navigation/native"
 import * as ScreenOrientation from "expo-screen-orientation"
 import { useBreakpointValue } from "native-base"
 import { useState } from "react"
+import { useConvergence } from "./useConvergence"
 
 type OrientationType = "vertical" | "horizontal"
 type ViewerScreenRouteProp = RouteProp<AppStackParamList, "Viewer">
@@ -16,21 +17,9 @@ export function useViewer() {
 
   const [showMenu, setShowMenu] = useState(false)
   const route = useRoute<ViewerScreenRouteProp>()
-  const screenOrientation = useOrientation()
+  const convergenceHook = useConvergence()
 
-  const isWidthScreen = useBreakpointValue({
-    base: false,
-    lg: true,
-    xl: true,
-  })
-
-  const orientation: OrientationType =
-    isWidthScreen ||
-    screenOrientation === ScreenOrientation.Orientation.LANDSCAPE_LEFT ||
-    screenOrientation === ScreenOrientation.Orientation.LANDSCAPE_RIGHT
-      ? "horizontal"
-      : "vertical"
-
+  const orientation = convergenceHook.orientation
   const selectedLibrary = calibreRootStore.getSelectedLibrary()
 
   let tempClientSetting = selectedLibrary.clientSetting?.find((value) => {

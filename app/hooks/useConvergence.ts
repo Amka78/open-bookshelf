@@ -1,0 +1,27 @@
+import useOrientation from "@/hooks/useOrientation"
+import * as ScreenOrientation from "expo-screen-orientation"
+import { useBreakpointValue } from "native-base"
+
+type OrientationType = "vertical" | "horizontal"
+export function useConvergence() {
+
+  const screenOrientation = useOrientation()
+
+  const isLarge = useBreakpointValue({
+    base: false,
+    lg: true,
+    xl: true,
+  })
+
+  const orientation: OrientationType =
+    isLarge ||
+    screenOrientation === ScreenOrientation.Orientation.LANDSCAPE_LEFT ||
+    screenOrientation === ScreenOrientation.Orientation.LANDSCAPE_RIGHT
+      ? "horizontal"
+      : "vertical"
+
+  return {
+    orientation,
+    isLarge,
+  }
+}
