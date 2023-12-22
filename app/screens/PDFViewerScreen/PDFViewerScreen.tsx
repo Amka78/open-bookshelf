@@ -6,7 +6,7 @@ import { RouteProp, useRoute } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import React, { useState } from "react"
 import { StyleSheet, useWindowDimensions } from "react-native"
-import PDF from "react-native-pdf"
+import * as PDF from "@/components/PDF/Pdf"
 
 type PDFViewerScreenRouteProp = RouteProp<AppStackParamList, "Viewer">
 

@@ -28,7 +28,7 @@ import * as storage from "./utils/storage"
 import { ModalProvider, createModalStack } from "react-native-modalfy"
 import { modalConfig } from "./components/Modals/ModalConfig"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
-import Constants from 'expo-constants';
+import Constants from "expo-constants"
 
 // Set up Reactotron, which is a free desktop app for inspecting and debugging
 // React Native apps. Learn more here: https://github.com/infinitered/reactotron
@@ -83,8 +83,7 @@ function App(props: AppProps) {
   if (!rehydrated || !isNavigationStateRestored || !areFontsLoaded) return null
 
   // otherwise, we're ready to render the app
-
-  if (Constants.expoConfig.extra.storybookEnabled === "true") {
+  if (Constants?.expoConfig?.extra?.storybookEnabled === "true") {
     const StorybookUI = require("../.storybook/native").default
     return (
       <View style={{ flex: 1 }}>
