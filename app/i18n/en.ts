@@ -3,6 +3,7 @@ const en = {
     ok: "OK",
     cancel: "Cancel",
     back: "Back",
+    login: "Login",
     logOut: "Log Out",
     error: "Error",
   },
@@ -54,8 +55,12 @@ const en = {
     formatSelectModal: {
       title: "Select format.",
     },
+    loginModal: {
+      title: "Input login information.",
+      userIdPlaceholder: "UserID",
+      passwordPlaceholder: "Password",
+    },
   },
-  // @demo remove-block-end
 }
 
 export default en
