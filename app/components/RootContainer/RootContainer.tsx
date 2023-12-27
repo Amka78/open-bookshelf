@@ -22,7 +22,6 @@ export function RootContainer(props: ContainerProps) {
       paddingX={"2.5"}
       paddingY={"3"}
       margin={"0"}
-      style={{ minHeight: Platform.OS === "web" ? dim.height : undefined }}
     />
   )
 
