@@ -1,5 +1,5 @@
 import { ApiError } from "@/models/exceptions/Exceptions"
-import { ConnectScreen } from "@/screens/ConnectScreen/templates/ConnectScreen"
+import { ConnectScreen } from "@/screens/ConnectScreen/template/ConnectScreen"
 import { delay } from "@/utils/delay"
 import { ComponentMeta, ComponentStoryObj } from "@storybook/react-native"
 import React from "react"

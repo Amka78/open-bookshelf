@@ -14,11 +14,13 @@ import React, { useState } from "react"
 import { useForm } from "react-hook-form"
 import { useModal } from "react-native-modalfy"
 
-import { ConnectType } from "../types/ConnectType"
+import { ConnectType } from "../type/ConnectType"
+import { LoginType } from "@/components/Modals/LoginModal"
 
 export type ConnectScreenProps = {
   baseUrl: string
-  onConnectPress: (data: ConnectType) => Promise<void>
+  onConnectPress: (data: ConnectType) => Promise<boolean>
+  onLoginPress: (data: LoginType) => void
 }
 export function ConnectScreen(props: ConnectScreenProps) {
   const form = useForm<ConnectType>()
@@ -32,7 +34,7 @@ export function ConnectScreen(props: ConnectScreenProps) {
           <Heading testID="connect-heading" tx="connectScreen.welcome" />
           <Text tx="connectScreen.detail" marginTop={"5"} />
           <Box marginTop={"7"}>
-            <FormCheckbox name={"type"} tx={"connectScreen.checkbox"} control={form.control} />
+            <FormCheckbox name={"isOPDS"} tx={"connectScreen.checkbox"} control={form.control} />
             <FormInput
               control={form.control}
               defaultValue={props.baseUrl}
@@ -50,7 +52,9 @@ export function ConnectScreen(props: ConnectScreenProps) {
             onPress={form.handleSubmit(async (data) => {
               setIsLoading(true)
               try {
-                await props.onConnectPress(data)
+                if (!(await props.onConnectPress(data))) {
+                  modal.openModal("LoginModal", { onLoginPress: props.onLoginPress })
+                }
               } catch (ex) {
                 const apiError = ex as ApiError
                 modal.openModal("ErrorModal", {

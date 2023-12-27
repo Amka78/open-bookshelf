@@ -56,6 +56,10 @@ export class Api {
     this.apisauce.setBaseURL(baseUrl)
   }
 
+  setAuthorization(token: string) {
+    this.apisauce.setHeader("Authorization", `Basic ${token}`)
+  }
+
   /**
    * Connnect OPDS Server
    *

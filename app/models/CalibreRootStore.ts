@@ -218,7 +218,6 @@ export const CalibreRootStore = types
   .actions((root) => ({
     initialize: flow(function* () {
       const response = yield api.initializeCalibre()
-      console.log(response)
       if (response.kind === "ok") {
         root.defaultLibraryId = response.data.default_library_id
         root.numPerPage = response.data.num_per_page
