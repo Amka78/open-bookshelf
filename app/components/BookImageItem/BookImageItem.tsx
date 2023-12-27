@@ -12,6 +12,7 @@ export type BookImageprops = {
 export function BookImageItem(props: BookImageprops) {
   const [loading, setLoading] = useState(false)
 
+  console.log(props.source)
   return (
     <TouchableOpacity
       onPress={async () => {
@@ -28,7 +29,7 @@ export function BookImageItem(props: BookImageprops) {
             labelDirection="vertical"
           />
         ) : (
-          <Image source={props.source} style={styles.imageSize} resizeMode={"stretch"} />
+          <Image source={props.source} style={styles.imageSize} resizeMode={"contain"} />
         )}
       </Box>
     </TouchableOpacity>

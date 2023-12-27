@@ -69,10 +69,14 @@ export type AppStackScreenProps<T extends keyof AppStackParamList> = NativeStack
 const Stack = createNativeStackNavigator<AppStackParamList>()
 export type ApppNavigationProp = NativeStackNavigationProp<AppStackParamList>
 const AppStack = observer(function AppStack() {
-  const { settingStore } = useStores()
+  const { authenticationStore, settingStore } = useStores()
   useEffect(() => {
     if (settingStore.api.baseUrl) {
       api.setUrl(settingStore.api.baseUrl)
+    }
+
+    if (authenticationStore.isAuthenticated) {
+      api.setAuthorization(authenticationStore.token)
     }
   }, [])
 

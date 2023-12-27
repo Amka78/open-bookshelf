@@ -29,7 +29,7 @@ import { useModal } from "react-native-modalfy"
 
 export type LibraryViewStyle = "gridView" | "viewList"
 export const LibraryScreen: FC = observer(() => {
-  const { calibreRootStore, settingStore } = useStores()
+  const { authenticationStore, calibreRootStore, settingStore } = useStores()
   const { isOpen, onToggle } = useDisclose()
 
   const [mobileViewStyle, setMovileViewStyle] = useState<LibraryViewStyle>("viewList")
@@ -104,16 +104,21 @@ export const LibraryScreen: FC = observer(() => {
 
     let listItem
 
-    const imageUrl = `${settingStore.api.baseUrl}/get/thumb/${item.id}/config?sz=300x400`
+    const imageUrl = `${settingStore.api.baseUrl}/get/thumb/${item.id}/${selectedLibrary.id}?sz=300x400`
 
     const itemStyle = isWideScreen ? desktopViewStyle : mobileViewStyle
 
+    let header
+
+    if (authenticationStore.isAuthenticated) {
+      header = { AUTHORIZATION: `base ${authenticationStore.token}` }
+    }
     if (itemStyle === "gridView") {
       listItem = <BookImageItem source={imageUrl} onPress={onPress} />
     } else {
       listItem = (
         <BookDescriptionItem
-          source={imageUrl}
+          source={{ uri: imageUrl, headers: header }}
           onPress={onPress}
           authors={item.metaData.authors}
           title={item.metaData.title}
@@ -132,7 +137,7 @@ export const LibraryScreen: FC = observer(() => {
         <FlatList<Library>
           data={selectedLibrary?.value.slice()}
           renderItem={renderItem}
-          //estimatedItemSize={selectedLibrary?.value.length ? selectedLibrary.value.length : 0}
+          estimatedItemSize={214}
           numColumns={isWideScreen ? Math.floor(window.width / 242) : 1}
           onRefresh={
             isWideScreen

@@ -1,4 +1,4 @@
-import { Image } from "expo-image"
+import { Image, ImageSource } from "expo-image"
 import { Box, Flex } from "native-base"
 import React, { useState } from "react"
 import { StyleSheet } from "react-native"
@@ -8,7 +8,7 @@ import { ListItem } from "../ListItem"
 import { Text } from "../Text/Text"
 
 export type BookDescriptionItemProps = {
-  source: string
+  source: string | string[] | number | ImageSource | ImageSource[]
   title: string
   authors: string[]
   onPress: () => Promise<void>
@@ -36,7 +36,14 @@ export function BookDescriptionItem(props: BookDescriptionItemProps) {
       LeftComponent={
         <Flex flexDirection={"row"} width={"full"}>
           <Flex flexDirection={"row"} width={"5/6"} marginLeft={2}>
-            <Image source={props.source} style={styles.coverImage} resizeMode={"contain"} />
+            <Image
+              source={props.source}
+              style={styles.coverImage}
+              resizeMode={"contain"}
+              onError={(event) => {
+                console.log(event)
+              }}
+            />
             <Box marginLeft={"1.5"}>
               <Text fontSize={"lg"} lineBreakMode="tail" numberOfLines={1}>
                 {props.title}
