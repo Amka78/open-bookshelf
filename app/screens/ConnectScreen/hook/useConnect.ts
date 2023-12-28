@@ -17,6 +17,7 @@ export function useConnect() {
     } else {
       if (await calibreRootStore.initialize()) {
         navigation.navigate("CalibreRoot")
+        return true
       }
       return false
     }
