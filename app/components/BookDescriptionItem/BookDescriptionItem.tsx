@@ -1,14 +1,10 @@
-import { Image, ImageSource } from "expo-image"
 import { Box, Flex } from "native-base"
 import React, { useState } from "react"
 import { StyleSheet } from "react-native"
 
-import { LabeledSpinner } from "../LabeledSpinner/LabeledSpinner"
-import { ListItem } from "../ListItem"
-import { Text } from "../Text/Text"
+import { Image, ImageProps, ListItem, Text, LabeledSpinner } from "@/components"
 
-export type BookDescriptionItemProps = {
-  source: string | string[] | number | ImageSource | ImageSource[]
+export type BookDescriptionItemProps = Pick<ImageProps, "source"> & {
   title: string
   authors: string[]
   onPress: () => Promise<void>
@@ -36,14 +32,7 @@ export function BookDescriptionItem(props: BookDescriptionItemProps) {
       LeftComponent={
         <Flex flexDirection={"row"} width={"full"}>
           <Flex flexDirection={"row"} width={"5/6"} marginLeft={2}>
-            <Image
-              source={props.source}
-              style={styles.coverImage}
-              resizeMode={"contain"}
-              onError={(event) => {
-                console.log(event)
-              }}
-            />
+            <Image source={props.source} style={styles.coverImage} resizeMode={"contain"} />
             <Box marginLeft={"1.5"}>
               <Text fontSize={"lg"} lineBreakMode="tail" numberOfLines={1}>
                 {props.title}

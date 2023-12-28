@@ -1,22 +1,19 @@
-import { Image } from "expo-image"
+import { Image, ImageProps } from "@/components"
+import { RootStoreProvider } from "@/models"
 import React, { useState } from "react"
 import { useWindowDimensions } from "react-native"
 
-export type BookImageProps = {
-  source: string | { uri: string }
-}
+export type BookImageProps = ImageProps
 
 type ImageDimension = { width: number; height: number }
 export function BookPage(props: BookImageProps) {
   const [dimension, setDimension] = useState<ImageDimension>()
   const windowDimension = useWindowDimensions()
-
   return (
     <Image
       source={props.source}
-      //style={{ ...dimension }}
       style={[{ width: "100%", height: "100%" }, dimension]}
-      resizeMode={"contain"}
+      contentFit={"contain"}
       onLoad={(e) => {
         let imageHeight = e.source.height
         let imageWidth = e.source.width
