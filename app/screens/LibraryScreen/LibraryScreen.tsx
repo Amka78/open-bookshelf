@@ -5,6 +5,7 @@ import {
   LeftSideMenu,
   LibraryViewIcon,
   SortMenu,
+  StaggerContainer,
 } from "@/components"
 import { ModalStackParams } from "@/components/Modals/Types"
 import { useStores } from "@/models"
@@ -74,6 +75,12 @@ export const LibraryScreen: FC = observer(() => {
 
   const window = useWindowDimensions()
 
+  let header
+
+  if (authenticationStore.isAuthenticated) {
+    header = { Authorization: `Basic ${authenticationStore.token}` }
+  }
+
   const renderItem = ({ item }: { item: Library }) => {
     const onItemPress = async (format: string) => {
       item.metaData.setProp("selectedFormat", format)
@@ -108,13 +115,8 @@ export const LibraryScreen: FC = observer(() => {
 
     const itemStyle = isWideScreen ? desktopViewStyle : mobileViewStyle
 
-    let header
-
-    if (authenticationStore.isAuthenticated) {
-      header = { AUTHORIZATION: `base ${authenticationStore.token}` }
-    }
     if (itemStyle === "gridView") {
-      listItem = <BookImageItem source={imageUrl} onPress={onPress} />
+      listItem = <BookImageItem source={{ uri: imageUrl, headers: header }} onPress={onPress} />
     } else {
       listItem = (
         <BookDescriptionItem
@@ -151,111 +153,38 @@ export const LibraryScreen: FC = observer(() => {
           }}
         />
       ) : null}
-      <Stagger
-        visible={isOpen}
-        initial={{
-          opacity: 0,
-          scale: 0,
-          translateY: 34,
-        }}
-        animate={{
-          translateY: 0,
-          scale: 1,
-          opacity: 1,
-          transition: {
-            type: "timing",
-            mass: 0.8,
-            stagger: {
-              offset: 30,
-              reverse: true,
-            },
-          },
-        }}
-        exit={{
-          translateY: 34,
-          scale: 0.5,
-          opacity: 0,
-          transition: {
-            duration: 100,
-            stagger: {
-              offset: 30,
-              reverse: true,
-            },
-          },
-        }}
-      >
-        <VStack
-          position={"absolute"}
-          bottom={isWideScreen ? 10 : 5}
-          right={isWideScreen ? 10 : 5}
-          height={230}
-        >
-          <LibraryViewIcon
-            mode={isWideScreen ? desktopViewStyle : mobileViewStyle}
-            onPress={() => {
-              if (isWideScreen) {
-                setDesktopViewStyle(desktopViewStyle === "gridView" ? "viewList" : "gridView")
-              } else {
-                setMovileViewStyle(mobileViewStyle === "gridView" ? "viewList" : "gridView")
-              }
-            }}
-          />
-          <SortMenu
-            selectedSort={selectedLibrary.searchSetting?.sort}
-            selectedSortOrder={selectedLibrary.searchSetting?.sortOrder}
-            field={selectedLibrary.sortField}
-            onSortChange={(val) => {
-              if (val === selectedLibrary.searchSetting?.sort) {
-                selectedLibrary.searchSetting.setProp(
-                  "sortOrder",
-                  selectedLibrary.searchSetting.sortOrder === "desc" ? "asc" : "desc",
-                )
-              } else {
-                selectedLibrary.searchSetting.setProp("sort", val)
-                selectedLibrary.searchSetting.setProp("sortOrder", "desc")
-              }
-              search()
-            }}
-          />
-          <IconButton
-            mb="4"
-            variant="solid"
-            bg="teal.400"
-            colorScheme="teal"
-            borderRadius="full"
-            icon={
-              <Icon
-                as={MaterialCommunityIcons}
-                _dark={{
-                  color: "warmGray.50",
-                }}
-                size="6"
-                name="video"
-                color="warmGray.50"
-              />
-            }
-          />
-        </VStack>
-      </Stagger>
-      <IconButton
-        variant="solid"
-        borderRadius="full"
-        size="lg"
-        onPress={onToggle}
-        bg="cyan.400"
-        position={"absolute"}
-        bottom={isWideScreen ? 10 : 5}
-        right={isWideScreen ? 10 : 5}
-        icon={
-          <Icon
-            as={MaterialCommunityIcons}
-            size="6"
-            name="dots-horizontal"
-            color="warmGray.50"
-            _dark={{
-              color: "warmGray.50",
-            }}
-          />
+      <StaggerContainer
+        menusHeight={230}
+        menus={
+          <>
+            <LibraryViewIcon
+              mode={isWideScreen ? desktopViewStyle : mobileViewStyle}
+              onPress={() => {
+                if (isWideScreen) {
+                  setDesktopViewStyle(desktopViewStyle === "gridView" ? "viewList" : "gridView")
+                } else {
+                  setMovileViewStyle(mobileViewStyle === "gridView" ? "viewList" : "gridView")
+                }
+              }}
+            />
+            <SortMenu
+              selectedSort={selectedLibrary.searchSetting?.sort}
+              selectedSortOrder={selectedLibrary.searchSetting?.sortOrder}
+              field={selectedLibrary.sortField}
+              onSortChange={(val) => {
+                if (val === selectedLibrary.searchSetting?.sort) {
+                  selectedLibrary.searchSetting.setProp(
+                    "sortOrder",
+                    selectedLibrary.searchSetting.sortOrder === "desc" ? "asc" : "desc",
+                  )
+                } else {
+                  selectedLibrary.searchSetting.setProp("sort", val)
+                  selectedLibrary.searchSetting.setProp("sortOrder", "desc")
+                }
+                search()
+              }}
+            />
+          </>
         }
       />
     </>
