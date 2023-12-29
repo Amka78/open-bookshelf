@@ -2,8 +2,7 @@ import { DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/
 import {
   createNativeStackNavigator,
   NativeStackNavigationProp,
-} from "@react-navigation/native-stack"
-import { NativeStackScreenProps } from "@react-navigation/native-stack"
+ NativeStackScreenProps } from "@react-navigation/native-stack"
 import { observer } from "mobx-react-lite"
 import React, { useEffect } from "react"
 import { useColorScheme } from "react-native"
@@ -111,7 +110,7 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
   return (
     <NavigationContainer
       ref={navigationRef}
-      theme={/*colorScheme === "dark" ? DarkTheme :*/ DefaultTheme}
+      theme={/* colorScheme === "dark" ? DarkTheme : */ DefaultTheme}
       {...props}
     >
       <AppStack />

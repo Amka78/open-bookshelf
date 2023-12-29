@@ -18,7 +18,7 @@ export function AuthButton(props: AuthButtonProp) {
       }}
       color="white"
       onPress={() => {
-        if (props.mode == "login") {
+        if (props.mode === "login") {
           if (props.onLoginPress) {
             props.onLoginPress()
           }

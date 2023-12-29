@@ -7,15 +7,15 @@ export function Image(props: ImageProps) {
       {...props}
       cachePolicy="none"
       onLoad={(event) => {
-        //console.log(`Loading image informaion.`)
-        //console.log(event)
+        // console.log(`Loading image informaion.`)
+        // console.log(event)
 
         if (props.onLoad) {
           props.onLoad(event)
         }
       }}
       onError={(event) => {
-        //console.log(event)
+        // console.log(event)
         if (props.onError) {
           props.onError(event)
         }

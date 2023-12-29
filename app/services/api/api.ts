@@ -93,7 +93,7 @@ export class Api {
   async initializeCalibre(): Promise<
     { kind: "ok"; data: ApiCalibreInterfaceType } | GeneralApiProblem
   > {
-    /*this.apisauce.setHeader(
+    /* this.apisauce.setHeader(
       "Authorization",
       `Digest username="Hikaru", realm="calibre", nonce="415ac5608f2e9c690001:74d63386f75735e211e70a402f63c0f99232ed431575da10925b24baa0105b0b", uri="/interface-data/update/1c3bdc26caf3cb9a377550f0f6c19a9acaa23393?1693787767213", algorithm=MD5, response="f91781cb80149e898fcb0ef1c5fe7962", qop=auth, nc=00000001, cnonce="2c875dcb2ca74015"`,
     )
@@ -120,7 +120,7 @@ export class Api {
       if (problem) return problem
     }
 
-    return { kind: "ok", data: response.data }*/
+    return { kind: "ok", data: response.data } */
     const response: ApiResponse<ApiCalibreInterfaceType> = await this.apisauce.get(
       `/interface-data/update?${Date.now}`,
     )

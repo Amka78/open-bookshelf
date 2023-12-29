@@ -21,13 +21,13 @@ export const AcquisitionScreen: FC = observer(() => {
   const [currentOpds, setCurrentOPDS] = useState<OpdsRoot>()
 
   const initialize = async () => {
-    /*const childOPDS = opdsRootStore.children.find((value) => {
+    /* const childOPDS = opdsRootStore.children.find((value) => {
       return value.linkPath === route.params.link.href
-    })*/
+    }) */
 
-    /*if (childOPDS) {
+    /* if (childOPDS) {
       setCurrentOPDS(childOPDS.opds)
-    } else {*/
+    } else { */
     const linkOopds = OpdsModel.create()
     await linkOopds.load(route.params.link.href)
 
@@ -38,8 +38,8 @@ export const AcquisitionScreen: FC = observer(() => {
       linkPath: route.params.link.href,
       opds: linkOopds,
     })
-    //opdsRootStore.add(children)
-    //}
+    // opdsRootStore.add(children)
+    // }
   }
 
   useEffect(() => {
