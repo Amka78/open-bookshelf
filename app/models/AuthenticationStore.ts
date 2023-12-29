@@ -25,6 +25,7 @@ export const AuthenticationStoreModel = types
       store.token = undefined
       store.userId = ""
       store.password = ""
+      api.clearAuthorization()
     },
   }))
 

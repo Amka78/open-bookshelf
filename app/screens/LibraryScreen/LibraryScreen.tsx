@@ -3,7 +3,7 @@ import {
   BookImageItem,
   FlatList,
   LeftSideMenu,
-  LibraryViewIcon,
+  LibraryViewButton,
   SortMenu,
   StaggerContainer,
 } from "@/components"
@@ -11,27 +11,19 @@ import { ModalStackParams } from "@/components/Modals/Types"
 import { useStores } from "@/models"
 import { Library } from "@/models/CalibreRootStore"
 import { ApppNavigationProp } from "@/navigators"
-import { MaterialCommunityIcons } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
-import {
-  HStack,
-  Icon,
-  IconButton,
-  ScrollView,
-  Stagger,
-  useBreakpointValue,
-  useDisclose,
-  VStack,
-} from "native-base"
+import { HStack } from "native-base"
 import React, { FC, useEffect, useState } from "react"
 import { useWindowDimensions } from "react-native"
 import { useModal } from "react-native-modalfy"
+import { useLibrary } from "./hook/useLibrary"
+import { useConvergence } from "@/hooks/useConvergence"
+import { AuthButton } from "@/components/AuthButton/AuthButton"
 
 export type LibraryViewStyle = "gridView" | "viewList"
 export const LibraryScreen: FC = observer(() => {
   const { authenticationStore, calibreRootStore, settingStore } = useStores()
-  const { isOpen, onToggle } = useDisclose()
 
   const [mobileViewStyle, setMovileViewStyle] = useState<LibraryViewStyle>("viewList")
   const [desktopViewStyle, setDesktopViewStyle] = useState<LibraryViewStyle>("gridView")
@@ -39,22 +31,12 @@ export const LibraryScreen: FC = observer(() => {
 
   const modal = useModal<ModalStackParams>()
 
-  const isWideScreen = useBreakpointValue({
-    base: false,
-    lg: true,
-    xl: true,
-  })
+  const libraryHook = useLibrary()
+  const convergenceHook = useConvergence()
 
   const search = async () => {
     await calibreRootStore.searchLibrary()
   }
-
-  useEffect(() => {
-    if (!calibreRootStore.selectedLibraryId) {
-      navigation.navigate("Connect")
-    }
-    search()
-  }, [])
 
   useEffect(() => {
     navigation.setOptions({
@@ -62,12 +44,10 @@ export const LibraryScreen: FC = observer(() => {
       headerSearchBarOptions: {
         hideWhenScrolling: true,
         onSearchButtonPress: (e) => {
-          selectedLibrary.searchSetting.setProp("query", e.nativeEvent.text)
-          search()
+          libraryHook.onSearch(e.nativeEvent.text)
         },
         onClose: () => {
-          selectedLibrary.searchSetting.setProp("query", "")
-          search()
+          libraryHook.onSearch()
         },
       },
     })
@@ -113,7 +93,7 @@ export const LibraryScreen: FC = observer(() => {
 
     const imageUrl = `${settingStore.api.baseUrl}/get/thumb/${item.id}/${selectedLibrary.id}?sz=300x400`
 
-    const itemStyle = isWideScreen ? desktopViewStyle : mobileViewStyle
+    const itemStyle = convergenceHook.isLarge ? desktopViewStyle : mobileViewStyle
 
     if (itemStyle === "gridView") {
       listItem = <BookImageItem source={{ uri: imageUrl, headers: header }} onPress={onPress} />
@@ -140,9 +120,9 @@ export const LibraryScreen: FC = observer(() => {
           data={selectedLibrary?.value.slice()}
           renderItem={renderItem}
           estimatedItemSize={214}
-          numColumns={isWideScreen ? Math.floor(window.width / 242) : 1}
+          numColumns={convergenceHook.isLarge ? Math.floor(window.width / 242) : 1}
           onRefresh={
-            isWideScreen
+            convergenceHook.isLarge
               ? undefined
               : async () => {
                   await search()
@@ -157,10 +137,24 @@ export const LibraryScreen: FC = observer(() => {
         menusHeight={230}
         menus={
           <>
-            <LibraryViewIcon
-              mode={isWideScreen ? desktopViewStyle : mobileViewStyle}
+            <AuthButton
+              mode={authenticationStore.isAuthenticated ? "logout" : "login"}
+              onLoginPress={() => {
+                modal.openModal("LoginModal", {
+                  onLoginPress: (data) => {
+                    navigation.navigate("Connect")
+                  },
+                })
+              }}
+              onLogoutPress={() => {
+                authenticationStore.logout()
+                navigation.navigate("Connect")
+              }}
+            />
+            <LibraryViewButton
+              mode={convergenceHook.isLarge ? desktopViewStyle : mobileViewStyle}
               onPress={() => {
-                if (isWideScreen) {
+                if (convergenceHook.isLarge) {
                   setDesktopViewStyle(desktopViewStyle === "gridView" ? "viewList" : "gridView")
                 } else {
                   setMovileViewStyle(mobileViewStyle === "gridView" ? "viewList" : "gridView")
@@ -172,16 +166,7 @@ export const LibraryScreen: FC = observer(() => {
               selectedSortOrder={selectedLibrary.searchSetting?.sortOrder}
               field={selectedLibrary.sortField}
               onSortChange={(val) => {
-                if (val === selectedLibrary.searchSetting?.sort) {
-                  selectedLibrary.searchSetting.setProp(
-                    "sortOrder",
-                    selectedLibrary.searchSetting.sortOrder === "desc" ? "asc" : "desc",
-                  )
-                } else {
-                  selectedLibrary.searchSetting.setProp("sort", val)
-                  selectedLibrary.searchSetting.setProp("sortOrder", "desc")
-                }
-                search()
+                libraryHook.onSort(val)
               }}
             />
           </>
@@ -190,18 +175,15 @@ export const LibraryScreen: FC = observer(() => {
     </>
   )
 
-  return isWideScreen ? (
+  return convergenceHook.isLarge ? (
     <HStack flex="1">
-      <ScrollView backgroundColor={"white"} maxWidth={"32"}>
-        <LeftSideMenu
-          onNodePress={async (name) => {
-            selectedLibrary.searchSetting.setProp("query", name)
-            await search()
-          }}
-          tagBrowser={selectedLibrary.tagBrowser}
-          selectedName={selectedLibrary.searchSetting?.query}
-        />
-      </ScrollView>
+      <LeftSideMenu
+        onNodePress={async (name) => {
+          libraryHook.onSearch(name)
+        }}
+        tagBrowser={selectedLibrary.tagBrowser}
+        selectedName={selectedLibrary.searchSetting?.query}
+      />
       {LibraryCore}
     </HStack>
   ) : (

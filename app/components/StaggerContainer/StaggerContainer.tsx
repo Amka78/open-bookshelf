@@ -1,7 +1,7 @@
-import { ModalStackParams } from "@/components/Modals/Types"
 import { useConvergence } from "@/hooks/useConvergence"
 import { MaterialCommunityIcons } from "@expo/vector-icons"
 import { Icon, IconButton, Stagger, useDisclose, VStack } from "native-base"
+import { StaggerButton } from "@/components"
 import React from "react"
 export type StaggerContainerProps = {
   menus: React.ReactNode
@@ -48,32 +48,24 @@ export function StaggerContainer(props: StaggerContainerProps) {
         <VStack
           position={"absolute"}
           bottom={convergenceHook.isLarge ? 10 : 5}
-          right={convergenceHook.isLarge ? 10 : 5}
+          right={convergenceHook.isLarge ? 9 : 5}
           height={props.menusHeight}
         >
           {props.menus}
         </VStack>
       </Stagger>
-      <IconButton
-        variant="solid"
+      <StaggerButton
         bgColor={"coolGray.900"}
-        borderRadius="full"
         size="lg"
         onPress={onToggle}
         position={"absolute"}
         bottom={convergenceHook.isLarge ? 10 : 5}
         right={convergenceHook.isLarge ? 10 : 5}
-        icon={
-          <Icon
-            as={MaterialCommunityIcons}
-            size="6"
-            name="dots-horizontal"
-            color="white"
-            _dark={{
-              color: "black",
-            }}
-          />
-        }
+        name="dots-horizontal"
+        color="white"
+        _dark={{
+          color: "black",
+        }}
       />
     </>
   )

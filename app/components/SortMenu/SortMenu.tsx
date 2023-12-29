@@ -1,8 +1,8 @@
 import { translate } from "@/i18n"
 import { SortField } from "@/models/CalibreRootStore"
-import { MaterialCommunityIcons } from "@expo/vector-icons"
-import { Icon, IconButton, Menu } from "native-base"
+import { Menu } from "native-base"
 import React from "react"
+import { StaggerButton } from "@/components"
 
 export type SortMenuProps = {
   selectedSort: string
@@ -17,24 +17,15 @@ export function SortMenu(props: SortMenuProps) {
       placement="left"
       trigger={(triggerProps) => {
         return (
-          <IconButton
+          <StaggerButton
             {...triggerProps}
             mb="4"
-            variant="solid"
-            bg="yellow.400"
-            colorScheme="yellow"
-            borderRadius="full"
-            icon={
-              <Icon
-                as={MaterialCommunityIcons}
-                _dark={{
-                  color: "warmGray.50",
-                }}
-                size="6"
-                name="sort"
-                color="warmGray.50"
-              />
-            }
+            bg="coolGray.700"
+            _dark={{
+              color: "black",
+            }}
+            name="sort"
+            color="white"
           />
         )
       }}

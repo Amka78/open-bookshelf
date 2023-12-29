@@ -60,6 +60,10 @@ export class Api {
     this.apisauce.setHeader("Authorization", `Basic ${token}`)
   }
 
+  clearAuthorization() {
+    this.apisauce.deleteHeader("Authorization")
+  }
+
   /**
    * Connnect OPDS Server
    *
