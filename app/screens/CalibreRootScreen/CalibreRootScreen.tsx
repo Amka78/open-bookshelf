@@ -1,30 +1,13 @@
-import { useStores } from "@/models"
-import { ApppNavigationProp } from "@/navigators"
-import { useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
-import React, { FC, useEffect } from "react"
+import React, { FC } from "react"
 
-import { CalibreRootScreen as Template } from "./templates/CalibreRootScreen"
+import { CalibreRootScreen as Template } from "./template/CalibreRootScreen"
+import { useCalibreRoot } from "./hook/useCalibreRoot"
 
 export const CalibreRootScreen: FC = observer(() => {
-  const { calibreRootStore } = useStores()
-
-  const navigation = useNavigation<ApppNavigationProp>()
-  const initialize = async () => {
-    await calibreRootStore.getTagBrowser()
-  }
-
-  useEffect(() => {
-    initialize()
-  }, [])
+  const calibreRootHook = useCalibreRoot()
 
   return (
-    <Template
-      libraries={calibreRootStore.libraryMap}
-      onLibraryPress={(id: string) => {
-        calibreRootStore.setSelectedLibraryId(id)
-        navigation.navigate("Library")
-      }}
-    />
+    <Template libraries={calibreRootHook.library} onLibraryPress={calibreRootHook.onLibraryPress} />
   )
 })

@@ -1,4 +1,4 @@
-import { CalibreRootScreen } from "@/screens/CalibreRootScreen/templates/CalibreRootScreen"
+import { CalibreRootScreen } from "@/screens/CalibreRootScreen/template/CalibreRootScreen"
 import { ComponentMeta, ComponentStoryObj } from "@storybook/react-native"
 import React from "react"
 
