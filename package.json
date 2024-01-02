@@ -105,6 +105,7 @@
     "@babel/plugin-proposal-optional-catch-binding": "7.16.7",
     "@babel/preset-env": "^7.16.11",
     "@babel/runtime": "^7.18.3",
+    "@biomejs/biome": "1.4.1",
     "@config-plugins/react-native-blob-util": "^6.0.0",
     "@config-plugins/react-native-pdf": "^6.0.0",
     "@storybook/addon-actions": "^6.5.5",
@@ -134,7 +135,6 @@
     "detox": "19.12.1",
     "detox-expo-helpers": "0.6.0",
     "eslint": "8.17.0",
-    "eslint-config-prettier": "8.5.0",
     "eslint-config-standard": "17.0.0",
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-n": "^15.0.0",
@@ -148,19 +148,12 @@
     "mocha": "6",
     "patch-package": "6.4.7",
     "postinstall-prepare": "1.0.1",
-    "prettier": "2.6.2",
     "reactotron-core-client": "^2.8.10",
     "ts-jest": "^29.1.1",
     "tsconfig-paths-webpack-plugin": "^4.1.0",
     "typescript": "^5.1.3",
     "webpack": "^5.89.0",
     "webpack-dev-server": "^4.15.1"
-  },
-  "prettier": {
-    "printWidth": 100,
-    "semi": false,
-    "singleQuote": false,
-    "trailingComma": "all"
   },
   "detox": {
     "test-runner": "jest",
@@ -202,11 +195,7 @@
       "standard",
       "prettier"
     ],
-    "plugins": [
-      "@typescript-eslint",
-      "react",
-      "react-native"
-    ],
+    "plugins": ["@typescript-eslint", "react", "react-native"],
     "parserOptions": {
       "ecmaFeatures": {
         "jsx": true
