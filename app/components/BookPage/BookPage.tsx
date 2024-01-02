@@ -1,5 +1,4 @@
 import { Image, ImageProps } from "@/components"
-import { RootStoreProvider } from "@/models"
 import React, { useState } from "react"
 import { useWindowDimensions } from "react-native"
 

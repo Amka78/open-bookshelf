@@ -9,6 +9,7 @@ import Config from "@/config"
 import { ApiResponse, ApisauceInstance, create } from "apisauce"
 
 import { GeneralApiProblem, getGeneralApiProblem } from "./apiProblem"
+import * as FileSystem from "expo-file-system"
 import parse from "./AuthenticateParser"
 
 import type {
@@ -255,6 +256,33 @@ export class Api {
     }
 
     return { kind: "ok", data: response.data }
+  }
+
+  async uploadFile(
+    fileName: string,
+    libraryName: string,
+    formData: any,
+  ): Promise<{ kind: "ok" } | GeneralApiProblem> {
+    /*const response = await this.apisauce.post(
+      `cdb/add-book/0/n/${fileName}/${libraryName}`,
+      formData,
+      {}
+    )*/
+
+    await FileSystem.uploadAsync(
+      `${this.apisauce.getBaseURL()}/cdb/add-book/0/n/${fileName}/${libraryName}`,
+      formData,
+      {
+        headers: this.apisauce.headers,
+      },
+    )
+
+    /*if (!response.ok) {
+      const problem = getGeneralApiProblem(response)
+      if (problem) return problem
+    }*/
+
+    return { kind: "ok" }
   }
 }
 

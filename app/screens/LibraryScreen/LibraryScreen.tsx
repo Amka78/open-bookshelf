@@ -1,4 +1,5 @@
 import {
+  AddFileButton,
   BookDescriptionItem,
   BookImageItem,
   FlatList,
@@ -20,6 +21,7 @@ import { useModal } from "react-native-modalfy"
 import { useLibrary } from "./hook/useLibrary"
 import { useConvergence } from "@/hooks/useConvergence"
 import { AuthButton } from "@/components/AuthButton/AuthButton"
+import { api } from "@/services/api"
 
 export type LibraryViewStyle = "gridView" | "viewList"
 export const LibraryScreen: FC = observer(() => {
@@ -141,7 +143,7 @@ export const LibraryScreen: FC = observer(() => {
               mode={authenticationStore.isAuthenticated ? "logout" : "login"}
               onLoginPress={() => {
                 modal.openModal("LoginModal", {
-                  onLoginPress: (data) => {
+                  onLoginPress: () => {
                     navigation.navigate("Connect")
                   },
                 })
@@ -149,6 +151,12 @@ export const LibraryScreen: FC = observer(() => {
               onLogoutPress={() => {
                 authenticationStore.logout()
                 navigation.navigate("Connect")
+              }}
+            />
+            <AddFileButton
+              onDocumentSelect={async (assets) => {
+                await api.uploadFile(assets[0].name, selectedLibrary.id, assets[0].uri)
+                libraryHook.onSearch()
               }}
             />
             <LibraryViewButton
