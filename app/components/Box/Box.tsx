@@ -1,3 +1,3 @@
-import { Box } from "native-base"
+import { Box } from "@gluestack-ui/themed"
 
 export { Box }
