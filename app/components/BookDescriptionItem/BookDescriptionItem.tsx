@@ -1,4 +1,4 @@
-import { Box, Flex } from "native-base"
+import { Box } from "native-base"
 import React, { useState } from "react"
 import { StyleSheet } from "react-native"
 
@@ -30,8 +30,8 @@ export function BookDescriptionItem(props: BookDescriptionItemProps) {
   ) : (
     <ListItem
       LeftComponent={
-        <Flex flexDirection={"row"} width={"full"}>
-          <Flex flexDirection={"row"} width={"5/6"} marginLeft={2}>
+        <Box flexDirection={"row"} width={"full"}>
+          <Box flexDirection={"row"} width={"5/6"} marginLeft={2}>
             <Image source={props.source} style={styles.coverImage} resizeMode={"contain"} />
             <Box marginLeft={"1.5"}>
               <Text fontSize={"lg"} lineBreakMode="tail" numberOfLines={1}>
@@ -41,8 +41,8 @@ export function BookDescriptionItem(props: BookDescriptionItemProps) {
                 {bottomText}
               </Text>
             </Box>
-          </Flex>
-        </Flex>
+          </Box>
+        </Box>
       }
       onPress={async () => {
         setLoading(true)

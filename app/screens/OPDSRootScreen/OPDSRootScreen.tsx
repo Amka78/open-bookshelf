@@ -1,4 +1,4 @@
-import { FlatList, Flex, ListItem, RootContainer, Text } from "@/components"
+import { FlatList, ListItem, RootContainer, Text } from "@/components"
 import { useStores } from "@/models"
 import { Entry } from "@/models/opds"
 import { ApppNavigationProp } from "@/navigators"
@@ -17,7 +17,7 @@ export const OPDSRootScreen: FC = observer(() => {
     navigation.setOptions({
       headerTitle(props) {
         return (
-          <Flex direction="row" alignItems={"center"}>
+          <Box direction="row" alignItems={"center"}>
             <Image
               source={`${settingStore.api.baseUrl}${opdsRootStore.root.icon}`}
               style={{ height: 30, width: 30 }}
@@ -26,7 +26,7 @@ export const OPDSRootScreen: FC = observer(() => {
             <Text color="white" paddingLeft={"2.5"} fontSize={"2xl"}>
               {opdsRootStore.root.title}
             </Text>
-          </Flex>
+          </Box>
         )
       },
     })

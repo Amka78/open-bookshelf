@@ -1,4 +1,4 @@
-import { FlatList, Flex, Icon, ListItem, RootContainer, Text } from "@/components"
+import { FlatList, Icon, ListItem, RootContainer, Text } from "@/components"
 import { useStores } from "@/models"
 import { Entry } from "@/models/opds"
 import { OpdsChildrenModel, OpdsModel, OpdsRoot } from "@/models/opds/OpdsRootStore"
@@ -50,7 +50,7 @@ export const AcquisitionScreen: FC = observer(() => {
     navigation.setOptions({
       headerTitle(props) {
         return (
-          <Flex direction="row" alignItems={"center"}>
+          <Box direction="row" alignItems={"center"}>
             <Image
               source={`${settingStore.api.baseUrl}${currentOpds?.icon}`}
               style={{ height: 30, width: 30 }}
@@ -59,7 +59,7 @@ export const AcquisitionScreen: FC = observer(() => {
             <Text color="white" paddingLeft={"2.5"} fontSize={"2xl"}>
               {currentOpds?.title}
             </Text>
-          </Flex>
+          </Box>
         )
       },
     })
@@ -88,8 +88,8 @@ export const AcquisitionScreen: FC = observer(() => {
     return (
       <ListItem
         LeftComponent={
-          <Flex flexDirection={"row"} width={"full"}>
-            <Flex flexDirection={"row"} width={"5/6"}>
+          <Box flexDirection={"row"} width={"full"}>
+            <Box flexDirection={"row"} width={"5/6"}>
               {item.contentType !== "text" && (
                 <ExpoFastImage
                   source={{ uri: thumbnail && `${settingStore.api.baseUrl}${thumbnail.href}` }}
@@ -105,7 +105,7 @@ export const AcquisitionScreen: FC = observer(() => {
                   {bottomText}
                 </Text>
               </Box>
-            </Flex>
+            </Box>
             {item.contentType !== "text" && (
               <Icon
                 as={MaterialCommunityIcons}
@@ -116,7 +116,7 @@ export const AcquisitionScreen: FC = observer(() => {
                 right={"0.5"}
               />
             )}
-          </Flex>
+          </Box>
         }
         onPress={() => {
           if (item.contentType === "text") {
