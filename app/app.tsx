@@ -29,6 +29,8 @@ import { ModalProvider, createModalStack } from "react-native-modalfy"
 import { modalConfig } from "./components/Modals/ModalConfig"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import Constants from "expo-constants"
+import { GluestackUIProvider } from "@gluestack-ui/themed"
+import { config } from "@gluestack-ui/config"
 
 // Set up Reactotron, which is a free desktop app for inspecting and debugging
 // React Native apps. Learn more here: https://github.com/infinitered/reactotron
@@ -97,14 +99,16 @@ function App(props: AppProps) {
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <NativeBaseProvider>
-          <ErrorBoundary catchErrors={Config.catchErrors}>
-            <ModalProvider stack={stack}>
-              <AppNavigator
-                initialState={initialNavigationState}
-                onStateChange={onNavigationStateChange}
-              />
-            </ModalProvider>
-          </ErrorBoundary>
+          <GluestackUIProvider config={config}>
+            <ErrorBoundary catchErrors={Config.catchErrors}>
+              <ModalProvider stack={stack}>
+                <AppNavigator
+                  initialState={initialNavigationState}
+                  onStateChange={onNavigationStateChange}
+                />
+              </ModalProvider>
+            </ErrorBoundary>
+          </GluestackUIProvider>
         </NativeBaseProvider>
       </GestureHandlerRootView>
     </SafeAreaProvider>
