@@ -1,14 +1,19 @@
 import { MessageKey, translate } from "@/i18n"
-import { Button as Template, IButtonProps } from "native-base"
-import React from "react"
+import { Button as Template, ButtonText, ButtonSpinner } from "@gluestack-ui/themed"
+import React, { ComponentProps } from "react"
 
-export type ButtonProps = IButtonProps & {
+export type ButtonProps = ComponentProps<typeof Template> & {
   tx?: MessageKey
+  isLoading: boolean
 }
-export function Button(props: ButtonProps) {
+export function Button({ isLoading = false, ...restProps }: ButtonProps) {
+  const props = { isLoading, ...restProps }
   return (
-    <Template {...props} colorScheme={"blueGray"}>
-      {props.tx ? translate(props.tx) : props.children}
+    <Template {...props} variant="outline" borderColor="$textDark700">
+      {props.isLoading ?? <ButtonSpinner />}
+      <ButtonText color="$textDark700">
+        {restProps.tx ? translate(restProps.tx) : restProps.children}
+      </ButtonText>
     </Template>
   )
 }
