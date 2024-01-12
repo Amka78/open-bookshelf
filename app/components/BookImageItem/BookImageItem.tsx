@@ -1,8 +1,7 @@
-import { Box } from "native-base"
 import React, { useState } from "react"
 import { StyleSheet, TouchableOpacity } from "react-native"
 
-import { LabeledSpinner, Image, ImageProps } from "@/components"
+import { Box, LabeledSpinner, Image, ImageProps } from "@/components"
 
 export type BookImageprops = Pick<ImageProps, "source"> & {
   onPress: () => Promise<void>
@@ -18,7 +17,7 @@ export function BookImageItem(props: BookImageprops) {
         setLoading(false)
       }}
     >
-      <Box marginX={"2"} marginTop={"2"}>
+      <Box marginX={"$2"} marginTop={"$2"}>
         {loading ? (
           <LabeledSpinner
             containerStyle={styles.imageSize}

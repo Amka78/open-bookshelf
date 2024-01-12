@@ -1,4 +1,11 @@
-import { Slider, Text, VStack } from "native-base"
+import {
+  Slider,
+  SliderTrack,
+  SliderFilledTrack,
+  SliderThumb,
+  Text,
+  VStack,
+} from "@gluestack-ui/themed"
 import React from "react"
 
 export type PageManagerProps = {
@@ -23,23 +30,21 @@ export function PageManager(props: PageManagerProps) {
       backgroundColor={"white"}
     >
       <Slider
-        w="3/4"
-        maxW="900"
-        $PWD={props.reverse}
-        defaultValue={props.reverse ? props.currentPage * -1 : props.currentPage}
-        minValue={props.reverse ? props.totalPage * -1 : 0}
-        maxValue={props.reverse ? 0 : props.totalPage}
+        w="$3/4"
+        maxWidth={900}
+        defaultValue={props.currentPage}
+        minValue={0}
+        maxValue={props.totalPage}
         step={1}
         onChange={(v) => {
-          const index = v < 0 ? v * -1 : v
-          props.onPageChange(index)
+          props.onPageChange(v)
         }}
         isReversed={props.reverse}
       >
-        <Slider.Track>
-          <Slider.FilledTrack />
-        </Slider.Track>
-        <Slider.Thumb />
+        <SliderTrack>
+          <SliderFilledTrack />
+        </SliderTrack>
+        <SliderThumb />
       </Slider>
       <Text textAlign="center">
         {pageNum}/{props.totalPage}

@@ -1,10 +1,7 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons"
 import React from "react"
 
-import { HStack } from "../HStack/HStack"
-import { PressableIcon } from "../PressableIcon/PressableIcon"
-import { Text } from "../Text/Text"
 import { ViewerMenu, ViewerMenuProps } from "../ViewerMenu/ViewerMenu"
+import { HStack, IconButton, Text } from "@/components"
 
 export type ViewerHeaderProps = ViewerMenuProps & {
   visible: boolean
@@ -15,7 +12,7 @@ export type ViewerHeaderProps = ViewerMenuProps & {
 export function ViewerHeader(props: ViewerHeaderProps) {
   return props.visible ? (
     <HStack
-      height={"50"}
+      height={50}
       backgroundColor={"white"}
       position={"absolute"}
       top={0}
@@ -23,17 +20,13 @@ export function ViewerHeader(props: ViewerHeaderProps) {
       right={0}
       zIndex={1}
     >
-      <HStack flex={1} justifyContent={"flex-start"} marginLeft={"4"}>
-        <PressableIcon
-          as={MaterialCommunityIcons}
-          name="arrow-left"
-          onPress={props.onLeftArrowPress}
-        />
-        <Text marginLeft={"3"} fontSize={"lg"}>
+      <HStack flex={1} justifyContent={"flex-start"} marginLeft={"$4"}>
+        <IconButton name="arrow-left" onPress={props.onLeftArrowPress} iconSize="md-" />
+        <Text marginLeft={"$3"} fontSize={"$lg"}>
           {props.headerTitle}
         </Text>
       </HStack>
-      <HStack flex={1} justifyContent={"flex-end"} marginRight={"4"}>
+      <HStack flex={1} justifyContent={"flex-end"} marginRight={"$4"}>
         <ViewerMenu
           pageDirection={props.pageDirection}
           readingStyle={props.readingStyle}

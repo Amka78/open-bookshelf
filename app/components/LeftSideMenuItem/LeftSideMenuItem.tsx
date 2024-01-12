@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { Box, HStack, Icon, Pressable } from "native-base"
+import { Box, HStack, Icon, Pressable } from "@gluestack-ui/themed"
 import { Text } from "../Text/Text"
 import { MaterialCommunityIcons } from "@expo/vector-icons"
 
@@ -21,8 +21,8 @@ export function LeftSideMenuItem({ mode = "category", ...restProps }: LeftSideMe
       ? "menu-down"
       : "menu-right"
     : props.selected
-    ? "check"
-    : "bookshelf"
+      ? "check"
+      : "bookshelf"
   return (
     <>
       <Pressable
@@ -46,13 +46,13 @@ export function LeftSideMenuItem({ mode = "category", ...restProps }: LeftSideMe
             _dark={{
               color: "warmGray.50",
             }}
-            size="6"
+            size="sm"
             name={icon}
             color="black.200"
           />
-          <Text fontSize={"12"}>{props.name}</Text>
-          <Box flex={"1"} />
-          <Text fontSize={"12"}>{props.count}</Text>
+          <Text fontSize={"$md"}>{props.name}</Text>
+          <Box flex={1} />
+          <Text fontSize={"$md"}>{props.count}</Text>
         </HStack>
       </Pressable>
       {isOpen ? props.children : null}

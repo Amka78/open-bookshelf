@@ -1,6 +1,6 @@
 import React from "react"
 import { ViewStyle } from "react-native"
-import { Pressable } from "native-base"
+import { Pressable } from "@gluestack-ui/themed"
 
 export type PagePressableProps = {
   children: React.ReactNode

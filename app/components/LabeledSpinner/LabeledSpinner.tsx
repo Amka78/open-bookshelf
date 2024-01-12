@@ -1,5 +1,5 @@
 import { MessageKey } from "@/i18n"
-import { Center, HStack, Spinner, VStack } from "native-base"
+import { Center, HStack, Spinner, VStack } from "@gluestack-ui/themed"
 import React from "react"
 import { StyleProp, ViewStyle } from "react-native"
 
@@ -13,7 +13,7 @@ export type LabeledSpinnerProps = {
 
 export function LabeledSpinner(props: LabeledSpinnerProps) {
   const spinner = <Spinner size="lg" />
-  const label = <Heading color="primary.500" fontSize="md" tx={props.label} />
+  const label = <Heading color="primary.500" fontSize="$md" tx={props.label} />
   return props.labelDirection === "horizontal" ? (
     <HStack space={3} alignItems={"center"}>
       {spinner}

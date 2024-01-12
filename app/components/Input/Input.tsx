@@ -1,21 +1,10 @@
-/* eslint-disable react/display-name */
-import { MessageKey, translate } from "@/i18n"
-import { IInputProps, Input as Template } from "native-base"
-import React, { forwardRef } from "react"
+import { Input as Template } from "@gluestack-ui/themed"
+import React, { ComponentProps, forwardRef } from "react"
 
-export type InputProps = IInputProps & {
-  placeholderTx?: MessageKey
+export type InputProps = ComponentProps<typeof Template>
+
+export function Input({ variant = "underlined", size = "lg", ...restProps }) {
+  const props = { variant, size, ...restProps }
+
+  return <Template {...props} />
 }
-
-export const Input = forwardRef(
-  ({ variant = "underlined", size = "lg", ...restProps }: InputProps, ref) => {
-    const props = { variant, size, ...restProps }
-    return (
-      <Template
-        {...props}
-        placeholder={props.placeholderTx ? translate(props.placeholderTx) : props.placeholder}
-        ref={ref}
-      />
-    )
-  },
-)

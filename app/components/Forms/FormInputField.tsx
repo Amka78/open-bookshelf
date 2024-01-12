@@ -1,16 +1,16 @@
 import React from "react"
 import { Controller, ControllerProps } from "react-hook-form"
-import { Input, InputProps } from "../Input/Input"
+import { InputField, InputFieldProps } from "../InputField/InputField"
 
-export type FormInputProps<T> = Omit<InputProps, "onChangeText"> &
+export type FormInputFiledProps<T> = Omit<InputFieldProps, "onChangeText"> &
   Omit<ControllerProps<T>, "render">
-export function FormInput<T>(props: FormInputProps<T>) {
+export function FormInputField<T>(props: FormInputFiledProps<T>) {
   return (
     <Controller
       {...props}
       render={(renderProps) => {
         return (
-          <Input
+          <InputField
             {...props}
             onChangeText={(text) => {
               renderProps.field.onChange(text)

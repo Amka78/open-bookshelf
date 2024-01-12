@@ -1,4 +1,4 @@
-import { Button, FormInput } from "@/components"
+import { Button, FormInputField, Heading, Input } from "@/components"
 import React from "react"
 import { ModalComponentProp } from "react-native-modalfy"
 
@@ -18,20 +18,26 @@ export function LoginModal(props: LoginModalProps) {
           props.modal.closeModal()
         }}
       />
-      <Header tx={"modal.loginModal.title"} />
+      <Header>
+        <Heading tx={"modal.loginModal.title"} />
+      </Header>
       <Body>
-        <FormInput
-          control={form.control}
-          name="userId"
-          placeholderTx={"modal.loginModal.userIdPlaceholder"}
-          rules={{ required: true }}
-        />
-        <FormInput
-          control={form.control}
-          name="password"
-          placeholderTx={"modal.loginModal.passwordPlaceholder"}
-          rules={{ required: true }}
-        />
+        <Input>
+          <FormInputField
+            control={form.control}
+            name="userId"
+            placeholderTx={"modal.loginModal.userIdPlaceholder"}
+            rules={{ required: true }}
+          />
+        </Input>
+        <Input>
+          <FormInputField
+            control={form.control}
+            name="password"
+            placeholderTx={"modal.loginModal.passwordPlaceholder"}
+            rules={{ required: true }}
+          />
+        </Input>
       </Body>
       <Footer>
         <Button
@@ -46,7 +52,7 @@ export function LoginModal(props: LoginModalProps) {
             props.modal.closeModal()
           }}
           tx={"common.cancel"}
-          marginLeft={"2"}
+          marginLeft={"$2"}
         />
       </Footer>
     </Root>

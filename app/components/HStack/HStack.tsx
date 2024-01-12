@@ -1,4 +1,4 @@
-import { HStack as Origin } from "native-base"
+import { HStack as Origin } from "@gluestack-ui/themed"
 import React, { ComponentProps } from "react"
 
 export type HStackProps = ComponentProps<typeof Origin>

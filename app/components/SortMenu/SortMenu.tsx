@@ -1,8 +1,8 @@
 import { translate } from "@/i18n"
-import { SortField } from "@/models/CalibreRootStore"
-import { Menu } from "native-base"
+import { SortField } from "@/models/CarlibreRootStore"
+import { Menu, MenuItem, MenuItemLabel } from "@gluestack-ui/themed"
 import React from "react"
-import { StaggerButton } from "@/components"
+import { IconButton } from "@/components"
 
 export type SortMenuProps = {
   selectedSort: string
@@ -13,43 +13,25 @@ export type SortMenuProps = {
 export function SortMenu(props: SortMenuProps) {
   return (
     <Menu
-      w="190"
+      //w="190"
       placement="left"
       trigger={(triggerProps) => {
-        return (
-          <StaggerButton
-            {...triggerProps}
-            mb="4"
-            bg="coolGray.700"
-            _dark={{
-              color: "black",
-            }}
-            name="sort"
-            color="white"
-          />
-        )
+        return <IconButton {...triggerProps} name="sort" iconSize="md-" variant="staggerChild" />
       }}
     >
-      <Menu.OptionGroup
-        defaultValue={props.selectedSort}
-        type="radio"
-        title={translate("sortMenu.sort")}
-        onChange={props.onSortChange}
-      >
-        {props.field.map((value) => {
-          return (
-            <>
-              <Menu.ItemOption value={value.id} key={value.id}>
-                {value.id === props.selectedSort
-                  ? `${value.name}-${translate(
-                      props.selectedSortOrder === "asc" ? "sortMenu.asc" : "sortMenu.desc",
-                    )}`
-                  : value.name}
-              </Menu.ItemOption>
-            </>
-          )
-        })}
-      </Menu.OptionGroup>
+      {props.field.map((value) => {
+        const text =
+          value.id === props.selectedSort
+            ? `${value.name}-${translate(
+                props.selectedSortOrder === "asc" ? "sortMenu.asc" : "sortMenu.desc",
+              )}`
+            : value.name
+        return (
+          <MenuItem key={value.id} textValue={value.id} id={value.id}>
+            <MenuItemLabel>{text}</MenuItemLabel>
+          </MenuItem>
+        )
+      })}
     </Menu>
   )
 }

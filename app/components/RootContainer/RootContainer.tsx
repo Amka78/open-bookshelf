@@ -1,8 +1,8 @@
-import React from "react"
-import { Container as Template, IContainerProps, useBreakpointValue, Box } from "native-base"
-import { useWindowDimensions, Platform } from "react-native"
+import React, { ComponentProps } from "react"
+import { Box, useBreakpointValue } from "@gluestack-ui/themed"
+import { useWindowDimensions } from "react-native"
 
-export type ContainerProps = IContainerProps
+export type ContainerProps = ComponentProps<typeof Box>
 
 export function RootContainer(props: ContainerProps) {
   const needOuter = useBreakpointValue({
@@ -16,25 +16,26 @@ export function RootContainer(props: ContainerProps) {
     <Box
       {...props}
       backgroundColor={"white"}
-      flex={{ base: "1", xl: "0.5" }}
-      width={{ base: "full", xl: "lg" }}
-      borderRadius={{ base: "none", xl: "lg" }}
-      paddingX={"2.5"}
-      paddingY={"3"}
-      margin={"0"}
+      flex={needOuter ? 0.5 : 1}
+      borderRadius={needOuter ? "$lg" : "$none"}
+      $base-w={"$full"}
+      $xl-w={"$96"}
+      paddingHorizontal={"$2.5"}
+      paddingVertical={"$3"}
+      margin={"$0"}
     />
   )
 
   const comp = needOuter ? (
-    <Template
-      justifyContent={{ base: "flexStart", xl: "center" }}
-      alignItems={{ base: "stretch", xl: "center" }}
-      alignSelf={{ base: "none", xl: "center" }}
+    <Box
+      justifyContent={"center"}
+      alignItems={"center"}
+      alignSelf={"center"}
       flex={1}
-      paddingX={"0"}
+      paddingHorizontal={"$0"}
     >
       {Inner}
-    </Template>
+    </Box>
   ) : (
     Inner
   )

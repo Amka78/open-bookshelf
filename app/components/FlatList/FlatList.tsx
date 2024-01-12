@@ -1,5 +1,5 @@
 import { FlashList as Origin, FlashListProps } from "@shopify/flash-list"
-import { Spinner } from "native-base"
+import { Spinner } from "@gluestack-ui/themed"
 import React, { useState } from "react"
 
 export type FlatListProps<T> = FlashListProps<T>

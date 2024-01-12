@@ -14,8 +14,8 @@ import { Library } from "@/models/CalibreRootStore"
 import { ApppNavigationProp } from "@/navigators"
 import { useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
-import { HStack } from "native-base"
-import React, { FC, useEffect, useState } from "react"
+import { HStack } from "@gluestack-ui/themed"
+import React, { FC, useEffect, useState, useLayoutEffect } from "react"
 import { useWindowDimensions } from "react-native"
 import { useModal } from "react-native-modalfy"
 import { useLibrary } from "./hook/useLibrary"
@@ -40,11 +40,14 @@ export const LibraryScreen: FC = observer(() => {
     await calibreRootStore.searchLibrary()
   }
 
-  useEffect(() => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  useLayoutEffect(() => {
     navigation.setOptions({
       headerTitle: calibreRootStore.selectedLibraryId,
+      headerTransparent: false,
       headerSearchBarOptions: {
-        hideWhenScrolling: true,
+        shouldShowHintSearchIcon: true,
+        //hideWhenScrolling: false,
         onSearchButtonPress: (e) => {
           libraryHook.onSearch(e.nativeEvent.text)
         },
@@ -53,7 +56,7 @@ export const LibraryScreen: FC = observer(() => {
         },
       },
     })
-  }, [])
+  }, [navigation])
 
   const window = useWindowDimensions()
 
@@ -184,7 +187,7 @@ export const LibraryScreen: FC = observer(() => {
   )
 
   return convergenceHook.isLarge ? (
-    <HStack flex="1">
+    <HStack flex={1}>
       <LeftSideMenu
         onNodePress={async (name) => {
           libraryHook.onSearch(name)

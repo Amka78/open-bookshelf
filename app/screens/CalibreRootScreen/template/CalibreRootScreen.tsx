@@ -1,4 +1,4 @@
-import { FlatList, ListItem, RootContainer, Text } from "@/components"
+import { Box, FlatList, ListItem, RootContainer, Text } from "@/components"
 import { LibraryMap } from "@/models/CalibreRootStore"
 import React from "react"
 import { View } from "react-native"
@@ -13,7 +13,7 @@ export function CalibreRootScreen(props: CalibreRootScreenProps) {
       <ListItem
         LeftComponent={
           <View>
-            <Text fontSize={"lg"}>{item.id}</Text>
+            <Text fontSize={"$lg"}>{item.id}</Text>
           </View>
         }
         onPress={() => props.onLibraryPress(item.id)}

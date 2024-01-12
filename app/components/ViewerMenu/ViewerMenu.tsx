@@ -1,19 +1,27 @@
-import { MessageKey } from "@/i18n"
+import { MessageKey, translate } from "@/i18n"
 import { BookReadingStyleType } from "@/type/types"
-import { MaterialCommunityIcons } from "@expo/vector-icons"
-import { Icon, Menu } from "native-base"
-import React, { useState } from "react"
+import { Menu, MenuItem, MenuItemLabel as MenuItemLabelOrigin } from "@gluestack-ui/themed"
+import React, { ComponentProps, useState } from "react"
 import { Pressable } from "react-native"
 
-import { HStack } from "../HStack/HStack"
-import { MenuItem } from "../MenuItem/MenuItem"
-import { Text } from "../Text/Text"
+import { Text, HStack, IconButton } from "@/components"
 
 export type ViewerMenuProps = {
   pageDirection: "left" | "right"
   readingStyle: BookReadingStyleType
   onSelectReadingStyle: (readingStyle: BookReadingStyleType) => void
   onSelectPageDirection: (pageDirection) => void
+}
+
+type MenuItemLabelProps = ComponentProps<typeof MenuItemLabelOrigin> & {
+  tx: MessageKey
+}
+function MenuItemLabel(props: MenuItemLabelProps) {
+  return (
+    <MenuItemLabelOrigin {...props}>
+      {props.tx ? translate(props.tx) : props.children}
+    </MenuItemLabelOrigin>
+  )
 }
 export function ViewerMenu(props: ViewerMenuProps) {
   const [pageDirectionState, setPageDirectionState] = useState(props.pageDirection)
@@ -32,35 +40,31 @@ export function ViewerMenu(props: ViewerMenuProps) {
           return (
             <Pressable {...triggerProps}>
               <HStack alignItems={"center"}>
-                <Icon
-                  as={MaterialCommunityIcons}
-                  name={"book-settings"}
-                  color={"black"}
-                  _dark={{ color: "white" }}
-                  size={"7"}
-                />
-                <Text tx={`bookReadingStyle.${readingStyleState}` as MessageKey} fontSize={"12"} />
+                <IconButton iconSize="md-" name="book-settings" />
+                <Text tx={`bookReadingStyle.${readingStyleState}` as MessageKey} fontSize={"$md"} />
               </HStack>
             </Pressable>
           )
         }}
       >
+        <MenuItem textValue="singlePage" onPress={() => onUpdateReadingStyle("singlePage")}>
+          <MenuItemLabel tx={"bookReadingStyle.singlePage"} />
+        </MenuItem>
+        <MenuItem textValue="facingPage" onPress={() => onUpdateReadingStyle("facingPage")}>
+          <MenuItemLabel tx="bookReadingStyle.facingPage" />
+        </MenuItem>
         <MenuItem
-          onPress={() => onUpdateReadingStyle("singlePage")}
-          tx={"bookReadingStyle.singlePage"}
-        />
-        <MenuItem
-          onPress={() => onUpdateReadingStyle("facingPage")}
-          tx="bookReadingStyle.facingPage"
-        />
-        <MenuItem
+          textValue="facingPageWithTitle"
           onPress={() => onUpdateReadingStyle("facingPageWithTitle")}
-          tx="bookReadingStyle.facingPageWithTitle"
-        />
+        >
+          <MenuItemLabel tx="bookReadingStyle.facingPageWithTitle" />
+        </MenuItem>
         <MenuItem
+          textValue={"verticalScroll"}
           onPress={() => onUpdateReadingStyle("verticalScroll")}
-          tx="bookReadingStyle.verticalScroll"
-        />
+        >
+          <MenuItemLabel tx="bookReadingStyle.verticalScroll" />
+        </MenuItem>
       </Menu>
       {props.readingStyle !== "verticalScroll" ? (
         <Pressable
@@ -71,14 +75,8 @@ export function ViewerMenu(props: ViewerMenuProps) {
           }}
         >
           <HStack alignItems="center">
-            <Icon
-              as={MaterialCommunityIcons}
-              name={`arrow-${pageDirectionState}-bold`}
-              color={"black"}
-              _dark={{ color: "white" }}
-              size={"7"}
-            />
-            <Text tx="pageDirection" fontSize={"12"} />
+            <IconButton name={`arrow-${pageDirectionState}-bold`} iconSize={"md-"} />
+            <Text tx="pageDirection" fontSize={"$md"} />
           </HStack>
         </Pressable>
       ) : null}

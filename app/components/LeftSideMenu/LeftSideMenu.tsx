@@ -1,6 +1,6 @@
 import { Category } from "@/models/CalibreRootStore"
 import React from "react"
-import { ScrollView } from "native-base"
+import { ScrollView } from "@gluestack-ui/themed"
 
 import { LeftSideMenuItem } from "../LeftSideMenuItem/LeftSideMenuItem"
 
@@ -12,7 +12,7 @@ export type LeftSideMenuProps = {
 
 export function LeftSideMenu(props: LeftSideMenuProps) {
   return (
-    <ScrollView backgroundColor={"white"} maxWidth={"32"}>
+    <ScrollView backgroundColor={"white"} maxWidth={"$32"}>
       {props.tagBrowser.map((category) => {
         return (
           <LeftSideMenuItem name={category.name} count={category.count} key={category.name}>

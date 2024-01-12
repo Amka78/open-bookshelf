@@ -1,4 +1,13 @@
-import { Button, FormCheckbox, FormInput, Heading, RootContainer, Text, VStack } from "@/components"
+import {
+  Button,
+  FormCheckbox,
+  Input,
+  FormInputField,
+  Heading,
+  RootContainer,
+  Text,
+  VStack,
+} from "@/components"
 import { ModalStackParams } from "@/components/Modals/Types"
 import { ApiError } from "@/models/exceptions/Exceptions"
 import React, { useState } from "react"
@@ -22,16 +31,18 @@ export function ConnectScreen(props: ConnectScreenProps) {
     <RootContainer>
       <VStack justifyContent={"space-between"} flex={1}>
         <Heading testID="connect-heading" tx="connectScreen.welcome" />
-        <Text tx="connectScreen.detail" marginTop={"5"} />
+        <Text tx="connectScreen.detail" marginTop={"$5"} />
         <VStack marginTop={7}>
           <FormCheckbox name={"isOPDS"} tx={"connectScreen.checkbox"} control={form.control} />
-          <FormInput
-            control={form.control}
-            defaultValue={props.baseUrl}
-            placeholderTx={"connectScreen.placeHolder"}
-            rules={{ required: true }}
-            name={"url"}
-          />
+          <Input>
+            <FormInputField
+              control={form.control}
+              defaultValue={props.baseUrl}
+              placeholderTx={"connectScreen.placeHolder"}
+              rules={{ required: true }}
+              name={"url"}
+            />
+          </Input>
         </VStack>
         <VStack flex={1} justifyContent="flex-end">
           <Button
@@ -45,6 +56,8 @@ export function ConnectScreen(props: ConnectScreenProps) {
                   modal.openModal("LoginModal", { onLoginPress: props.onLoginPress })
                 }
               } catch (ex) {
+                console.log("error occured")
+                console.log(ex)
                 const apiError = ex as ApiError
                 modal.openModal("ErrorModal", {
                   titleTx: apiError.errorTx,

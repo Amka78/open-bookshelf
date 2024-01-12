@@ -175,7 +175,6 @@ export class Api {
       json,
     )
 
-    console.log(response)
     if (!response.ok) {
       const problem = getGeneralApiProblem(response)
       if (problem) return problem

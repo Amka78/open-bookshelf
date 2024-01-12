@@ -1,5 +1,5 @@
-import { Button, Text } from "@/components"
-import { ScrollView } from "native-base"
+import { Button, Heading, Text } from "@/components"
+import { ScrollView } from "@gluestack-ui/themed"
 import React from "react"
 import { ModalComponentProp } from "react-native-modalfy"
 
@@ -16,7 +16,9 @@ export function ErrorModal(props: ErrorModalProps) {
           props.modal.closeModal()
         }}
       />
-      <Header tx={props.modal.params?.titleTx}>{props.modal.params?.title}</Header>
+      <Header>
+        <Heading tx={props.modal.params?.titleTx}>{props.modal.params?.title}</Heading>
+      </Header>
       <Body>
         <ScrollView>
           <Text tx={props.modal.params?.messageTx}>{props.modal.params?.message}</Text>

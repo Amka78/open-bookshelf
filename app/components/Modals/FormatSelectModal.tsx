@@ -1,5 +1,5 @@
 import { Button, Text } from "@/components"
-import { ScrollView } from "native-base"
+import { ScrollView } from "@gluestack-ui/themed"
 import React from "react"
 import { ModalComponentProp } from "react-native-modalfy"
 

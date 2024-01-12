@@ -13,7 +13,6 @@ import "./i18n"
 import "./utils/ignoreWarnings"
 
 import { useFonts } from "expo-font"
-import { NativeBaseProvider } from "native-base"
 import React from "react"
 import { View } from "react-native"
 import { initialWindowMetrics, SafeAreaProvider } from "react-native-safe-area-context"
@@ -98,18 +97,16 @@ function App(props: AppProps) {
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <NativeBaseProvider>
-          <GluestackUIProvider config={config}>
-            <ErrorBoundary catchErrors={Config.catchErrors}>
-              <ModalProvider stack={stack}>
-                <AppNavigator
-                  initialState={initialNavigationState}
-                  onStateChange={onNavigationStateChange}
-                />
-              </ModalProvider>
-            </ErrorBoundary>
-          </GluestackUIProvider>
-        </NativeBaseProvider>
+        <GluestackUIProvider config={config}>
+          <ErrorBoundary catchErrors={Config.catchErrors}>
+            <ModalProvider stack={stack}>
+              <AppNavigator
+                initialState={initialNavigationState}
+                onStateChange={onNavigationStateChange}
+              />
+            </ModalProvider>
+          </ErrorBoundary>
+        </GluestackUIProvider>
       </GestureHandlerRootView>
     </SafeAreaProvider>
   )

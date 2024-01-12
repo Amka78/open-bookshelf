@@ -1,5 +1,5 @@
 import { MessageKey } from "@/i18n"
-import { Icon } from "native-base"
+import { Icon } from "@gluestack-ui/themed"
 import React, { ComponentProps } from "react"
 import { Pressable } from "react-native"
 

@@ -1,3 +1,3 @@
-import { Icon } from "native-base"
+import { Icon } from "@gluestack-ui/themed"
 
 export { Icon }

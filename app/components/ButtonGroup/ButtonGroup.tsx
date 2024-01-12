@@ -1,8 +1,8 @@
 import React, { ComponentProps } from "react"
-import { Button } from "native-base"
+import { ButtonGroup as Template } from "@gluestack-ui/themed"
 
-export type ButtonGroupProps = ComponentProps<typeof Button.Group>
+export type ButtonGroupProps = ComponentProps<typeof Template>
 
 export function ButtonGroup(props: ButtonGroupProps) {
-  return <Button.Group {...props} />
+  return <Template {...props} />
 }

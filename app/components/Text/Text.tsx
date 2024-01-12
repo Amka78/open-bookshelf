@@ -1,8 +1,8 @@
 import { MessageKey, translate } from "@/i18n"
-import { ITextProps, Text as Template } from "native-base"
-import React from "react"
+import { Text as Template } from "@gluestack-ui/themed"
+import React, { ComponentProps } from "react"
 
-export type TextProps = ITextProps & {
+export type TextProps = ComponentProps<typeof Template> & {
   tx?: MessageKey
 }
 

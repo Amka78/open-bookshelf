@@ -1,8 +1,7 @@
-import { Box } from "native-base"
 import React, { useState } from "react"
 import { StyleSheet } from "react-native"
 
-import { Image, ImageProps, ListItem, Text, LabeledSpinner } from "@/components"
+import { Box, Image, ImageProps, ListItem, Text, LabeledSpinner } from "@/components"
 
 export type BookDescriptionItemProps = Pick<ImageProps, "source"> & {
   title: string
@@ -14,13 +13,13 @@ export function BookDescriptionItem(props: BookDescriptionItemProps) {
   const [loading, setLoading] = useState(false)
   let bottomText = ""
 
-  props.authors.forEach((value) => {
+  for (const author of props.authors) {
     if (bottomText === "") {
-      bottomText = value
+      bottomText = author
     } else {
-      bottomText += `,${value}`
+      bottomText += `,${author}`
     }
-  })
+  }
   return loading ? (
     <LabeledSpinner
       labelDirection="horizontal"
@@ -30,14 +29,14 @@ export function BookDescriptionItem(props: BookDescriptionItemProps) {
   ) : (
     <ListItem
       LeftComponent={
-        <Box flexDirection={"row"} width={"full"}>
-          <Box flexDirection={"row"} width={"5/6"} marginLeft={2}>
+        <Box flexDirection={"row"} width={"$full"}>
+          <Box flexDirection={"row"} width={"$5/6"} marginLeft={2}>
             <Image source={props.source} style={styles.coverImage} resizeMode={"contain"} />
-            <Box marginLeft={"1.5"}>
-              <Text fontSize={"lg"} lineBreakMode="tail" numberOfLines={1}>
+            <Box marginLeft={"$1.5"}>
+              <Text fontSize={"$lg"} lineBreakMode="tail" numberOfLines={1}>
                 {props.title}
               </Text>
-              <Text fontSize={"md"} marginTop={"0.5"}>
+              <Text fontSize={"$md"} marginTop={"$0.5"}>
                 {bottomText}
               </Text>
             </Box>

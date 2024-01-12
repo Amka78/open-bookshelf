@@ -45,6 +45,13 @@ export function ConvertApiErrorToException(apiProblem: GeneralApiProblem) {
         errorTx: "errors.canNotConnect",
         descriptionTx: "errors.canNotConnectDescription",
       })
+    case "timeout": 
+      throw new ApiError(
+        {
+          errorTx: "errors.timeout",
+          descriptionTx: "errors.timeoutDescription"
+        }
+      )
     default:
       break
   }

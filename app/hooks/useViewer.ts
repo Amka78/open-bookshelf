@@ -6,7 +6,7 @@ import { AppStackParamList } from "@/navigators"
 import { BookReadingStyleType } from "@/type/types"
 import { RouteProp, useRoute } from "@react-navigation/native"
 import * as ScreenOrientation from "expo-screen-orientation"
-import { useBreakpointValue } from "native-base"
+import { useBreakpointValue } from "@gluestack-ui/themed"
 import { useState } from "react"
 import { useConvergence } from "./useConvergence"
 

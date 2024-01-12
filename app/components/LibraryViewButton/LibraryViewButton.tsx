@@ -1,5 +1,5 @@
 import React from "react"
-import { StaggerButton } from "../StaggerButton/StaggerButton"
+import { IconButton } from "@/components"
 
 export type LibraryViewButtonProps = {
   onPress: () => void
@@ -8,15 +8,11 @@ export type LibraryViewButtonProps = {
 
 export function LibraryViewButton(props: LibraryViewButtonProps) {
   return (
-    <StaggerButton
-      mb="4"
-      bg="coolGray.700"
+    <IconButton
+      iconSize="md-"
       name={props.mode === "viewList" ? "view-list" : "view-grid"}
-      _dark={{
-        color: "black",
-      }}
-      color="white"
       onPress={props.onPress}
+      variant="staggerChild"
     />
   )
 }

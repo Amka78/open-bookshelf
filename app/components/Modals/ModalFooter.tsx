@@ -1,8 +1,8 @@
 import React, { ComponentProps } from "react"
-import { Modal } from "native-base"
+import { ModalFooter } from "@gluestack-ui/themed"
 
-export type FooterProps = ComponentProps<typeof Modal.Footer>
+export type FooterProps = ComponentProps<typeof ModalFooter>
 
 export function Footer(props: FooterProps) {
-  return <Modal.Footer {...props} />
+  return <ModalFooter {...props} />
 }

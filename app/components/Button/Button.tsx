@@ -4,7 +4,7 @@ import React, { ComponentProps } from "react"
 
 export type ButtonProps = ComponentProps<typeof Template> & {
   tx?: MessageKey
-  isLoading: boolean
+  isLoading?: boolean
 }
 export function Button({ isLoading = false, ...restProps }: ButtonProps) {
   const props = { isLoading, ...restProps }

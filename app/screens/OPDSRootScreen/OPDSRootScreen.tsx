@@ -1,4 +1,4 @@
-import { FlatList, ListItem, RootContainer, Text } from "@/components"
+import { Box, FlatList, ListItem, RootContainer, Text } from "@/components"
 import { useStores } from "@/models"
 import { Entry } from "@/models/opds"
 import { ApppNavigationProp } from "@/navigators"
