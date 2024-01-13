@@ -3,6 +3,7 @@ import {
   BookDescriptionItem,
   BookImageItem,
   FlatList,
+  IconButton,
   LeftSideMenu,
   LibraryViewButton,
   SortMenu,
@@ -15,7 +16,7 @@ import { ApppNavigationProp } from "@/navigators"
 import { useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import { HStack } from "@gluestack-ui/themed"
-import React, { FC, useEffect, useState, useLayoutEffect } from "react"
+import React, { FC, useEffect, useState, useLayoutEffect, useRef } from "react"
 import { useWindowDimensions } from "react-native"
 import { useModal } from "react-native-modalfy"
 import { useLibrary } from "./hook/useLibrary"
@@ -31,6 +32,7 @@ export const LibraryScreen: FC = observer(() => {
   const [desktopViewStyle, setDesktopViewStyle] = useState<LibraryViewStyle>("gridView")
   const navigation = useNavigation<ApppNavigationProp>()
 
+  const first = useRef()
   const modal = useModal<ModalStackParams>()
 
   const libraryHook = useLibrary()
@@ -44,7 +46,6 @@ export const LibraryScreen: FC = observer(() => {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerTitle: calibreRootStore.selectedLibraryId,
-      headerTransparent: false,
       headerSearchBarOptions: {
         hideWhenScrolling: false,
         onSearchButtonPress: (e) => {

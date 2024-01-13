@@ -1,8 +1,9 @@
 import { translate } from "@/i18n"
 import { SortField } from "@/models/CarlibreRootStore"
 import { Menu, MenuItem, MenuItemLabel } from "@gluestack-ui/themed"
-import React from "react"
+import React, { ComponentProps } from "react"
 import { IconButton } from "@/components"
+import { useWindowDimensions } from "react-native"
 
 export type SortMenuProps = {
   selectedSort: string
@@ -11,13 +12,20 @@ export type SortMenuProps = {
   onSortChange: (sortId: string) => void
 }
 export function SortMenu(props: SortMenuProps) {
+  const dimension = useWindowDimensions()
+
   return (
     <Menu
-      //w="190"
-      placement="left"
+      placement="left bottom"
       trigger={(triggerProps) => {
         return <IconButton {...triggerProps} name="sort" iconSize="md-" variant="staggerChild" />
       }}
+      // :TODO Forced layout adjustments because library settings do not work well.
+      // Temporary improvements pending library fixes.
+      //marginLeft={"$4/5"}
+      position="absolute"
+      left={dimension.width - 260}
+      closeOnSelect={true}
     >
       {props.field.map((value) => {
         const text =
@@ -27,7 +35,14 @@ export function SortMenu(props: SortMenuProps) {
               )}`
             : value.name
         return (
-          <MenuItem key={value.id} textValue={value.id} id={value.id}>
+          <MenuItem
+            key={value.id}
+            textValue={value.id}
+            id={value.id}
+            onPress={() => {
+              props.onSortChange(value.id)
+            }}
+          >
             <MenuItemLabel>{text}</MenuItemLabel>
           </MenuItem>
         )
