@@ -48,37 +48,14 @@ export default {
     jsEngine: "hermes",
     assetBundlePatterns: ["**/*"],
     android: {
-      //"icon": "./assets/images/app-icon-android-legacy.png",
       package: "com.openbookshelf" + idSuffix,
-      /*"adaptiveIcon": {
-        "foregroundImage": "./assets/images/app-icon-android-adaptive-foreground.png",
-        "backgroundImage": "./assets/images/app-icon-android-adaptive-background.png"
-      },*/
-      /*"splash": {
-        "image": "./assets/images/splash-logo-android-universal.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#191015"
-      }*/
     },
     ios: {
-      //"icon": "./assets/images/app-icon-ios.png",
       supportsTablet: true,
       bundleIdentifier: "com.openbookshelf" + idSuffix,
-      /*"splash": {
-        "image": "./assets/images/splash-logo-ios-mobile.png",
-        "tabletImage": "./assets/images/splash-logo-ios-tablet.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#191015"
-      },*/
     },
     web: {
       bundler: "metro",
-      //"favicon": "./assets/images/app-icon-web-favicon.png",
-      /*"splash": {
-        "image": "./assets/images/splash-logo-web.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#191015"
-      }*/
     },
     plugins: [
       "@config-plugins/react-native-blob-util",

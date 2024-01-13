@@ -9,7 +9,6 @@ import {
 } from "react-native"
 
 import { Text, TextProps } from "../components/Text/Text"
-import { colors, spacing } from "../theme"
 
 export interface ListItemProps extends TouchableOpacityProps {
   /**
@@ -159,16 +158,16 @@ function ListItemAction(props: ListItemActionProps) {
 
 const $separatorTop: ViewStyle = {
   borderTopWidth: 1,
-  borderTopColor: colors.separator,
+  borderTopColor: "#D7CEC9",
 }
 
 const $separatorBottom: ViewStyle = {
   borderBottomWidth: 1,
-  borderBottomColor: colors.separator,
+  borderBottomColor: "#D7CEC9",
 }
 
 const $textStyle: TextStyle = {
-  paddingVertical: spacing.extraSmall,
+  paddingVertical: 8,
   alignSelf: "center",
   flexGrow: 1,
   flexShrink: 1,
@@ -185,9 +184,9 @@ const $iconContainer: ViewStyle = {
   flexGrow: 0,
 }
 const $iconContainerLeft: ViewStyle = {
-  marginEnd: spacing.medium,
+  marginEnd: 16,
 }
 
 const $iconContainerRight: ViewStyle = {
-  marginStart: spacing.medium,
+  marginStart: 16,
 }
