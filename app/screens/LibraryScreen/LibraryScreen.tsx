@@ -46,8 +46,7 @@ export const LibraryScreen: FC = observer(() => {
       headerTitle: calibreRootStore.selectedLibraryId,
       headerTransparent: false,
       headerSearchBarOptions: {
-        shouldShowHintSearchIcon: true,
-        //hideWhenScrolling: false,
+        hideWhenScrolling: false,
         onSearchButtonPress: (e) => {
           libraryHook.onSearch(e.nativeEvent.text)
         },
