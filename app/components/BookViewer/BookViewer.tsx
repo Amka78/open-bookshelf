@@ -14,6 +14,7 @@ export type RenderPageProps = {
   page: number
   direction: "next" | "previous"
   pageType: "singlePage" | "leftPage" | "rightPage"
+  scrollIndex: number
 }
 export type BookViewerProps = {
   totalPage: number
@@ -52,11 +53,12 @@ export function BookViewer(props: BookViewerProps) {
     }
     return (
       <PagePressable
-        currentPage={scrollIndex}
+        currentPage={renderProps.scrollIndex}
         direction={renderProps.direction}
         onLongPress={viewerHook.onOpenMenu}
         onPageChanged={viewerHook.onCloseMenu}
         onPageChanging={(page) => {
+          console.tron.log(`current scroll index ${scrollIndex}`)
           console.tron.log(`page pressed next page:${page}`)
           setScrollToIndex(page)
           flastListRef.current.scrollToIndex({ index: page })
@@ -69,7 +71,7 @@ export function BookViewer(props: BookViewerProps) {
       </PagePressable>
     )
   }
-  const renderItem = ({ item }: { item: number | FacingPageType }) => {
+  const renderItem = ({ item, index }: { item: number | FacingPageType; index: number }) => {
     let renderComp
     if (typeof item === "number" || (item as FacingPageType).page2 === undefined) {
       const num = typeof item === "number" ? item : (item as FacingPageType).page1
@@ -79,6 +81,7 @@ export function BookViewer(props: BookViewerProps) {
             page: num,
             direction: "next",
             pageType: "singlePage",
+            scrollIndex: index,
           })}
         </Box>
       )
@@ -87,11 +90,13 @@ export function BookViewer(props: BookViewerProps) {
         page: viewerHook.pageDirection === "left" ? item.page2 : item.page1,
         direction: viewerHook.pageDirection === "left" ? "next" : "previous",
         pageType: "leftPage",
+        scrollIndex: index,
       })
       const rightPage = renderPage({
         page: viewerHook.pageDirection === "left" ? item.page1 : item.page2,
         direction: viewerHook.pageDirection === "left" ? "previous" : "next",
         pageType: "rightPage",
+        scrollIndex: index,
       })
       renderComp = (
         <HStack width={dimension.width} height={dimension.height}>
@@ -184,8 +189,10 @@ export function BookViewer(props: BookViewerProps) {
             }
             ref={flastListRef}
             onViewableItemsChanged={(info) => {
-              setScrollToIndex(info.changed[0].index)
-              viewerHook.onCloseMenu()
+              if (info.changed[0].index !== scrollIndex) {
+                setScrollToIndex(info.changed[0].index)
+                viewerHook.onCloseMenu()
+              }
             }}
             viewabilityConfig={{
               itemVisiblePercentThreshold: 100,
