@@ -20,4 +20,4 @@ export const ClientSettingModel = types
     horizontalPageDirection: PageDirectionLiterals,
   })
   .actions(withSetPropAction)
-export interface ClientSetting extends Instance<typeof ClientSettingModel> {}
+export type ClientSetting = Instance<typeof ClientSettingModel>

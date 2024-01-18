@@ -1,6 +1,8 @@
+import { ModalStackParams } from "@/components/Modals/Types"
 import { MessageKey } from "@/i18n"
 import { Api } from "@/services/api"
 import { GeneralApiProblem } from "@/services/api/apiProblem"
+import { modalfy } from "react-native-modalfy"
 
 type ApiErrorConstructoArgs = {
   error?: string
@@ -38,20 +40,24 @@ export class ApiError {
   }
 }
 
-export function ConvertApiErrorToException(apiProblem: GeneralApiProblem) {
+export function handleCommonApiError(apiProblem: GeneralApiProblem) {
+  const modal = modalfy<ModalStackParams>()
   switch (apiProblem.kind) {
+    case "unauthorized":
+      modal.openModal("LoginModal")
+    break;
     case "cannot-connect":
-      throw new ApiError({
-        errorTx: "errors.canNotConnect",
-        descriptionTx: "errors.canNotConnectDescription",
-      })
+      modal.openModal("ErrorModal", {
+        titleTx: "errors.canNotConnect",
+        messageTx: "errors.canNotConnectDescription"
+      }) 
+      break
     case "timeout": 
-      throw new ApiError(
-        {
-          errorTx: "errors.timeout",
-          descriptionTx: "errors.timeoutDescription"
-        }
-      )
+      modal.openModal("ErrorModal", {
+        titleTx: "errors.timeout",
+        messageTx: "errors.timeoutDescription"
+      }) 
+      break
     default:
       break
   }

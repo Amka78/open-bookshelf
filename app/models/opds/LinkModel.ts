@@ -35,4 +35,4 @@ export const LinkModel = types
     },
   }))
 
-export interface Link extends Instance<typeof LinkModel> {}
+export type Link = Instance<typeof LinkModel>

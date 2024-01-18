@@ -5,4 +5,4 @@ export const AuthorModel = types.model("AuthorModel").props({
   uri: types.maybeNull(types.string),
   email: types.maybeNull(types.string),
 })
-export interface Author extends Instance<typeof AuthorModel> {}
+export type Author = Instance<typeof AuthorModel>

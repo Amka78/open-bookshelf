@@ -1,7 +1,6 @@
 import { useStores } from "@/models"
 import { ApppNavigationProp } from "@/navigators"
 import { useNavigation } from "@react-navigation/native"
-import { useEffect } from "react"
 
 export function useCalibreRoot() {
   const { calibreRootStore } = useStores()
@@ -16,12 +15,9 @@ export function useCalibreRoot() {
     navigation.navigate("Library")
   }
 
-  useEffect(() => {
-    initialize()
-  }, [])
-
   return {
     library: calibreRootStore.libraryMap,
     onLibraryPress: onLibraryPass,
+    initialize
   }
 }

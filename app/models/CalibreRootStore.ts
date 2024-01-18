@@ -2,7 +2,7 @@ import { flow, getParent, Instance, SnapshotIn, SnapshotOut, types } from "mobx-
 
 import { api, ApiBookManifestResultType } from "../services/api"
 import { ClientSettingModel } from "./calibre"
-import { ConvertApiErrorToException } from "./exceptions/Exceptions"
+import { handleCommonApiError } from "./errors/errors"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 
 const FormatSizeModel = types.model("FormatSizeModel").props({
@@ -53,7 +53,7 @@ export const LibraryModel = types
           if (response.kind === "not-found") {
             throw new Error(response.message)
           }
-          throw new Error()
+          handleCommonApiError(response)
         } else if ("job_status" in response.data) {
           if (response.data.job_status === "finished") {
             if (response.data.traceback) {
@@ -228,11 +228,9 @@ export const CalibreRootStore = types
         })
 
         return true
-      } else if (response.kind === "unauthorized") {
-        return false
-      } else {
-        throw ConvertApiErrorToException(response)
-      }
+      } 
+      ConvertApiErrorToException(response)
+      return false
     }),
     getTagBrowser: flow(function* () {
       const response = yield api.getTagBrowser(root.defaultLibraryId)
@@ -289,7 +287,10 @@ export const CalibreRootStore = types
 
           selectedLibrary.tagBrowser.push(categoryModel)
         })
+        return true
       }
+      handleCommonApiError(response)
+      return false
     }),
     searchLibrary: flow(function* () {
       const selectedLibrary = root.libraryMap.find((value) => {
@@ -305,7 +306,10 @@ export const CalibreRootStore = types
       if (response.kind === "ok") {
         selectedLibrary.value.clear()
         setSearchResult(response, selectedLibrary)
-      }
+        return true
+      } 
+      handleCommonApiError(response)
+      return false
     }),
     searchMoreLibrary: flow(function* () {
       const selectedLibrary = getSelectedLibrary(root)
@@ -318,9 +322,11 @@ export const CalibreRootStore = types
       })
 
       if (response.kind === "ok") {
-        console.log(response.data)
         setSearchResult(response, selectedLibrary)
-      }
+        return true
+      } 
+      handleCommonApiError(response)
+      return false
     }),
     setSelectedLibraryId: (libraryId: string) => {
       root.selectedLibraryId = libraryId

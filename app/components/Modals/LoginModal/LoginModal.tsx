@@ -6,20 +6,23 @@ import { Body, CloseButton, Footer, Header, Root } from ".."
 import { ModalStackParams } from "../Types"
 import { useForm } from "react-hook-form"
 import { LoginType } from "./type"
+import { observer } from "mobx-react-lite"
+import { useStores } from "@/models"
 
 export type LoginModalProps = ModalComponentProp<ModalStackParams, void, "LoginModal">
 
-export function LoginModal(props: LoginModalProps) {
+export const LoginModal = observer((props: LoginModalProps) => {
+  const { authenticationStore } = useStores()
   const form = useForm<LoginType>()
   return (
     <Root>
-      <CloseButton
-        onPress={() => {
-          props.modal.closeModal()
-        }}
-      />
       <Header>
         <Heading tx={"modal.loginModal.title"} />
+        <CloseButton
+          onPress={() => {
+            props.modal.closeModal()
+          }}
+        />
       </Header>
       <Body>
         <Input>
@@ -42,7 +45,7 @@ export function LoginModal(props: LoginModalProps) {
       <Footer>
         <Button
           onPress={form.handleSubmit((data) => {
-            props.modal.params.onLoginPress(data)
+            authenticationStore.login(data.userId, data.password)
             props.modal.closeModal()
           })}
           tx={"common.login"}
@@ -57,4 +60,4 @@ export function LoginModal(props: LoginModalProps) {
       </Footer>
     </Root>
   )
-}
+})

@@ -9,7 +9,6 @@ import {
   VStack,
 } from "@/components"
 import { ModalStackParams } from "@/components/Modals/Types"
-import { ApiError } from "@/models/exceptions/Exceptions"
 import React, { useState } from "react"
 import { useForm } from "react-hook-form"
 import { useModal } from "react-native-modalfy"
@@ -51,19 +50,7 @@ export function ConnectScreen(props: ConnectScreenProps) {
             tx="connectScreen.connect"
             onPress={form.handleSubmit(async (data) => {
               setIsLoading(true)
-              try {
-                if (!(await props.onConnectPress(data))) {
-                  modal.openModal("LoginModal", { onLoginPress: props.onLoginPress })
-                }
-              } catch (ex) {
-                console.log("error occured")
-                console.log(ex)
-                const apiError = ex as ApiError
-                modal.openModal("ErrorModal", {
-                  titleTx: apiError.errorTx,
-                  messageTx: apiError.descriptionTx,
-                })
-              }
+              await props.onConnectPress(data)
               setIsLoading(false)
             })}
             width={"$full"}

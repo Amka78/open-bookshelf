@@ -31,4 +31,4 @@ export const EntryModel = types.model("EntryModel").props({
   schemaRatingAdditionalType: types.maybeNull(types.string),
   schemaAdditionalType: types.maybeNull(types.string),
 })
-export interface Entry extends Instance<typeof EntryModel> {}
+export type Entry = Instance<typeof EntryModel>

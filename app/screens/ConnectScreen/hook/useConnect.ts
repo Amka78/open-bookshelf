@@ -4,7 +4,7 @@ import { useNavigation } from "@react-navigation/native"
 import { ConnectType } from "../type/ConnectType"
 import { LoginType } from "@/components/Modals/LoginModal"
 export function useConnect() {
-  const { authenticationStore, settingStore, calibreRootStore } = useStores()
+  const { settingStore, calibreRootStore } = useStores()
   const navigation = useNavigation<ApppNavigationProp>()
 
   const baseUrl = settingStore.api.baseUrl ? `${settingStore.api.baseUrl}` : ""
@@ -14,18 +14,12 @@ export function useConnect() {
 
     if (data.isOPDS) {
       navigation.navigate("OPDSRoot")
-    } else {
-      if (await calibreRootStore.initialize()) {
+    } else if (await calibreRootStore.initialize()) {
         navigation.navigate("CalibreRoot")
-        return true
-      }
-      return false
     }
-    return true
   }
 
   const onLoginPress = async (data: LoginType) => {
-    authenticationStore.login(data.userId, data.password)
 
     await calibreRootStore.initialize()
     navigation.navigate("CalibreRoot")
