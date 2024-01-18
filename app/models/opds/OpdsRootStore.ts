@@ -52,9 +52,9 @@ export const OpdsModel = types
     }),
   }))
 
-export interface OpdsRoot extends Instance<typeof OpdsModel> {}
-export interface OpdsRootSnapshotOut extends SnapshotOut<typeof OpdsModel> {}
-export interface OpdsRootSnapshotIn extends SnapshotIn<typeof OpdsModel> {}
+export type OpdsRoot = Instance<typeof OpdsModel>
+export type OpdsRootSnapshotOut = SnapshotOut<typeof OpdsModel>
+export type OpdsRootSnapshotIn = SnapshotIn<typeof OpdsModel>
 
 function setState(nodeName: string, node: Element, opds) {
   if (nodeName === "link") {
@@ -97,7 +97,7 @@ export const OpdsChildrenModel = types.model("OpdsChildrenModel").props({
   opds: types.maybeNull(OpdsModel),
 })
 
-export interface OpdsChildren extends Instance<typeof OpdsChildrenModel> {}
+export type OpdsChildren = Instance<typeof OpdsChildrenModel>
 export const OpdsRootStore = types
   .model("OpdsRootStre")
   .props({

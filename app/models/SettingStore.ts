@@ -25,5 +25,5 @@ export const SettingStoreModel = types
     },
   }))
 
-export interface SettingStore extends Instance<typeof SettingStoreModel> {}
-export interface SettingStoreSnapshot extends SnapshotOut<typeof SettingStoreModel> {}
+export type SettingStore = Instance<typeof SettingStoreModel>
+export type SettingStoreSnapshot = SnapshotOut<typeof SettingStoreModel>
