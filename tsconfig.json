@@ -20,7 +20,7 @@
       "@/*": ["app/*"]
     }
   },
-  "exclude": ["node_modules"],
+  "exclude": ["android","node_modules","assets","ios","bin","dist"],
   "include": [
     "index.js",
     "App.js",
