@@ -19,6 +19,10 @@ export const SettingStoreModel = types
         store.api.initialPath = "/opds"
         api.setUrl(store.api.baseUrl)
       } else {
+        /*let val = baseUrl
+        if (Platform.OS === "web") {
+          val = `${"http://localhost:8079"}/${baseUrl}`
+        }*/
         store.api.baseUrl = baseUrl
         api.setUrl(baseUrl)
       }

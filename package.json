@@ -131,6 +131,7 @@
     "babel-jest": "^29.2.1",
     "babel-plugin-react-docgen-typescript": "^1.5.1",
     "babel-plugin-react-native-web": "^0.19.7",
+    "cors-anywhere": "^0.4.4",
     "detox": "19.12.1",
     "detox-expo-helpers": "0.6.0",
     "expo-detox-hook": "1.0.10",
