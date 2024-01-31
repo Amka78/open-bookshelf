@@ -5,6 +5,7 @@ import React, { ComponentProps, useState } from "react"
 import { Pressable } from "react-native"
 
 import { Text, HStack, IconButton } from "@/components"
+import { useConvergence } from "@/hooks/useConvergence"
 
 export type ViewerMenuProps = {
   pageDirection: "left" | "right"
@@ -27,6 +28,7 @@ export function ViewerMenu(props: ViewerMenuProps) {
   const [pageDirectionState, setPageDirectionState] = useState(props.pageDirection)
   const [readingStyleState, setReadingStyleState] = useState(props.readingStyle)
 
+  const convergenceHook = useConvergence()
   const onUpdateReadingStyle = (readingStyle: BookReadingStyleType) => {
     props.onSelectReadingStyle(readingStyle)
     setReadingStyleState(readingStyle)
@@ -35,14 +37,20 @@ export function ViewerMenu(props: ViewerMenuProps) {
   return (
     <HStack>
       <Menu
-        w="190"
+        placement="bottom"
         trigger={(triggerProps) => {
           return (
             <Pressable {...triggerProps}>
-              <HStack alignItems={"center"}>
-                <IconButton iconSize="md-" name="book-settings" />
-                <Text tx={`bookReadingStyle.${readingStyleState}` as MessageKey} fontSize={"$md"} />
-              </HStack>
+              <IconButton
+                iconSize="md-"
+                name="book-settings"
+                labelTx={
+                  convergenceHook.isLarge
+                    ? (`bookReadingStyle.${readingStyleState}` as MessageKey)
+                    : undefined
+                }
+                pressable={false}
+              />
             </Pressable>
           )
         }}
@@ -50,15 +58,19 @@ export function ViewerMenu(props: ViewerMenuProps) {
         <MenuItem textValue="singlePage" onPress={() => onUpdateReadingStyle("singlePage")}>
           <MenuItemLabel tx={"bookReadingStyle.singlePage"} />
         </MenuItem>
-        <MenuItem textValue="facingPage" onPress={() => onUpdateReadingStyle("facingPage")}>
-          <MenuItemLabel tx="bookReadingStyle.facingPage" />
-        </MenuItem>
-        <MenuItem
-          textValue="facingPageWithTitle"
-          onPress={() => onUpdateReadingStyle("facingPageWithTitle")}
-        >
-          <MenuItemLabel tx="bookReadingStyle.facingPageWithTitle" />
-        </MenuItem>
+        {convergenceHook.orientation === "horizontal" ? (
+          <MenuItem textValue="facingPage" onPress={() => onUpdateReadingStyle("facingPage")}>
+            <MenuItemLabel tx="bookReadingStyle.facingPage" />
+          </MenuItem>
+        ) : null}
+        {convergenceHook.orientation === "horizontal" ? (
+          <MenuItem
+            textValue="facingPageWithTitle"
+            onPress={() => onUpdateReadingStyle("facingPageWithTitle")}
+          >
+            <MenuItemLabel tx="bookReadingStyle.facingPageWithTitle" />
+          </MenuItem>
+        ) : null}
         <MenuItem
           textValue={"verticalScroll"}
           onPress={() => onUpdateReadingStyle("verticalScroll")}
@@ -67,18 +79,18 @@ export function ViewerMenu(props: ViewerMenuProps) {
         </MenuItem>
       </Menu>
       {props.readingStyle !== "verticalScroll" ? (
-        <Pressable
+        <IconButton
+          name={`arrow-${pageDirectionState}-bold`}
+          iconSize={"md-"}
+          labelTx={convergenceHook.isLarge ? "pageDirection" : undefined}
           onPress={() => {
-            const direction = props.pageDirection === "left" ? "right" : "left"
+            console.tron.log(`current page direction: ${pageDirectionState}`)
+            const direction = pageDirectionState === "left" ? "right" : "left"
+            console.tron.log(`next page direction: ${direction}`)
             props.onSelectPageDirection(direction)
             setPageDirectionState(direction)
           }}
-        >
-          <HStack alignItems="center">
-            <IconButton name={`arrow-${pageDirectionState}-bold`} iconSize={"md-"} />
-            <Text tx="pageDirection" fontSize={"$md"} />
-          </HStack>
-        </Pressable>
+        />
       ) : null}
     </HStack>
   )
