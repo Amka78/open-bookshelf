@@ -30,6 +30,9 @@ const en = {
     placeHolder: "(http or https)://{Address}:{Port}",
     checkbox: "use opds?",
   },
+  libraryScreen: {
+    dataSearching: "Searching"
+  },
   sortMenu: {
     sort: "Sort",
     asc: "ASC",
@@ -55,6 +58,9 @@ const en = {
       userIdPlaceholder: "UserID",
       passwordPlaceholder: "Password",
     },
+    bookDetailModal: {
+      title: "Book detail"
+    }
   },
 }
 

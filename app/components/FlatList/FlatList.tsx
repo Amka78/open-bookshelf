@@ -1,12 +1,16 @@
 import { FlashList as Origin, FlashListProps } from "@shopify/flash-list"
-import { Spinner } from "@gluestack-ui/themed"
+import { Center, Spinner } from "@gluestack-ui/themed"
 import React, { useState } from "react"
+import { LabeledSpinner } from "../LabeledSpinner/LabeledSpinner"
 
-export type FlatListProps<T> = FlashListProps<T>
-export function FlatList<T>(props: FlatListProps<T>) {
+export type FlatListProps<T> = FlashListProps<T> & {
+  preparing?: boolean
+}
+export function FlatList<T>({ preparing = false, ...restProps }: FlatListProps<T>) {
+  const props = { preparing, ...restProps }
   const [loading, setLoading] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
-  return (
+  return !preparing ? (
     <Origin
       {...props}
       onMomentumScrollBegin={() => {
@@ -29,5 +33,9 @@ export function FlatList<T>(props: FlatListProps<T>) {
       refreshing={refreshing}
       ListFooterComponent={loading && <Spinner />}
     />
+  ) : (
+    <Center flex={1}>
+      <LabeledSpinner labelDirection="vertical" label={"libraryScreen.dataSearching"} />
+    </Center>
   )
 }
