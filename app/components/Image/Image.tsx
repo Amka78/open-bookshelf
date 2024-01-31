@@ -7,8 +7,8 @@ export function Image(props: ImageProps) {
     <Original
       {...props}
       onLoad={(event) => {
-        // console.log(`Loading image informaion.`)
-        // console.log(event)
+        console.log("Loading image informaion.")
+        console.log(event)
 
         if (props.onLoad) {
           props.onLoad(event)
