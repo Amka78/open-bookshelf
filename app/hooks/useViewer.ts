@@ -56,19 +56,15 @@ export function useViewer() {
     updateClientSetting(selectedLibrary, route.params.library.id, tempClientSetting)
   }
 
-  const onOpenMenu = () => {
-    setShowMenu(true)
-  }
-  const onCloseMenu = () => {
-    setShowMenu(false)
+  const onManageMenu = () => {
+    setShowMenu(!showMenu)
   }
 
   return {
     orientation,
     onSetBookReadingStyle,
     onSetPageDirection,
-    onOpenMenu,
-    onCloseMenu,
+    onManageMenu,
     readingStyle,
     pageDirection,
     showMenu,

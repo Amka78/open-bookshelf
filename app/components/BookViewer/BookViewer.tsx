@@ -55,8 +55,7 @@ export function BookViewer(props: BookViewerProps) {
       <PagePressable
         currentPage={renderProps.scrollIndex}
         direction={renderProps.direction}
-        onLongPress={viewerHook.onOpenMenu}
-        onPageChanged={viewerHook.onCloseMenu}
+        onLongPress={viewerHook.onManageMenu}
         onPageChanging={(page) => {
           console.tron.log(`current scroll index ${scrollIndex}`)
           console.tron.log(`page pressed next page:${page}`)
@@ -191,7 +190,6 @@ export function BookViewer(props: BookViewerProps) {
             onViewableItemsChanged={(info) => {
               if (info.changed[0].index !== scrollIndex) {
                 setScrollToIndex(info.changed[0].index)
-                viewerHook.onCloseMenu()
               }
             }}
             viewabilityConfig={{
