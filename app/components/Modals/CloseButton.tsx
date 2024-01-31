@@ -1,8 +1,12 @@
 import React, { ComponentProps } from "react"
-import { ModalCloseButton } from "@gluestack-ui/themed"
+import { Icon, ModalCloseButton, CloseIcon } from "@gluestack-ui/themed"
 
 export type CloseButtonProps = ComponentProps<typeof ModalCloseButton>
 
 export function CloseButton(props: CloseButtonProps) {
-  return <ModalCloseButton {...props} />
+  return (
+    <ModalCloseButton {...props}>
+      <Icon as={CloseIcon} />
+    </ModalCloseButton>
+  )
 }

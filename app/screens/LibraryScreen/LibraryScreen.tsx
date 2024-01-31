@@ -3,7 +3,6 @@ import {
   BookDescriptionItem,
   BookImageItem,
   FlatList,
-  IconButton,
   LeftSideMenu,
   LibraryViewButton,
   SortMenu,
@@ -16,7 +15,7 @@ import { ApppNavigationProp } from "@/navigators"
 import { useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import { HStack } from "@gluestack-ui/themed"
-import React, { FC, useEffect, useState, useLayoutEffect, useRef } from "react"
+import React, { FC, useState, useLayoutEffect } from "react"
 import { useWindowDimensions } from "react-native"
 import { useModal } from "react-native-modalfy"
 import { useLibrary } from "./hook/useLibrary"
@@ -24,15 +23,11 @@ import { useConvergence } from "@/hooks/useConvergence"
 import { AuthButton } from "@/components/AuthButton/AuthButton"
 import { api } from "@/services/api"
 
-export type LibraryViewStyle = "gridView" | "viewList"
 export const LibraryScreen: FC = observer(() => {
   const { authenticationStore, calibreRootStore, settingStore } = useStores()
 
-  const [mobileViewStyle, setMovileViewStyle] = useState<LibraryViewStyle>("viewList")
-  const [desktopViewStyle, setDesktopViewStyle] = useState<LibraryViewStyle>("gridView")
   const navigation = useNavigation<ApppNavigationProp>()
 
-  const first = useRef()
   const modal = useModal<ModalStackParams>()
 
   const libraryHook = useLibrary()
@@ -96,17 +91,32 @@ export const LibraryScreen: FC = observer(() => {
 
     let listItem
 
-    const imageUrl = `${settingStore.api.baseUrl}/get/thumb/${item.id}/${selectedLibrary.id}?sz=300x400`
+    const imageUrl = encodeURI(
+      `${settingStore.api.baseUrl}/get/thumb/${item.id}/${selectedLibrary.id}?sz=300x400`,
+    )
 
-    const itemStyle = convergenceHook.isLarge ? desktopViewStyle : mobileViewStyle
+    const onLongPress = () => {
+      modal.openModal("BookDetailModal", {
+        imageUrl: imageUrl,
+        library: item,
+        categories: selectedLibrary.tagBrowser,
+      })
+    }
 
-    if (itemStyle === "gridView") {
-      listItem = <BookImageItem source={{ uri: imageUrl, headers: header }} onPress={onPress} />
+    if (libraryHook.currentListStyle === "gridView") {
+      listItem = (
+        <BookImageItem
+          source={{ uri: imageUrl, headers: header }}
+          onPress={onPress}
+          onLongPress={onLongPress}
+        />
+      )
     } else {
       listItem = (
         <BookDescriptionItem
           source={{ uri: imageUrl, headers: header }}
           onPress={onPress}
+          onLongPress={onLongPress}
           authors={item.metaData.authors}
           title={item.metaData.title}
         />
@@ -125,7 +135,7 @@ export const LibraryScreen: FC = observer(() => {
           data={selectedLibrary?.value.slice()}
           renderItem={renderItem}
           estimatedItemSize={214}
-          numColumns={convergenceHook.isLarge ? Math.floor(window.width / 242) : 1}
+          numColumns={Math.floor(window.width / 242)}
           onRefresh={
             convergenceHook.isLarge
               ? undefined
@@ -136,6 +146,7 @@ export const LibraryScreen: FC = observer(() => {
           onEndReached={async () => {
             await calibreRootStore.searchMoreLibrary()
           }}
+          preparing={libraryHook.searching}
         />
       ) : null}
       <StaggerContainer
@@ -163,14 +174,8 @@ export const LibraryScreen: FC = observer(() => {
               }}
             />
             <LibraryViewButton
-              mode={convergenceHook.isLarge ? desktopViewStyle : mobileViewStyle}
-              onPress={() => {
-                if (convergenceHook.isLarge) {
-                  setDesktopViewStyle(desktopViewStyle === "gridView" ? "viewList" : "gridView")
-                } else {
-                  setMovileViewStyle(mobileViewStyle === "gridView" ? "viewList" : "gridView")
-                }
-              }}
+              mode={libraryHook.currentListStyle}
+              onPress={libraryHook.onChangeListStyle}
             />
             <SortMenu
               selectedSort={selectedLibrary.searchSetting?.sort}

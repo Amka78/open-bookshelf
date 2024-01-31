@@ -9,19 +9,35 @@ import { ModalStackParams } from "./Types"
 export type ErrorModalProps = ModalComponentProp<ModalStackParams, void, "ErrorModal">
 
 export function ErrorModal(props: ErrorModalProps) {
+  let titleTx
+  let title
+  let messageTx
+  let message
+  if (props.modal.params.exception) {
+    titleTx = props.modal.params.exception.errorTx
+    title = props.modal.params.exception.error
+    messageTx = props.modal.params.exception.descriptionTx
+    message = props.modal.params.exception.description
+  } else {
+    titleTx = props.modal.params.titleTx
+    title = props.modal.params.title
+    messageTx = props.modal.params.messageTx
+    message = props.modal.params.message
+  }
+
   return (
     <Root>
-      <CloseButton
-        onPress={() => {
-          props.modal.closeModal()
-        }}
-      />
       <Header>
-        <Heading tx={props.modal.params?.titleTx}>{props.modal.params?.title}</Heading>
+        <Heading tx={titleTx}>{title}</Heading>
+        <CloseButton
+          onPress={() => {
+            props.modal.closeModal()
+          }}
+        />
       </Header>
       <Body>
         <ScrollView>
-          <Text tx={props.modal.params?.messageTx}>{props.modal.params?.message}</Text>
+          <Text tx={messageTx}>{message}</Text>
         </ScrollView>
       </Body>
       <Footer>

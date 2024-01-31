@@ -7,6 +7,7 @@ export type BookDescriptionItemProps = Pick<ImageProps, "source"> & {
   title: string
   authors: string[]
   onPress: () => Promise<void>
+  onLongPress: () => void
 }
 
 export function BookDescriptionItem(props: BookDescriptionItemProps) {
@@ -47,6 +48,11 @@ export function BookDescriptionItem(props: BookDescriptionItemProps) {
         setLoading(true)
         await props.onPress()
         setLoading(false)
+      }}
+      onLongPress={() => {
+        if (props.onLongPress) {
+          props.onLongPress()
+        }
       }}
     />
   )

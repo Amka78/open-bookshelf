@@ -128,9 +128,9 @@ export const LibraryModel = types
       onPostConvert()
     }),
   }))
-export interface Library extends Instance<typeof LibraryModel> {}
-export interface LibrarySnapshotOut extends SnapshotOut<typeof LibraryModel> {}
-export interface LibrarySnapshotIn extends SnapshotIn<typeof LibraryModel> {}
+export type Library = Instance<typeof LibraryModel>
+export type LibrarySnapshotOut = SnapshotOut<typeof LibraryModel>
+export type LibrarySnapshotIn = SnapshotIn<typeof LibraryModel>
 
 export const SearchSettingModel = types
   .model("SearchSettingModel")
@@ -147,7 +147,7 @@ export const SortFieldModel = types.model("SortFieldModel").props({
   id: types.identifier,
   name: types.string,
 })
-export interface SortField extends Instance<typeof SortFieldModel> {}
+export type SortField = Instance<typeof SortFieldModel>
 
 export const NodeModel = types.model("NodeModel").props({
   id: types.number,
@@ -185,7 +185,7 @@ export const CategoryModel = types
     CategoryTemplateModel,
   )
   .actions(withSetPropAction)
-export interface Category extends Instance<typeof CategoryModel> {}
+export type Category = Instance<typeof CategoryModel>
 
 export const LibraryMapModel = types
   .model("LibrayMapModel")
@@ -199,9 +199,9 @@ export const LibraryMapModel = types
   })
   .actions(withSetPropAction)
 
-export interface LibraryMap extends Instance<typeof LibraryMapModel> {}
-export interface LibraryMapSnapshotOut extends SnapshotOut<typeof LibraryMapModel> {}
-export interface LibraryMapSnapshotIn extends SnapshotIn<typeof LibraryMapModel> {}
+export type LibraryMap = Instance<typeof LibraryMapModel>
+export type LibraryMapSnapshotOut = SnapshotOut<typeof LibraryMapModel>
+export type LibraryMapSnapshotIn = SnapshotIn<typeof LibraryMapModel>
 
 /**
  * Calibre Root Information
@@ -228,8 +228,8 @@ export const CalibreRootStore = types
         })
 
         return true
-      } 
-      ConvertApiErrorToException(response)
+      }
+      handleCommonApiError(response)
       return false
     }),
     getTagBrowser: flow(function* () {
@@ -307,7 +307,7 @@ export const CalibreRootStore = types
         selectedLibrary.value.clear()
         setSearchResult(response, selectedLibrary)
         return true
-      } 
+      }
       handleCommonApiError(response)
       return false
     }),
@@ -324,7 +324,7 @@ export const CalibreRootStore = types
       if (response.kind === "ok") {
         setSearchResult(response, selectedLibrary)
         return true
-      } 
+      }
       handleCommonApiError(response)
       return false
     }),
@@ -338,9 +338,9 @@ export const CalibreRootStore = types
     },
   }))
 
-export interface CalibreRoot extends Instance<typeof CalibreRootStore> {}
-export interface CalibreRootSnapshotOut extends SnapshotOut<typeof CalibreRootStore> {}
-export interface CalibreRootSnapshotIn extends SnapshotIn<typeof CalibreRootStore> {}
+export type CalibreRoot = Instance<typeof CalibreRootStore>
+export type CalibreRootSnapshotOut = SnapshotOut<typeof CalibreRootStore>
+export type CalibreRootSnapshotIn = SnapshotIn<typeof CalibreRootStore>
 function getSelectedLibrary(root): LibraryMap {
   return root.libraryMap.find((value) => {
     return value.id === root.selectedLibraryId

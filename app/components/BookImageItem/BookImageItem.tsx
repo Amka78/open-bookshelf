@@ -4,7 +4,8 @@ import { StyleSheet, TouchableOpacity } from "react-native"
 import { Box, LabeledSpinner, Image, ImageProps } from "@/components"
 
 export type BookImageprops = Pick<ImageProps, "source"> & {
-  onPress: () => Promise<void>
+  onPress?: () => Promise<void>
+  onLongPress?: () => void
 }
 export function BookImageItem(props: BookImageprops) {
   const [loading, setLoading] = useState(false)
@@ -16,8 +17,13 @@ export function BookImageItem(props: BookImageprops) {
         await props.onPress()
         setLoading(false)
       }}
+      onLongPress={() => {
+        if (props.onLongPress) {
+          props.onLongPress()
+        }
+      }}
     >
-      <Box marginX={"$2"} marginTop={"$2"}>
+      <Box marginHorizontal={"$2"} marginTop={"$2"}>
         {loading ? (
           <LabeledSpinner
             containerStyle={styles.imageSize}

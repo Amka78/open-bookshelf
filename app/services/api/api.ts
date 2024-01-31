@@ -11,6 +11,7 @@ import { ApiResponse, ApisauceInstance, create } from "apisauce"
 import { GeneralApiProblem, getGeneralApiProblem } from "./apiProblem"
 import * as FileSystem from "expo-file-system"
 import parse from "./AuthenticateParser"
+import { Platform } from "react-native"
 
 import type {
   ApiConfig,
@@ -19,7 +20,7 @@ import type {
   ApiCalibreInterfaceType,
   ApiTagBrowser,
   ApiBookFile,
-  ApiBookManifestResultType, // @demo remove-current-line
+  ApiBookManifestResultType,
 } from "./api.types"
 
 /**
@@ -79,8 +80,6 @@ export class Api {
       const problem = getGeneralApiProblem(response)
       if (problem) return problem
     }
-
-    console.log(response.data)
 
     return { kind: "ok", data: response.data }
   }

@@ -1,25 +1,23 @@
-import {
-  BookDescriptionItem,
-  BookImageItem,
-  FlatList,
-  LeftSideMenu,
-  SortMenu,
-  StaggerContainer,
-} from "@/components"
-import { ModalStackParams } from "@/components/Modals/Types"
+import { useConvergence } from "@/hooks/useConvergence"
 import { useStores } from "@/models"
-import { Library } from "@/models/CalibreRootStore"
 import { ApppNavigationProp } from "@/navigators"
 import { useNavigation } from "@react-navigation/native"
-import React, { FC, useEffect, useState } from "react"
-import { useWindowDimensions } from "react-native"
+import { useEffect, useState } from "react"
+export type LibraryViewStyle = "gridView" | "viewList"
 export function useLibrary() {
-  const { authenticationStore, calibreRootStore, settingStore } = useStores()
+  const { calibreRootStore } = useStores()
   const navigation = useNavigation<ApppNavigationProp>()
   const selectedLibrary = calibreRootStore.getSelectedLibrary()
 
+  const [searching, setSearching] = useState(false)
+  const [mobileViewStyle, setMovileViewStyle] = useState<LibraryViewStyle>("viewList")
+  const [desktopViewStyle, setDesktopViewStyle] = useState<LibraryViewStyle>("gridView")
+
+  const convergenceHook = useConvergence()
   const search = async () => {
+    setSearching(true)
     await calibreRootStore.searchLibrary()
+    setSearching(false)
   }
 
   useEffect(() => {
@@ -47,8 +45,24 @@ export function useLibrary() {
     search()
   }
 
+  const onChangeListStyle = () => {
+    setSearching(true)
+    if (convergenceHook.isLarge) {
+      setDesktopViewStyle(desktopViewStyle === "gridView" ? "viewList" : "gridView")
+    } else {
+      setMovileViewStyle(mobileViewStyle === "gridView" ? "viewList" : "gridView")
+    }
+    setSearching(false)
+  }
+
+  const currentListStyle = convergenceHook.isLarge ? desktopViewStyle : mobileViewStyle
   return {
+    currentListStyle,
+    onChangeListStyle,
     onSearch,
     onSort,
+    searching,
+    mobileViewStyle,
+    desktopViewStyle,
   }
 }

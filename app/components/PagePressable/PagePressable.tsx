@@ -6,7 +6,7 @@ export type PagePressableProps = {
   children: React.ReactNode
   direction: "previous" | "next"
   onPageChanging?: (page: number) => void
-  onPageChanged: () => void
+  onPageChanged?: () => void
   onLongPress: () => void
   currentPage: number
   totalPages: number
