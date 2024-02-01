@@ -1,7 +1,7 @@
 import { flow, getParent, Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 
 import { api, ApiBookManifestResultType } from "../services/api"
-import { ClientSettingModel } from "./calibre"
+import { ClientSettingModel, MetadataModel, SearchSettingModel } from "./calibre"
 import { handleCommonApiError } from "./errors/errors"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 
@@ -9,25 +9,6 @@ const FormatSizeModel = types.model("FormatSizeModel").props({
   id: types.identifier,
   size: types.maybeNull(types.number),
 })
-
-export const MetadataModel = types
-  .model("MetadataModel")
-  .props({
-    sharpFixed: types.maybeNull(types.boolean),
-    authorSort: types.maybeNull(types.string),
-    authors: types.array(types.string),
-    formats: types.array(types.string),
-    lastModified: types.maybeNull(types.string),
-    seriesIndex: types.maybeNull(types.number),
-    size: types.maybeNull(types.number),
-    sort: types.maybeNull(types.string),
-    tags: types.array(types.string),
-    timestamp: types.maybeNull(types.string),
-    title: types.maybeNull(types.string),
-    uuid: types.maybeNull(types.string),
-    selectedFormat: types.maybeNull(types.string),
-  })
-  .actions(withSetPropAction)
 
 export const LibraryModel = types
   .model("LibraryModel")
@@ -42,7 +23,8 @@ export const LibraryModel = types
   })
   .actions(withSetPropAction)
   .actions((root) => ({
-    convertBook: flow(function* (format: string, onPostConvert: () => void) {
+    convert: flow(function* (format: string, onPostConvert: () => void) {
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
       const libraryMap = getParent(root) as any
 
       let response
@@ -80,7 +62,7 @@ export const LibraryModel = types
         )
 
         if (spineResponse.kind === "ok") {
-          Object.values(spineResponse.data.tree.c[1].c).forEach((path: any) => {
+          Object.values(spineResponse.data.tree.c[1].c).forEach((path: { a: unknown }) => {
             Object.values(path.a).forEach((avalue) => {
               if (avalue[0] === "data-calibre-src") {
                 pathList.push(avalue[1])
@@ -114,9 +96,9 @@ export const LibraryModel = types
           })
         }
       } else {
-        Object.values(response.data.spine).forEach((value) => {
+        for (const value of Object.values(response.data.spine)) {
           pathList.push(value)
-        })
+        }
       }
 
       root.setProp("path", pathList)
@@ -127,21 +109,21 @@ export const LibraryModel = types
       }
       onPostConvert()
     }),
+
+    delete: flow(function* () {
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+      const libraryMap = getParent(root) as any
+      const response = yield api.deleteBook(libraryMap.id, root.id)
+      if (response.kind === "ok") {
+        return true
+      }
+      handleCommonApiError(response)
+      return false
+    }),
   }))
 export type Library = Instance<typeof LibraryModel>
 export type LibrarySnapshotOut = SnapshotOut<typeof LibraryModel>
 export type LibrarySnapshotIn = SnapshotIn<typeof LibraryModel>
-
-export const SearchSettingModel = types
-  .model("SearchSettingModel")
-  .props({
-    offset: types.maybeNull(types.number),
-    query: types.maybeNull(types.string),
-    sort: types.maybeNull(types.string),
-    sortOrder: types.maybeNull(types.string),
-    totalNum: types.maybeNull(types.number),
-  })
-  .actions(withSetPropAction)
 
 export const SortFieldModel = types.model("SortFieldModel").props({
   id: types.identifier,

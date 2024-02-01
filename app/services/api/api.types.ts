@@ -107,7 +107,7 @@ export type ApiBookManifestResultType = {
   files: Record<string, ImageFileType | HtmlFileType>
   metadata: MetadataType
   last_read_positions: number[]
-  annotations_map: any
+  annotations_map: unknown
 }
 
 export type ApiCalibreInterfaceType = {

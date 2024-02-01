@@ -68,7 +68,7 @@ export const LibraryScreen: FC = observer(() => {
         navigation.navigate("PDFViewer", { library: item })
       } else {
         try {
-          await item.convertBook(format, () => {
+          await item.convert(format, () => {
             navigation.navigate("Viewer", { library: item })
           })
         } catch (e) {

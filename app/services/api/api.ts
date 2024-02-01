@@ -21,6 +21,7 @@ import type {
   ApiTagBrowser,
   ApiBookFile,
   ApiBookManifestResultType,
+  ApiBookInit,
 } from "./api.types"
 
 /**
@@ -72,6 +73,8 @@ export class Api {
    * @returns {(Promise<{ kind: "ok"; data: any } | GeneralApiProblem>)}
    * @memberof Api
    */
+
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   async loadOPDS(path?: string): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
     // make the api call
     const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get(path)
@@ -136,7 +139,7 @@ export class Api {
   /**
    * get Library
    *
-   * @returns {(Promise<{ kind: "ok"; data: any } | GeneralApiProblem>)}
+   * @returns {(Promise<{ kind: "ok"; data: ApiBookInit } | GeneralApiProblem>)}
    * @memberof Api
    */
   async getLibrary(
@@ -144,8 +147,8 @@ export class Api {
     searchText: string,
     sort: string,
     sortOrder: string,
-  ): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
-    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get(
+  ): Promise<{ kind: "ok"; data: ApiBookInit } | GeneralApiProblem> {
+    const response: ApiResponse<ApiBookInit> = await this.apisauce.get(
       `interface-data/books-init?library_id=${library}${
         searchText ? `&search=${searchText}` : ""
       }&sort=${sort}.${sortOrder}&${Date.now}`,
@@ -162,13 +165,13 @@ export class Api {
   /**
    * get mote library
    *
-   * @returns {(Promise<{ kind: "ok"; data: any } | GeneralApiProblem>)}
+   * @returns {(Promise<{ kind: "ok"; data: unknown } | GeneralApiProblem>)}
    * @memberof Api
    */
   async getMoreLibrary(
     library: string,
     json,
-  ): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
+  ): Promise<{ kind: "ok"; data: unknown } | GeneralApiProblem> {
     const response: ApiResponse<ApiFeedResponse> = await this.apisauce.post(
       `interface-data/more-books?library_id=${library}`,
       json,
@@ -256,17 +259,30 @@ export class Api {
     return { kind: "ok", data: response.data }
   }
 
+  /**
+   * Delete the book with the specified ID.
+   * @param libraryId
+   * @param bookId
+   * @returns
+   */
+  async deleteBook(libraryId: string, bookId: number) {
+    const response: ApiResponse<unknown> = await this.apisauce.post(
+      `cdb/delete-books/${bookId}/${libraryId}&${Date.now()}`,
+    )
+
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response)
+      if (problem) return problem
+    }
+
+    return { kind: "ok" }
+  }
+
   async uploadFile(
     fileName: string,
     libraryName: string,
-    formData: any,
+    formData: string,
   ): Promise<{ kind: "ok" } | GeneralApiProblem> {
-    /*const response = await this.apisauce.post(
-      `cdb/add-book/0/n/${fileName}/${libraryName}`,
-      formData,
-      {}
-    )*/
-
     await FileSystem.uploadAsync(
       `${this.apisauce.getBaseURL()}/cdb/add-book/0/n/${fileName}/${libraryName}`,
       formData,

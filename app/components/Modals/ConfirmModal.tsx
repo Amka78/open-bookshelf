@@ -6,9 +6,9 @@ import { ModalComponentProp } from "react-native-modalfy"
 import { Body, CloseButton, Footer, Header, Root } from "./"
 import { ModalStackParams } from "./Types"
 
-export type ErrorModalProps = ModalComponentProp<ModalStackParams, void, "ErrorModal">
+export type ConfirmModalProps = ModalComponentProp<ModalStackParams, void, "ConfirmModal">
 
-export function ErrorModal(props: ErrorModalProps) {
+export function ConfirmModal(props: ConfirmModalProps) {
   const titleTx = props.modal.params.titleTx
   const title = props.modal.params.title
   const messageTx = props.modal.params.messageTx
@@ -32,9 +32,18 @@ export function ErrorModal(props: ErrorModalProps) {
       <Footer>
         <Button
           onPress={() => {
+            if (props.modal.params.onOKPress) {
+              props.modal.params.onOKPress()
+            }
             props.modal.closeModal()
           }}
           tx={"common.ok"}
+        />
+        <Button
+          onPress={() => {
+            props.modal.closeModal()
+          }}
+          tx={"common.cancel"}
         />
       </Footer>
     </Root>

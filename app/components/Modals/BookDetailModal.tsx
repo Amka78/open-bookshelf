@@ -1,27 +1,14 @@
-import {
-  Box,
-  BookImageItem,
-  Button,
-  FormInputField,
-  HStack,
-  Heading,
-  IconButton,
-  Input,
-  Text,
-  VStack,
-} from "@/components"
+import { BookImageItem, Button, HStack, Heading, IconButton, Text, VStack } from "@/components"
 import React from "react"
 import { ModalComponentProp } from "react-native-modalfy"
 
 import { Body, CloseButton, Footer, Header, Root } from "./"
 import { ModalStackParams } from "./Types"
-import { useForm } from "react-hook-form"
+import { translate } from "@/i18n"
 
 export type BookDetailModalProps = ModalComponentProp<ModalStackParams, void, "BookDetailModal">
 
 export function BookDetailModal(props: BookDetailModalProps) {
-  //const form = useForm<LoginType>()
-
   return (
     <Root>
       <Header>
@@ -39,35 +26,37 @@ export function BookDetailModal(props: BookDetailModalProps) {
             <HStack>
               <IconButton name={"sync-circle"} />
               <IconButton name={"book-edit"} />
-              <IconButton name={"trash-can"} />
+              <IconButton
+                name={"trash-can"}
+                onPress={() => {
+                  props.modal.openModal("ConfirmModal", {
+                    titleTx: "modal.deleteConfirmModal.title",
+                    message: translate({
+                      key: "modal.deleteConfirmModal.message",
+                      restParam: [
+                        { key: props.modal.params.library.metaData.title, translate: false },
+                      ],
+                    }),
+                    onOKPress: () => {
+                      props.modal.params.library.delete()
+                      props.modal.closeModal()
+                    },
+                  })
+                }}
+              />
             </HStack>
             {props.modal.params.categories.map((category) => {
               return (
                 <HStack key={category.category}>
                   <Text width={"$24"}>{category.name}</Text>
-                  <Text>{props.modal.params.library.metaData[category.category]}</Text>
+                  <Button variant="link" height={"$6"}>
+                    {props.modal.params.library.metaData[category.category]}
+                  </Button>
                 </HStack>
               )
             })}
           </VStack>
         </HStack>
-
-        {/* <Input>
-          <FormInputField
-            control={form.control}
-            name="userId"
-            placeholderTx={"modal.loginModal.userIdPlaceholder"}
-            rules={{ required: true }}
-          />
-        </Input>
-        <Input>
-          <FormInputField
-            control={form.control}
-            name="password"
-            placeholderTx={"modal.loginModal.passwordPlaceholder"}
-            rules={{ required: true }}
-          />
-        </Input> */}
       </Body>
     </Root>
   )
