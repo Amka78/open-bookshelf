@@ -6,12 +6,12 @@ export type ButtonProps = ComponentProps<typeof Template> & {
   tx?: MessageKey
   isLoading?: boolean
 }
-export function Button({ isLoading = false, ...restProps }: ButtonProps) {
-  const props = { isLoading, ...restProps }
+export function Button({ isLoading = false, variant = "outline", ...restProps }: ButtonProps) {
+  const props = { isLoading, variant, ...restProps }
   return (
-    <Template {...props} variant="outline" borderColor="$textDark700">
+    <Template {...props} borderColor="$textDark700">
       {props.isLoading ?? <ButtonSpinner />}
-      <ButtonText color="$textDark700">
+      <ButtonText color={variant === "outline" ? "$textDark700" : undefined}>
         {restProps.tx ? translate(restProps.tx) : restProps.children}
       </ButtonText>
     </Template>
