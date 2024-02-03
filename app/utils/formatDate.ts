@@ -12,11 +12,11 @@ const getLocale = (): Locale => {
   return locale === "ar" ? ar : locale === "ko" ? ko : en
 }
 
-export const formatDate = (date: string, dateFormat?: string, options?: Options) => {
+export const formatDate = (date: Date, dateFormat?: string, options?: Options) => {
   const locale = getLocale()
   const dateOptions = {
     ...options,
     locale,
   }
-  return format(parseISO(date), dateFormat ?? "MMM dd, yyyy", dateOptions)
+  return format(date, dateFormat ?? "MMM dd, yyyy", dateOptions)
 }

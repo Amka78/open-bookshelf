@@ -15,6 +15,7 @@ import {
 } from "./calibre"
 import { handleCommonApiError } from "./errors/errors"
 import { withSetPropAction } from "./helpers/withSetPropAction"
+import { parseISO } from "date-fns"
 
 const FormatSizeModel = types.model("FormatSizeModel").props({
   id: types.identifier,
@@ -316,13 +317,13 @@ function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap)
       authors: metaData.authors,
       authorSort: metaData.author_sort,
       formats: metaData.formats,
-      lastModified: metaData.last_modified,
+      lastModified: parseISO(metaData.last_modified),
       seriesIndex: metaData.series_index,
       sharpFixed: metaData["#fixed"],
       size: metaData.size,
       sort: metaData.sort,
       tags: metaData.tags,
-      timestamp: metaData.timestamp,
+      timestamp: parseISO(metaData.timestamp),
       title: metaData.title,
       uuid: metaData.uuid,
     })
@@ -355,9 +356,9 @@ function convertLibraryInformation(data: ApiBookInfo, selectedLibrary: LibraryMa
 
   Object.keys(data.field_metadata).forEach((value) => {
     let display = undefined
-    if (data.field_metadata[value].display.dateFormat) {
+    if (data.field_metadata[value].display.date_frormat) {
       display = DateFormatModel.create({
-        dateFormat: data.field_metadata[value].display.data_format,
+        dateFormat: data.field_metadata[value].display.date_format,
       })
     }
     let isMultiple

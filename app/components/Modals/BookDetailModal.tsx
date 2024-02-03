@@ -14,6 +14,7 @@ import { ModalComponentProp, useModal } from "react-native-modalfy"
 import { Body, CloseButton, Footer, Header, Root } from "./"
 import { ModalStackParams } from "./Types"
 import { translate } from "@/i18n"
+import { MetadataField } from "../MetadataField/MetadataField"
 
 export type BookDetailModalProps = ModalComponentProp<ModalStackParams, void, "BookDetailModal">
 
@@ -68,10 +69,7 @@ export function BookDetailModal(props: BookDetailModalProps) {
                 value &&
                 value?.length !== 0 &&
                 !ExcludeFields.includes(fieldMetadata.label) ? (
-                <HStack key={fieldMetadata.label}>
-                  <Text width={"$24"}>{fieldMetadata.name}</Text>
-                  <LinkButton>{value}</LinkButton>
-                </HStack>
+                <MetadataField value={value} fieldMetadata={fieldMetadata} />
               ) : undefined
             })}
           </VStack>
