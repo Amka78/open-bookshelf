@@ -24,8 +24,6 @@ import { ErrorBoundary } from "./screens/ErrorScreen/ErrorBoundary"
 import { setupReactotron } from "./services/reactotron"
 import { customFontsToLoad } from "./theme"
 import * as storage from "./utils/storage"
-import { ModalProvider, createModalStack } from "react-native-modalfy"
-import { modalConfig } from "./components/Modals/ModalConfig"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import Constants from "expo-constants"
 import { GluestackUIProvider } from "@gluestack-ui/themed"
@@ -93,18 +91,15 @@ function App(props: AppProps) {
     )
   }
 
-  const stack = createModalStack(modalConfig, {})
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <GluestackUIProvider config={config}>
           <ErrorBoundary catchErrors={Config.catchErrors}>
-            <ModalProvider stack={stack}>
-              <AppNavigator
-                initialState={initialNavigationState}
-                onStateChange={onNavigationStateChange}
-              />
-            </ModalProvider>
+            <AppNavigator
+              initialState={initialNavigationState}
+              onStateChange={onNavigationStateChange}
+            />
           </ErrorBoundary>
         </GluestackUIProvider>
       </GestureHandlerRootView>

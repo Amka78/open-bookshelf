@@ -2,7 +2,8 @@ import { DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/
 import {
   createNativeStackNavigator,
   NativeStackNavigationProp,
- NativeStackScreenProps } from "@react-navigation/native-stack"
+  NativeStackScreenProps,
+} from "@react-navigation/native-stack"
 import { observer } from "mobx-react-lite"
 import React, { useEffect } from "react"
 import { useColorScheme } from "react-native"
@@ -22,6 +23,8 @@ import {
 import { PDFViewerScreen } from "../screens/PDFViewerScreen/PDFViewerScreen"
 import { api } from "../services/api"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
+import { ModalProvider, createModalStack } from "react-native-modalfy"
+import { modalConfig } from "@/components/Modals/ModalConfig"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -107,13 +110,16 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
 
   useBackButtonHandler((routeName) => exitRoutes.includes(routeName))
 
+  const stack = createModalStack(modalConfig, {})
   return (
     <NavigationContainer
       ref={navigationRef}
       theme={/* colorScheme === "dark" ? DarkTheme : */ DefaultTheme}
       {...props}
     >
-      <AppStack />
+      <ModalProvider stack={stack}>
+        <AppStack />
+      </ModalProvider>
     </NavigationContainer>
   )
 })

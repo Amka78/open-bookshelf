@@ -22,16 +22,19 @@ import { useLibrary } from "./hook/useLibrary"
 import { useConvergence } from "@/hooks/useConvergence"
 import { AuthButton } from "@/components/AuthButton/AuthButton"
 import { api } from "@/services/api"
+import { useOpenViewer } from "@/hooks/useOpenViewer"
 
 export const LibraryScreen: FC = observer(() => {
   const { authenticationStore, calibreRootStore, settingStore } = useStores()
 
   const navigation = useNavigation<ApppNavigationProp>()
-
   const modal = useModal<ModalStackParams>()
 
-  const libraryHook = useLibrary()
   const convergenceHook = useConvergence()
+  const window = useWindowDimensions()
+
+  const openViewerHook = useOpenViewer()
+  const libraryHook = useLibrary()
 
   const search = async () => {
     await calibreRootStore.searchLibrary()
@@ -53,8 +56,6 @@ export const LibraryScreen: FC = observer(() => {
     })
   }, [navigation])
 
-  const window = useWindowDimensions()
-
   let header
 
   if (authenticationStore.isAuthenticated) {
@@ -62,31 +63,8 @@ export const LibraryScreen: FC = observer(() => {
   }
 
   const renderItem = ({ item }: { item: Library }) => {
-    const onItemPress = async (format: string) => {
-      item.metaData.setProp("selectedFormat", format)
-      if (format === "PDF") {
-        navigation.navigate("PDFViewer", { library: item })
-      } else {
-        try {
-          await item.convert(format, selectedLibrary.id, () => {
-            navigation.navigate("Viewer", { library: item })
-          })
-        } catch (e) {
-          modal.openModal("ErrorModal", { message: e.message, titleTx: "errors.failedConvert" })
-        }
-      }
-    }
     const onPress = async () => {
-      if (item.metaData.formats.length > 1) {
-        modal.openModal("FormatSelectModal", {
-          formats: item.metaData.formats,
-          onSelectFormat: async (format) => {
-            await onItemPress(format)
-          },
-        })
-      } else {
-        await onItemPress(item.metaData.formats[0])
-      }
+      await openViewerHook.execute(item, selectedLibrary.id, modal)
     }
 
     let listItem

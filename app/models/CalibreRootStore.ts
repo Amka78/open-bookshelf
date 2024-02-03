@@ -356,7 +356,7 @@ function convertLibraryInformation(data: ApiBookInfo, selectedLibrary: LibraryMa
 
   Object.keys(data.field_metadata).forEach((value) => {
     let display = undefined
-    if (data.field_metadata[value].display.date_frormat) {
+    if (data.field_metadata[value].display.date_format) {
       display = DateFormatModel.create({
         dateFormat: data.field_metadata[value].display.date_format,
       })
