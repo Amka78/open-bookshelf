@@ -15,7 +15,7 @@ import { ApppNavigationProp } from "@/navigators"
 import { useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import { HStack } from "@gluestack-ui/themed"
-import React, { FC, useState, useLayoutEffect } from "react"
+import React, { FC, useLayoutEffect, useRef } from "react"
 import { useWindowDimensions } from "react-native"
 import { useModal } from "react-native-modalfy"
 import { useLibrary } from "./hook/useLibrary"
@@ -23,6 +23,7 @@ import { useConvergence } from "@/hooks/useConvergence"
 import { AuthButton } from "@/components/AuthButton/AuthButton"
 import { api } from "@/services/api"
 import { useOpenViewer } from "@/hooks/useOpenViewer"
+import { SearchBarCommands } from "react-native-screens"
 
 export const LibraryScreen: FC = observer(() => {
   const { authenticationStore, calibreRootStore, settingStore } = useStores()
@@ -36,6 +37,11 @@ export const LibraryScreen: FC = observer(() => {
   const openViewerHook = useOpenViewer()
   const libraryHook = useLibrary()
 
+  const selectedLibrary = calibreRootStore.getSelectedLibrary()
+
+  const flatListRef = useRef()
+  const searchBar = useRef<SearchBarCommands>()
+
   const search = async () => {
     await calibreRootStore.searchLibrary()
   }
@@ -43,18 +49,23 @@ export const LibraryScreen: FC = observer(() => {
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerTitle: calibreRootStore.selectedLibraryId,
+      headerTitle: selectedLibrary.searchSetting.query
+        ? selectedLibrary.searchSetting.query
+        : calibreRootStore.selectedLibraryId,
       headerSearchBarOptions: {
         hideWhenScrolling: false,
+
+        ref: searchBar,
         onSearchButtonPress: (e) => {
           libraryHook.onSearch(e.nativeEvent.text)
+          searchBar.current.blur()
         },
-        onClose: () => {
-          libraryHook.onSearch()
+        onOpen: () => {
+          searchBar.current.setText(selectedLibrary.searchSetting.query)
         },
       },
     })
-  }, [navigation])
+  }, [navigation, selectedLibrary.searchSetting])
 
   let header
 
@@ -108,8 +119,6 @@ export const LibraryScreen: FC = observer(() => {
     return listItem
   }
 
-  const selectedLibrary = calibreRootStore.getSelectedLibrary()
-
   const LibraryCore = (
     <>
       {selectedLibrary ? (
@@ -129,6 +138,7 @@ export const LibraryScreen: FC = observer(() => {
             await calibreRootStore.searchMoreLibrary()
           }}
           preparing={libraryHook.searching}
+          ref={flatListRef}
         />
       ) : null}
       <StaggerContainer
