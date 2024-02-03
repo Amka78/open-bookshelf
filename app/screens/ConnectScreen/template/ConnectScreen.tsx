@@ -32,7 +32,12 @@ export function ConnectScreen(props: ConnectScreenProps) {
         <Heading testID="connect-heading" tx="connectScreen.welcome" />
         <Text tx="connectScreen.detail" marginTop={"$5"} />
         <VStack marginTop={7}>
-          <FormCheckbox name={"isOPDS"} tx={"connectScreen.checkbox"} control={form.control} />
+          <FormCheckbox
+            name={"isOPDS"}
+            tx={"connectScreen.checkbox"}
+            control={form.control}
+            aria-label={"isOPDS"}
+          />
           <Input>
             <FormInputField
               control={form.control}
