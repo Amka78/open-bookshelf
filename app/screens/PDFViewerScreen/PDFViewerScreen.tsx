@@ -6,12 +6,12 @@ import { RouteProp, useRoute } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import React, { useState } from "react"
 import { StyleSheet, useWindowDimensions } from "react-native"
-import * as PDF from "@/components/PDF/Pdf"
+import { PDF } from "@/components/PDF/Pdf"
 
 type PDFViewerScreenRouteProp = RouteProp<AppStackParamList, "Viewer">
 
 export const PDFViewerScreen = observer(() => {
-  const { settingStore } = useStores()
+  const { authenticationStore, settingStore } = useStores()
   const route = useRoute<PDFViewerScreenRouteProp>()
 
   const [totalPages, setTotalPages] = useState(undefined)
@@ -19,9 +19,15 @@ export const PDFViewerScreen = observer(() => {
 
   const windowDimension = useWindowDimensions()
 
+  let header
+
+  if (authenticationStore.isAuthenticated) {
+    header = { Authorization: `Basic ${authenticationStore.token}` }
+  }
   const source = {
     uri: `${settingStore.api.baseUrl}/get/PDF/${route.params.library.id}/config?content_disposition=inline`,
     cache: true,
+    headers: header,
   }
 
   const viewerHook = useViewer()
