@@ -243,15 +243,24 @@ export type ApiBookFile = {
   ns_map: string[]
 }
 
-export type FieldMetadata = {
-  table: string
-  column: string
-  link_column: string
-  category_sort: string
-  datatype: string
+export type Metadata = {
+  author_sort: string
+  authors: string[]
+  comments: string
+  format_sizes: Record<string, number>
+  formats: string[]
+  lang_names: Record<string, string>
+  languages: string[]
+  last_modified: string
+  series_index: number
+  size: number
+  sort: string
+  timestamp: string
+  title: string
+  uuid: string
 }
 
-export type ApiBookInit = {
+export type ApiBookInfoCore = {
   search_result: {
     total_num: number
     sort_order: "desc" | "asc"
@@ -266,4 +275,73 @@ export type ApiBookInit = {
     vl: string
   }
   sortable_fields: string[][]
+  metadata: Metadata
 }
+
+export type FieldMetadata = {
+  category_sort: "sort" | undefined
+  column: "name" | null
+  datatype: "text" | "int" | "datetime" | "rating" | string
+  display:
+    | {
+        date_format: string
+      }
+    | undefined
+  is_category: boolean
+  is_csp: boolean
+  is_custom: boolean
+  is_editable: boolean
+  is_multiple:
+    | {
+        cache_to_list: unknown
+        list_to_ui: unknown
+        ui_to_list: unknown
+      }
+    | undefined
+  kind: "field"
+  label: string
+  link_column: "string" | undefined
+  name: string
+  rec_index: number
+  search_terms: []
+  table: CommonFieldName | null
+}
+
+export type CommonFieldName =
+  | "au_map"
+  | "author_sort"
+  | "authors"
+  | "comments"
+  | "cover"
+  | "formats"
+  | "id"
+  | "identifiers"
+  | "in_tag_browser"
+  | "languages"
+  | "last_modified"
+  | "marked"
+  | "news"
+  | "ondevice"
+  | "path"
+  | "pubdate"
+  | "publisher"
+  | "rating"
+  | "series"
+  | "series_index"
+  | "series_sort"
+  | "size"
+  | "sort"
+  | "tags"
+  | "timestamp"
+  | "title"
+  | "uuid"
+
+export type ApiBookInfo = {
+  book_details_vertical_categories: unknown
+  book_display_fields: CommonFieldName[]
+  bools_are_tristate: boolean
+  field_metadata: Record<CommonFieldName, FieldMetadata>
+  virtual_libraries: unknown
+  fts_enabled: boolean
+  library_id: string
+} & ApiBookInfoCore

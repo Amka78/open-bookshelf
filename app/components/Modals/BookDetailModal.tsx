@@ -1,6 +1,15 @@
-import { BookImageItem, Button, HStack, Heading, IconButton, Text, VStack } from "@/components"
+import {
+  BookImageItem,
+  Button,
+  HStack,
+  Heading,
+  IconButton,
+  LinkButton,
+  Text,
+  VStack,
+} from "@/components"
 import React from "react"
-import { ModalComponentProp } from "react-native-modalfy"
+import { ModalComponentProp, useModal } from "react-native-modalfy"
 
 import { Body, CloseButton, Footer, Header, Root } from "./"
 import { ModalStackParams } from "./Types"
@@ -8,11 +17,13 @@ import { translate } from "@/i18n"
 
 export type BookDetailModalProps = ModalComponentProp<ModalStackParams, void, "BookDetailModal">
 
+const ExcludeFields = ["title", "sort"]
+
 export function BookDetailModal(props: BookDetailModalProps) {
   return (
     <Root>
       <Header>
-        <Heading tx={"modal.bookDetailModal.title"} />
+        <Heading>{props.modal.params.book.metaData.title}</Heading>
         <CloseButton
           onPress={() => {
             props.modal.closeModal()
@@ -34,26 +45,34 @@ export function BookDetailModal(props: BookDetailModalProps) {
                     message: translate({
                       key: "modal.deleteConfirmModal.message",
                       restParam: [
-                        { key: props.modal.params.library.metaData.title, translate: false },
+                        { key: props.modal.params.book.metaData.title, translate: false },
                       ],
                     }),
-                    onOKPress: () => {
-                      props.modal.params.library.delete()
+                    onOKPress: async () => {
+                      if (props.modal.params.onDeleteConfirmOKPress) {
+                        props.modal.params.onDeleteConfirmOKPress()
+                      }
                       props.modal.closeModal()
                     },
                   })
                 }}
               />
             </HStack>
-            {props.modal.params.categories.map((category) => {
-              return (
-                <HStack key={category.category}>
-                  <Text width={"$24"}>{category.name}</Text>
-                  <Button variant="link" height={"$6"}>
-                    {props.modal.params.library.metaData[category.category]}
-                  </Button>
+            {props.modal.params.fields.map((field) => {
+              const fieldMetadata = props.modal.params.fieldMetadatas.find((value) => {
+                return value.label === field
+              })
+              const value = props.modal.params.book.metaData[fieldMetadata.label]
+
+              return fieldMetadata.name &&
+                value &&
+                value?.length !== 0 &&
+                !ExcludeFields.includes(fieldMetadata.label) ? (
+                <HStack key={fieldMetadata.label}>
+                  <Text width={"$24"}>{fieldMetadata.name}</Text>
+                  <LinkButton>{value}</LinkButton>
                 </HStack>
-              )
+              ) : undefined
             })}
           </VStack>
         </HStack>

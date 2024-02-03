@@ -64,7 +64,7 @@ const en = {
     },
     deleteConfirmModal: {
       title: "Confirmation of deletion",
-      message: "Are you sure you want to delete [0]?",
+      message: "Are you sure you want to delete {0}?",
     },
   },
 }

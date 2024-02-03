@@ -68,7 +68,7 @@ export const LibraryScreen: FC = observer(() => {
         navigation.navigate("PDFViewer", { library: item })
       } else {
         try {
-          await item.convert(format, () => {
+          await item.convert(format, selectedLibrary.id, () => {
             navigation.navigate("Viewer", { library: item })
           })
         } catch (e) {
@@ -98,8 +98,12 @@ export const LibraryScreen: FC = observer(() => {
     const onLongPress = () => {
       modal.openModal("BookDetailModal", {
         imageUrl: imageUrl,
-        library: item,
-        categories: selectedLibrary.tagBrowser,
+        book: item,
+        fields: selectedLibrary.bookDisplayFields,
+        fieldMetadatas: selectedLibrary.fieldMetadata,
+        onDeleteConfirmOKPress: () => {
+          selectedLibrary.deleteBook(item.id)
+        },
       })
     }
 

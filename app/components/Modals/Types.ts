@@ -1,6 +1,7 @@
 import { MessageKey } from "@/i18n"
 import { LoginType } from "./LoginModal"
-import { Category, Library } from "@/models/CalibreRootStore"
+import { Library } from "@/models/CalibreRootStore"
+import { Category, FieldMetadata } from "@/models/calibre"
 
 export type ModalStackParams = {
   ConfirmModal: {
@@ -18,5 +19,11 @@ export type ModalStackParams = {
   }
   FormatSelectModal: { formats: string[]; onSelectFormat: (format: string) => void }
   LoginModal: { onLoginPress: (data: LoginType) => void }
-  BookDetailModal: { library: Library; imageUrl: string; categories: Category[] }
+  BookDetailModal: {
+    book: Library
+    imageUrl: string
+    fieldMetadatas: FieldMetadata[]
+    fields: string[]
+    onDeleteConfirmOKPress?: () => void
+  }
 }

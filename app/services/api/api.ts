@@ -10,8 +10,6 @@ import { ApiResponse, ApisauceInstance, create } from "apisauce"
 
 import { GeneralApiProblem, getGeneralApiProblem } from "./apiProblem"
 import * as FileSystem from "expo-file-system"
-import parse from "./AuthenticateParser"
-import { Platform } from "react-native"
 
 import type {
   ApiConfig,
@@ -21,7 +19,8 @@ import type {
   ApiTagBrowser,
   ApiBookFile,
   ApiBookManifestResultType,
-  ApiBookInit,
+  ApiBookInfoCore,
+  ApiBookInfo,
 } from "./api.types"
 
 /**
@@ -125,7 +124,7 @@ export class Api {
 
     return { kind: "ok", data: response.data } */
     const response: ApiResponse<ApiCalibreInterfaceType> = await this.apisauce.get(
-      `/interface-data/update?${Date.now}`,
+      `/interface-data/update?${Date.now()}`,
     )
 
     if (!response.ok) {
@@ -139,7 +138,7 @@ export class Api {
   /**
    * get Library
    *
-   * @returns {(Promise<{ kind: "ok"; data: ApiBookInit } | GeneralApiProblem>)}
+   * @returns {(Promise<{ kind: "ok"; data: ApiBookInfo  } | GeneralApiProblem>)}
    * @memberof Api
    */
   async getLibrary(
@@ -147,11 +146,11 @@ export class Api {
     searchText: string,
     sort: string,
     sortOrder: string,
-  ): Promise<{ kind: "ok"; data: ApiBookInit } | GeneralApiProblem> {
-    const response: ApiResponse<ApiBookInit> = await this.apisauce.get(
+  ): Promise<{ kind: "ok"; data: ApiBookInfo } | GeneralApiProblem> {
+    const response: ApiResponse<ApiBookInfo> = await this.apisauce.get(
       `interface-data/books-init?library_id=${library}${
         searchText ? `&search=${searchText}` : ""
-      }&sort=${sort}.${sortOrder}&${Date.now}`,
+      }&sort=${sort}.${sortOrder}&${Date.now()}`,
     )
 
     if (!response.ok) {
@@ -171,8 +170,8 @@ export class Api {
   async getMoreLibrary(
     library: string,
     json,
-  ): Promise<{ kind: "ok"; data: unknown } | GeneralApiProblem> {
-    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.post(
+  ): Promise<{ kind: "ok"; data: ApiBookInfoCore } | GeneralApiProblem> {
+    const response: ApiResponse<ApiBookInfoCore> = await this.apisauce.post(
       `interface-data/more-books?library_id=${library}`,
       json,
     )
@@ -219,10 +218,9 @@ export class Api {
   ): Promise<
     { kind: "ok"; data: ApiBookManifestStatusType | ApiBookManifestResultType } | GeneralApiProblem
   > {
-    // make the api call
     const response: ApiResponse<ApiBookManifestStatusType | ApiBookManifestResultType> =
       await this.apisauce.get(
-        `book-manifest/${bookId}/${bookType}?library_id=${libraryId}&${Date.now}`,
+        `book-manifest/${bookId}/${bookType}?library_id=${libraryId}&${Date.now()}`,
       )
 
     if (!response.ok) {
@@ -248,7 +246,7 @@ export class Api {
     spine: string,
   ): Promise<{ kind: "ok"; data: ApiBookFile } | GeneralApiProblem> {
     const response: ApiResponse<ApiBookFile> = await this.apisauce.get(
-      `book-file/${bookId}/${bookType}/${bookSize}/${hash}/${spine}?library_id=${libraryId}&${Date.now}`,
+      `book-file/${bookId}/${bookType}/${bookSize}/${hash}/${spine}?library_id=${libraryId}&${Date.now()}`,
     )
 
     if (!response.ok) {
@@ -267,7 +265,7 @@ export class Api {
    */
   async deleteBook(libraryId: string, bookId: number) {
     const response: ApiResponse<unknown> = await this.apisauce.post(
-      `cdb/delete-books/${bookId}/${libraryId}&${Date.now()}`,
+      `cdb/delete-books/${bookId}/${libraryId}?${Date.now()}`,
     )
 
     if (!response.ok) {

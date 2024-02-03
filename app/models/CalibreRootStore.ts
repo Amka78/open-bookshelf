@@ -1,7 +1,18 @@
 import { flow, getParent, Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 
-import { api, ApiBookManifestResultType } from "../services/api"
-import { ClientSettingModel, MetadataModel, SearchSettingModel } from "./calibre"
+import { api, ApiBookInfo, ApiBookInfoCore, ApiBookManifestResultType } from "../services/api"
+import {
+  CategoryModel,
+  SubCategoryModel,
+  NodeModel,
+  ClientSettingModel,
+  MetadataModel,
+  SearchSettingModel,
+  FieldMetadataModel,
+  SortFieldModel,
+  DateFormatModel,
+  IsMultipleModel,
+} from "./calibre"
 import { handleCommonApiError } from "./errors/errors"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 
@@ -23,13 +34,10 @@ export const LibraryModel = types
   })
   .actions(withSetPropAction)
   .actions((root) => ({
-    convert: flow(function* (format: string, onPostConvert: () => void) {
-      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-      const libraryMap = getParent(root) as any
-
+    convert: flow(function* (format: string, libraryId: string, onPostConvert: () => void) {
       let response
       while (response?.data?.files === undefined) {
-        response = yield api.CheckBookConverting(libraryMap.id, root.id, format)
+        response = yield api.CheckBookConverting(libraryId, root.id, format)
 
         if (response.kind !== "ok") {
           if (response.kind === "not-found") {
@@ -53,7 +61,7 @@ export const LibraryModel = types
 
       if (result.book_format !== "KF8") {
         const spineResponse = yield api.getLibraryInformation(
-          libraryMap.id,
+          libraryId,
           root.id,
           result.book_format,
           root.metaData.size,
@@ -109,65 +117,10 @@ export const LibraryModel = types
       }
       onPostConvert()
     }),
-
-    delete: flow(function* () {
-      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-      const libraryMap = getParent(root) as any
-      const response = yield api.deleteBook(libraryMap.id, root.id)
-      if (response.kind === "ok") {
-        return true
-      }
-      handleCommonApiError(response)
-      return false
-    }),
   }))
 export type Library = Instance<typeof LibraryModel>
 export type LibrarySnapshotOut = SnapshotOut<typeof LibraryModel>
 export type LibrarySnapshotIn = SnapshotIn<typeof LibraryModel>
-
-export const SortFieldModel = types.model("SortFieldModel").props({
-  id: types.identifier,
-  name: types.string,
-})
-export type SortField = Instance<typeof SortFieldModel>
-
-export const NodeModel = types.model("NodeModel").props({
-  id: types.number,
-  avgRating: types.number,
-  count: types.number,
-  name: types.string,
-})
-
-export const CategoryTemplateModel = types.model("CategoryTemplateModel").props({
-  category: types.string,
-  name: types.string,
-  isCategory: types.maybe(types.boolean),
-  count: types.number,
-  isSearchable: types.maybe(types.boolean),
-})
-
-export const SubCategoryModel = types
-  .compose(
-    "SubCategoryModel",
-    types.model({
-      children: types.array(NodeModel),
-    }),
-    CategoryTemplateModel,
-  )
-  .actions(withSetPropAction)
-
-export const CategoryModel = types
-  .compose(
-    "CategoryModel",
-    types.model({
-      tooltip: types.maybe(types.string),
-      isEditable: types.boolean,
-      subCategory: types.array(SubCategoryModel),
-    }),
-    CategoryTemplateModel,
-  )
-  .actions(withSetPropAction)
-export type Category = Instance<typeof CategoryModel>
 
 export const LibraryMapModel = types
   .model("LibrayMapModel")
@@ -178,8 +131,25 @@ export const LibraryMapModel = types
     sortField: types.array(SortFieldModel),
     tagBrowser: types.array(CategoryModel),
     clientSetting: types.array(ClientSettingModel),
+    bookDisplayFields: types.array(types.string),
+    fieldMetadata: types.array(FieldMetadataModel),
   })
   .actions(withSetPropAction)
+  .actions((root) => ({
+    deleteBook: flow(function* (bookId: number) {
+      const response = yield api.deleteBook(root.id, bookId)
+      if (response.kind === "ok") {
+        const deleteTarget = root.value.find((value) => {
+          return value.id === bookId
+        })
+
+        root.value.remove(deleteTarget)
+        return true
+      }
+      handleCommonApiError(response)
+      return false
+    }),
+  }))
 
 export type LibraryMap = Instance<typeof LibraryMapModel>
 export type LibraryMapSnapshotOut = SnapshotOut<typeof LibraryMapModel>
@@ -223,52 +193,52 @@ export const CalibreRootStore = types
 
         selectedLibrary.tagBrowser.clear()
 
-        Object.values(response.data.root.children).forEach((value: any) => {
-          const category = response.data.item_map[value.id]
+        Object.values(response.data.root.children).forEach(
+          (value: { id; children: { id; children }[] }) => {
+            const category = response.data.item_map[value.id]
 
-          const categoryModel = CategoryModel.create({
-            category: category.category,
-            count: category.count,
-            isCategory: category.is_category,
-            isEditable: category.is_editable,
-            isSearchable: category.is_searchable,
-            name: category.name,
-            tooltip: category.tooltip,
-          })
-
-          const subCategoryArray = []
-          Object.values(value.children).forEach((subValue: any) => {
-            const subCateogy = response.data.item_map[subValue.id]
-            const subCategoryModel = SubCategoryModel.create({
-              category: subCateogy.category,
-              count: subCateogy.count,
-              isCategory: subCateogy.is_category,
-              isSearchable: subCateogy.is_searchable,
-              name: subCateogy.name,
+            const categoryModel = CategoryModel.create({
+              category: category.category,
+              count: category.count,
+              isCategory: category.is_category,
+              isEditable: category.is_editable,
+              isSearchable: category.is_searchable,
+              name: category.name,
+              tooltip: category.tooltip,
             })
 
-            const nodeArray = []
-            Object.values(subValue.children).forEach((nodeValue: any) => {
-              const node = response.data.item_map[nodeValue.id]
-
-              const nodeModel = NodeModel.create({
-                avgRating: node.avg_rating,
-                count: node.count,
-                id: node.id,
-                name: node.name,
+            const subCategoryArray = []
+            Object.values(value.children).forEach((subValue) => {
+              const subCateogy = response.data.item_map[subValue.id]
+              const subCategoryModel = SubCategoryModel.create({
+                category: subCateogy.category,
+                count: subCateogy.count,
+                isCategory: subCateogy.is_category,
+                isSearchable: subCateogy.is_searchable,
+                name: subCateogy.name,
               })
 
-              nodeArray.push(nodeModel)
+              const nodeArray = []
+              Object.values(subValue.children).forEach((nodeValue: { id }) => {
+                const node = response.data.item_map[nodeValue.id]
+
+                const nodeModel = NodeModel.create({
+                  avgRating: node.avg_rating,
+                  count: node.count,
+                  id: node.id,
+                  name: node.name,
+                })
+
+                nodeArray.push(nodeModel)
+              })
+              subCategoryModel.setProp("children", nodeArray)
+              subCategoryArray.push(subCategoryModel)
             })
-            subCategoryModel.setProp("children", nodeArray)
 
-            subCategoryArray.push(subCategoryModel)
-          })
-
-          categoryModel.setProp("subCategory", subCategoryArray)
-
-          selectedLibrary.tagBrowser.push(categoryModel)
-        })
+            categoryModel.setProp("subCategory", subCategoryArray)
+            selectedLibrary.tagBrowser.push(categoryModel)
+          },
+        )
         return true
       }
       handleCommonApiError(response)
@@ -287,7 +257,9 @@ export const CalibreRootStore = types
 
       if (response.kind === "ok") {
         selectedLibrary.value.clear()
-        setSearchResult(response, selectedLibrary)
+        convertLibraryInformation(response.data, selectedLibrary)
+        convertSearchResult(response.data, selectedLibrary)
+
         return true
       }
       handleCommonApiError(response)
@@ -304,7 +276,7 @@ export const CalibreRootStore = types
       })
 
       if (response.kind === "ok") {
-        setSearchResult(response, selectedLibrary)
+        convertSearchResult(response.data, selectedLibrary)
         return true
       }
       handleCommonApiError(response)
@@ -314,9 +286,7 @@ export const CalibreRootStore = types
       root.selectedLibraryId = libraryId
     },
     getSelectedLibrary: () => {
-      return root.libraryMap.find((value) => {
-        return value.id === root.selectedLibraryId
-      })
+      return getSelectedLibrary(root)
     },
   }))
 
@@ -329,18 +299,18 @@ function getSelectedLibrary(root): LibraryMap {
   })
 }
 
-function setSearchResult(response: any, selectedLibrary: LibraryMap) {
+function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap) {
   selectedLibrary.searchSetting = SearchSettingModel.create({
-    offset: response.data.search_result.num + response.data.search_result.offset,
-    query: response.data.search_result.query ? response.data.search_result.query : "",
-    sort: response.data.search_result.sort,
-    sortOrder: response.data.search_result.sort_order,
-    totalNum: response.data.search_result.total_num
-      ? response.data.search_result.total_num
+    offset: data.search_result.num + data.search_result.offset,
+    query: data.search_result.query ? data.search_result.query : "",
+    sort: data.search_result.sort,
+    sortOrder: data.search_result.sort_order,
+    totalNum: data.search_result.total_num
+      ? data.search_result.total_num
       : selectedLibrary.searchSetting.totalNum,
   })
-  response.data.search_result.book_ids.forEach((key: number) => {
-    const metaData = response.data.metadata[key]
+  data.search_result.book_ids.forEach((key: number) => {
+    const metaData = data.metadata[key]
 
     const metaDataModel = MetadataModel.create({
       authors: metaData.authors,
@@ -363,9 +333,9 @@ function setSearchResult(response: any, selectedLibrary: LibraryMap) {
     })
   })
 
-  if (response.data.sortable_fields) {
+  if (data.sortable_fields) {
     selectedLibrary.sortField.clear()
-    response.data.sortable_fields.forEach((value) => {
+    data.sortable_fields.forEach((value) => {
       const sortField = SortFieldModel.create({
         id: value[0],
         name: value[1],
@@ -376,6 +346,49 @@ function setSearchResult(response: any, selectedLibrary: LibraryMap) {
   }
 }
 
+function convertLibraryInformation(data: ApiBookInfo, selectedLibrary: LibraryMap) {
+  selectedLibrary.bookDisplayFields.clear()
+  selectedLibrary.fieldMetadata.clear()
+  data.book_display_fields.forEach((value) => {
+    selectedLibrary.bookDisplayFields.push(value)
+  })
+
+  Object.keys(data.field_metadata).forEach((value) => {
+    let display = undefined
+    if (data.field_metadata[value].display.dateFormat) {
+      display = DateFormatModel.create({
+        dateFormat: data.field_metadata[value].display.data_format,
+      })
+    }
+    let isMultiple
+    if (data.field_metadata[value].is_multiple.cache_to_list) {
+      isMultiple = IsMultipleModel.create({
+        cacheToList: data.field_metadata[value].is_multiple.cache_to_list,
+        listToUi: data.field_metadata[value].is_multiple.list_to_ui,
+        uiToList: data.field_metadata[value].is_multiple.ui_to_list,
+      })
+    }
+    const fieldMetadata = FieldMetadataModel.create({
+      categorySort: data.field_metadata[value].category_sort,
+      column: data.field_metadata[value].column,
+      datatype: data.field_metadata[value].datatype,
+      display: display,
+      isMultiple: isMultiple,
+      isCategory: data.field_metadata[value].is_category,
+      isCsp: data.field_metadata[value].is_csp,
+      isCustom: data.field_metadata[value].is_custom,
+      isEditable: data.field_metadata[value].is_editable,
+      kind: data.field_metadata[value].kind,
+      label: data.field_metadata[value].label,
+      link_column: data.field_metadata[value].link_column,
+      name: data.field_metadata[value].name,
+      recIndex: data.field_metadata[value].rec_index,
+      searchTerms: data.field_metadata[value].search_terms,
+      table: data.field_metadata[value].table,
+    })
+    selectedLibrary.fieldMetadata.push(fieldMetadata)
+  })
+}
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
