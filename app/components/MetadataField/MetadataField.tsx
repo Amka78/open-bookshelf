@@ -4,6 +4,13 @@ import { formatDate } from "@/utils/formatDate"
 export type MetadataFieldProps = {
   value: string | number | Date
   fieldMetadata: FieldMetadata
+  onLinkPress?: (link: string) => void
+}
+
+const onLinkPress = (linkName: string, metadata: FieldMetadata, postProcess: (query) => void) => {
+  const link = `${metadata.searchTerms[0]}:=${linkName}`
+
+  postProcess(link)
 }
 export function MetadataField(props: MetadataFieldProps) {
   let field
@@ -18,10 +25,26 @@ export function MetadataField(props: MetadataFieldProps) {
       break
     }
     case "text":
-      field = <LinkButton>{props.value}</LinkButton>
+      field = (
+        <LinkButton
+          onPress={(linkName) => {
+            onLinkPress(linkName, props.fieldMetadata, props.onLinkPress)
+          }}
+        >
+          {props.value}
+        </LinkButton>
+      )
       break
     default:
-      field = <LinkButton>{props.value}</LinkButton>
+      field = (
+        <LinkButton
+          onPress={(linkName) => {
+            onLinkPress(linkName, props.fieldMetadata, props.onLinkPress)
+          }}
+        >
+          {props.value}
+        </LinkButton>
+      )
       break
   }
   return (

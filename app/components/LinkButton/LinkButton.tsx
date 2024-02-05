@@ -1,25 +1,43 @@
-import { Button, ButtonProps, HStack } from "@/components"
+import { Button, ButtonProps, VStack } from "@/components"
 
-export type LinkButtonProps = Omit<ButtonProps, "children"> & {
+export type LinkButtonProps = Omit<ButtonProps, "children" | "onPress"> & {
   children: string | string[]
+  onPress: (link: string) => void
 }
 
 export function LinkButton(props: LinkButtonProps) {
-  /*  if (props.children) {
+  if (Array.isArray(props.children)) {
     return (
-      <HStack>
-        {props.children.forEach((value) => {
+      <VStack alignItems={"flex-start"}>
+        {props.children.map((value) => {
           return (
-            <Button {...props} variant="link" height={"$6"}>
+            <Button
+              variant="link"
+              height={"$6"}
+              onPress={() => {
+                if (props.onPress) {
+                  props.onPress(value)
+                }
+              }}
+            >
               {value}
             </Button>
           )
         })}
-      </HStack>
+      </VStack>
     )
-  } */
+  }
   return (
-    <Button {...props} variant="link" height={"$6"}>
+    <Button
+      {...props}
+      variant="link"
+      height={"$6"}
+      onPress={() => {
+        if (props.onPress) {
+          props.onPress(props.children)
+        }
+      }}
+    >
       {props.children}
     </Button>
   )

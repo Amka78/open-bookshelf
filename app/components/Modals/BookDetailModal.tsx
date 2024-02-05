@@ -84,13 +84,22 @@ const BookDetailModalCore = observer((props: BookDetailModalProps) => {
               const fieldMetadata = props.modal.params.fieldMetadatas.find((value) => {
                 return value.label === field
               })
-              const value = props.modal.params.book.metaData[fieldMetadata.label]
+              const value = props.modal.params.book.metaData[fieldMetadata?.label]
 
-              return fieldMetadata.name &&
+              return fieldMetadata?.name &&
                 value &&
                 value?.length !== 0 &&
-                !ExcludeFields.includes(fieldMetadata.label) ? (
-                <MetadataField value={value} fieldMetadata={fieldMetadata} />
+                !ExcludeFields.includes(fieldMetadata?.label) ? (
+                <MetadataField
+                  value={value}
+                  fieldMetadata={fieldMetadata}
+                  onLinkPress={(query) => {
+                    if (props.modal.params.onLinkPress) {
+                      props.modal.params.onLinkPress(query)
+                      props.modal.closeModal()
+                    }
+                  }}
+                />
               ) : undefined
             })}
           </VStack>

@@ -49,7 +49,7 @@ export const LibraryScreen: FC = observer(() => {
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerTitle: selectedLibrary.searchSetting.query
+      headerTitle: selectedLibrary.searchSetting?.query
         ? selectedLibrary.searchSetting.query
         : calibreRootStore.selectedLibraryId,
       headerSearchBarOptions: {
@@ -61,7 +61,9 @@ export const LibraryScreen: FC = observer(() => {
           searchBar.current.blur()
         },
         onOpen: () => {
-          searchBar.current.setText(selectedLibrary.searchSetting.query)
+          if (selectedLibrary.searchSetting?.query) {
+            searchBar.current.setText(selectedLibrary.searchSetting.query)
+          }
         },
       },
     })
@@ -92,6 +94,9 @@ export const LibraryScreen: FC = observer(() => {
         fieldMetadatas: selectedLibrary.fieldMetadata,
         onDeleteConfirmOKPress: () => {
           selectedLibrary.deleteBook(item.id)
+        },
+        onLinkPress: (query) => {
+          libraryHook.onSearch(query)
         },
       })
     }

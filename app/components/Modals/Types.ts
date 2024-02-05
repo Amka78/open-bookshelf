@@ -25,5 +25,6 @@ export type ModalStackParams = {
     fieldMetadatas: FieldMetadata[]
     fields: string[]
     onDeleteConfirmOKPress?: () => void
+    onLinkPress?: (linkName: string) => void
   }
 }
