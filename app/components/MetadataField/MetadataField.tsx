@@ -48,7 +48,7 @@ export function MetadataField(props: MetadataFieldProps) {
       break
   }
   return (
-    <HStack key={props.fieldMetadata.label}>
+    <HStack key={props.fieldMetadata.label} alignItems="flex-start">
       <Text width={"$24"}>{props.fieldMetadata.name}</Text>
       {field}
     </HStack>
