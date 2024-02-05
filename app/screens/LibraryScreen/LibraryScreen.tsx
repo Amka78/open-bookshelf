@@ -7,6 +7,7 @@ import {
   LibraryViewButton,
   SortMenu,
   StaggerContainer,
+  IconButton,
 } from "@/components"
 import { ModalStackParams } from "@/components/Modals/Types"
 import { useStores } from "@/models"
@@ -24,6 +25,7 @@ import { AuthButton } from "@/components/AuthButton/AuthButton"
 import { api } from "@/services/api"
 import { useOpenViewer } from "@/hooks/useOpenViewer"
 import { SearchBarCommands } from "react-native-screens"
+import * as FileSystem from "expo-file-system"
 
 export const LibraryScreen: FC = observer(() => {
   const { authenticationStore, calibreRootStore, settingStore } = useStores()
@@ -49,6 +51,21 @@ export const LibraryScreen: FC = observer(() => {
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useLayoutEffect(() => {
     navigation.setOptions({
+      headerLeft: (props) => {
+        return (
+          <IconButton
+            name="arrow-left"
+            onPress={() => {
+              if (selectedLibrary.searchSetting.query !== "") {
+                libraryHook.onSearch("")
+              } else {
+                navigation.goBack()
+              }
+            }}
+            iconSize="md-"
+          />
+        )
+      },
       headerTitle: selectedLibrary.searchSetting?.query
         ? selectedLibrary.searchSetting.query
         : calibreRootStore.selectedLibraryId,
