@@ -2,6 +2,7 @@ import { MessageKey } from "@/i18n"
 import { LoginType } from "./LoginModal"
 import { Library } from "@/models/CalibreRootStore"
 import { Category, FieldMetadata } from "@/models/calibre"
+import { ImageSource } from "expo-image"
 
 export type ModalStackParams = {
   ConfirmModal: {

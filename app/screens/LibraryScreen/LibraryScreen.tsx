@@ -26,6 +26,7 @@ import { api } from "@/services/api"
 import { useOpenViewer } from "@/hooks/useOpenViewer"
 import { SearchBarCommands } from "react-native-screens"
 import * as FileSystem from "expo-file-system"
+import { FieldMetadataModel } from "@/models/calibre"
 
 export const LibraryScreen: FC = observer(() => {
   const { authenticationStore, calibreRootStore, settingStore } = useStores()
@@ -104,18 +105,30 @@ export const LibraryScreen: FC = observer(() => {
     )
 
     const onLongPress = () => {
-      modal.openModal("BookDetailModal", {
-        imageUrl: imageUrl,
-        book: item,
-        fields: selectedLibrary.bookDisplayFields,
-        fieldMetadatas: selectedLibrary.fieldMetadata,
-        onDeleteConfirmOKPress: () => {
-          selectedLibrary.deleteBook(item.id)
-        },
-        onLinkPress: (query) => {
-          libraryHook.onSearch(query)
-        },
-      })
+      if (convergenceHook.isLarge) {
+        modal.openModal("BookDetailModal", {
+          imageUrl: imageUrl,
+          book: item,
+          fields: selectedLibrary.bookDisplayFields,
+          fieldMetadatas: selectedLibrary.fieldMetadata,
+          onDeleteConfirmOKPress: () => {
+            selectedLibrary.deleteBook(item.id)
+          },
+          onLinkPress: (query) => {
+            libraryHook.onSearch(query)
+          },
+        })
+      } else {
+        navigation.navigate("BookDetail", {
+          imageUrl: imageUrl,
+          book: item,
+          fieldNameList: selectedLibrary.bookDisplayFields,
+          fieldMetadataList: selectedLibrary.fieldMetadata,
+          onLinkPress: (query) => {
+            libraryHook.onSearch(query)
+          },
+        })
+      }
     }
 
     if (libraryHook.currentListStyle === "gridView") {

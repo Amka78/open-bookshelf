@@ -21,12 +21,12 @@ export function useViewer() {
   const selectedLibrary = calibreRootStore.getSelectedLibrary()
 
   let tempClientSetting = selectedLibrary.clientSetting?.find((value) => {
-    return value.id === route.params.library.id
+    return value.id === route.params.book.id
   })
 
   if (!tempClientSetting) {
     tempClientSetting = ClientSettingModel.create({
-      id: route.params.library.id,
+      id: route.params.book.id,
       verticalReadingStyle: "singlePage",
       verticalPageDirection: "left",
       horizontalReadingStyle: "facingPageWithTitle",
@@ -46,12 +46,12 @@ export function useViewer() {
 
   const onSetBookReadingStyle = (style: BookReadingStyleType) => {
     tempClientSetting.setProp(`${orientation}ReadingStyle`, style)
-    updateClientSetting(selectedLibrary, route.params.library.id, tempClientSetting)
+    updateClientSetting(selectedLibrary, route.params.book.id, tempClientSetting)
   }
 
   const onSetPageDirection = (pageDirection) => {
     tempClientSetting.setProp(`${orientation}PageDirection`, pageDirection)
-    updateClientSetting(selectedLibrary, route.params.library.id, tempClientSetting)
+    updateClientSetting(selectedLibrary, route.params.book.id, tempClientSetting)
   }
 
   const onManageMenu = () => {

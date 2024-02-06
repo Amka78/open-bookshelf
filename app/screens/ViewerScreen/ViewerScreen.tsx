@@ -11,7 +11,7 @@ export const ViewerScreen: FC = observer(() => {
   const { authenticationStore, calibreRootStore, settingStore } = useStores()
   const route = useRoute<ViewerScreenRouteProp>()
 
-  const library = route.params.library
+  const book = route.params.book
 
   let header
 
@@ -24,9 +24,9 @@ export const ViewerScreen: FC = observer(() => {
       <BookPage
         source={{
           uri: encodeURI(
-            `${settingStore.api.baseUrl}/book-file/${library.id}/${
-              library.metaData.selectedFormat
-            }/${library.metaData.size}/${library.hash}/${library.path[props.page]}?library_id=${
+            `${settingStore.api.baseUrl}/book-file/${book.id}/${book.metaData.selectedFormat}/${
+              book.metaData.size
+            }/${book.hash}/${book.path[props.page]}?library_id=${
               calibreRootStore.selectedLibraryId
             }`,
           ),
@@ -38,9 +38,9 @@ export const ViewerScreen: FC = observer(() => {
 
   return (
     <BookViewer
-      bookTitle={route.params.library.metaData.title}
+      bookTitle={route.params.book.metaData.title}
       renderPage={renderPage}
-      totalPage={library.path.length}
+      totalPage={book.path.length}
     />
   )
 })

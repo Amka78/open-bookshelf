@@ -25,7 +25,7 @@ export const PDFViewerScreen = observer(() => {
     header = { Authorization: `Basic ${authenticationStore.token}` }
   }
   const source = {
-    uri: `${settingStore.api.baseUrl}/get/PDF/${route.params.library.id}/config?content_disposition=inline`,
+    uri: `${settingStore.api.baseUrl}/get/PDF/${route.params.book.id}/config?content_disposition=inline`,
     cache: true,
     headers: header,
   }
@@ -75,7 +75,7 @@ export const PDFViewerScreen = observer(() => {
 
   return totalPages !== undefined ? (
     <BookViewer
-      bookTitle={route.params.library.metaData.title}
+      bookTitle={route.params.book.metaData.title}
       renderPage={renderPage}
       totalPage={totalPages}
     />

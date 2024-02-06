@@ -15,11 +15,11 @@ export function useOpenViewer() {
   ) => {
     book.metaData.setProp("selectedFormat", format)
     if (format === "PDF") {
-      navigation.navigate("PDFViewer", { library: book })
+      navigation.navigate("PDFViewer", { book: book })
     } else {
       try {
         await book.convert(format, selectedLibraryId, () => {
-          navigation.navigate("Viewer", { library: book })
+          navigation.navigate("Viewer", { book: book })
         })
       } catch (e) {
         modal.openModal("ErrorModal", { message: e.message, titleTx: "errors.failedConvert" })

@@ -13,15 +13,18 @@ export function BookImageItem(props: BookImageprops) {
   return (
     <TouchableOpacity
       onPress={async () => {
-        setLoading(true)
-        await props.onPress()
-        setLoading(false)
+        if (props.onPress) {
+          setLoading(true)
+          await props.onPress()
+          setLoading(false)
+        }
       }}
       onLongPress={() => {
         if (props.onLongPress) {
           props.onLongPress()
         }
       }}
+      disabled={!props.onPress && !props.onLongPress}
     >
       <Box marginHorizontal={"$2"} marginTop={"$2"}>
         {loading ? (

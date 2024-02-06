@@ -19,12 +19,14 @@ import {
   LibraryScreen,
   OPDSRootScreen,
   ViewerScreen,
+  BookDetailScreen,
 } from "../screens"
 import { PDFViewerScreen } from "../screens/PDFViewerScreen/PDFViewerScreen"
 import { api } from "../services/api"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 import { ModalProvider, createModalStack } from "react-native-modalfy"
 import { modalConfig } from "@/components/Modals/ModalConfig"
+import { FieldMetadata } from "@/models/calibre"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -49,10 +51,17 @@ export type AppStackParamList = {
     link: Link
   }
   Viewer: {
-    library: Library
+    book: Library
   }
   PDFViewer: {
-    library: Library
+    book: Library
+  }
+  BookDetail: {
+    book: Library
+    fieldMetadataList: FieldMetadata[]
+    imageUrl: string
+    fieldNameList: string[]
+    onLinkPress: (query) => void
   }
 }
 
@@ -99,6 +108,7 @@ const AppStack = observer(function AppStack() {
         component={PDFViewerScreen}
         options={{ statusBarHidden: true, headerShown: false }}
       />
+      <Stack.Screen name="BookDetail" component={BookDetailScreen} />
     </Stack.Navigator>
   )
 })
