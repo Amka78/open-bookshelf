@@ -87,12 +87,6 @@ export const LibraryScreen: FC = observer(() => {
     })
   }, [navigation, selectedLibrary.searchSetting])
 
-  let header
-
-  if (authenticationStore.isAuthenticated) {
-    header = { Authorization: `Basic ${authenticationStore.token}` }
-  }
-
   const renderItem = ({ item }: { item: Library }) => {
     const onPress = async () => {
       await openViewerHook.execute(item, selectedLibrary.id, modal)
@@ -134,7 +128,7 @@ export const LibraryScreen: FC = observer(() => {
     if (libraryHook.currentListStyle === "gridView") {
       listItem = (
         <BookImageItem
-          source={{ uri: imageUrl, headers: header }}
+          source={{ uri: imageUrl, headers: authenticationStore.getHeader() }}
           onPress={onPress}
           onLongPress={onLongPress}
         />
@@ -142,7 +136,7 @@ export const LibraryScreen: FC = observer(() => {
     } else {
       listItem = (
         <BookDescriptionItem
-          source={{ uri: imageUrl, headers: header }}
+          source={{ uri: imageUrl, headers: authenticationStore.getHeader() }}
           onPress={onPress}
           onLongPress={onLongPress}
           authors={item.metaData.authors}

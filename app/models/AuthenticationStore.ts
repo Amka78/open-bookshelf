@@ -27,6 +27,12 @@ export const AuthenticationStoreModel = types
       store.password = ""
       api.clearAuthorization()
     },
+    getHeader() {
+      if (store.isAuthenticated) {
+        return { Authorization: `Basic ${store.token}` }
+      }
+      return undefined
+    },
   }))
 
 export type AuthenticationStore = Instance<typeof AuthenticationStoreModel>

@@ -15,10 +15,6 @@ export const ViewerScreen: FC = observer(() => {
 
   let header
 
-  if (authenticationStore.isAuthenticated) {
-    header = { Authorization: `Basic ${authenticationStore.token}` }
-  }
-
   const renderPage = (props: RenderPageProps) => {
     return (
       <BookPage
@@ -30,7 +26,7 @@ export const ViewerScreen: FC = observer(() => {
               calibreRootStore.selectedLibraryId
             }`,
           ),
-          headers: header,
+          headers: authenticationStore.getHeader(),
         }}
       />
     )
