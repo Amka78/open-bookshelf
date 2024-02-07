@@ -8,10 +8,7 @@ import {
   Text,
   VStack,
 } from "@/components"
-import { ModalStackParams } from "@/components/Modals/Types"
-import React, { useState } from "react"
 import { useForm } from "react-hook-form"
-import { useModal } from "react-native-modalfy"
 
 import { ConnectType } from "../type/ConnectType"
 import { LoginType } from "@/components/Modals/LoginModal"
@@ -23,9 +20,7 @@ export type ConnectScreenProps = {
 }
 export function ConnectScreen(props: ConnectScreenProps) {
   const form = useForm<ConnectType, unknown, ConnectType>()
-  const modal = useModal<ModalStackParams>()
 
-  const [isLoading, setIsLoading] = useState(false)
   return (
     <RootContainer>
       <VStack justifyContent={"space-between"} flex={1}>
@@ -54,12 +49,9 @@ export function ConnectScreen(props: ConnectScreenProps) {
             testID="connect-button"
             tx="connectScreen.connect"
             onPress={form.handleSubmit(async (data) => {
-              setIsLoading(true)
               await props.onConnectPress(data)
-              setIsLoading(false)
             })}
             width={"$full"}
-            isLoading={isLoading}
           />
         </VStack>
       </VStack>
