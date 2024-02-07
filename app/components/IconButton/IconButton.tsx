@@ -1,8 +1,9 @@
-import { styled, Pressable } from "@gluestack-ui/themed"
-import { ComponentProps, forwardRef } from "react"
+import { styled, Pressable, ButtonSpinner } from "@gluestack-ui/themed"
+import { ComponentProps, forwardRef, useState } from "react"
 import { MaterialCommunityIcons } from "@expo/vector-icons"
 import { MessageKey } from "@/i18n"
 import { Text, HStack } from "@/components"
+import { delay } from "@/utils/delay"
 
 export type IconButtonProps = ComponentProps<typeof Pressable> & {
   iconSize?: "md" | "md-"
@@ -54,6 +55,7 @@ export const IconButton = forwardRef(
     { iconSize = "md", variant = "common", pressable = true, ...restProps }: IconButtonProps,
     ref,
   ) => {
+    const [loading , setLoading] = useState(false)
     const props = restProps
     const icon = <StyledIcon name={props.name} iconSize={iconSize} variant={variant} />
 
@@ -65,6 +67,16 @@ export const IconButton = forwardRef(
     ) : (
       icon
     )
-    return pressable ? <Pressable {...props}>{content}</Pressable>: content
+    return pressable ? 
+    <Pressable {...props} onPress={async (event) => {
+      if(props.onPress) {
+        setLoading(true)
+        await props.onPress(event)
+        setLoading(false)
+      }
+    }} disabled={loading}>{loading ? <ButtonSpinner color="$coolGray500" size={35} />
+      : content}
+      </Pressable>
+  : content
   },
 )
