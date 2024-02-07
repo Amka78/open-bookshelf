@@ -6,9 +6,6 @@ export function useCalibreRoot() {
   const { calibreRootStore } = useStores()
 
   const navigation = useNavigation<ApppNavigationProp>()
-  const initialize = async () => {
-    await calibreRootStore.getTagBrowser()
-  }
 
   const onLibraryPass = (id: string) => {
     calibreRootStore.setSelectedLibraryId(id)
@@ -18,6 +15,5 @@ export function useCalibreRoot() {
   return {
     library: calibreRootStore.libraryMap,
     onLibraryPress: onLibraryPass,
-    initialize
   }
 }

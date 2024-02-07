@@ -8,10 +8,6 @@ export const CalibreRootScreen: FC = observer(() => {
   const calibreRootHook = useCalibreRoot()
 
   return (
-    <Template
-      libraries={calibreRootHook.library}
-      onLibraryPress={calibreRootHook.onLibraryPress}
-      initialize={calibreRootHook.initialize}
-    />
+    <Template libraries={calibreRootHook.library} onLibraryPress={calibreRootHook.onLibraryPress} />
   )
 })

@@ -25,6 +25,8 @@ export function useLibrary() {
       navigation.navigate("Connect")
     }
     search()
+
+    calibreRootStore.getTagBrowser()
   }, [])
 
   const onSearch = (searchCondition?: string) => {
