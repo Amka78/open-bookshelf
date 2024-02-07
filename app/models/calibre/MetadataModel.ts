@@ -17,5 +17,6 @@ export const MetadataModel = types
     title: types.maybeNull(types.string),
     uuid: types.maybeNull(types.string),
     selectedFormat: types.maybeNull(types.string),
+    rating: types.maybeNull(types.number),
   })
   .actions(withSetPropAction)
