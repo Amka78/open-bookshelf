@@ -39,6 +39,7 @@ export const LoginModal = observer((props: LoginModalProps) => {
             name="password"
             placeholderTx={"modal.loginModal.passwordPlaceholder"}
             rules={{ required: true }}
+            type="password"
           />
         </Input>
       </Body>
