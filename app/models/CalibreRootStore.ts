@@ -16,6 +16,7 @@ import {
 import { handleCommonApiError } from "./errors/errors"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { parseISO } from "date-fns"
+import { delay } from "@/utils/delay"
 
 const FormatSizeModel = types.model("FormatSizeModel").props({
   id: types.identifier,
@@ -326,6 +327,7 @@ function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap)
       timestamp: parseISO(metaData.timestamp),
       title: metaData.title,
       uuid: metaData.uuid,
+      rating: metaData.rating,
     })
 
     selectedLibrary.value.push({
@@ -389,7 +391,4 @@ function convertLibraryInformation(data: ApiBookInfo, selectedLibrary: LibraryMa
     })
     selectedLibrary.fieldMetadata.push(fieldMetadata)
   })
-}
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
 }
