@@ -13,7 +13,7 @@ export type LoginModalProps = ModalComponentProp<ModalStackParams, void, "LoginM
 
 export const LoginModal = observer((props: LoginModalProps) => {
   const { authenticationStore } = useStores()
-  const form = useForm<LoginType>()
+  const form = useForm<LoginType, unknown, LoginType>()
   return (
     <Root>
       <Header>

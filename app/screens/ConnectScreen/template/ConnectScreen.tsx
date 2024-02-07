@@ -22,7 +22,7 @@ export type ConnectScreenProps = {
   onLoginPress: (data: LoginType) => void
 }
 export function ConnectScreen(props: ConnectScreenProps) {
-  const form = useForm<ConnectType>()
+  const form = useForm<ConnectType, unknown, ConnectType>()
   const modal = useModal<ModalStackParams>()
 
   const [isLoading, setIsLoading] = useState(false)
