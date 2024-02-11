@@ -8,12 +8,15 @@ import { useForm } from "react-hook-form"
 import { LoginType } from "./type"
 import { observer } from "mobx-react-lite"
 import { useStores } from "@/models"
+import { useNavigation } from "@react-navigation/native"
+import { ApppNavigationProp } from "@/navigators"
 
 export type LoginModalProps = ModalComponentProp<ModalStackParams, void, "LoginModal">
 
 export const LoginModal = observer((props: LoginModalProps) => {
-  const { authenticationStore } = useStores()
+  const { authenticationStore, calibreRootStore } = useStores()
   const form = useForm<LoginType, unknown, LoginType>()
+  const navigation = useNavigation<ApppNavigationProp>()
   return (
     <Root>
       <Header>
@@ -45,9 +48,12 @@ export const LoginModal = observer((props: LoginModalProps) => {
       </Body>
       <Footer>
         <Button
-          onPress={form.handleSubmit((data) => {
+          onPress={form.handleSubmit(async (data) => {
             authenticationStore.login(data.userId, data.password)
+
+            await calibreRootStore.initialize()
             props.modal.closeModal()
+            navigation.navigate("CalibreRoot")
           })}
           tx={"common.login"}
         />
