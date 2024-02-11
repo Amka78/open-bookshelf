@@ -25,12 +25,11 @@ import { AuthButton } from "@/components/AuthButton/AuthButton"
 import { api } from "@/services/api"
 import { useOpenViewer } from "@/hooks/useOpenViewer"
 import { SearchBarCommands } from "react-native-screens"
-import * as FileSystem from "expo-file-system"
-import { FieldMetadataModel } from "@/models/calibre"
 
 export const LibraryScreen: FC = observer(() => {
   const { authenticationStore, calibreRootStore, settingStore } = useStores()
 
+  const selectedLibrary = calibreRootStore.getSelectedLibrary()
   const navigation = useNavigation<ApppNavigationProp>()
   const modal = useModal<ModalStackParams>()
 
@@ -40,9 +39,6 @@ export const LibraryScreen: FC = observer(() => {
   const openViewerHook = useOpenViewer()
   const libraryHook = useLibrary()
 
-  const selectedLibrary = calibreRootStore.getSelectedLibrary()
-
-  const flatListRef = useRef()
   const searchBar = useRef<SearchBarCommands>()
 
   const search = async () => {
@@ -57,7 +53,7 @@ export const LibraryScreen: FC = observer(() => {
           <IconButton
             name="arrow-left"
             onPress={() => {
-              if (selectedLibrary.searchSetting.query !== "") {
+              if (selectedLibrary?.searchSetting?.query !== "") {
                 libraryHook.onSearch("")
               } else {
                 navigation.goBack()
@@ -67,8 +63,8 @@ export const LibraryScreen: FC = observer(() => {
           />
         )
       },
-      headerTitle: selectedLibrary.searchSetting?.query
-        ? selectedLibrary.searchSetting.query
+      headerTitle: selectedLibrary?.searchSetting?.query
+        ? selectedLibrary?.searchSetting?.query
         : calibreRootStore.selectedLibraryId,
       headerSearchBarOptions: {
         hideWhenScrolling: false,
@@ -83,9 +79,12 @@ export const LibraryScreen: FC = observer(() => {
             searchBar.current.setText(selectedLibrary.searchSetting.query)
           }
         },
+        onCancelButtonPress: () => {
+          searchBar.current.toggleCancelButton(false)
+        },
       },
     })
-  }, [navigation, selectedLibrary.searchSetting])
+  }, [navigation, selectedLibrary?.searchSetting])
 
   const renderItem = ({ item }: { item: Library }) => {
     const onPress = async () => {
@@ -167,7 +166,6 @@ export const LibraryScreen: FC = observer(() => {
             await calibreRootStore.searchMoreLibrary()
           }}
           preparing={libraryHook.searching}
-          ref={flatListRef}
         />
       ) : null}
       <StaggerContainer
@@ -199,9 +197,9 @@ export const LibraryScreen: FC = observer(() => {
               onPress={libraryHook.onChangeListStyle}
             />
             <SortMenu
-              selectedSort={selectedLibrary.searchSetting?.sort}
-              selectedSortOrder={selectedLibrary.searchSetting?.sortOrder}
-              field={selectedLibrary.sortField}
+              selectedSort={selectedLibrary?.searchSetting?.sort}
+              selectedSortOrder={selectedLibrary?.searchSetting?.sortOrder}
+              field={selectedLibrary?.sortField}
               onSortChange={(val) => {
                 libraryHook.onSort(val)
               }}
@@ -218,8 +216,8 @@ export const LibraryScreen: FC = observer(() => {
         onNodePress={async (name) => {
           libraryHook.onSearch(name)
         }}
-        tagBrowser={selectedLibrary.tagBrowser}
-        selectedName={selectedLibrary.searchSetting?.query}
+        tagBrowser={selectedLibrary?.tagBrowser}
+        selectedName={selectedLibrary?.searchSetting?.query}
       />
       {LibraryCore}
     </HStack>

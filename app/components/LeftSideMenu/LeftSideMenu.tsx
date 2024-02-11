@@ -11,7 +11,7 @@ export type LeftSideMenuProps = {
 }
 
 export function LeftSideMenu(props: LeftSideMenuProps) {
-  return (
+  return props.tagBrowser ? (
     <ScrollView backgroundColor={"white"} maxWidth={"$32"}>
       {props.tagBrowser.map((category) => {
         return (
@@ -49,5 +49,5 @@ export function LeftSideMenu(props: LeftSideMenuProps) {
         )
       })}
     </ScrollView>
-  )
+  ) : undefined
 }
