@@ -1,8 +1,10 @@
 import { HStack, Text, LinkButton } from "@/components"
 import { FieldMetadata } from "@/models/calibre"
 import { formatDate } from "@/utils/formatDate"
+import { parseISO } from "date-fns"
+
 export type MetadataFieldProps = {
-  value: string | number | Date
+  value: string | string[] | number | Date
   fieldMetadata: FieldMetadata
   onLinkPress?: (link: string) => void
 }
@@ -21,7 +23,21 @@ export function MetadataField(props: MetadataFieldProps) {
       break
     }
     case "datetime": {
-      field = <Text>{formatDate(props.value as Date, props.fieldMetadata.display.dateFormat)}</Text>
+      field = (
+        <LinkButton
+          onPress={(linkName) => {
+            onLinkPress(linkName, props.fieldMetadata, props.onLinkPress)
+          }}
+        >
+          {{
+            value: (props.value as string).split("T")[0],
+            label: formatDate(
+              parseISO(props.value as string),
+              props.fieldMetadata.display.dateFormat,
+            ),
+          }}
+        </LinkButton>
+      )
       break
     }
     case "text":
@@ -31,7 +47,7 @@ export function MetadataField(props: MetadataFieldProps) {
             onLinkPress(linkName, props.fieldMetadata, props.onLinkPress)
           }}
         >
-          {props.value}
+          {{ value: props.value as string }}
         </LinkButton>
       )
       break
@@ -42,7 +58,7 @@ export function MetadataField(props: MetadataFieldProps) {
             onLinkPress(linkName, props.fieldMetadata, props.onLinkPress)
           }}
         >
-          {props.value}
+          {{ value: props.value as string }}
         </LinkButton>
       )
       break
