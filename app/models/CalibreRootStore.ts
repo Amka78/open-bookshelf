@@ -165,8 +165,9 @@ export const CalibreRootStore = types
   .props({
     defaultLibraryId: types.maybeNull(types.string),
     numPerPage: types.maybeNull(types.number),
-    libraryMap: types.array(LibraryMapModel),
+    libraryMap: types.map(LibraryMapModel),
     selectedLibraryId: types.maybeNull(types.string),
+    selectedLibrary: types.maybe(types.reference(types.late(() => LibraryMapModel))),
   })
   .actions(withSetPropAction)
   .actions((root) => ({
@@ -177,8 +178,8 @@ export const CalibreRootStore = types
         root.numPerPage = response.data.num_per_page
 
         root.libraryMap.clear()
-        Object.keys(response.data.library_map).forEach((value: string) => {
-          root.libraryMap.push({ id: value })
+        Object.keys(response.data.library_map).forEach((keyName: string) => {
+          root.libraryMap.set(keyName, { id: keyName })
         })
 
         return true
@@ -189,11 +190,7 @@ export const CalibreRootStore = types
     getTagBrowser: flow(function* () {
       const response = yield api.getTagBrowser(root.defaultLibraryId)
       if (response.kind === "ok") {
-        const selectedLibrary = root.libraryMap.find((value) => {
-          return value.id === root.selectedLibraryId
-        })
-
-        selectedLibrary.tagBrowser.clear()
+        root.selectedLibrary.tagBrowser.clear()
 
         Object.values(response.data.root.children).forEach(
           (value: { id; children: { id; children }[] }) => {
@@ -238,7 +235,7 @@ export const CalibreRootStore = types
             })
 
             categoryModel.setProp("subCategory", subCategoryArray)
-            selectedLibrary.tagBrowser.push(categoryModel)
+            root.selectedLibrary.tagBrowser.push(categoryModel)
           },
         )
         return true
@@ -247,20 +244,17 @@ export const CalibreRootStore = types
       return false
     }),
     searchLibrary: flow(function* () {
-      const selectedLibrary = root.libraryMap.find((value) => {
-        return value.id === root.selectedLibraryId
-      })
       const response = yield api.getLibrary(
         root.selectedLibraryId,
-        selectedLibrary.searchSetting ? selectedLibrary.searchSetting.query : "",
-        selectedLibrary.searchSetting ? selectedLibrary.searchSetting.sort : "timestamp",
-        selectedLibrary.searchSetting ? selectedLibrary.searchSetting.sortOrder : "desc",
+        root.selectedLibrary.searchSetting ? root.selectedLibrary.searchSetting.query : "",
+        root.selectedLibrary.searchSetting ? root.selectedLibrary.searchSetting.sort : "timestamp",
+        root.selectedLibrary.searchSetting ? root.selectedLibrary.searchSetting.sortOrder : "desc",
       )
 
       if (response.kind === "ok") {
-        selectedLibrary.value.clear()
-        convertLibraryInformation(response.data, selectedLibrary)
-        convertSearchResult(response.data, selectedLibrary)
+        root.selectedLibrary.value.clear()
+        convertLibraryInformation(response.data, root.selectedLibrary)
+        convertSearchResult(response.data, root.selectedLibrary)
 
         return true
       }
@@ -268,7 +262,7 @@ export const CalibreRootStore = types
       return false
     }),
     searchMoreLibrary: flow(function* () {
-      const selectedLibrary = getSelectedLibrary(root)
+      const selectedLibrary = root.selectedLibrary
       const response = yield api.getMoreLibrary(root.selectedLibraryId, {
         offset: selectedLibrary.searchSetting.offset,
         query: selectedLibrary.searchSetting.query ? selectedLibrary.searchSetting.query : "",
@@ -284,22 +278,15 @@ export const CalibreRootStore = types
       handleCommonApiError(response)
       return false
     }),
-    setSelectedLibraryId: (libraryId: string) => {
-      root.selectedLibraryId = libraryId
-    },
-    getSelectedLibrary: () => {
-      return getSelectedLibrary(root)
+    setLibrary: (libraryId?: string) => {
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+      root.selectedLibrary = libraryId as any
     },
   }))
 
 export type CalibreRoot = Instance<typeof CalibreRootStore>
 export type CalibreRootSnapshotOut = SnapshotOut<typeof CalibreRootStore>
 export type CalibreRootSnapshotIn = SnapshotIn<typeof CalibreRootStore>
-function getSelectedLibrary(root): LibraryMap {
-  return root.libraryMap.find((value) => {
-    return value.id === root.selectedLibraryId
-  })
-}
 
 function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap) {
   selectedLibrary.searchSetting = SearchSettingModel.create({

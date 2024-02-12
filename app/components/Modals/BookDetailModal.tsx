@@ -14,23 +14,25 @@ import { translate } from "@/i18n"
 import { useOpenViewer } from "@/hooks/useOpenViewer"
 import { observer } from "mobx-react-lite"
 import { useStores } from "@/models"
+import * as FileSystem from "expo-file-system"
+import { delay } from "@/utils/delay"
 
 export type BookDetailModalProps = ModalComponentProp<ModalStackParams, void, "BookDetailModal">
 
 const BookDetailModalCore = observer((props: BookDetailModalProps) => {
-  const { calibreRootStore, settingStore } = useStores()
+  const { authenticationStore, calibreRootStore, settingStore } = useStores()
   const openViewerHook = useOpenViewer()
 
-  const selectedLibrary = calibreRootStore.getSelectedLibrary()
+  const selectedLibrary = calibreRootStore.selectedLibrary
 
-  const onDownloadPress = () => {
-    /*const downloadResumable = FileSystem.createDownloadResumable(
-      `${settingStore.}`,
-      FileSystem.documentDirectory + "small.mp4",
-      {},
-      callback,
-    )*/
-  }
+  const book = props.modal.params.book
+  const downloadResumable = FileSystem.createDownloadResumable(
+    `${settingStore.api.baseUrl}/get/${book.metaData.formats[0]}/${book.id}/${selectedLibrary.id}`,
+    FileSystem.documentDirectory + "small.cbz",
+    {
+      headers: authenticationStore.getHeader(),
+    },
+  )
   return (
     <Root>
       <Header>
@@ -54,7 +56,10 @@ const BookDetailModalCore = observer((props: BookDetailModalProps) => {
                 )
                 props.modal.closeModal()
               }}
-              onDownloadBook={() => {}}
+              onDownloadBook={async () => {
+                const result = await downloadResumable.downloadAsync()
+                console.log(result)
+              }}
               onConvertBook={() => {}}
               onShowEdit={() => {}}
               onDeleteBook={() => {

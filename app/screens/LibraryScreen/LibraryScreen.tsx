@@ -29,7 +29,7 @@ import { SearchBarCommands } from "react-native-screens"
 export const LibraryScreen: FC = observer(() => {
   const { authenticationStore, calibreRootStore, settingStore } = useStores()
 
-  const selectedLibrary = calibreRootStore.getSelectedLibrary()
+  const selectedLibrary = calibreRootStore.selectedLibrary
   const navigation = useNavigation<ApppNavigationProp>()
   const modal = useModal<ModalStackParams>()
 

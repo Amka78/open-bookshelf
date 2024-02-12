@@ -13,7 +13,7 @@ export const BookDetailScreen: FC = observer(() => {
   const { calibreRootStore } = useStores()
   const navigation = useNavigation<ApppNavigationProp>()
   const route = useRoute<BookDetailScreenRouteProp>()
-  const selectedLibrary = calibreRootStore.getSelectedLibrary()
+  const selectedLibrary = calibreRootStore.selectedLibrary
   const modal = useModal<ModalStackParams>()
 
   const openViewerHook = useOpenViewer()

@@ -18,7 +18,7 @@ export function useViewer() {
   const convergenceHook = useConvergence()
 
   const orientation = convergenceHook.orientation
-  const selectedLibrary = calibreRootStore.getSelectedLibrary()
+  const selectedLibrary = calibreRootStore.selectedLibrary
 
   let tempClientSetting = selectedLibrary.clientSetting?.find((value) => {
     return value.id === route.params.book.id

@@ -7,7 +7,7 @@ export type LibraryViewStyle = "gridView" | "viewList"
 export function useLibrary() {
   const { calibreRootStore } = useStores()
   const navigation = useNavigation<ApppNavigationProp>()
-  const selectedLibrary = calibreRootStore.getSelectedLibrary()
+  const selectedLibrary = calibreRootStore.selectedLibrary
 
   const [searching, setSearching] = useState(false)
   const [mobileViewStyle, setMovileViewStyle] = useState<LibraryViewStyle>("viewList")
