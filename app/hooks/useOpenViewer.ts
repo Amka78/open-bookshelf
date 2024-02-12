@@ -1,5 +1,5 @@
 import { ModalStackParams } from "@/components/Modals/Types"
-import { Library } from "@/models/CalibreRootStore"
+import { Book } from "@/models/CalibreRootStore"
 import { UsableModalProp, useModal } from "react-native-modalfy"
 import { useNavigation } from "@react-navigation/native"
 import { ApppNavigationProp } from "@/navigators"
@@ -8,7 +8,7 @@ export function useOpenViewer() {
   const navigation = useNavigation<ApppNavigationProp>()
 
   const onItemPress = async (
-    book: Library,
+    book: Book,
     format: string,
     selectedLibraryId: string,
     modal: UsableModalProp<ModalStackParams>,
@@ -27,7 +27,7 @@ export function useOpenViewer() {
     }
   }
   const execute = async (
-    book: Library,
+    book: Book,
     selectedLibraryId: string,
     modal: UsableModalProp<ModalStackParams>,
   ) => {

@@ -10,7 +10,7 @@ import { useColorScheme } from "react-native"
 
 import Config from "../config"
 import { useStores } from "../models"
-import { Library } from "../models/CalibreRootStore"
+import { Book } from "../models/CalibreRootStore"
 import { Link } from "../models/opds"
 import {
   AcquisitionScreen,
@@ -51,13 +51,13 @@ export type AppStackParamList = {
     link: Link
   }
   Viewer: {
-    book: Library
+    book: Book
   }
   PDFViewer: {
-    book: Library
+    book: Book
   }
   BookDetail: {
-    book: Library
+    book: Book
     fieldMetadataList: FieldMetadata[]
     imageUrl: string
     fieldNameList: string[]

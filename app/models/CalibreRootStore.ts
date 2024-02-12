@@ -23,8 +23,8 @@ const FormatSizeModel = types.model("FormatSizeModel").props({
   size: types.maybeNull(types.number),
 })
 
-export const LibraryModel = types
-  .model("LibraryModel")
+export const BookModel = types
+  .model("BookModel")
   .props({
     id: types.identifierNumber,
     metaData: types.maybeNull(MetadataModel),
@@ -120,22 +120,22 @@ export const LibraryModel = types
       onPostConvert()
     }),
   }))
-export type Library = Instance<typeof LibraryModel>
-export type LibrarySnapshotOut = SnapshotOut<typeof LibraryModel>
-export type LibrarySnapshotIn = SnapshotIn<typeof LibraryModel>
+export type Book = Instance<typeof BookModel>
+export type BookSnapshotOut = SnapshotOut<typeof BookModel>
+export type BookSnapshotIn = SnapshotIn<typeof BookModel>
 
 export const LibraryMapModel = types
   .model("LibrayMapModel")
   .props({
     id: types.identifier,
-    books: types.map(LibraryModel),
+    books: types.map(BookModel),
     searchSetting: types.maybeNull(SearchSettingModel),
     sortField: types.array(SortFieldModel),
     tagBrowser: types.array(CategoryModel),
     clientSetting: types.array(ClientSettingModel),
     bookDisplayFields: types.array(types.string),
     fieldMetadata: types.array(FieldMetadataModel),
-    selectedBook: types.maybe(types.reference(types.late(() => LibraryModel))),
+    selectedBook: types.maybe(types.reference(types.late(() => BookModel))),
   })
   .actions(withSetPropAction)
   .actions((root) => ({

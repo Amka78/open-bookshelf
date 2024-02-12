@@ -11,7 +11,7 @@ import {
 } from "@/components"
 import { ModalStackParams } from "@/components/Modals/Types"
 import { useStores } from "@/models"
-import { Library } from "@/models/CalibreRootStore"
+import { Book } from "@/models/CalibreRootStore"
 import { ApppNavigationProp } from "@/navigators"
 import { useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
@@ -87,7 +87,7 @@ export const LibraryScreen: FC = observer(() => {
     })
   }, [navigation, selectedLibrary?.searchSetting])
 
-  const renderItem = ({ item }: { item: Library }) => {
+  const renderItem = ({ item }: { item: Book }) => {
     const onPress = async () => {
       await openViewerHook.execute(item, selectedLibrary.id, modal)
     }
@@ -151,7 +151,7 @@ export const LibraryScreen: FC = observer(() => {
   const LibraryCore = (
     <>
       {selectedLibrary ? (
-        <FlatList<Library>
+        <FlatList<Book>
           data={selectedLibrary.books ? values(selectedLibrary.books).slice() : undefined}
           renderItem={renderItem}
           estimatedItemSize={214}
