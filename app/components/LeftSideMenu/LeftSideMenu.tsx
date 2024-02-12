@@ -1,8 +1,9 @@
-import { Category } from "@/models/CalibreRootStore"
+import { Category } from "@/models/calibre"
 import React from "react"
 import { ScrollView } from "@gluestack-ui/themed"
 
 import { LeftSideMenuItem } from "../LeftSideMenuItem/LeftSideMenuItem"
+import { observer } from "mobx-react-lite"
 
 export type LeftSideMenuProps = {
   tagBrowser: Category[]
@@ -10,7 +11,7 @@ export type LeftSideMenuProps = {
   onNodePress: (nodeName: string) => Promise<void>
 }
 
-export function LeftSideMenu(props: LeftSideMenuProps) {
+export const LeftSideMenu = observer((props: LeftSideMenuProps) => {
   return props.tagBrowser ? (
     <ScrollView backgroundColor={"white"} maxWidth={"$32"}>
       {props.tagBrowser.map((category) => {
@@ -50,4 +51,4 @@ export function LeftSideMenu(props: LeftSideMenuProps) {
       })}
     </ScrollView>
   ) : undefined
-}
+})
