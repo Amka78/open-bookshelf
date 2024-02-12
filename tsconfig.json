@@ -20,7 +20,7 @@
       "@/*": ["app/*"]
     }
   },
-  "exclude": ["android","assets","ios","bin","dist", "yarn.lock"],
+  "exclude": ["android", "node_modules", "assets", "ios", "bin", "dist", "yarn.lock"],
   "include": [
     "index.js",
     "App.js",
