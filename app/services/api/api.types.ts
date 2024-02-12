@@ -203,6 +203,15 @@ export type ApiCalibreInterfaceType = {
   lang_code_for_user_manual: string
   library_map: Record<string, string>
   default_library_id: string
+  recently_read_by_user: {
+    library_id: string
+    book_id: string
+    format: string
+    cfi: string
+    epoch: number
+    pos_frac: number
+    tool_tip: string
+  }
 }
 
 type Children = {
