@@ -128,7 +128,7 @@ export const LibraryMapModel = types
   .model("LibrayMapModel")
   .props({
     id: types.identifier,
-    value: types.map(LibraryModel),
+    books: types.map(LibraryModel),
     searchSetting: types.maybeNull(SearchSettingModel),
     sortField: types.array(SortFieldModel),
     tagBrowser: types.array(CategoryModel),
@@ -142,7 +142,7 @@ export const LibraryMapModel = types
     deleteBook: flow(function* (bookId: number) {
       const response = yield api.deleteBook(root.id, bookId)
       if (response.kind === "ok") {
-        root.value.delete(bookId.toString())
+        root.books.delete(bookId.toString())
         return true
       }
       handleCommonApiError(response)
@@ -163,7 +163,6 @@ export const CalibreRootStore = types
     defaultLibraryId: types.maybeNull(types.string),
     numPerPage: types.maybeNull(types.number),
     libraryMap: types.map(LibraryMapModel),
-    selectedLibraryId: types.maybeNull(types.string),
     selectedLibrary: types.maybe(types.reference(types.late(() => LibraryMapModel))),
   })
   .actions(withSetPropAction)
@@ -242,14 +241,14 @@ export const CalibreRootStore = types
     }),
     searchLibrary: flow(function* () {
       const response = yield api.getLibrary(
-        root.selectedLibraryId,
+        root.selectedLibrary.id,
         root.selectedLibrary.searchSetting ? root.selectedLibrary.searchSetting.query : "",
         root.selectedLibrary.searchSetting ? root.selectedLibrary.searchSetting.sort : "timestamp",
         root.selectedLibrary.searchSetting ? root.selectedLibrary.searchSetting.sortOrder : "desc",
       )
 
       if (response.kind === "ok") {
-        root.selectedLibrary.value.clear()
+        root.selectedLibrary.books.clear()
         convertLibraryInformation(response.data, root.selectedLibrary)
         convertSearchResult(response.data, root.selectedLibrary)
 
@@ -260,7 +259,7 @@ export const CalibreRootStore = types
     }),
     searchMoreLibrary: flow(function* () {
       const selectedLibrary = root.selectedLibrary
-      const response = yield api.getMoreLibrary(root.selectedLibraryId, {
+      const response = yield api.getMoreLibrary(root.selectedLibrary.id, {
         offset: selectedLibrary.searchSetting.offset,
         query: selectedLibrary.searchSetting.query ? selectedLibrary.searchSetting.query : "",
         sort: selectedLibrary.searchSetting.sort,
@@ -314,7 +313,7 @@ function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap)
       rating: metaData.rating,
     })
 
-    selectedLibrary.value.set(key.toString(), {
+    selectedLibrary.books.set(key.toString(), {
       id: key,
       metaData: metaDataModel,
     })

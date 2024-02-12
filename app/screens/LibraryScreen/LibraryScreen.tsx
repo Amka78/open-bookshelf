@@ -66,7 +66,7 @@ export const LibraryScreen: FC = observer(() => {
       },
       headerTitle: selectedLibrary?.searchSetting?.query
         ? selectedLibrary?.searchSetting?.query
-        : calibreRootStore.selectedLibraryId,
+        : calibreRootStore.selectedLibrary?.id,
       headerSearchBarOptions: {
         hideWhenScrolling: false,
 
@@ -152,7 +152,7 @@ export const LibraryScreen: FC = observer(() => {
     <>
       {selectedLibrary ? (
         <FlatList<Library>
-          data={selectedLibrary.value ? values(selectedLibrary.value).slice() : undefined}
+          data={selectedLibrary.books ? values(selectedLibrary.books).slice() : undefined}
           renderItem={renderItem}
           estimatedItemSize={214}
           numColumns={Math.floor(window.width / 242)}

@@ -23,7 +23,7 @@ export const ViewerScreen: FC = observer(() => {
             `${settingStore.api.baseUrl}/book-file/${book.id}/${book.metaData.selectedFormat}/${
               book.metaData.size
             }/${book.hash}/${book.path[props.page]}?library_id=${
-              calibreRootStore.selectedLibraryId
+              calibreRootStore.selectedLibrary.id
             }`,
           ),
           headers: authenticationStore.getHeader(),
