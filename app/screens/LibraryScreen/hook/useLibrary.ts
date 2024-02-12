@@ -2,6 +2,7 @@ import { useConvergence } from "@/hooks/useConvergence"
 import { useStores } from "@/models"
 import { ApppNavigationProp } from "@/navigators"
 import { useNavigation } from "@react-navigation/native"
+import { values } from "mobx"
 import { useEffect, useState } from "react"
 export type LibraryViewStyle = "gridView" | "viewList"
 export function useLibrary() {
@@ -14,6 +15,8 @@ export function useLibrary() {
   const [desktopViewStyle, setDesktopViewStyle] = useState<LibraryViewStyle>("gridView")
 
   const convergenceHook = useConvergence()
+
+  let books = undefined
   const search = async () => {
     setSearching(true)
     await calibreRootStore.searchLibrary()
@@ -21,9 +24,6 @@ export function useLibrary() {
   }
 
   useEffect(() => {
-    if (!calibreRootStore.selectedLibraryId) {
-      navigation.navigate("Connect")
-    }
     search()
 
     calibreRootStore.getTagBrowser()
@@ -58,6 +58,7 @@ export function useLibrary() {
   }
 
   const currentListStyle = convergenceHook.isLarge ? desktopViewStyle : mobileViewStyle
+
   return {
     currentListStyle,
     onChangeListStyle,

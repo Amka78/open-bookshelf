@@ -128,24 +128,21 @@ export const LibraryMapModel = types
   .model("LibrayMapModel")
   .props({
     id: types.identifier,
-    value: types.array(LibraryModel),
+    value: types.map(LibraryModel),
     searchSetting: types.maybeNull(SearchSettingModel),
     sortField: types.array(SortFieldModel),
     tagBrowser: types.array(CategoryModel),
     clientSetting: types.array(ClientSettingModel),
     bookDisplayFields: types.array(types.string),
     fieldMetadata: types.array(FieldMetadataModel),
+    selectedBook: types.maybe(types.reference(types.late(() => LibraryModel))),
   })
   .actions(withSetPropAction)
   .actions((root) => ({
     deleteBook: flow(function* (bookId: number) {
       const response = yield api.deleteBook(root.id, bookId)
       if (response.kind === "ok") {
-        const deleteTarget = root.value.find((value) => {
-          return value.id === bookId
-        })
-
-        root.value.remove(deleteTarget)
+        root.value.delete(bookId.toString())
         return true
       }
       handleCommonApiError(response)
@@ -317,7 +314,7 @@ function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap)
       rating: metaData.rating,
     })
 
-    selectedLibrary.value.push({
+    selectedLibrary.value.set(key.toString(), {
       id: key,
       metaData: metaDataModel,
     })

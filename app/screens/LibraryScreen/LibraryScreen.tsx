@@ -25,6 +25,7 @@ import { AuthButton } from "@/components/AuthButton/AuthButton"
 import { api } from "@/services/api"
 import { useOpenViewer } from "@/hooks/useOpenViewer"
 import { SearchBarCommands } from "react-native-screens"
+import { values } from "mobx"
 
 export const LibraryScreen: FC = observer(() => {
   const { authenticationStore, calibreRootStore, settingStore } = useStores()
@@ -151,7 +152,7 @@ export const LibraryScreen: FC = observer(() => {
     <>
       {selectedLibrary ? (
         <FlatList<Library>
-          data={selectedLibrary?.value.slice()}
+          data={selectedLibrary.value ? values(selectedLibrary.value).slice() : undefined}
           renderItem={renderItem}
           estimatedItemSize={214}
           numColumns={Math.floor(window.width / 242)}
