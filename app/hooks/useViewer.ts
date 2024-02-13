@@ -1,4 +1,3 @@
-import useOrientation from "@/hooks/useOrientation"
 import { useStores } from "@/models"
 import { ClientSetting, ClientSettingModel } from "@/models/calibre"
 import { LibraryMap } from "@/models/CalibreRootStore"
@@ -19,14 +18,15 @@ export function useViewer() {
 
   const orientation = convergenceHook.orientation
   const selectedLibrary = calibreRootStore.selectedLibrary
+  const selectedBook = selectedLibrary.selectedBook
 
   let tempClientSetting = selectedLibrary.clientSetting?.find((value) => {
-    return value.id === route.params.book.id
+    return value.id === selectedBook.id
   })
 
   if (!tempClientSetting) {
     tempClientSetting = ClientSettingModel.create({
-      id: route.params.book.id,
+      id: selectedBook.id,
       verticalReadingStyle: "singlePage",
       verticalPageDirection: "left",
       horizontalReadingStyle: "facingPageWithTitle",
@@ -46,12 +46,12 @@ export function useViewer() {
 
   const onSetBookReadingStyle = (style: BookReadingStyleType) => {
     tempClientSetting.setProp(`${orientation}ReadingStyle`, style)
-    updateClientSetting(selectedLibrary, route.params.book.id, tempClientSetting)
+    updateClientSetting(selectedLibrary, selectedBook.id, tempClientSetting)
   }
 
   const onSetPageDirection = (pageDirection) => {
     tempClientSetting.setProp(`${orientation}PageDirection`, pageDirection)
-    updateClientSetting(selectedLibrary, route.params.book.id, tempClientSetting)
+    updateClientSetting(selectedLibrary, selectedBook.id, tempClientSetting)
   }
 
   const onManageMenu = () => {

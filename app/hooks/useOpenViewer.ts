@@ -1,11 +1,13 @@
 import { ModalStackParams } from "@/components/Modals/Types"
 import { Book } from "@/models/CalibreRootStore"
-import { UsableModalProp, useModal } from "react-native-modalfy"
+import { UsableModalProp } from "react-native-modalfy"
 import { useNavigation } from "@react-navigation/native"
 import { ApppNavigationProp } from "@/navigators"
+import { useStores } from "@/models"
 
 export function useOpenViewer() {
   const navigation = useNavigation<ApppNavigationProp>()
+  const { calibreRootStore } = useStores()
 
   const onItemPress = async (
     book: Book,
@@ -15,22 +17,20 @@ export function useOpenViewer() {
   ) => {
     book.metaData.setProp("selectedFormat", format)
     if (format === "PDF") {
-      navigation.navigate("PDFViewer", { book: book })
+      navigation.navigate("PDFViewer")
     } else {
       try {
         await book.convert(format, selectedLibraryId, () => {
-          navigation.navigate("Viewer", { book: book })
+          navigation.navigate("Viewer")
         })
       } catch (e) {
         modal.openModal("ErrorModal", { message: e.message, titleTx: "errors.failedConvert" })
       }
     }
   }
-  const execute = async (
-    book: Book,
-    selectedLibraryId: string,
-    modal: UsableModalProp<ModalStackParams>,
-  ) => {
+  const execute = async (modal: UsableModalProp<ModalStackParams>) => {
+    const selectedLibraryId = calibreRootStore.selectedLibrary.id
+    const book = calibreRootStore.selectedLibrary.selectedBook
     if (book.metaData.formats.length > 1) {
       modal.openModal("FormatSelectModal", {
         formats: book.metaData.formats,

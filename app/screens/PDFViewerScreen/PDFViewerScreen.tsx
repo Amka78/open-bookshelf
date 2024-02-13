@@ -1,21 +1,17 @@
 import { BookViewer, RenderPageProps } from "@/components"
 import { useViewer } from "@/hooks/useViewer"
 import { useStores } from "@/models"
-import { AppStackParamList } from "@/navigators"
-import { RouteProp, useRoute } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import React, { useState } from "react"
 import { StyleSheet, useWindowDimensions } from "react-native"
 import { PDF } from "@/components/PDF/Pdf"
 
-type PDFViewerScreenRouteProp = RouteProp<AppStackParamList, "Viewer">
-
 export const PDFViewerScreen = observer(() => {
-  const { authenticationStore, settingStore } = useStores()
-  const route = useRoute<PDFViewerScreenRouteProp>()
+  const { authenticationStore, calibreRootStore, settingStore } = useStores()
 
   const [totalPages, setTotalPages] = useState(undefined)
   const [imageSize, setImageSize] = useState(undefined)
+  const selectedBook = calibreRootStore.selectedLibrary.selectedBook
 
   const windowDimension = useWindowDimensions()
 
@@ -25,7 +21,7 @@ export const PDFViewerScreen = observer(() => {
     header = { Authorization: `Basic ${authenticationStore.token}` }
   }
   const source = {
-    uri: `${settingStore.api.baseUrl}/get/PDF/${route.params.book.id}/config?content_disposition=inline`,
+    uri: `${settingStore.api.baseUrl}/get/PDF/${selectedBook.id}/config?content_disposition=inline`,
     cache: true,
     headers: header,
   }
@@ -75,7 +71,7 @@ export const PDFViewerScreen = observer(() => {
 
   return totalPages !== undefined ? (
     <BookViewer
-      bookTitle={route.params.book.metaData.title}
+      bookTitle={selectedBook.metaData.title}
       renderPage={renderPage}
       totalPage={totalPages}
     />

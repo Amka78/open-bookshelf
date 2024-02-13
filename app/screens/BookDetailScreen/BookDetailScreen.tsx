@@ -14,21 +14,22 @@ export const BookDetailScreen: FC = observer(() => {
   const navigation = useNavigation<ApppNavigationProp>()
   const route = useRoute<BookDetailScreenRouteProp>()
   const selectedLibrary = calibreRootStore.selectedLibrary
+  const selectedBook = selectedLibrary.selectedBook
   const modal = useModal<ModalStackParams>()
 
   const openViewerHook = useOpenViewer()
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerTitle: route.params.book.metaData.title,
+      headerTitle: selectedBook.metaData.title,
     })
-  }, [navigation, route.params.book.metaData.title])
+  }, [navigation, selectedBook.metaData.title])
 
   return (
     <RootContainer alignItems="center">
       <BookImageItem source={route.params.imageUrl} />
       <BookDetailMenu
         onOpenBook={async () => {
-          await openViewerHook.execute(route.params.book, selectedLibrary.id, modal)
+          await openViewerHook.execute(modal)
         }}
         onDownloadBook={() => {}}
         onConvertBook={() => {}}
@@ -36,9 +37,9 @@ export const BookDetailScreen: FC = observer(() => {
         onDeleteBook={() => {}}
       />
       <MetadataFieldList
-        book={route.params.book}
-        fieldMetadataList={route.params.fieldMetadataList}
-        fieldNameList={route.params.fieldNameList}
+        book={selectedBook}
+        fieldMetadataList={selectedLibrary.fieldMetadata}
+        fieldNameList={selectedLibrary.bookDisplayFields}
         onFieldPress={(query) => {
           route.params.onLinkPress(query)
           navigation.goBack()

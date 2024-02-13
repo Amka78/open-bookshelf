@@ -25,9 +25,9 @@ const BookDetailModalCore = observer((props: BookDetailModalProps) => {
 
   const selectedLibrary = calibreRootStore.selectedLibrary
 
-  const book = props.modal.params.book
+  const selectedBook = selectedLibrary.selectedBook
   const downloadResumable = FileSystem.createDownloadResumable(
-    `${settingStore.api.baseUrl}/get/${book.metaData.formats[0]}/${book.id}/${selectedLibrary.id}`,
+    `${settingStore.api.baseUrl}/get/${selectedBook.metaData.formats[0]}/${selectedBook.id}/${selectedLibrary.id}`,
     FileSystem.documentDirectory + "small.cbz",
     {
       headers: authenticationStore.getHeader(),
@@ -36,7 +36,7 @@ const BookDetailModalCore = observer((props: BookDetailModalProps) => {
   return (
     <Root>
       <Header>
-        <Heading>{props.modal.params.book.metaData.title}</Heading>
+        <Heading>{selectedBook.metaData.title}</Heading>
         <CloseButton
           onPress={() => {
             props.modal.closeModal()
@@ -49,11 +49,7 @@ const BookDetailModalCore = observer((props: BookDetailModalProps) => {
           <VStack height={320}>
             <BookDetailMenu
               onOpenBook={async () => {
-                await openViewerHook.execute(
-                  props.modal.params.book,
-                  selectedLibrary.id,
-                  props.modal,
-                )
+                await openViewerHook.execute(props.modal)
                 props.modal.closeModal()
               }}
               onDownloadBook={async () => {
@@ -67,7 +63,7 @@ const BookDetailModalCore = observer((props: BookDetailModalProps) => {
                   titleTx: "modal.deleteConfirmModal.title",
                   message: translate({
                     key: "modal.deleteConfirmModal.message",
-                    restParam: [{ key: props.modal.params.book.metaData.title, translate: false }],
+                    restParam: [{ key: selectedBook.metaData.title, translate: false }],
                   }),
                   onOKPress: async () => {
                     if (props.modal.params.onDeleteConfirmOKPress) {
@@ -79,9 +75,9 @@ const BookDetailModalCore = observer((props: BookDetailModalProps) => {
               }}
             />
             <MetadataFieldList
-              book={props.modal.params.book}
-              fieldNameList={props.modal.params.fields}
-              fieldMetadataList={props.modal.params.fieldMetadatas}
+              book={selectedBook}
+              fieldNameList={selectedLibrary.bookDisplayFields}
+              fieldMetadataList={selectedLibrary.fieldMetadata}
               onFieldPress={(query) => {
                 if (props.modal.params.onLinkPress) {
                   props.modal.params.onLinkPress(query)

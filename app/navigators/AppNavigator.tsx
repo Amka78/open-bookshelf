@@ -10,7 +10,6 @@ import { useColorScheme } from "react-native"
 
 import Config from "../config"
 import { useStores } from "../models"
-import { Book } from "../models/CalibreRootStore"
 import { Link } from "../models/opds"
 import {
   AcquisitionScreen,
@@ -26,7 +25,6 @@ import { api } from "../services/api"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 import { ModalProvider, createModalStack } from "react-native-modalfy"
 import { modalConfig } from "@/components/Modals/ModalConfig"
-import { FieldMetadata } from "@/models/calibre"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -50,17 +48,10 @@ export type AppStackParamList = {
   Acquisition: {
     link: Link
   }
-  Viewer: {
-    book: Book
-  }
-  PDFViewer: {
-    book: Book
-  }
+  Viewer: undefined
+  PDFViewer: undefined
   BookDetail: {
-    book: Book
-    fieldMetadataList: FieldMetadata[]
     imageUrl: string
-    fieldNameList: string[]
     onLinkPress: (query) => void
   }
 }

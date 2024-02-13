@@ -15,7 +15,6 @@ import {
 } from "./calibre"
 import { handleCommonApiError } from "./errors/errors"
 import { withSetPropAction } from "./helpers/withSetPropAction"
-import { parseISO } from "date-fns"
 import { delay } from "@/utils/delay"
 
 const FormatSizeModel = types.model("FormatSizeModel").props({
@@ -148,6 +147,10 @@ export const LibraryMapModel = types
       handleCommonApiError(response)
       return false
     }),
+    setBook: (bookId?: number) => {
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+      root.selectedBook = bookId as any
+    },
   }))
 
 export type LibraryMap = Instance<typeof LibraryMapModel>

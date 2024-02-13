@@ -89,7 +89,8 @@ export const LibraryScreen: FC = observer(() => {
 
   const renderItem = ({ item }: { item: Book }) => {
     const onPress = async () => {
-      await openViewerHook.execute(item, selectedLibrary.id, modal)
+      selectedLibrary.setBook(item.id)
+      await openViewerHook.execute(modal)
     }
 
     let listItem
@@ -99,12 +100,10 @@ export const LibraryScreen: FC = observer(() => {
     )
 
     const onLongPress = () => {
+      selectedLibrary.setBook(item.id)
       if (convergenceHook.isLarge) {
         modal.openModal("BookDetailModal", {
           imageUrl: imageUrl,
-          book: item,
-          fields: selectedLibrary.bookDisplayFields,
-          fieldMetadatas: selectedLibrary.fieldMetadata,
           onDeleteConfirmOKPress: () => {
             selectedLibrary.deleteBook(item.id)
           },
@@ -115,9 +114,6 @@ export const LibraryScreen: FC = observer(() => {
       } else {
         navigation.navigate("BookDetail", {
           imageUrl: imageUrl,
-          book: item,
-          fieldNameList: selectedLibrary.bookDisplayFields,
-          fieldMetadataList: selectedLibrary.fieldMetadata,
           onLinkPress: (query) => {
             libraryHook.onSearch(query)
           },
