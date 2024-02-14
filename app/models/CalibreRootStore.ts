@@ -1,4 +1,4 @@
-import { flow, getParent, Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
+import { flow, Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 
 import { api, ApiBookInfo, ApiBookInfoCore, ApiBookManifestResultType } from "../services/api"
 import {
@@ -16,11 +16,8 @@ import {
 import { handleCommonApiError } from "./errors/errors"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { delay } from "@/utils/delay"
-
-const FormatSizeModel = types.model("FormatSizeModel").props({
-  id: types.identifier,
-  size: types.maybeNull(types.number),
-})
+import { IMSTMap } from "mobx-state-tree/dist/internal"
+import { IKeyValueMap } from "mobx"
 
 export const BookModel = types
   .model("BookModel")
@@ -297,27 +294,30 @@ function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap)
       ? data.search_result.total_num
       : selectedLibrary.searchSetting.totalNum,
   })
-  data.search_result.book_ids.forEach((key: number) => {
-    const metaData = data.metadata[key]
+  data.search_result.book_ids.forEach((bookId: number) => {
+    const metadata = data.metadata[bookId]
 
     const metaDataModel = MetadataModel.create({
-      authors: metaData.authors,
-      authorSort: metaData.author_sort,
-      formats: metaData.formats,
-      lastModified: metaData.last_modified,
-      seriesIndex: metaData.series_index,
-      sharpFixed: metaData["#fixed"],
-      size: metaData.size,
-      sort: metaData.sort,
-      tags: metaData.tags,
-      timestamp: metaData.timestamp,
-      title: metaData.title,
-      uuid: metaData.uuid,
-      rating: metaData.rating,
+      authors: metadata.authors,
+      authorSort: metadata.author_sort,
+      formats: metadata.formats,
+      lastModified: metadata.last_modified,
+      seriesIndex: metadata.series_index,
+      sharpFixed: metadata["#fixed"],
+      size: metadata.size,
+      sort: metadata.sort,
+      tags: metadata.tags,
+      timestamp: metadata.timestamp,
+      title: metadata.title,
+      uuid: metadata.uuid,
+      rating: metadata.rating,
+      languages: metadata.languages,
+      langNames: metadata.lang_names,
+      formatSizes: metadata.format_sizes,
     })
 
-    selectedLibrary.books.set(key.toString(), {
-      id: key,
+    selectedLibrary.books.set(bookId.toString(), {
+      id: bookId,
       metaData: metaDataModel,
     })
   })

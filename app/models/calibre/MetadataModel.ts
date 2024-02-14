@@ -18,5 +18,10 @@ export const MetadataModel = types
     uuid: types.maybeNull(types.string),
     selectedFormat: types.maybeNull(types.string),
     rating: types.maybeNull(types.number),
+    languages: types.array(types.string),
+    langNames: types.map(types.string),
+    formatSizes: types.map(types.number),
   })
   .actions(withSetPropAction)
+
+export type Metadata = Instance<typeof MetadataModel>

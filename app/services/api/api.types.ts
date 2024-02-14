@@ -61,11 +61,11 @@ type ImageFileType = {
   is_html: false
 }
 
-type MetadataType = {
+export type MetadataType = {
   formats: string[]
   format_sizes: Record<string, number>
   authors: string[]
-  laguages: string[]
+  languages: string[]
   publisher: string
   author_sort: string
   last_modified: string
@@ -76,6 +76,8 @@ type MetadataType = {
   title: string
   uuid: string
   lang_names: Record<string, string>
+  tags: string[]
+  rating: number
 }
 
 export type ApiBookManifestResultType = {
@@ -252,23 +254,6 @@ export type ApiBookFile = {
   ns_map: string[]
 }
 
-export type Metadata = {
-  author_sort: string
-  authors: string[]
-  comments: string
-  format_sizes: Record<string, number>
-  formats: string[]
-  lang_names: Record<string, string>
-  languages: string[]
-  last_modified: string
-  series_index: number
-  size: number
-  sort: string
-  timestamp: string
-  title: string
-  uuid: string
-}
-
 export type ApiBookInfoCore = {
   search_result: {
     total_num: number
@@ -284,7 +269,7 @@ export type ApiBookInfoCore = {
     vl: string
   }
   sortable_fields: string[][]
-  metadata: Metadata
+  metadata: MetadataType[]
 }
 
 export type FieldMetadata = {
