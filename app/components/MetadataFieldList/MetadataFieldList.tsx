@@ -1,13 +1,13 @@
 import { ScrollView } from "react-native-gesture-handler"
 import { MetadataField } from "../MetadataField/MetadataField"
-import { FieldMetadata } from "@/models/calibre"
+import { FieldMetadataMap } from "@/models/calibre"
 import { Book } from "@/models/CalibreRootStore"
 import { Box } from "@/components"
 import { ComponentProps } from "react"
 
 export type MetadataFieldListProps = {
   fieldNameList: string[]
-  fieldMetadataList: FieldMetadata[]
+  fieldMetadataList: FieldMetadataMap
   book: Book
   onFieldPress: (fieldValue: string) => void
 } & ComponentProps<typeof Box>
@@ -19,15 +19,13 @@ export function MetadataFieldList(props: MetadataFieldListProps) {
     <Box {...props}>
       <ScrollView>
         {props.fieldNameList.map((fieldName) => {
-          const fieldMetadata = props.fieldMetadataList.find((value) => {
-            return value.label === fieldName
-          })
-          const value = props.book.metaData[fieldMetadata?.label]
+          const fieldMetadata = props.fieldMetadataList.get(fieldName)
+          const value = props.book.metaData[fieldName]
 
           return fieldMetadata?.name &&
             value &&
             value?.length !== 0 &&
-            !ExcludeFields.includes(fieldMetadata?.label) ? (
+            !ExcludeFields.includes(fieldName) ? (
             <MetadataField
               value={value}
               fieldMetadata={fieldMetadata}

@@ -133,7 +133,7 @@ export const LibraryMapModel = types
     tagBrowser: types.array(CategoryModel),
     clientSetting: types.array(ClientSettingModel),
     bookDisplayFields: types.array(types.string),
-    fieldMetadata: types.array(FieldMetadataModel),
+    fieldMetadata: types.map(FieldMetadataModel),
     selectedBook: types.maybe(types.reference(types.late(() => BookModel))),
   })
   .actions(withSetPropAction)
@@ -335,46 +335,46 @@ function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap)
   }
 }
 
-function convertLibraryInformation(data: ApiBookInfo, selectedLibrary: LibraryMap) {
-  selectedLibrary.bookDisplayFields.clear()
-  selectedLibrary.fieldMetadata.clear()
-  data.book_display_fields.forEach((value) => {
-    selectedLibrary.bookDisplayFields.push(value)
+function convertLibraryInformation(bookInfo: ApiBookInfo, libraryInfo: LibraryMap) {
+  libraryInfo.bookDisplayFields.clear()
+  libraryInfo.fieldMetadata.clear()
+  bookInfo.book_display_fields.forEach((value) => {
+    libraryInfo.bookDisplayFields.push(value)
   })
 
-  Object.keys(data.field_metadata).forEach((value) => {
+  Object.keys(bookInfo.field_metadata).forEach((key) => {
     let display = undefined
-    if (data.field_metadata[value].display.date_format) {
+    if (bookInfo.field_metadata[key].display.date_format) {
       display = DateFormatModel.create({
-        dateFormat: data.field_metadata[value].display.date_format,
+        dateFormat: bookInfo.field_metadata[key].display.date_format,
       })
     }
     let isMultiple
-    if (data.field_metadata[value].is_multiple.cache_to_list) {
+    if (bookInfo.field_metadata[key].is_multiple.cache_to_list) {
       isMultiple = IsMultipleModel.create({
-        cacheToList: data.field_metadata[value].is_multiple.cache_to_list,
-        listToUi: data.field_metadata[value].is_multiple.list_to_ui,
-        uiToList: data.field_metadata[value].is_multiple.ui_to_list,
+        cacheToList: bookInfo.field_metadata[key].is_multiple.cache_to_list,
+        listToUi: bookInfo.field_metadata[key].is_multiple.list_to_ui,
+        uiToList: bookInfo.field_metadata[key].is_multiple.ui_to_list,
       })
     }
     const fieldMetadata = FieldMetadataModel.create({
-      categorySort: data.field_metadata[value].category_sort,
-      column: data.field_metadata[value].column,
-      datatype: data.field_metadata[value].datatype,
+      categorySort: bookInfo.field_metadata[key].category_sort,
+      column: bookInfo.field_metadata[key].column,
+      datatype: bookInfo.field_metadata[key].datatype,
       display: display,
       isMultiple: isMultiple,
-      isCategory: data.field_metadata[value].is_category,
-      isCsp: data.field_metadata[value].is_csp,
-      isCustom: data.field_metadata[value].is_custom,
-      isEditable: data.field_metadata[value].is_editable,
-      kind: data.field_metadata[value].kind,
-      label: data.field_metadata[value].label,
-      link_column: data.field_metadata[value].link_column,
-      name: data.field_metadata[value].name,
-      recIndex: data.field_metadata[value].rec_index,
-      searchTerms: data.field_metadata[value].search_terms,
-      table: data.field_metadata[value].table,
+      isCategory: bookInfo.field_metadata[key].is_category,
+      isCsp: bookInfo.field_metadata[key].is_csp,
+      isCustom: bookInfo.field_metadata[key].is_custom,
+      isEditable: bookInfo.field_metadata[key].is_editable,
+      kind: bookInfo.field_metadata[key].kind,
+      label: bookInfo.field_metadata[key].label,
+      link_column: bookInfo.field_metadata[key].link_column,
+      name: bookInfo.field_metadata[key].name,
+      recIndex: bookInfo.field_metadata[key].rec_index,
+      searchTerms: bookInfo.field_metadata[key].search_terms,
+      table: bookInfo.field_metadata[key].table,
     })
-    selectedLibrary.fieldMetadata.push(fieldMetadata)
+    libraryInfo.fieldMetadata.set(key, fieldMetadata)
   })
 }

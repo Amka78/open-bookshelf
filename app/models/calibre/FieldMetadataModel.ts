@@ -1,4 +1,4 @@
-import { Instance, types } from "mobx-state-tree"
+import { IMSTMap, IMapType, Instance, types } from "mobx-state-tree"
 
 export const DateFormatModel = types.model("DateFormatModel").props({
   dateFormat: types.string,
@@ -30,3 +30,4 @@ export const FieldMetadataModel = types.model("FieldMetadataModel").props({
 })
 
 export type FieldMetadata = Instance<typeof FieldMetadataModel>
+export type FieldMetadataMap = IMSTMap<typeof FieldMetadataModel>
