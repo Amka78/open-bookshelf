@@ -2,8 +2,9 @@ import { useConvergence } from "@/hooks/useConvergence"
 import { useStores } from "@/models"
 import { ApppNavigationProp } from "@/navigators"
 import { useNavigation } from "@react-navigation/native"
-import { values } from "mobx"
+import { DocumentPickerAsset } from "expo-document-picker"
 import { useEffect, useState } from "react"
+import { api } from "@/services/api"
 export type LibraryViewStyle = "gridView" | "viewList"
 export function useLibrary() {
   const { calibreRootStore } = useStores()
@@ -57,11 +58,18 @@ export function useLibrary() {
     setSearching(false)
   }
 
+  const onUploadFile = async (assets: DocumentPickerAsset[]) => {
+    setSearching(true)
+    await api.uploadFile(assets[0].name, selectedLibrary.id, assets[0].uri)
+    onSearch()
+  }
+
   const currentListStyle = convergenceHook.isLarge ? desktopViewStyle : mobileViewStyle
 
   return {
     currentListStyle,
     onChangeListStyle,
+    onUploadFile,
     onSearch,
     onSort,
     searching,

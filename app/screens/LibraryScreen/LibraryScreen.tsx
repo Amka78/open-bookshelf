@@ -22,7 +22,6 @@ import { useModal } from "react-native-modalfy"
 import { useLibrary } from "./hook/useLibrary"
 import { useConvergence } from "@/hooks/useConvergence"
 import { AuthButton } from "@/components/AuthButton/AuthButton"
-import { api } from "@/services/api"
 import { useOpenViewer } from "@/hooks/useOpenViewer"
 import { SearchBarCommands } from "react-native-screens"
 import { values } from "mobx"
@@ -184,9 +183,8 @@ export const LibraryScreen: FC = observer(() => {
               }}
             />
             <AddFileButton
-              onDocumentSelect={async (assets) => {
-                await api.uploadFile(assets[0].name, selectedLibrary.id, assets[0].uri)
-                libraryHook.onSearch()
+              onDocumentSelect={async (documents) => {
+                await libraryHook.onUploadFile(documents)
               }}
             />
             <LibraryViewButton
