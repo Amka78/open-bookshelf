@@ -22,7 +22,7 @@ export const FieldMetadataModel = types.model("FieldMetadataModel").props({
   isMultiple: types.maybe(IsMultipleModel),
   kind: types.string,
   label: types.string,
-  link_column: types.maybe(types.string),
+  linkColumn: types.maybe(types.string),
   name: types.maybeNull(types.string),
   recIndex: types.maybe(types.number),
   searchTerms: types.array(types.string),

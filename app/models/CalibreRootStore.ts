@@ -373,7 +373,7 @@ function convertLibraryInformation(bookInfo: ApiBookInfo, libraryInfo: LibraryMa
       isEditable: bookInfo.field_metadata[key].is_editable,
       kind: bookInfo.field_metadata[key].kind,
       label: bookInfo.field_metadata[key].label,
-      link_column: bookInfo.field_metadata[key].link_column,
+      linkColumn: bookInfo.field_metadata[key].link_column,
       name: bookInfo.field_metadata[key].name,
       recIndex: bookInfo.field_metadata[key].rec_index,
       searchTerms: bookInfo.field_metadata[key].search_terms,

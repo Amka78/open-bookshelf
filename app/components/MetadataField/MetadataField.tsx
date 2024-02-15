@@ -1,4 +1,4 @@
-import { HStack, Text, LinkButton } from "@/components"
+import { HStack, LinkButton, LinkInfo, MaterialCommunityIcon, Text } from "@/components"
 import { FieldMetadata } from "@/models/calibre"
 import { formatDate } from "@/utils/formatDate"
 import { parseISO } from "date-fns"
@@ -17,50 +17,75 @@ const onLinkPress = (linkName: string, metadata: FieldMetadata, postProcess: (qu
 export function MetadataField(props: MetadataFieldProps) {
   let field
   switch (props.fieldMetadata.datatype) {
+    case "rating": {
+      if (typeof props.value === "number") {
+        const ratingList = []
+        for (let i = 0; i < props.value; i++) {
+          if (i % 2 === 0) {
+            ratingList.push(i)
+          }
+        }
+
+        field = (
+          <HStack justifyContent="center" alignContent="center" alignSelf="center">
+            {ratingList.map(() => {
+              return <MaterialCommunityIcon name="star" />
+            })}
+          </HStack>
+        )
+      }
+    }
+    break
     case "float": {
-      const num = Number(props.value) / 1000000
-      field = <Text>{`${num.toFixed(1)}MB`}</Text>
+      if (typeof props.value === "number") {
+        const num = props.value / 1000000
+        field = <Text>{`${num.toFixed(1)}MB`}</Text>
+      }
       break
     }
     case "datetime": {
-      field = (
-        <LinkButton
-          onPress={(linkName) => {
-            onLinkPress(linkName, props.fieldMetadata, props.onLinkPress)
-          }}
-        >
-          {{
-            value: (props.value as string).split("T")[0],
-            label: formatDate(
-              parseISO(props.value as string),
-              props.fieldMetadata.display.dateFormat,
-            ),
-          }}
-        </LinkButton>
-      )
+      if (typeof props.value === "string") {
+        field = (
+          <LinkButton
+            onPress={(linkName) => {
+              onLinkPress(linkName, props.fieldMetadata, props.onLinkPress)
+            }}
+          >
+            {{
+              value: props.value.split("T")[0],
+              label: formatDate(parseISO(props.value), props.fieldMetadata.display.dateFormat),
+            }}
+          </LinkButton>
+        )
+      }
       break
     }
-    case "text":
-      field = (
-        <LinkButton
-          onPress={(linkName) => {
-            onLinkPress(linkName, props.fieldMetadata, props.onLinkPress)
-          }}
-        >
-          {{ value: props.value as string }}
-        </LinkButton>
-      )
-      break
     default:
-      field = (
-        <LinkButton
-          onPress={(linkName) => {
-            onLinkPress(linkName, props.fieldMetadata, props.onLinkPress)
-          }}
-        >
-          {{ value: props.value as string }}
-        </LinkButton>
-      )
+      if (typeof props.value === "string" || Array.isArray(props.value)) {
+        let linkInfo: LinkInfo | LinkInfo[]
+
+        if (Array.isArray(props.value)) {
+          linkInfo = []
+
+          props.value.map((val) => {
+            const info: LinkInfo = { value: val }
+            const linkInfoArray = linkInfo as LinkInfo[]
+            linkInfoArray.push(info)
+          })
+        } else {
+          linkInfo = { value: props.value }
+        }
+        field = (
+          <LinkButton
+            onPress={(linkName) => {
+              onLinkPress(linkName, props.fieldMetadata, props.onLinkPress)
+            }}
+            conjunction={props.fieldMetadata.isMultiple?.listToUi}
+          >
+            {linkInfo}
+          </LinkButton>
+        )
+      }
       break
   }
   return (
