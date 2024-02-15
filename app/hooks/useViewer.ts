@@ -13,7 +13,6 @@ export function useViewer() {
   const { calibreRootStore } = useStores()
 
   const [showMenu, setShowMenu] = useState(false)
-  const route = useRoute<ViewerScreenRouteProp>()
   const convergenceHook = useConvergence()
 
   const orientation = convergenceHook.orientation
