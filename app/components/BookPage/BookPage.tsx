@@ -14,19 +14,21 @@ export function BookPage(props: BookImageProps) {
       style={[{ width: "100%", height: "100%" }, dimension]}
       contentFit={"contain"}
       onLoad={(e) => {
-        let imageHeight = e.source.height
-        let imageWidth = e.source.width
+        if (!dimension) {
+          let imageHeight = e.source.height
+          let imageWidth = e.source.width
 
-        if (windowDimension.height < imageHeight) {
-          imageWidth = (imageWidth * windowDimension.height) / imageHeight
-          imageHeight = windowDimension.height
+          if (windowDimension.height < imageHeight) {
+            imageWidth = (imageWidth * windowDimension.height) / imageHeight
+            imageHeight = windowDimension.height
+          }
+
+          if (imageWidth > windowDimension.width) {
+            imageWidth = windowDimension.width
+          }
+
+          setDimension({ height: imageHeight, width: imageWidth })
         }
-
-        if (imageWidth > windowDimension.width) {
-          imageWidth = windowDimension.width
-        }
-
-        setDimension({ height: imageHeight, width: imageWidth })
       }}
     />
   )

@@ -9,15 +9,15 @@ import {
   MetadataModel,
   SearchSettingModel,
   FieldMetadataModel,
+  ReadingHistoryModel,
   SortFieldModel,
   DateFormatModel,
   IsMultipleModel,
+  ReadingHistory,
 } from "./calibre"
 import { handleCommonApiError } from "./errors/errors"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { delay } from "@/utils/delay"
-import { IMSTMap } from "mobx-state-tree/dist/internal"
-import { IKeyValueMap } from "mobx"
 
 export const BookModel = types
   .model("BookModel")
@@ -132,6 +132,7 @@ export const LibraryMapModel = types
     bookDisplayFields: types.array(types.string),
     fieldMetadata: types.map(FieldMetadataModel),
     selectedBook: types.maybe(types.reference(types.late(() => BookModel))),
+    readingHistory: types.array(ReadingHistoryModel),
   })
   .actions(withSetPropAction)
   .actions((root) => ({
@@ -147,6 +148,9 @@ export const LibraryMapModel = types
     setBook: (bookId?: number) => {
       // biome-ignore lint/suspicious/noExplicitAny: <explanation>
       root.selectedBook = bookId as any
+    },
+    addReadingHistory: (model: ReadingHistory) => {
+      root.readingHistory.push(model)
     },
   }))
 
@@ -318,7 +322,7 @@ function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap)
 
     selectedLibrary.books.set(bookId.toString(), {
       id: bookId,
-      metaData: metaDataModel,
+      metaData: metaDataModel as unknown,
     })
   })
 

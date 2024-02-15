@@ -35,7 +35,7 @@ export function BookViewer(props: BookViewerProps) {
 
   useEffect(() => {
     createData(props.totalPage)
-  }, [])
+  }, [props.totalPage])
 
   const renderPage = (renderProps: RenderPageProps) => {
     let alignItems

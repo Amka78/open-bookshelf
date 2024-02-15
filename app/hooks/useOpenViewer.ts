@@ -4,10 +4,12 @@ import { UsableModalProp } from "react-native-modalfy"
 import { useNavigation } from "@react-navigation/native"
 import { ApppNavigationProp } from "@/navigators"
 import { useStores } from "@/models"
+import { Image } from "expo-image"
+import { ReadingHistoryModel } from "@/models/calibre"
 
 export function useOpenViewer() {
   const navigation = useNavigation<ApppNavigationProp>()
-  const { calibreRootStore } = useStores()
+  const { calibreRootStore, settingStore } = useStores()
 
   const onItemPress = async (
     book: Book,
@@ -20,9 +22,38 @@ export function useOpenViewer() {
       navigation.navigate("PDFViewer")
     } else {
       try {
-        await book.convert(format, selectedLibraryId, () => {
-          navigation.navigate("Viewer")
+        const history = calibreRootStore.selectedLibrary.readingHistory.find((value) => {
+          return (
+            value.libraryId === selectedLibraryId &&
+            value.bookId === book.id &&
+            value.format === format
+          )
         })
+
+        if (history) {
+          navigation.navigate("Viewer")
+        } else {
+          await book.convert(format, selectedLibraryId, async () => {
+            const bookImageList = []
+            book.path.map(async (value, index) => {
+              const imageUrl = encodeURI(
+                `${settingStore.api.baseUrl}/book-file/${book.id}/${book.metaData.selectedFormat}/${book.metaData.size}/${book.hash}/${value}?library_id=${calibreRootStore.selectedLibrary.id}`,
+              )
+              bookImageList.push(imageUrl)
+              await Image.prefetch(imageUrl)
+            })
+
+            const historyModel = ReadingHistoryModel.create({
+              bookId: book.id,
+              currentPage: 0,
+              libraryId: selectedLibraryId,
+              cachedPath: bookImageList,
+              format: format,
+            })
+            calibreRootStore.selectedLibrary.addReadingHistory(historyModel)
+            navigation.navigate("Viewer")
+          })
+        }
       } catch (e) {
         modal.openModal("ErrorModal", { message: e.message, titleTx: "errors.failedConvert" })
       }
