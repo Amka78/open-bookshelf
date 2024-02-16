@@ -130,7 +130,7 @@ export const LibraryMapModel = types
     tagBrowser: types.array(CategoryModel),
     clientSetting: types.array(ClientSettingModel),
     bookDisplayFields: types.array(types.string),
-    fieldMetadata: types.map(FieldMetadataModel),
+    fieldMetadataList: types.map(FieldMetadataModel),
     selectedBook: types.maybe(types.reference(types.late(() => BookModel))),
     readingHistory: types.array(ReadingHistoryModel),
   })
@@ -341,7 +341,7 @@ function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap)
 
 function convertLibraryInformation(bookInfo: ApiBookInfo, libraryInfo: LibraryMap) {
   libraryInfo.bookDisplayFields.clear()
-  libraryInfo.fieldMetadata.clear()
+  libraryInfo.fieldMetadataList.clear()
   bookInfo.book_display_fields.forEach((value) => {
     libraryInfo.bookDisplayFields.push(value)
   })
@@ -379,6 +379,6 @@ function convertLibraryInformation(bookInfo: ApiBookInfo, libraryInfo: LibraryMa
       searchTerms: bookInfo.field_metadata[key].search_terms,
       table: bookInfo.field_metadata[key].table,
     })
-    libraryInfo.fieldMetadata.set(key, fieldMetadata)
+    libraryInfo.fieldMetadataList.set(key, fieldMetadata)
   })
 }

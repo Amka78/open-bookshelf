@@ -1,4 +1,4 @@
-import { BookDetailMenu, RootContainer, BookImageItem, MetadataFieldList } from "@/components"
+import { BookDetailMenu, RootContainer, BookImageItem, BookDetailFieldList } from "@/components"
 import { ModalStackParams } from "@/components/Modals/Types"
 import { useOpenViewer } from "@/hooks/useOpenViewer"
 import { useStores } from "@/models"
@@ -36,9 +36,9 @@ export const BookDetailScreen: FC = observer(() => {
         onShowEdit={() => {}}
         onDeleteBook={() => {}}
       />
-      <MetadataFieldList
+      <BookDetailFieldList
         book={selectedBook}
-        fieldMetadataList={selectedLibrary.fieldMetadata}
+        fieldMetadataList={selectedLibrary.fieldMetadataList}
         fieldNameList={selectedLibrary.bookDisplayFields}
         onFieldPress={(query) => {
           route.params.onLinkPress(query)

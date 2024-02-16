@@ -4,7 +4,7 @@ import {
   HStack,
   Heading,
   VStack,
-  MetadataFieldList,
+  MetadataDetailFieldList,
 } from "@/components"
 import { ModalComponentProp } from "react-native-modalfy"
 
@@ -15,7 +15,6 @@ import { useOpenViewer } from "@/hooks/useOpenViewer"
 import { observer } from "mobx-react-lite"
 import { useStores } from "@/models"
 import * as FileSystem from "expo-file-system"
-import { delay } from "@/utils/delay"
 
 export type BookDetailModalProps = ModalComponentProp<ModalStackParams, void, "BookDetailModal">
 
@@ -74,10 +73,10 @@ const BookDetailModalCore = observer((props: BookDetailModalProps) => {
                 })
               }}
             />
-            <MetadataFieldList
+            <MetadataDetailFieldList
               book={selectedBook}
               fieldNameList={selectedLibrary.bookDisplayFields}
-              fieldMetadataList={selectedLibrary.fieldMetadata}
+              fieldMetadataList={selectedLibrary.fieldMetadataList}
               onFieldPress={(query) => {
                 if (props.modal.params.onLinkPress) {
                   props.modal.params.onLinkPress(query)

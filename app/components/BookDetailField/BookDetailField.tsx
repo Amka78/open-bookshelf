@@ -3,7 +3,7 @@ import { FieldMetadata } from "@/models/calibre"
 import { formatDate } from "@/utils/formatDate"
 import { parseISO } from "date-fns"
 
-export type MetadataFieldProps = {
+export type BookDetailFieldProps = {
   value: string | string[] | number | Date
   fieldMetadata: FieldMetadata
   onLinkPress?: (link: string) => void
@@ -14,7 +14,7 @@ const onLinkPress = (linkName: string, metadata: FieldMetadata, postProcess: (qu
 
   postProcess(link)
 }
-export function MetadataField(props: MetadataFieldProps) {
+export function BookDetailField(props: BookDetailFieldProps) {
   let field
   switch (props.fieldMetadata.datatype) {
     case "rating": {
@@ -27,7 +27,7 @@ export function MetadataField(props: MetadataFieldProps) {
         }
 
         field = (
-          <HStack justifyContent="center" alignContent="center" alignSelf="center">
+          <HStack alignSelf="center">
             {ratingList.map(() => {
               return <MaterialCommunityIcon name="star" />
             })}
