@@ -106,7 +106,7 @@
     "@babel/plugin-proposal-optional-catch-binding": "7.16.7",
     "@babel/preset-env": "^7.16.11",
     "@babel/runtime": "^7.18.3",
-    "@biomejs/biome": "1.4.1",
+    "@biomejs/biome": "1.5.3",
     "@config-plugins/react-native-blob-util": "^6.0.0",
     "@config-plugins/react-native-pdf": "^6.0.0",
     "@storybook/addon-actions": "^6.5.5",
