@@ -28,6 +28,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler"
 import Constants from "expo-constants"
 import { GluestackUIProvider } from "@gluestack-ui/themed"
 import { config } from "@gluestack-ui/config"
+import * as Application from "expo-application"
 
 // Set up Reactotron, which is a free desktop app for inspecting and debugging
 // React Native apps. Learn more here: https://github.com/infinitered/reactotron
@@ -81,8 +82,7 @@ function App(props: AppProps) {
   // You can replace with your own loading component if you wish.
   if (!rehydrated || !isNavigationStateRestored || !areFontsLoaded) return null
 
-  // otherwise, we're ready to render the app
-  if (Constants?.expoConfig?.extra?.storybookEnabled === "true") {
+  if (Application.applicationName.includes("Sb")) {
     const StorybookUI = require("../.storybook/native").default
     return (
       <View style={{ flex: 1 }}>

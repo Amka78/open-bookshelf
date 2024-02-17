@@ -1,11 +1,9 @@
 let idSuffix = ""
 let appNameSuffix = ""
-let sbEnabled = true
 switch (process.env.APP_VARIANT) {
   case "development":
     idSuffix = "_dev"
     appNameSuffix = "Dev"
-    sbEnabled = false
     break
   case "storybookDev":
     idSuffix = "_sb_dev"
@@ -13,10 +11,12 @@ switch (process.env.APP_VARIANT) {
     break
   case "preview":
     idSuffix = "_preview"
-    sbEnabled = false
+    appNameSuffix = "Preview"
     break
   case "previewDev":
     idSuffix = "_sb-preview"
+    appNameSuffix = "SbPreview"
+    break
   default:
     break
 }
@@ -25,7 +25,7 @@ export default {
   name: "OpenBookShelf",
   displayName: "OpenBookShelf",
   expo: {
-    name: "OpenBookShelf" + appNameSuffix,
+    name: `OpenBookShelf${appNameSuffix}`,
     slug: "OpenBookShelf",
     version: "1.0.0",
     orientation: "default",
@@ -48,11 +48,11 @@ export default {
     jsEngine: "hermes",
     assetBundlePatterns: ["**/*"],
     android: {
-      package: "com.openbookshelf" + idSuffix,
+      package: `com.openbookshelf${idSuffix}`,
     },
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.openbookshelf" + idSuffix,
+      bundleIdentifier: `com.openbookshelf${idSuffix}`,
     },
     web: {
       bundler: "metro",
@@ -85,7 +85,6 @@ export default {
       eas: {
         projectId: "53ae3c74-456c-46e1-bc15-f0604a49ea8f",
       },
-      storybookEnabled: process.env.EXPO_PUBLIC_STORYBOOK_ENABLED
     },
   },
 }

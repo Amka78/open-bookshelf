@@ -4,8 +4,7 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "APP_VARIANT": "development",
-        "EXPO_PUBLIC_STORYBOOK_ENABLED": "false"
+        "APP_VARIANT": "development"
       },
       "node": "20.5.1",
       "channel": "development"
@@ -14,8 +13,7 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "APP_VARIANT": "storybookDev",
-        "EXPO_PUBLIC_STORYBOOK_ENABLED": "true"
+        "APP_VARIANT": "storybookDev"
       },
       "node": "20.5.1",
       "channel": "storybook-dev"
@@ -23,8 +21,7 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "APP_VARIANT": "preview",
-        "EXPO_PUBLIC_STORYBOOK_ENABLED": "false"
+        "APP_VARIANT": "preview"
       },
       "node": "20.5.1",
       "channel": "preview"
@@ -32,8 +29,7 @@
     "storybookPreview": {
       "distribution": "internal",
       "env": {
-        "APP_VARIANT": "storybookDev",
-        "EXPO_PUBLIC_STORYBOOK_ENABLED": "true"
+        "APP_VARIANT": "storybookDev"
       },
       "node": "20.5.1",
       "channel": "storybook-preview"
