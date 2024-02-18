@@ -1,5 +1,5 @@
 import React from "react"
-import { ComponentMeta, ComponentStoryObj } from "@storybook/react-native"
+import { Meta, StoryObj } from "@storybook/react"
 import { Button } from "@/components"
 import { ComponentHolder } from "./ComponentHolder"
 
@@ -13,9 +13,9 @@ export default {
       </ComponentHolder>
     ),
   ],
-} as ComponentMeta<typeof Button>
+} as Meta<typeof Button>
 
-type ButtonStory = ComponentStoryObj<typeof Button>
+type ButtonStory = StoryObj<typeof Button>
 
 export const Basic: ButtonStory = {
   args: {

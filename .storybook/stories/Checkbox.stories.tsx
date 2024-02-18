@@ -1,5 +1,5 @@
 import React from "react"
-import { ComponentMeta, ComponentStoryObj } from "@storybook/react-native"
+import { Meta, StoryObj } from "@storybook/react"
 import { Checkbox } from "@/components"
 import { ComponentHolder } from "./ComponentHolder"
 
@@ -13,9 +13,9 @@ export default {
       </ComponentHolder>
     ),
   ],
-} as ComponentMeta<typeof Checkbox>
+} as Meta<typeof Checkbox>
 
-type CheckboxStory = ComponentStoryObj<typeof Checkbox>
+type CheckboxStory = StoryObj<typeof Checkbox>
 
 export const Basic: CheckboxStory = {
   args: {

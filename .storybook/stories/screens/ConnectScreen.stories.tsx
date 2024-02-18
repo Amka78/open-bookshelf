@@ -1,11 +1,10 @@
 import { ConnectScreen } from "@/screens/ConnectScreen/template/ConnectScreen"
-import { delay } from "@/utils/delay"
-import { ComponentMeta, ComponentStoryObj } from "@storybook/react-native"
+import { Meta, StoryObj } from "@storybook/react"
 import React from "react"
 
 import { ScreenContainer } from "./ScreenContainer"
 
-export default ({
+export default {
   component: ConnectScreen,
   decorators: [
     (Story) => (
@@ -14,8 +13,8 @@ export default ({
       </ScreenContainer>
     ),
   ],
-} as ComponentMeta<typeof ConnectScreen>)
-type ConnectScreenStory = ComponentStoryObj<typeof ConnectScreen>
+} as Meta<typeof ConnectScreen>
+type ConnectScreenStory = StoryObj<typeof ConnectScreen>
 export const Basic: ConnectScreenStory = {
   args: {},
 }

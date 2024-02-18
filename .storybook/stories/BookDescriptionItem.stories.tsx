@@ -1,6 +1,6 @@
 import { BookDescriptionItem } from "@/components"
 import { delay } from "@/utils/delay"
-import { ComponentMeta, ComponentStoryObj } from "@storybook/react-native"
+import { Meta, StoryObj } from "@storybook/react"
 import React from "react"
 
 import { ComponentHolder } from "./ComponentHolder"
@@ -15,9 +15,9 @@ export default {
       </ComponentHolder>
     ),
   ],
-} as ComponentMeta<typeof BookDescriptionItem>
+} as Meta<typeof BookDescriptionItem>
 
-type BookDescriptionItemStory = ComponentStoryObj<typeof BookDescriptionItem>
+type BookDescriptionItemStory = StoryObj<typeof BookDescriptionItem>
 
 export const Basic: BookDescriptionItemStory = {
   args: {

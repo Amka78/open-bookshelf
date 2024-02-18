@@ -1,6 +1,6 @@
 import { BookImageItem } from "@/components"
 import { delay } from "@/utils/delay"
-import { ComponentMeta, ComponentStoryObj } from "@storybook/react-native"
+import { Meta, StoryObj } from "@storybook/react"
 import React from "react"
 
 import { ComponentHolder } from "./ComponentHolder"
@@ -15,9 +15,9 @@ export default {
       </ComponentHolder>
     ),
   ],
-} as ComponentMeta<typeof BookImageItem>
+} as Meta<typeof BookImageItem>
 
-type BookImageItemStory = ComponentStoryObj<typeof BookImageItem>
+type BookImageItemStory = StoryObj<typeof BookImageItem>
 
 export const Basic: BookImageItemStory = {
   args: {

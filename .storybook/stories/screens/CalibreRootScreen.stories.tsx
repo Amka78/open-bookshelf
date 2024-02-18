@@ -1,5 +1,5 @@
 import { CalibreRootScreen } from "@/screens/CalibreRootScreen/template/CalibreRootScreen"
-import { ComponentMeta, ComponentStoryObj } from "@storybook/react-native"
+import { Meta, StoryObj } from "@storybook/react"
 import React from "react"
 
 import { ScreenContainer } from "./ScreenContainer"
@@ -13,8 +13,8 @@ export default {
       </ScreenContainer>
     ),
   ],
-} as ComponentMeta<typeof CalibreRootScreen>
-type CalibreRootStory = ComponentStoryObj<typeof CalibreRootScreen>
+} as Meta<typeof CalibreRootScreen>
+type CalibreRootStory = StoryObj<typeof CalibreRootScreen>
 export const Basic: CalibreRootStory = {
   args: {
     libraries: [

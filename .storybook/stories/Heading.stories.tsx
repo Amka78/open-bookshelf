@@ -1,5 +1,5 @@
 import React from "react"
-import { ComponentMeta, ComponentStoryObj } from "@storybook/react-native"
+import { Meta, StoryObj } from "@storybook/react"
 import { Heading } from "@/components"
 import { ComponentHolder } from "./ComponentHolder"
 
@@ -13,9 +13,9 @@ export default {
       </ComponentHolder>
     ),
   ],
-} as ComponentMeta<typeof Heading>
+} as Meta<typeof Heading>
 
-type HeadingStory = ComponentStoryObj<typeof Heading>
+type HeadingStory = StoryObj<typeof Heading>
 
 export const Basic: HeadingStory = {
   args: {
