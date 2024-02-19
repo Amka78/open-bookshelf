@@ -7,7 +7,7 @@ export default {
   title: "AuthButton",
   component: AuthButton,
   argTypes: {
-    onLoginPress: { action: "execute login." },
+    onLoginPress: { action: "Execute login." },
   },
   args: { mode: "login" },
   decorators: [
@@ -19,12 +19,12 @@ export default {
   ],
 } as Meta<typeof AuthButton>
 
-type ButtonStory = StoryObj<typeof AuthButton>
+type StoryProps = StoryObj<typeof AuthButton>
 
-export const Login: ButtonStory = {}
-export const Logout: ButtonStory = {
+export const Login: StoryProps = {}
+export const Logout: StoryProps = {
   argTypes: {
-    onLogoutPress: { action: "execute logout" },
+    onLogoutPress: { action: "Execute logout" },
   },
   args: {
     mode: "logout",

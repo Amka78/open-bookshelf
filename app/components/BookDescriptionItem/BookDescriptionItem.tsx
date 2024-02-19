@@ -1,27 +1,36 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import { StyleSheet } from "react-native"
 
-import { Box, Image, ImageProps, ListItem, Text, LabeledSpinner } from "@/components"
+import {
+  Box,
+  Image,
+  ImageProps,
+  ListItem,
+  Text,
+  LabeledSpinner,
+  LinkButton,
+  LinkInfo,
+} from "@/components"
 
 export type BookDescriptionItemProps = Pick<ImageProps, "source"> & {
   title: string
   authors: string[]
+  conjunction: string
   onPress: () => Promise<void>
   onLongPress: () => void
+  onLinkPress: (link: string) => void
+  loading?: boolean
 }
 
-export function BookDescriptionItem(props: BookDescriptionItemProps) {
-  const [loading, setLoading] = useState(false)
-  let bottomText = ""
+export function BookDescriptionItem({ loading = false, ...restProps }: BookDescriptionItemProps) {
+  const props = { loading, ...restProps }
+  const [loadingState, setLoadingState] = useState(props.loading)
 
+  const linkInfoList: LinkInfo[] = []
   for (const author of props.authors) {
-    if (bottomText === "") {
-      bottomText = author
-    } else {
-      bottomText += `,${author}`
-    }
+    linkInfoList.push({ value: author })
   }
-  return loading ? (
+  return loadingState ? (
     <LabeledSpinner
       labelDirection="horizontal"
       label={"bookImage.loading"}
@@ -37,17 +46,17 @@ export function BookDescriptionItem(props: BookDescriptionItemProps) {
               <Text fontSize={"$lg"} lineBreakMode="tail" numberOfLines={1}>
                 {props.title}
               </Text>
-              <Text fontSize={"$md"} marginTop={"$0.5"}>
-                {bottomText}
-              </Text>
+              <LinkButton conjunction={"&"} onPress={props.onLinkPress}>
+                {linkInfoList}
+              </LinkButton>
             </Box>
           </Box>
         </Box>
       }
       onPress={async () => {
-        setLoading(true)
+        setLoadingState(true)
         await props.onPress()
-        setLoading(false)
+        setLoadingState(false)
       }}
       onLongPress={() => {
         if (props.onLongPress) {

@@ -7,7 +7,7 @@ export default {
   title: "AddFileButton",
   component: AddFileButton,
   argTypes: {
-    onDocumentSelect: { action: "document selected" },
+    onDocumentSelect: { action: "Selected document." },
   },
   decorators: [
     (Story) => (
@@ -24,6 +24,6 @@ When the button is clicked, a file selection dialog opens, allowing the user to 
   },
 } as Meta<typeof AddFileButton>
 
-type ButtonStory = StoryObj<typeof AddFileButton>
+type StoryProps = StoryObj<typeof AddFileButton>
 
-export const Basic: ButtonStory = {}
+export const Basic: StoryProps = {}
