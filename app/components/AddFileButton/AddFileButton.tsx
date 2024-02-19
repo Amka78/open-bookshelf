@@ -1,4 +1,3 @@
-import React from "react"
 import { IconButton } from "@/components"
 import * as DocumentPicker from "expo-document-picker"
 
@@ -12,9 +11,13 @@ export function AddFileButton(props: AddFileButtonProps) {
       iconSize="md-"
       name="plus"
       onPress={async () => {
-        const docRes = await DocumentPicker.getDocumentAsync({})
+        const docRes: DocumentPicker.DocumentPickerResult = await DocumentPicker.getDocumentAsync({
+          multiple: false,
+        })
 
-        props.onDocumentSelect(docRes.assets)
+        if (props.onDocumentSelect && !docRes.canceled) {
+          props.onDocumentSelect(docRes.assets)
+        }
       }}
       variant="staggerChild"
     />
