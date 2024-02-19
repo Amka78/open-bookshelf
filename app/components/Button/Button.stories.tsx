@@ -1,7 +1,7 @@
 import React from "react"
 import { Meta, StoryObj } from "@storybook/react"
 import { Button } from "@/components"
-import { ComponentHolder } from "./ComponentHolder"
+import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
 export default {
   title: "Button",

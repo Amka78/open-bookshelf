@@ -4,7 +4,7 @@ import { useStores } from "@/models"
 import { observer } from "mobx-react-lite"
 import React, { useState } from "react"
 import { StyleSheet, useWindowDimensions } from "react-native"
-import { PDF } from "@/components/PDF/Pdf"
+import { PDF } from "@/library/PDF/Pdf"
 
 export const PDFViewerScreen = observer(() => {
   const { authenticationStore, calibreRootStore, settingStore } = useStores()

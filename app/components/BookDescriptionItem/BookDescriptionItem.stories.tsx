@@ -3,7 +3,7 @@ import { delay } from "@/utils/delay"
 import { Meta, StoryObj } from "@storybook/react"
 import React from "react"
 
-import { ComponentHolder } from "./ComponentHolder"
+import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
 export default {
   title: "BookDescriptionItem",
@@ -23,7 +23,7 @@ export const Basic: BookDescriptionItemStory = {
   args: {
     authors: ["SampleAuthor1", "SampleAuthor2"],
     title: "SampleBookTitle",
-    source: require("../../assets/images/sample-image-1.png"),
+    source: require("../../../assets/images/sample-image-1.png"),
     onPress: async () => {
       await delay(1000)
     },

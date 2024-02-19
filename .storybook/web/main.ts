@@ -2,7 +2,10 @@ const path = require("path")
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin")
 module.exports = {
   typescript: { reactDocgen: "none" },
-  stories: ["../stories/**/*.stories.?(ts|tsx|js|jsx)"],
+  stories: [
+    "../../app/components/**/*.stories.?(ts|tsx|js|jsx)",
+    "../stories/**/*.stories.?(ts|tsx|js|jsx)",
+  ],
   addons: [
     "@storybook/addon-links",
     "@storybook/addon-essentials",
@@ -19,7 +22,10 @@ module.exports = {
     return config
   },
   framework: {
-    name: path.resolve(require.resolve("@storybook/react-webpack5/preset"), "..") as any,
+    name: "@storybook/react-webpack5",
     options: { fastRefresh: true },
+  },
+  docs: {
+    autodocs: true,
   },
 }
