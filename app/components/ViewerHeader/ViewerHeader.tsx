@@ -1,5 +1,3 @@
-import React from "react"
-
 import { ViewerMenu, ViewerMenuProps } from "../ViewerMenu/ViewerMenu"
 import { HStack, IconButton, Text } from "@/components"
 
