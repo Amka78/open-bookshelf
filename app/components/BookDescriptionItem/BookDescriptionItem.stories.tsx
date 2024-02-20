@@ -24,6 +24,12 @@ export default {
     onLongPress: { action: "Open PreviewScreen." },
     onLinkPress: { action: "Search by link value" },
   },
+  parameters: {
+    notes: `
+    Show the cover of the book along with the book title and author. 
+    Click to view the book, long press to view the book details, and press the author to narrow the search by author.
+`,
+  },
 } as Meta<typeof BookDescriptionItem>
 
 type StoryProps = StoryObj<typeof BookDescriptionItem>

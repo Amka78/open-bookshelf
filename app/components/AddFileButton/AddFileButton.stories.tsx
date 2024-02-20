@@ -3,6 +3,10 @@ import { AddFileButton } from "@/components"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
+const markdown = `
+    Button for file addition process.
+When the button is clicked, a file selection dialog opens, allowing the user to select one file to upload.
+`
 export default {
   title: "AddFileButton",
   component: AddFileButton,
@@ -17,10 +21,7 @@ export default {
     ),
   ],
   parameters: {
-    notes: `
-    Button for file addition process.
-When the button is clicked, a file selection dialog opens, allowing the user to select one file to upload.
-`,
+    notes: markdown,
   },
 } as Meta<typeof AddFileButton>
 

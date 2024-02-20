@@ -17,6 +17,12 @@ export default {
       </ComponentHolder>
     ),
   ],
+  parameters: {
+    notes: `
+    Buttons for login and logout processes. 
+    The event corresponding to the mode is executed when the button is pressed.
+`,
+  },
 } as Meta<typeof AuthButton>
 
 type StoryProps = StoryObj<typeof AuthButton>

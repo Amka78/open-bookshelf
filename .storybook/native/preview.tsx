@@ -1,18 +1,15 @@
 import { View, Appearance } from "react-native"
 import { withBackgrounds } from "@storybook/addon-ondevice-backgrounds"
 import type { Preview } from "@storybook/react"
+import { GluestackUIProvider } from "@gluestack-ui/themed"
+import { config } from "@gluestack-ui/config"
 
 const preview: Preview = {
-  decorators: [
-    (Story) => (
-      <View style={{ padding: 8, flex: 1 }}>
-        <Story />
-      </View>
-    ),
-    withBackgrounds,
-  ],
+  decorators: [(Story) => <Story />, withBackgrounds],
   parameters: {
-    actions: { argTypesRegex: "^on[A-Z].*" },
+    actions: {
+      argTypesRegex: "^on[A-Z].*",
+    },
     controls: {
       matchers: {
         color: /(background|color)$/i,
@@ -23,9 +20,18 @@ const preview: Preview = {
     backgrounds: {
       default: Appearance.getColorScheme() === "dark" ? "dark" : "plain",
       values: [
-        { name: "plain", value: "white" },
-        { name: "dark", value: "#333" },
-        { name: "app", value: "#eeeeee" },
+        {
+          name: "plain",
+          value: "white",
+        },
+        {
+          name: "dark",
+          value: "#333",
+        },
+        {
+          name: "app",
+          value: "#eeeeee",
+        },
       ],
     },
   },
