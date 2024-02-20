@@ -13,12 +13,20 @@ export default {
       </ComponentHolder>
     ),
   ],
+  parameters: {
+    notes: `String display for text highlighting.`
+  }
 } as Meta<typeof Heading>
 
 type HeadingStory = StoryObj<typeof Heading>
 
-export const Basic: HeadingStory = {
+export const SupportMultiLingual: HeadingStory = {
   args: {
     tx: "connectScreen.welcome",
+  },
+}
+export const DirectInput: HeadingStory = {
+  args: {
+    children: "Direct Text Input."
   },
 }
