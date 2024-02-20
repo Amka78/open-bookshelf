@@ -1,44 +1,42 @@
 import React, { useState } from "react"
-import { StyleSheet, TouchableOpacity } from "react-native"
+import { StyleSheet } from "react-native"
 
 import { Box, LabeledSpinner, Image, ImageProps } from "@/components"
+import { Pressable } from "@gluestack-ui/themed"
 
 export type BookImageprops = Pick<ImageProps, "source"> & {
   onPress?: () => Promise<void>
   onLongPress?: () => void
+  loading?: boolean
 }
-export function BookImageItem(props: BookImageprops) {
-  const [loading, setLoading] = useState(false)
+export function BookImageItem({ loading=false, ...restProps}: BookImageprops) {
+  const props = { loading, ...restProps }
+  const [loadingState, setLoadingState] = useState(props.loading)
 
-  return (
-    <TouchableOpacity
+  const image =<Image source={props.source} style={styles.imageSize} resizeMode={"contain"} />
+  const content =  props.onPress || props.onLongPress ? 
+    <Pressable
       onPress={async () => {
-        if (props.onPress) {
-          setLoading(true)
+          setLoadingState(true)
           await props.onPress()
-          setLoading(false)
-        }
+          setLoadingState(false)
       }}
       onLongPress={() => {
-        if (props.onLongPress) {
           props.onLongPress()
-        }
       }}
-      disabled={!props.onPress && !props.onLongPress}
     >
-      <Box marginHorizontal={"$2"} marginTop={"$2"}>
-        {loading ? (
+      {image}
+    </Pressable>: image 
+
+  return <Box marginHorizontal={"$2"} marginTop={"$2"}>
+        {loading ? 
           <LabeledSpinner
             containerStyle={styles.imageSize}
             label={"bookImage.loading"}
             labelDirection="vertical"
           />
-        ) : (
-          <Image source={props.source} style={styles.imageSize} resizeMode={"contain"} />
-        )}
-      </Box>
-    </TouchableOpacity>
-  )
+        : content}
+    </Box>
 }
 
 const styles = StyleSheet.create({

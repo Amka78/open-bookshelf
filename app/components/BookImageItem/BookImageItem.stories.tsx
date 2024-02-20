@@ -1,5 +1,4 @@
 import { BookImageItem } from "@/components"
-import { delay } from "@/utils/delay"
 import { Meta, StoryObj } from "@storybook/react"
 import React from "react"
 
@@ -15,15 +14,23 @@ export default {
       </ComponentHolder>
     ),
   ],
+  args: {
+    source: require("../../../assets/images/sample-image-1.png"),
+  }
 } as Meta<typeof BookImageItem>
 
 type BookImageItemStory = StoryObj<typeof BookImageItem>
 
-export const Basic: BookImageItemStory = {
-  args: {
-    source: require("../../../assets/images/sample-image-1.png"),
-    onPress: async () => {
-      await delay(1000)
-    },
+export const Pressable: BookImageItemStory = {
+  argTypes: {
+    onPress: { action: "open book." },
+    onLongPress: { action: "open detail screen."}
   },
+}
+
+export const JustImage: BookImageItemStory = {}
+export const Loading: BookImageItemStory = {
+  args: {
+    loading: true
+  }
 }
