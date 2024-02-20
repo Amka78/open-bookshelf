@@ -15,27 +15,28 @@ const onLinkPress = (linkName: string, metadata: FieldMetadata, postProcess: (qu
   postProcess(link)
 }
 export function BookDetailField(props: BookDetailFieldProps) {
-  let field
+  let field: React.ReactNode
   switch (props.fieldMetadata.datatype) {
-    case "rating": {
-      if (typeof props.value === "number") {
-        const ratingList = []
-        for (let i = 0; i < props.value; i++) {
-          if (i % 2 === 0) {
-            ratingList.push(i)
+    case "rating":
+      {
+        if (typeof props.value === "number") {
+          const ratingList = []
+          for (let i = 0; i < props.value; i++) {
+            if (i % 2 === 0) {
+              ratingList.push(i)
+            }
           }
-        }
 
-        field = (
-          <HStack alignSelf="center">
-            {ratingList.map(() => {
-              return <MaterialCommunityIcon name="star" />
-            })}
-          </HStack>
-        )
+          field = (
+            <HStack alignSelf="center">
+              {ratingList.map(() => {
+                return <MaterialCommunityIcon name="star" />
+              })}
+            </HStack>
+          )
+        }
       }
-    }
-    break
+      break
     case "float": {
       if (typeof props.value === "number") {
         const num = props.value / 1000000
@@ -89,8 +90,10 @@ export function BookDetailField(props: BookDetailFieldProps) {
       break
   }
   return (
-    <HStack key={props.fieldMetadata.label} alignItems="flex-start">
-      <Text width={"$24"}>{props.fieldMetadata.name}</Text>
+    <HStack key={props.fieldMetadata.label} alignItems="flex-start" space="sm">
+      <Text width={"$24"} isTruncated={true}>
+        {props.fieldMetadata.name}
+      </Text>
       {field}
     </HStack>
   )
