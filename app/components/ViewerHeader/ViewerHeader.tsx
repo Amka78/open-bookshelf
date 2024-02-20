@@ -6,7 +6,7 @@ import { HStack, IconButton, Text } from "@/components"
 export type ViewerHeaderProps = ViewerMenuProps & {
   visible: boolean
   onLeftArrowPress?: () => void
-  headerTitle: string
+  title: string
 }
 
 export function ViewerHeader(props: ViewerHeaderProps) {
@@ -22,11 +22,11 @@ export function ViewerHeader(props: ViewerHeaderProps) {
     >
       <HStack flex={1} justifyContent={"flex-start"} marginLeft={"$4"}>
         <IconButton name="arrow-left" onPress={props.onLeftArrowPress} iconSize="md-" />
-        <Text marginLeft={"$3"} fontSize={"$lg"}>
-          {props.headerTitle}
+        <Text marginLeft={"$3"} fontSize={"$lg"} isTruncated={true}>
+          {props.title}
         </Text>
       </HStack>
-      <HStack flex={1} justifyContent={"flex-end"} marginRight={"$4"}>
+      <HStack justifyContent={"flex-end"} marginRight={"$4"}>
         <ViewerMenu
           pageDirection={props.pageDirection}
           readingStyle={props.readingStyle}

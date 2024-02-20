@@ -6,14 +6,6 @@ import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 export default {
   title: "ViewerMenu",
   component: ViewerMenu,
-  args: {
-    pageDirection: "left",
-    readingStyle: "singlePage",
-  },
-  argTypes: {
-    onSelectPageDirection: { action: "Change page direction."},
-    onSelectReadingStyle: { action: "Change reading style."}
-  },
   decorators: [
     (Story) => (
       <ComponentHolder>
@@ -28,4 +20,13 @@ export default {
 
 type StoryProps = StoryObj<typeof ViewerMenu>
 
-export const Basic: StoryProps = {}
+export const Basic: StoryProps = {
+  args: {
+    pageDirection: "left",
+    readingStyle: "singlePage",
+  },
+  argTypes: {
+    onSelectPageDirection: { action: "Change page direction."},
+    onSelectReadingStyle: { action: "Change reading style."}
+  },
+}
