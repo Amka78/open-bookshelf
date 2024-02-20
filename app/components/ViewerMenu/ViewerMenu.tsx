@@ -1,10 +1,9 @@
 import { MessageKey, translate } from "@/i18n"
 import { BookReadingStyleType } from "@/type/types"
-import { Menu, MenuItem, MenuItemLabel as MenuItemLabelOrigin } from "@gluestack-ui/themed"
+import { Menu, MenuItem, MenuItemLabel as MenuItemLabelOrigin, Pressable } from "@gluestack-ui/themed"
 import React, { ComponentProps, useState } from "react"
-import { Pressable } from "react-native"
 
-import { Text, HStack, IconButton } from "@/components"
+import { HStack, IconButton } from "@/components"
 import { useConvergence } from "@/hooks/useConvergence"
 
 export type ViewerMenuProps = {
