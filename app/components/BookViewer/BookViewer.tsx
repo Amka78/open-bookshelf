@@ -124,7 +124,7 @@ export function BookViewer(props: BookViewerProps) {
   return (
     <>
       <ViewerHeader
-        headerTitle={props.bookTitle}
+        title={props.bookTitle}
         visible={viewerHook.showMenu}
         onLeftArrowPress={() => {
           navigation.goBack()
