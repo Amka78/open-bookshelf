@@ -1,15 +1,15 @@
 import { translate } from "@/i18n"
-import { SortField } from "@/models/CarlibreRootStore"
+import { SortField } from "@/models/calibre"
 import { Menu, MenuItem, MenuItemLabel } from "@gluestack-ui/themed"
-import React, { ComponentProps } from "react"
+import { ComponentProps } from "react"
 import { IconButton } from "@/components"
 import { useWindowDimensions } from "react-native"
 
 export type SortMenuProps = {
-  selectedSort: string
-  selectedSortOrder: string
-  field: SortField[]
-  onSortChange: (sortId: string) => void
+  selectedSort?: string
+  selectedSortOrder?: string
+  field?: SortField[]
+  onSortChange?: (sortId: string) => void
 }
 export function SortMenu(props: SortMenuProps) {
   const dimension = useWindowDimensions()
@@ -27,7 +27,7 @@ export function SortMenu(props: SortMenuProps) {
       left={dimension.width - 260}
       closeOnSelect={true}
     >
-      {props.field.map((value) => {
+      {props.field?.map((value) => {
         const text =
           value.id === props.selectedSort
             ? `${value.name}-${translate(

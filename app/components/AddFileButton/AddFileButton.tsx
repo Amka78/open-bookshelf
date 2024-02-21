@@ -2,7 +2,7 @@ import { IconButton } from "@/components"
 import * as DocumentPicker from "expo-document-picker"
 
 export type AddFileButtonProps = {
-  onDocumentSelect: (document: DocumentPicker.DocumentPickerAsset[]) => Promise<void>
+  onDocumentSelect?: (document: DocumentPicker.DocumentPickerAsset[]) => Promise<void>
 }
 
 export function AddFileButton(props: AddFileButtonProps) {

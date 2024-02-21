@@ -1,22 +1,22 @@
 import { useConvergence } from "@/hooks/useConvergence"
 import { IconButton, VStack } from "@/components"
-import React, { useState } from "react"
+import React, { ComponentProps, useState } from "react"
 export type StaggerContainerProps = {
   menus: React.ReactNode
   menusHeight: number
-}
-export function StaggerContainer(props: StaggerContainerProps) {
-  const [isOpen, setIsOpen] = useState(false)
+} & ComponentProps<typeof VStack>
+export function StaggerContainer({ position= "absolute", alignItems="center", justifyContent="flex-end", ...restProps}: StaggerContainerProps) {
   const convergenceHook = useConvergence()
+  const [isOpen, setIsOpen] = useState(false)
 
+  const bottom = restProps.bottom ? restProps.bottom : convergenceHook.isLarge ? 10 : 5
+  const right = restProps.right ? restProps.right : convergenceHook.isLarge ? 10 : 5
+
+  const props = {position, alignItems, justifyContent, bottom, right, ...restProps }
   return (
     <>
       <VStack
-        alignItems="center"
-        position={"absolute"}
-        bottom={convergenceHook.isLarge ? 10 : 5}
-        right={convergenceHook.isLarge ? 10 : 5}
-        justifyContent="flex-end"
+      {...props}
       >
         {isOpen ? (
           <VStack space="sm" marginBottom={"$1"}>

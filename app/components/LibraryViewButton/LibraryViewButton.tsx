@@ -1,8 +1,7 @@
-import React from "react"
 import { IconButton } from "@/components"
 
 export type LibraryViewButtonProps = {
-  onPress: () => void
+  onPress?: () => void
   mode: "viewList" | "gridView"
 }
 

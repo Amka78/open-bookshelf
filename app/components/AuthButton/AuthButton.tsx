@@ -2,8 +2,8 @@ import { IconButton } from "@/components"
 
 export type AuthButtonProp = {
   mode: "login" | "logout"
-  onLoginPress: () => void
-  onLogoutPress: () => void
+  onLoginPress?: () => void
+  onLogoutPress?: () => void
 }
 
 export function AuthButton(props: AuthButtonProp) {
