@@ -155,8 +155,8 @@ export const LibraryScreen: FC = observer(() => {
             convergenceHook.isLarge
               ? undefined
               : async () => {
-                  await search()
-                }
+                await search()
+              }
           }
           onEndReached={async () => {
             await calibreRootStore.searchMoreLibrary()
@@ -192,6 +192,8 @@ export const LibraryScreen: FC = observer(() => {
               onPress={libraryHook.onChangeListStyle}
             />
             <SortMenu
+              position="absolute"
+              left={dimension.width - 260}
               selectedSort={selectedLibrary?.searchSetting?.sort}
               selectedSortOrder={selectedLibrary?.searchSetting?.sortOrder}
               field={selectedLibrary?.sortField}
