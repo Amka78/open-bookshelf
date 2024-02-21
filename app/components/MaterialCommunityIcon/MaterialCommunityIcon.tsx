@@ -41,4 +41,4 @@ export const MaterialCommunityIcon = styled(MaterialCommunityIcons, {
       },
     },
   },
-})
+}, { ancestorStyle: ["_icon"] })
