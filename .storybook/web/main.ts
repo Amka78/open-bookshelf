@@ -24,7 +24,7 @@ module.exports = {
   },
   framework: {
     name: "@storybook/react-webpack5",
-    options: { fastRefresh: true },
+    options: { fastRefresh: false },
   },
   docs: {
     autodocs: true,
