@@ -1,9 +1,5 @@
-import { styled, Pressable, ButtonSpinner } from "@gluestack-ui/themed"
-import { ComponentProps, forwardRef, useState } from "react"
+import { styled } from "@gluestack-ui/themed"
 import { MaterialCommunityIcons } from "@expo/vector-icons"
-import { MessageKey } from "@/i18n"
-import { Text, HStack } from "@/components"
-import { delay } from "@/utils/delay"
 
 export const MaterialCommunityIcon = styled(MaterialCommunityIcons, {
   variants: {
@@ -21,6 +17,20 @@ export const MaterialCommunityIcon = styled(MaterialCommunityIcons, {
         },
         px: "$0.5",
         py: "$0.5",
+      },
+      "sm": {
+        props: {
+          size: 24,
+        },
+        px: 0.2,
+        py: 0.2,
+      },
+      "sm-": {
+        props: {
+          size: 21,
+        },
+        px: 0.2,
+        py: 0.2,
       },
     },
     variant: {
@@ -41,4 +51,8 @@ export const MaterialCommunityIcon = styled(MaterialCommunityIcons, {
       },
     },
   },
+  defaultProps: {
+    iconSize: "md",
+    variant: "common"
+  }
 }, { ancestorStyle: ["_icon"] })
