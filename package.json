@@ -144,6 +144,7 @@
     "postinstall-prepare": "1.0.1",
     "reactotron-core-client": "^2.8.10",
     "storybook": "^7.6.16",
+    "storybook-dark-mode": "^3.0.3",
     "ts-jest": "^29.1.1",
     "tsconfig-paths-webpack-plugin": "^4.1.0",
     "typescript": "^5.1.3"

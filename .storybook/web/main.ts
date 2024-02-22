@@ -10,6 +10,7 @@ module.exports = {
     "@storybook/addon-links",
     "@storybook/addon-essentials",
     "@storybook/addon-react-native-web",
+    "storybook-dark-mode"
   ],
   core: {
     builder: "webpack5",

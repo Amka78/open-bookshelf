@@ -1,8 +1,7 @@
-import { View, Appearance } from "react-native"
+import { Appearance } from "react-native"
 import { withBackgrounds } from "@storybook/addon-ondevice-backgrounds"
 import type { Preview } from "@storybook/react"
-import { GluestackUIProvider } from "@gluestack-ui/themed"
-import { config } from "@gluestack-ui/config"
+
 
 const preview: Preview = {
   decorators: [(Story) => <Story />, withBackgrounds],

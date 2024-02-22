@@ -1,5 +1,5 @@
 import { Box } from "@/components"
-import { Platform } from "react-native"
+import { Platform, useWindowDimensions } from "react-native"
 import { Markdown } from "@storybook/blocks"
 import { GluestackUIProvider } from "@gluestack-ui/themed"
 import { config } from "@gluestack-ui/config"
@@ -11,21 +11,25 @@ export type ComponentHolderProps = {
 export function ComponentHolder({ alignItems = "flex-start", justifyContent = "flex-start", ...restProps }: ComponentHolderProps) {
 
   const props = { alignItems, justifyContent, ...restProps }
+
+  const { useDarkMode } = require("storybook-dark-mode")
+
+  const dimension = useWindowDimensions()
+
+  const colorMode = useDarkMode() ? "dark" : "light"
+
   return (
-    <GluestackUIProvider config={config}>
+    <GluestackUIProvider config={config} colorMode={colorMode}>
       <Box
         {...props}
         flex={1}
         alignItems={"flex-start"}
         justifyContent={"flex-start"}
-        marginTop={2}
-        marginLeft={2}
+        height={dimension.height}
+        width={dimension.width}
       >
         {props.children}
-        {Platform.OS === "web" && props.markdown ? (
-          <Markdown>{props.markdown}</Markdown>
-        ) : undefined}
       </Box>
-    </GluestackUIProvider>
+    </GluestackUIProvider >
   )
 }
