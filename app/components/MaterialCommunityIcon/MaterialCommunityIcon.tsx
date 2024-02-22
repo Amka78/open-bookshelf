@@ -50,9 +50,22 @@ export const MaterialCommunityIcon = styled(MaterialCommunityIcons, {
         borderColor: "$coolGray800",
       },
     },
+    rotate: {
+      "0": {
+      },
+      "90": {
+        transform: [{ rotate: '90deg' }]
+      },
+      "180": {
+        transform: [{ rotate: '180deg' }]
+      },
+      "270": {
+        transform: [{ rotate: '270deg' }]
+      }
+    }
   },
   defaultProps: {
     iconSize: "md",
-    variant: "common"
+    variant: "common",
   }
 }, { ancestorStyle: ["_icon"] })
