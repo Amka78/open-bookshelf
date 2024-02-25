@@ -15,8 +15,23 @@ export type LoginModalProps = ModalComponentProp<ModalStackParams, void, "LoginM
 
 export const LoginModal = observer((props: LoginModalProps) => {
   const { authenticationStore, calibreRootStore } = useStores()
-  const form = useForm<LoginType, unknown, LoginType>()
   const navigation = useNavigation<ApppNavigationProp>()
+  const onLoginPress = async (data) => {
+    authenticationStore.login(data.userId, data.password)
+    await calibreRootStore.initialize()
+    navigation.navigate("CalibreRoot")
+  }
+
+  return (
+    <LoginModalTemplate modal={{ ...props.modal, params: { ...props.modal.params, onLoginPress: onLoginPress } }} />
+  )
+})
+
+
+export type LoginModalTemplateProps = Pick<ModalComponentProp<ModalStackParams, void, "LoginModal">, "modal">
+
+export function LoginModalTemplate(props: LoginModalTemplateProps) {
+  const form = useForm<LoginType, unknown, LoginType>()
   return (
     <Root>
       <Header>
@@ -49,11 +64,8 @@ export const LoginModal = observer((props: LoginModalProps) => {
       <Footer>
         <Button
           onPress={form.handleSubmit(async (data) => {
-            authenticationStore.login(data.userId, data.password)
-
-            await calibreRootStore.initialize()
+            await props.modal.params.onLoginPress(data)
             props.modal.closeModal()
-            navigation.navigate("CalibreRoot")
           })}
           tx={"common.login"}
         />
@@ -65,6 +77,5 @@ export const LoginModal = observer((props: LoginModalProps) => {
           marginLeft={"$2"}
         />
       </Footer>
-    </Root>
-  )
-})
+    </Root>)
+}

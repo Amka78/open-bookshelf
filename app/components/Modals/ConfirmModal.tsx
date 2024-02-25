@@ -17,7 +17,7 @@ export function ConfirmModal(props: ConfirmModalProps) {
   return (
     <Root>
       <Header>
-        <Heading tx={titleTx}>{title}</Heading>
+        <Heading tx={titleTx} isTruncated={true}>{title}</Heading>
         <CloseButton
           onPress={() => {
             props.modal.closeModal()
@@ -44,6 +44,7 @@ export function ConfirmModal(props: ConfirmModalProps) {
             props.modal.closeModal()
           }}
           tx={"common.cancel"}
+          marginLeft={"$1"}
         />
       </Footer>
     </Root>

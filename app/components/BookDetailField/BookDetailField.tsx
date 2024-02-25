@@ -1,4 +1,4 @@
-import { HStack, LinkButton, LinkInfo, MaterialCommunityIcon, Text } from "@/components"
+import { HStack, LinkButton, LinkInfo, MaterialCommunityIcon, Text, Rating } from "@/components"
 import { FieldMetadata } from "@/models/calibre"
 import { formatDate } from "@/utils/formatDate"
 import { parseISO } from "date-fns"
@@ -20,19 +20,9 @@ export function BookDetailField(props: BookDetailFieldProps) {
     case "rating":
       {
         if (typeof props.value === "number") {
-          const ratingList = []
-          for (let i = 0; i < props.value; i++) {
-            if (i % 2 === 0) {
-              ratingList.push(i)
-            }
-          }
 
           field = (
-            <HStack alignSelf="center">
-              {ratingList.map(() => {
-                return <MaterialCommunityIcon name="star" />
-              })}
-            </HStack>
+            <Rating rating={props.value} />
           )
         }
       }

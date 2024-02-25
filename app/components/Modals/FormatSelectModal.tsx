@@ -1,4 +1,4 @@
-import { Button, Text, Heading } from "@/components"
+import { Button, Heading } from "@/components"
 import { ScrollView } from "@gluestack-ui/themed"
 import React from "react"
 import { ModalComponentProp } from "react-native-modalfy"
@@ -29,7 +29,7 @@ export function FormatSelectModal(props: FormatSelectModalProps) {
                   props.modal.params.onSelectFormat(format)
                   props.modal.closeModal()
                 }}
-                variant={"ghost"}
+                marginBottom={"$1"}
               >
                 {format}
               </Button>
