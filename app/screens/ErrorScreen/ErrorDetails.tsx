@@ -1,4 +1,4 @@
-import { Button, Icon, RootContainer, Text, Heading } from "@/components"
+import { Button, RootContainer, Text, Heading } from "@/components"
 import React, { ErrorInfo } from "react"
 import { ScrollView, TextStyle, View, ViewStyle } from "react-native"
 

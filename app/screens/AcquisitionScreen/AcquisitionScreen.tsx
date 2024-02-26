@@ -1,4 +1,4 @@
-import { Box, FlatList, Icon, ListItem, RootContainer, Text } from "@/components"
+import { Box, FlatList, Icon, ListItem, RootContainer, Text, MaterialCommunityIcon } from "@/components"
 import { useStores } from "@/models"
 import { Entry } from "@/models/opds"
 import { OpdsChildrenModel, OpdsModel, OpdsRoot } from "@/models/opds/OpdsRootStore"
@@ -106,13 +106,11 @@ export const AcquisitionScreen: FC = observer(() => {
               </Box>
             </Box>
             {item.contentType !== "text" && (
-              <Icon
-                as={MaterialCommunityIcons}
+              <MaterialCommunityIcon
                 name="arrow-down-thin-circle-outline"
-                size={"lg"}
                 position={"absolute"}
-                top={"1.5"}
-                right={"0.5"}
+                top={"$1.5"}
+                right={"$0.5"}
               />
             )}
           </Box>
