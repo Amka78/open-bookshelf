@@ -4,7 +4,7 @@ import { MessageKey } from "@/i18n"
 import { Text, HStack, MaterialCommunityIcon } from "@/components"
 
 export type IconButtonProps = ComponentProps<typeof Pressable> & {
-  iconSize?: "md" | "md-"
+  iconSize?: "md" | "md-" | "sm" | "sm-"
   variant?: "common" | "staggerRoot" | "staggerChild"
   labelTx?: MessageKey
   pressable?: boolean
