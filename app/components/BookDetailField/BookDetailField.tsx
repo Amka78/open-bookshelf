@@ -1,4 +1,4 @@
-import { HStack, LinkButton, LinkInfo, MaterialCommunityIcon, Text, Rating } from "@/components"
+import { Box, HStack, LinkButton, LinkInfo, Text, Rating } from "@/components"
 import { FieldMetadata } from "@/models/calibre"
 import { formatDate } from "@/utils/formatDate"
 import { parseISO } from "date-fns"
@@ -84,7 +84,9 @@ export function BookDetailField(props: BookDetailFieldProps) {
       <Text width={"$24"} isTruncated={true}>
         {props.fieldMetadata.name}
       </Text>
-      {field}
+      <Box width={"$32"} alignItems="flex-start">
+        {field}
+      </Box>
     </HStack>
   )
 }

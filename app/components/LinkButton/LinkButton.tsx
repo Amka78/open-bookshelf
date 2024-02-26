@@ -6,15 +6,18 @@ export type LinkInfo = {
 }
 export type LinkButtonProps = Omit<ButtonProps, "children" | "onPress"> & {
   children: LinkInfo | LinkInfo[]
+  links?: LinkInfo | LinkInfo[]
   conjunction?: string
   onPress: (link: string) => void
 }
 
 export function LinkButton(props: LinkButtonProps) {
-  if (Array.isArray(props.children)) {
-    const linkInfos = props.children as LinkInfo[]
+
+  const links = props.links ? props.links : props.children
+  if (Array.isArray(links)) {
+    const linkInfos = links as LinkInfo[]
     return (
-      <VStack alignItems={"flex-start"}>
+      <HStack flexWrap="wrap" flex={1} alignContent={"flex-start"} >
         {linkInfos.map((linkInfo, index) => {
           let link = (
             <Button
@@ -30,7 +33,7 @@ export function LinkButton(props: LinkButtonProps) {
             </Button>
           )
 
-          if (index <= linkInfos.length && props.conjunction) {
+          if (index < linkInfos.length - 1 && props.conjunction) {
             link = (
               <HStack>
                 {link}
@@ -41,7 +44,7 @@ export function LinkButton(props: LinkButtonProps) {
 
           return link
         })}
-      </VStack>
+      </HStack>
     )
   }
   return (
@@ -51,11 +54,11 @@ export function LinkButton(props: LinkButtonProps) {
       height={"$6"}
       onPress={() => {
         if (props.onPress) {
-          props.onPress((props.children as LinkInfo).value)
+          props.onPress((links as LinkInfo).value)
         }
       }}
     >
-      {props.children.label ? props.children.label : props.children.value}
+      {links.label ? links.label : links.value}
     </Button>
   )
 }
