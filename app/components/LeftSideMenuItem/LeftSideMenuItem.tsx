@@ -1,7 +1,6 @@
 import React, { useState } from "react"
 import { Box, HStack, Icon, Pressable } from "@gluestack-ui/themed"
-import { Text } from "../Text/Text"
-import { MaterialCommunityIcons } from "@expo/vector-icons"
+import { Text, MaterialCommunityIcon } from "@/components"
 
 export type LeftSideMenuItemProps = {
   name: string
@@ -37,18 +36,12 @@ export function LeftSideMenuItem({ mode = "category", ...restProps }: LeftSideMe
       >
         <HStack
           alignItems={"center"}
-          marginX={"0.3"}
-          marginTop={"0.3"}
-          paddingLeft={mode === "subCategory" ? "0.5" : mode === "node" ? "1" : undefined}
+          marginHorizontal={"$0.5"}
+          marginTop={"$0.5"}
+          paddingLeft={mode === "subCategory" ? "$0.5" : mode === "node" ? "$3" : undefined}
         >
-          <Icon
-            as={MaterialCommunityIcons}
-            _dark={{
-              color: "warmGray.50",
-            }}
-            size="sm"
-            name={icon}
-            color="black.200"
+          <MaterialCommunityIcon
+            name={icon} iconSize={"sm"}
           />
           <Text fontSize={"$md"}>{props.name}</Text>
           <Box flex={1} />
