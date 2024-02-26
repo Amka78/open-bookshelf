@@ -1,6 +1,6 @@
-import React, { useState } from "react"
-import { Box, HStack, Icon, Pressable } from "@gluestack-ui/themed"
-import { Text, MaterialCommunityIcon } from "@/components"
+import { useState } from "react"
+import { Pressable } from "@gluestack-ui/themed"
+import { Box, HStack, Text, MaterialCommunityIcon } from "@/components"
 
 export type LeftSideMenuItemProps = {
   name: string
