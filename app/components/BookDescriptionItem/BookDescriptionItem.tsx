@@ -33,7 +33,7 @@ export function BookDescriptionItem({ loading = false, ...restProps }: BookDescr
   return loadingState ? (
     <LabeledSpinner
       labelDirection="horizontal"
-      label={"bookImage.loading"}
+      labelTx={"bookImage.loading"}
       containerStyle={styles.spinnerSize}
     />
   ) : (

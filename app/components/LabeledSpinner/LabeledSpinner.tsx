@@ -6,14 +6,15 @@ import { StyleProp, ViewStyle } from "react-native"
 import { Heading } from "../Heading/Heading"
 
 export type LabeledSpinnerProps = {
-  label?: MessageKey
+  labelTx?: MessageKey
+  label: string
   labelDirection: "horizontal" | "vertical"
   containerStyle?: StyleProp<ViewStyle>
 }
 
 export function LabeledSpinner(props: LabeledSpinnerProps) {
   const spinner = <Spinner size="large" color="$coolGray500" />
-  const label = <Heading color="primary.500" fontSize="$md" tx={props.label} />
+  const label = <Heading color="primary.500" fontSize="$md" tx={props.labelTx} >{props.label}</Heading>
 
   return props.labelDirection === "horizontal" ? (
     <HStack space={"sm"} alignItems={"center"}>

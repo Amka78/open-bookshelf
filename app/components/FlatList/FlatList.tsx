@@ -35,7 +35,7 @@ export function FlatList<T>({ preparing = false, ...restProps }: FlatListProps<T
     />
   ) : (
     <Center flex={1}>
-      <LabeledSpinner labelDirection="vertical" label={"libraryScreen.dataSearching"} />
+      <LabeledSpinner labelDirection="vertical" labelTx={"libraryScreen.dataSearching"} />
     </Center>
   )
 }

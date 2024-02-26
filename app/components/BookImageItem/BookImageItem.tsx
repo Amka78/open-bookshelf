@@ -9,34 +9,34 @@ export type BookImageprops = Pick<ImageProps, "source"> & {
   onLongPress?: () => void
   loading?: boolean
 }
-export function BookImageItem({ loading=false, ...restProps}: BookImageprops) {
+export function BookImageItem({ loading = false, ...restProps }: BookImageprops) {
   const props = { loading, ...restProps }
   const [loadingState, setLoadingState] = useState(props.loading)
 
-  const image =<Image source={props.source} style={styles.imageSize} resizeMode={"contain"} />
-  const content =  props.onPress || props.onLongPress ? 
+  const image = <Image source={props.source} style={styles.imageSize} resizeMode={"contain"} />
+  const content = props.onPress || props.onLongPress ?
     <Pressable
       onPress={async () => {
-          setLoadingState(true)
-          await props.onPress()
-          setLoadingState(false)
+        setLoadingState(true)
+        await props.onPress()
+        setLoadingState(false)
       }}
       onLongPress={() => {
-          props.onLongPress()
+        props.onLongPress()
       }}
     >
       {image}
-    </Pressable>: image 
+    </Pressable> : image
 
   return <Box marginHorizontal={"$2"} marginTop={"$2"}>
-        {loading ? 
-          <LabeledSpinner
-            containerStyle={styles.imageSize}
-            label={"bookImage.loading"}
-            labelDirection="vertical"
-          />
-        : content}
-    </Box>
+    {loading ?
+      <LabeledSpinner
+        containerStyle={styles.imageSize}
+        labelTx={"bookImage.loading"}
+        labelDirection="vertical"
+      />
+      : content}
+  </Box>
 }
 
 const styles = StyleSheet.create({
