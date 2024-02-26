@@ -7,7 +7,7 @@ import { Heading } from "../Heading/Heading"
 
 export type LabeledSpinnerProps = {
   labelTx?: MessageKey
-  label: string
+  label?: string
   labelDirection: "horizontal" | "vertical"
   containerStyle?: StyleProp<ViewStyle>
 }
