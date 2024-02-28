@@ -60,9 +60,35 @@ export const Rating = styled(RatingCore, {
 
       },
       "selectable": {
+        // @ts-ignore
         borderWidth: "$1",
         borderRadius: "$full",
         paddingHorizontal: "$2",
+        _light: {
+          _icon: {
+            color: "$coolGray500"
+          }
+        },
+        _dark: {
+          _icon: {
+            color: "$white"
+          },
+          _text: {
+            color: "$white"
+          },
+        }
+      },
+      "selected": {
+        // @ts-ignore
+        borderWidth: "$2",
+        borderRadius: "$full",
+        backgroundColor: "$blue500",
+        paddingHorizontal: "$2",
+        _light: {
+          _icon: {
+            color: "$coolGray500"
+          }
+        },
         _dark: {
           _icon: {
             color: "$white"

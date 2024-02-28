@@ -5,6 +5,7 @@ export type RatingGroup = {
   max: number,
   ticks?: number
   onSelectRating(rating: number)
+  seletedValue: number
 }
 
 function RatingGroupCore({ ticks = 2, ...restProps }: RatingGroup) {
@@ -25,7 +26,7 @@ function RatingGroupCore({ ticks = 2, ...restProps }: RatingGroup) {
   return <HStack {...props}>
     {
       ratingList.map((value) => {
-        return <Rating rating={value} onPress={onSelectRating} />
+        return <Rating rating={value} onPress={onSelectRating} variant={value === props.seletedValue ? "selected" : "selectable"} />
       })
     }
   </HStack>
@@ -40,7 +41,7 @@ export const RatingGroup = styled(RatingGroupCore, {
         },
         "_rating": {
           props: {
-            "variant": "selectable",
+            "variant": "common",
             "ratingSize": "sm"
           }
         }

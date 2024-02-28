@@ -23,6 +23,7 @@ type StoryProps = StoryObj<typeof RatingGroup>
 export const Basic: StoryProps = {
   args: {
     max: 10,
+    seletedValue: 8,
     onSelectRating: (rating) => {
       console.log(`Selected rating: ${rating}.`)
     }

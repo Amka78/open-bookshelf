@@ -67,6 +67,9 @@ const en = {
       message: "Are you sure you want to delete {0}?",
     },
   },
+  rating: {
+    noRate: "No Rate",
+  },
 }
 
 export default en

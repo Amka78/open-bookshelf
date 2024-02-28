@@ -47,8 +47,27 @@ export const OneStar: StoryProps = {
 }
 export const NoStar: StoryProps = {}
 
-export const Selectable: StoryProps = {
+export const SelectableRating: StoryProps = {
   args: {
-    variant: "selectable"
+    variant: "selectable",
+    rating: 10
+  }
+}
+
+export const SelectableNoRating: StoryProps = {
+  args: {
+    variant: "selectable",
+  }
+}
+export const SelectedRating: StoryProps = {
+  args: {
+    variant: "selected",
+    rating: 4
+  }
+}
+export const SelectedNoRating: StoryProps = {
+  args: {
+    variant: "selected"
+
   }
 }
