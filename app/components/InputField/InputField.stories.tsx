@@ -1,5 +1,6 @@
 import { Meta, StoryObj } from "@storybook/react"
 import { InputField } from "./InputField"
+import { Input } from "@/components"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
@@ -15,7 +16,9 @@ export default {
   decorators: [
     (Story) => (
       <ComponentHolder>
-        <Story />
+        <Input>
+          <Story />
+        </Input>
       </ComponentHolder>
     ),
   ],
