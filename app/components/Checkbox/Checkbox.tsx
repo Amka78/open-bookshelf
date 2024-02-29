@@ -9,7 +9,7 @@ import {
 import React, { ComponentProps, forwardRef } from "react"
 
 export type ICheckboxProps = ComponentProps<typeof Template> & {
-  tx: MessageKey
+  tx?: MessageKey
 }
 export const Checkbox = forwardRef((props: ICheckboxProps, ref) => {
   return (
