@@ -1,9 +1,10 @@
 import { useForm } from "react-hook-form";
-import { Button, FormCheckbox, FormInputField, FormRatingGroup, VStack } from "@/components"
+import { Button, FormCheckbox, FormInputField, FormMultipleInputField, FormRatingGroup, VStack } from "@/components"
 type FormTest = {
   checkbox: boolean,
   input: string,
-  rating: number
+  rating: number,
+  multipleInput: string[]
 }
 
 type FormTestContainerProps = {
@@ -19,6 +20,7 @@ export function FormTestContainer(props: FormTestContainerProps) {
       "CheckBox"
     }</FormCheckbox>
     <FormRatingGroup control={form.control} name={"rating"} max={10} />
+    <FormMultipleInputField control={form.control} name={"multipleInput"} valueToText={","} textToValue={","} />
     <Button onPress={form.handleSubmit((value: FormTest) => {
       if (props.onPressCheckForm) {
         props.onPressCheckForm(value)
