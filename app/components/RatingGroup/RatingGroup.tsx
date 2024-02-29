@@ -21,10 +21,15 @@ const RatingGroupCore = forwardRef(({ ticks = 2, ...restProps }: RatingGroupProp
   }
   for (let i = 0; i <= props.max; i++) {
     if (i % props.ticks === 0) {
-      ratingList.push(i)
+
+      if (i === 0) {
+        ratingList.push(undefined)
+      } else {
+        ratingList.push(i)
+      }
     }
   }
-  return <HStack {...props} ref={props.ref}>
+  return <HStack {...props} ref={ref}>
     {
       ratingList.map((value) => {
         return <Rating rating={value} onPress={onSelectRating} variant={value === props.seletedValue ? "selected" : "selectable"} />

@@ -3,7 +3,7 @@ import { Controller, ControllerProps } from "react-hook-form"
 
 import { RatingGroup, RatingGroupProps } from "../RatingGroup/RatingGroup"
 
-export type FormRatingGroupProps<T> = Omit<RatingGroupProps, "onSelectedRating" | "selectedValue"> &
+export type FormRatingGroupProps<T> = Omit<RatingGroupProps, "onSelectRating" | "selectedValue"> &
   Omit<ControllerProps<T>, "render">
 export function FormRatingGroup<T>(props: FormRatingGroupProps<T>) {
   return (

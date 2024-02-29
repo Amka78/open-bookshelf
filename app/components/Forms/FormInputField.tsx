@@ -14,7 +14,12 @@ export function FormInputField<T>(props: FormInputFiledProps<T>) {
             <InputField
               {...props}
               onChangeText={(text) => {
-                renderProps.field.onChange(text)
+
+                if (text !== "") {
+                  renderProps.field.onChange(text)
+                } else {
+                  renderProps.field.onChange(undefined)
+                }
               }}
               onBlur={renderProps.field.onBlur}
               value={renderProps.field.value as string}
