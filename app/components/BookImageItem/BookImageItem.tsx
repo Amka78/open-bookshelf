@@ -22,7 +22,9 @@ export function BookImageItem({ loading = false, ...restProps }: BookImageprops)
         setLoadingState(false)
       }}
       onLongPress={() => {
-        props.onLongPress()
+        if (props.onLongPress) {
+          props.onLongPress()
+        }
       }}
     >
       {image}
