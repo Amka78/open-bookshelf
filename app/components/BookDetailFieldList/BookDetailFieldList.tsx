@@ -1,7 +1,8 @@
 import { FieldMetadataMap } from "@/models/calibre"
 import { Book } from "@/models/CalibreRootStore"
-import { Box, BookDetailField, ScrollView } from "@/components"
+import { Box, ScrollView } from "@/components"
 import { ComponentProps } from "react"
+import { BookDetailField } from "./BookDetailField"
 
 export type BookDetailFieldListProps = {
   fieldNameList: string[]

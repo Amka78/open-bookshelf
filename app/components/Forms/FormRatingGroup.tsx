@@ -16,7 +16,7 @@ export function FormRatingGroup<T>(props: FormRatingGroupProps<T>) {
             onSelectRating={(rating) => {
               renderProps.field.onChange(rating)
             }}
-            seletedValue={renderProps.field.value as number}
+            selectedValue={renderProps.field.value as number}
             ref={renderProps.field.ref}
           />
         )

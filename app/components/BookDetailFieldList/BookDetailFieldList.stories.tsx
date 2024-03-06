@@ -5,14 +5,68 @@ import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 import { FieldMetadataModel } from "@/models/calibre"
 import { BookModel } from "@/models/CalibreRootStore"
 import { types } from "mobx-state-tree"
-import {
-  AuthorField,
-  DateField,
-  FormatField,
-  RatingField,
-  TitleField,
-} from "../BookDetailField/BookDetailField.stories"
 
+const CommonField = {
+  isCategory: false,
+  isCustom: false,
+  isEditable: false,
+  isCsp: false,
+  kind: "test",
+}
+const lastModifiedTestField = FieldMetadataModel.create({
+  name: "Last ModifiedXXXXX",
+  datatype: "datetime",
+  display: {
+    dateFormat: "yyyy MM dd",
+  },
+  ...CommonField,
+  label: "lastModified",
+})
+
+const formatsTestField = FieldMetadataModel.create({
+  name: "Formats",
+  datatype: "text",
+  isMultiple: {
+    listToUi: ",",
+    cacheToList: ",",
+    uiToList: ",",
+  },
+  ...CommonField,
+  label: "fortmats",
+})
+
+const ratingTestField = FieldMetadataModel.create({
+  name: "Rating",
+  datatype: "rating",
+  ...CommonField,
+  label: "rating",
+})
+
+const sizeTestField = FieldMetadataModel.create({
+  name: "Size",
+  datatype: "float",
+  ...CommonField,
+  label: "size",
+})
+
+const titleTestField = FieldMetadataModel.create({
+  name: "Title",
+  datatype: "text",
+  ...CommonField,
+  label: "title",
+})
+
+const authorTestField = FieldMetadataModel.create({
+  name: "Author",
+  datatype: "text",
+  ...CommonField,
+  isMultiple: {
+    listToUi: "&",
+    cacheToList: "&",
+    uiToList: "&",
+  },
+  label: "author",
+})
 const book = BookModel.create({
   id: 12345,
   metaData: {
@@ -37,11 +91,11 @@ const bookFieldList = [
 ]
 
 const fieldMetadataList = types.map(FieldMetadataModel).create({
-  lastModified: DateField.args.fieldMetadata,
-  formats: FormatField.args.fieldMetadata,
-  rating: RatingField.args.fieldMetadata,
-  title: TitleField.args.fieldMetadata,
-  authors: AuthorField.args.fieldMetadata,
+  lastModified: lastModifiedTestField,
+  formats: formatsTestField,
+  rating: ratingTestField,
+  title: titleTestField,
+  authors: authorTestField,
 })
 
 export default {

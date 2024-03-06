@@ -3,14 +3,13 @@ import { styled } from "@gluestack-style/react"
 import { forwardRef } from "react"
 
 export type RatingGroupProps = {
-  max: number,
+  max: number
   ticks?: number
   onSelectRating(rating: number)
-  seletedValue: number
+  selectedValue: number
 }
 
 const RatingGroupCore = forwardRef(({ ticks = 2, ...restProps }: RatingGroupProps, ref) => {
-
   const props = { ticks, ...restProps }
   const ratingList = []
 
@@ -21,7 +20,6 @@ const RatingGroupCore = forwardRef(({ ticks = 2, ...restProps }: RatingGroupProp
   }
   for (let i = 0; i <= props.max; i++) {
     if (i % props.ticks === 0) {
-
       if (i === 0) {
         ratingList.push(undefined)
       } else {
@@ -29,35 +27,44 @@ const RatingGroupCore = forwardRef(({ ticks = 2, ...restProps }: RatingGroupProp
       }
     }
   }
-  return <HStack {...props} ref={ref}>
-    {
-      ratingList.map((value) => {
-        return <Rating rating={value} onPress={onSelectRating} variant={value === props.seletedValue ? "selected" : "selectable"} />
-      })
-    }
-  </HStack>
+  return (
+    <HStack {...props} ref={ref}>
+      {ratingList.map((value) => {
+        return (
+          <Rating
+            rating={value}
+            onPress={onSelectRating}
+            variant={value === props.selectedValue ? "selected" : "selectable"}
+          />
+        )
+      })}
+    </HStack>
+  )
 })
 
-export const RatingGroup = styled(RatingGroupCore, {
-  "variants": {
-    "variant": {
-      "common": {
-        props: {
-          space: "sm"
-        },
-        "_rating": {
+export const RatingGroup = styled(
+  RatingGroupCore,
+  {
+    variants: {
+      variant: {
+        common: {
           props: {
-            "variant": "common",
-            "ratingSize": "sm"
-          }
-        }
-      }
+            space: "sm",
+          },
+          _rating: {
+            props: {
+              variant: "common",
+              ratingSize: "sm",
+            },
+          },
+        },
+      },
+    },
+    defaultProps: {
+      variant: "common",
     },
   },
-  defaultProps: {
-    "variant": "common"
-  }
-}, {
-  descendantStyle: ["_rating"],
-}
+  {
+    descendantStyle: ["_rating"],
+  },
 )
