@@ -2,11 +2,12 @@ import { Image, ImageProps } from "@/components"
 import { StyleSheet, StyleProp, ImageStyle } from "react-native"
 import * as ImagePicker from 'expo-image-picker'
 import { Pressable } from "@gluestack-ui/themed"
+import { forwardRef } from "react"
 export type ImageUploaderProps = ImageProps & {
   onImageUpload: (url: string) => void
 }
 
-export function ImageUploader(props: ImageUploaderProps) {
+export const ImageUploader = forwardRef((props: ImageUploaderProps, ref) => {
 
   const onImageSize = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -22,10 +23,10 @@ export function ImageUploader(props: ImageUploaderProps) {
       }
     }
   };
-  return <Pressable onPress={onImageSize}>
+  return <Pressable onPress={onImageSize} ref={ref}>
     <Image {...props} style={styles.imageSize as StyleProp<ImageStyle>} />
   </Pressable>
-}
+})
 
 const styles = StyleSheet.create({
   imageSize: {

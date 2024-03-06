@@ -1,11 +1,12 @@
 import { useForm } from "react-hook-form";
-import { Button, FormCheckbox, FormDateTimePicker, FormInputField, FormMultipleInputField, FormRatingGroup, VStack } from "@/components"
+import { Button, FormCheckbox, FormDateTimePicker, FormInputField, FormMultipleInputField, FormRatingGroup, FormImageUploader, VStack } from "@/components"
 type FormTest = {
   checkbox: boolean,
   input: string,
   rating: number,
   multipleInput: string[]
   datetimePicker: string
+  url: string
 }
 
 type FormTestContainerProps = {
@@ -23,6 +24,7 @@ export function FormTestContainer(props: FormTestContainerProps) {
     <FormRatingGroup control={form.control} name={"rating"} max={10} />
     <FormMultipleInputField control={form.control} name={"multipleInput"} valueToText={","} textToValue={","} />
     <FormDateTimePicker control={form.control} name={"datetimePicker"} />
+    <FormImageUploader control={form.control} name={"url"} />
     <Button onPress={form.handleSubmit((value: FormTest) => {
       if (props.onPressCheckForm) {
         props.onPressCheckForm(value)
