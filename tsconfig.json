@@ -20,10 +20,23 @@
       "@/*": ["app/*"]
     }
   },
-  "exclude": ["android", "node_modules", "assets", "ios", "bin", "dist", "yarn.lock"],
+  "exclude": [
+    ".expo",
+    ".storybook",
+    "android",
+    "assets",
+    "bin",
+    "detox",
+    "dist",
+    "ignite",
+    "ios",
+    "node_modules",
+    "yarn.lock",
+    ".git",
+  ],
   "include": [
-    "index.js",
-    "App.js",
+    "App.tsx",
+    "app.config.ts",
     "app",
     "test",
     ".storybook/stories/*",
