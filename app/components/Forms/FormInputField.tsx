@@ -14,7 +14,6 @@ export function FormInputField<T>(props: FormInputFiledProps<T>) {
             <InputField
               {...props}
               onChangeText={(text) => {
-
                 if (text !== "") {
                   renderProps.field.onChange(text)
                 } else {
@@ -24,7 +23,8 @@ export function FormInputField<T>(props: FormInputFiledProps<T>) {
               onBlur={renderProps.field.onBlur}
               value={renderProps.field.value as string}
               ref={renderProps.field.ref}
-            /></Input>
+            />
+          </Input>
         )
       }}
     />

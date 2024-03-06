@@ -12,7 +12,6 @@ export function FormDateTimePicker<T>(props: FormDateTimePickerProps<T>) {
           <DateTimePicker
             {...props}
             onChange={(date) => {
-
               if (date !== "") {
                 renderProps.field.onChange(date)
               } else {

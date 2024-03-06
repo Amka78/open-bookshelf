@@ -7,7 +7,7 @@ export default {
   title: "FormTestContainer",
   component: FormTestContainer,
   argTypes: {
-    onPressCheckForm: { action: "Press check form." }
+    onPressCheckForm: { action: "Press check form." },
   },
   decorators: [
     (Story) => (
@@ -17,8 +17,8 @@ export default {
     ),
   ],
   parameters: {
-    notes: `Container for React Hook Form contorl test.`
-  }
+    notes: `Container for React Hook Form contorl test.`,
+  },
 } as Meta<typeof FormTestContainer>
 
 type HeadingStory = StoryObj<typeof FormTestContainer>
