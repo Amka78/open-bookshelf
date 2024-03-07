@@ -17,7 +17,7 @@ export default {
     ),
   ],
   parameters: {
-    notes: `Container for React Hook Form contorl test.`,
+    notes: "Container for React Hook Form contorl test.",
   },
 } as Meta<typeof FormTestContainer>
 

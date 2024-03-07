@@ -9,7 +9,6 @@ export type DateTimePickerProps = {
 }
 
 const DateTimePickerCore = forwardRef((props: DateTimePickerProps, ref) => {
-
   return createElement("input", {
     type: "date",
     value: props.value ? props.value.split("T")[0] : undefined,
@@ -26,9 +25,10 @@ const DateTimePickerCore = forwardRef((props: DateTimePickerProps, ref) => {
       height: "full",
       width: "full",
       borderWidth: 0,
-    }
+      marginLeft: 1.5,
+      fontSize: 20,
+    },
   })
-}
-)
+})
 
 export const DateTimePicker = styled(DateTimePickerCore, {})

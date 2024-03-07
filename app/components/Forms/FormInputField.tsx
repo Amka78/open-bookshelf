@@ -10,21 +10,19 @@ export function FormInputField<T>(props: FormInputFiledProps<T>) {
       {...props}
       render={(renderProps) => {
         return (
-          <Input>
-            <InputField
-              {...props}
-              onChangeText={(text) => {
-                if (text !== "") {
-                  renderProps.field.onChange(text)
-                } else {
-                  renderProps.field.onChange(undefined)
-                }
-              }}
-              onBlur={renderProps.field.onBlur}
-              value={renderProps.field.value as string}
-              ref={renderProps.field.ref}
-            />
-          </Input>
+          <InputField
+            {...props}
+            onChangeText={(text) => {
+              if (text !== "") {
+                renderProps.field.onChange(text)
+              } else {
+                renderProps.field.onChange(null)
+              }
+            }}
+            onBlur={renderProps.field.onBlur}
+            value={renderProps.field.value as string}
+            ref={renderProps.field.ref}
+          />
         )
       }}
     />

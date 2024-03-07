@@ -9,7 +9,7 @@ import { types } from "mobx-state-tree"
 const CommonField = {
   isCategory: false,
   isCustom: false,
-  isEditable: false,
+  isEditable: true,
   isCsp: false,
   kind: "test",
 }
@@ -32,7 +32,7 @@ const formatsTestField = FieldMetadataModel.create({
     uiToList: ",",
   },
   ...CommonField,
-  label: "fortmats",
+  label: "formats",
 })
 
 const ratingTestField = FieldMetadataModel.create({
@@ -65,7 +65,7 @@ const authorTestField = FieldMetadataModel.create({
     cacheToList: "&",
     uiToList: "&",
   },
-  label: "author",
+  label: "authors",
 })
 const book = BookModel.create({
   id: 12345,
@@ -108,6 +108,16 @@ export default {
       </ComponentHolder>
     ),
   ],
+  parameters: {
+    notes: `
+    List FieldMetadata.
+`,
+  },
+} as Meta<typeof BookDetailFieldList>
+
+type StoryProps = StoryObj<typeof BookDetailFieldList>
+
+export const Base: StoryProps = {
   args: {
     fieldNameList: bookFieldList,
     fieldMetadataList: fieldMetadataList,
@@ -118,13 +128,4 @@ export default {
   argTypes: {
     onLinkPress: { action: "Pressed Link." },
   },
-  parameters: {
-    notes: `
-    List FieldMetadata.
-`,
-  },
-} as Meta<typeof BookDetailFieldList>
-
-type StoryProps = StoryObj<typeof BookDetailFieldList>
-
-export const Base: StoryProps = {}
+}

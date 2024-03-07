@@ -13,23 +13,21 @@ export function FormMultipleInputField<T>(props: FormMultipleInputFiledProps<T>)
       {...props}
       render={(renderProps) => {
         return (
-          <Input>
-            <InputField
-              {...props}
-              onChangeText={(text) => {
-                const splitted = text.split(props.textToValue)
+          <InputField
+            {...props}
+            onChangeText={(text) => {
+              const splitted = text.split(props.textToValue)
 
-                if (splitted.length === 1 && splitted[0] === "") {
-                  renderProps.field.onChange(undefined)
-                } else {
-                  renderProps.field.onChange(splitted)
-                }
-              }}
-              onBlur={renderProps.field.onBlur}
-              value={renderProps.field.value as string}
-              ref={renderProps.field.ref}
-            />
-          </Input>
+              if (splitted.length === 1 && splitted[0] === "") {
+                renderProps.field.onChange(undefined)
+              } else {
+                renderProps.field.onChange(splitted)
+              }
+            }}
+            onBlur={renderProps.field.onBlur}
+            value={renderProps.field.value as string}
+            ref={renderProps.field.ref}
+          />
         )
       }}
     />

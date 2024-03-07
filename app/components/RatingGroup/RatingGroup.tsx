@@ -21,7 +21,7 @@ const RatingGroupCore = forwardRef(({ ticks = 2, ...restProps }: RatingGroupProp
   for (let i = 0; i <= props.max; i++) {
     if (i % props.ticks === 0) {
       if (i === 0) {
-        ratingList.push(undefined)
+        ratingList.push(null)
       } else {
         ratingList.push(i)
       }
