@@ -1,13 +1,21 @@
-import { Box, FlatList, Icon, ListItem, RootContainer, Text, MaterialCommunityIcon } from "@/components"
+import {
+  Box,
+  FlatList,
+  Icon,
+  ListItem,
+  MaterialCommunityIcon,
+  RootContainer,
+  Text,
+} from "@/components"
 import { useStores } from "@/models"
-import { Entry } from "@/models/opds"
-import { OpdsChildrenModel, OpdsModel, OpdsRoot } from "@/models/opds/OpdsRootStore"
-import { ApppNavigationProp, AppStackParamList } from "@/navigators"
+import type { Entry } from "@/models/opds"
+import { OpdsChildrenModel, OpdsModel, type OpdsRoot } from "@/models/opds/OpdsRootStore"
+import type { AppStackParamList, ApppNavigationProp } from "@/navigators"
 import { MaterialCommunityIcons } from "@expo/vector-icons"
-import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
+import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { Image } from "expo-image"
 import { observer } from "mobx-react-lite"
-import React, { FC, useEffect, useState } from "react"
+import React, { type FC, useEffect, useState } from "react"
 
 type AcquisitionScreenRouteProp = RouteProp<AppStackParamList, "Acquisition">
 export const AcquisitionScreen: FC = observer(() => {

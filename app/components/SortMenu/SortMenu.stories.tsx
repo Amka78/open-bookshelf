@@ -1,5 +1,5 @@
-import { Meta, StoryObj } from "@storybook/react"
 import { SortMenu } from "@/components"
+import type { Meta, StoryObj } from "@storybook/react"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
@@ -10,7 +10,7 @@ export default {
     field: [
       { id: "001", name: "Sort1" },
       { id: "002", name: "Sort2" },
-      { id: "003", name: "Sort3" }
+      { id: "003", name: "Sort3" },
     ],
     selectedSort: "001",
     selectedSortOrder: "asc",
@@ -20,7 +20,7 @@ export default {
   },
   decorators: [
     (Story) => (
-      <ComponentHolder alignItems="center" justifyContent="center" >
+      <ComponentHolder alignItems="center" justifyContent="center">
         <Story />
       </ComponentHolder>
     ),

@@ -1,10 +1,10 @@
 import { Button, Heading } from "@/components"
 import { ScrollView } from "@gluestack-ui/themed"
 import React from "react"
-import { ModalComponentProp } from "react-native-modalfy"
+import type { ModalComponentProp } from "react-native-modalfy"
 
 import { Body, CloseButton, Footer, Header, Root } from "./"
-import { ModalStackParams } from "./Types"
+import type { ModalStackParams } from "./Types"
 
 export type FormatSelectModalProps = ModalComponentProp<ModalStackParams, void, "FormatSelectModal">
 

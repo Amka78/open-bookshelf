@@ -1,6 +1,6 @@
-import { useState } from "react"
+import { Box, HStack, MaterialCommunityIcon, Text } from "@/components"
 import { Pressable } from "@gluestack-ui/themed"
-import { Box, HStack, Text, MaterialCommunityIcon } from "@/components"
+import { useState } from "react"
 
 export type LeftSideMenuItemProps = {
   name: string
@@ -40,9 +40,7 @@ export function LeftSideMenuItem({ mode = "category", ...restProps }: LeftSideMe
           marginTop={"$0.5"}
           paddingLeft={mode === "subCategory" ? "$0.5" : mode === "node" ? "$3" : undefined}
         >
-          <MaterialCommunityIcon
-            name={icon} iconSize={"sm"}
-          />
+          <MaterialCommunityIcon name={icon} iconSize={"sm"} />
           <Text fontSize={"$md"}>{props.name}</Text>
           <Box flex={1} />
           <Text fontSize={"$md"}>{props.count}</Text>

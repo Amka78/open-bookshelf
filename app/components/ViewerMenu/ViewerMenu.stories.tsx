@@ -1,5 +1,5 @@
-import { Meta, StoryObj } from "@storybook/react"
 import { ViewerMenu } from "@/components"
+import type { Meta, StoryObj } from "@storybook/react"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
@@ -26,7 +26,7 @@ export const Basic: StoryProps = {
     readingStyle: "singlePage",
   },
   argTypes: {
-    onSelectPageDirection: { action: "Change page direction."},
-    onSelectReadingStyle: { action: "Change reading style."}
+    onSelectPageDirection: { action: "Change page direction." },
+    onSelectReadingStyle: { action: "Change reading style." },
   },
 }

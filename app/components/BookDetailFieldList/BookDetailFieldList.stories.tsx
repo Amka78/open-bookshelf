@@ -1,5 +1,5 @@
 import { BookDetailFieldList } from "@/components"
-import { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 import { FieldMetadataModel } from "@/models/calibre"

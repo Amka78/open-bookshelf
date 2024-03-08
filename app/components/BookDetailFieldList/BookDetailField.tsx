@@ -1,5 +1,5 @@
-import { Box, HStack, LinkButton, LinkInfo, Text, Rating } from "@/components"
-import { FieldMetadata } from "@/models/calibre"
+import { Box, HStack, LinkButton, type LinkInfo, Rating, Text } from "@/components"
+import type { FieldMetadata } from "@/models/calibre"
 import { formatDate } from "@/utils/formatDate"
 import { parseISO } from "date-fns"
 

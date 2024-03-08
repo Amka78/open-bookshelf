@@ -1,5 +1,5 @@
-import { Meta, StoryObj } from "@storybook/react"
 import { LibraryViewButton } from "@/components"
+import type { Meta, StoryObj } from "@storybook/react"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
@@ -10,10 +10,10 @@ export default {
     notes: `Toggles the View display method.`,
   },
   args: {
-    mode: "gridView"
+    mode: "gridView",
   },
   argTypes: {
-    onPress: { action: "Press LibraryViewButton." }
+    onPress: { action: "Press LibraryViewButton." },
   },
   decorators: [
     (Story) => (
@@ -29,6 +29,6 @@ type StoryProps = StoryObj<typeof LibraryViewButton>
 export const GridView: StoryProps = {}
 export const ViewList: StoryProps = {
   args: {
-    mode: "viewList"
-  }
+    mode: "viewList",
+  },
 }

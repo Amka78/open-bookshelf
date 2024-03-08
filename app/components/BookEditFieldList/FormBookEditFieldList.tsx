@@ -1,7 +1,7 @@
 import { Button, VStack } from "@/components"
-import { BookEditFieldList, BookEditFieldListProps } from "./BookEditFieldList"
+import type { Metadata } from "@/models/calibre"
 import { useForm } from "react-hook-form"
-import { Metadata } from "@/models/calibre"
+import { BookEditFieldList, type BookEditFieldListProps } from "./BookEditFieldList"
 
 export type FormBookEditFieldListProps = Omit<BookEditFieldListProps, "control"> & {
   onSubmit: (data: Metadata) => void

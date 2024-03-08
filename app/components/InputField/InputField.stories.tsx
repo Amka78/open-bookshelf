@@ -1,6 +1,6 @@
-import { Meta, StoryObj } from "@storybook/react"
-import { InputField } from "./InputField"
 import { Input } from "@/components"
+import type { Meta, StoryObj } from "@storybook/react"
+import { InputField } from "./InputField"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
@@ -11,7 +11,7 @@ export default {
     notes: `InputField`,
   },
   args: {
-    placeholderTx: "connectScreen.placeHolder"
+    placeholderTx: "connectScreen.placeHolder",
   },
   decorators: [
     (Story) => (

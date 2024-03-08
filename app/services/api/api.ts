@@ -6,21 +6,21 @@
  * documentation for more details.
  */
 import Config from "@/config"
-import { ApiResponse, ApisauceInstance, create } from "apisauce"
+import { type ApiResponse, type ApisauceInstance, create } from "apisauce"
 
-import { GeneralApiProblem, getGeneralApiProblem } from "./apiProblem"
 import * as FileSystem from "expo-file-system"
+import { type GeneralApiProblem, getGeneralApiProblem } from "./apiProblem"
 
 import type {
-  ApiConfig,
-  ApiFeedResponse,
+  ApiBookFile,
+  ApiBookInfo,
+  ApiBookInfoCore,
+  ApiBookManifestResultType,
   ApiBookManifestStatusType,
   ApiCalibreInterfaceType,
+  ApiConfig,
+  ApiFeedResponse,
   ApiTagBrowser,
-  ApiBookFile,
-  ApiBookManifestResultType,
-  ApiBookInfoCore,
-  ApiBookInfo,
 } from "./api.types"
 
 /**

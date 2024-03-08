@@ -1,10 +1,10 @@
-import { BookPage, BookViewer, RenderPageProps } from "@/components"
+import { BookPage, BookViewer, type RenderPageProps } from "@/components"
 import useOrientation from "@/hooks/useOrientation"
 import { useStores } from "@/models"
-import { ApppNavigationProp } from "@/navigators"
+import type { ApppNavigationProp } from "@/navigators"
 import { useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
-import React, { FC, useState, useLayoutEffect } from "react"
+import React, { type FC, useState, useLayoutEffect } from "react"
 
 export const ViewerScreen: FC = observer(() => {
   const { authenticationStore, calibreRootStore } = useStores()

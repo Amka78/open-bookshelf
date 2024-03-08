@@ -1,7 +1,7 @@
 /* eslint-disable react/display-name */
-import { MessageKey, translate } from "@/i18n"
+import { type MessageKey, translate } from "@/i18n"
 import { InputField as Template } from "@gluestack-ui/themed"
-import React, { ComponentProps, forwardRef } from "react"
+import React, { type ComponentProps, forwardRef } from "react"
 
 export type InputFieldProps = ComponentProps<typeof Template> & {
   placeholderTx?: MessageKey

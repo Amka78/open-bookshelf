@@ -1,7 +1,12 @@
-import { MessageKey, translate } from "@/i18n"
-import { BookReadingStyleType } from "@/type/types"
-import { Menu, MenuItem, MenuItemLabel as MenuItemLabelOrigin, Pressable } from "@gluestack-ui/themed"
-import { ComponentProps, useState } from "react"
+import { type MessageKey, translate } from "@/i18n"
+import type { BookReadingStyleType } from "@/type/types"
+import {
+  Menu,
+  MenuItem,
+  MenuItemLabel as MenuItemLabelOrigin,
+  Pressable,
+} from "@gluestack-ui/themed"
+import { type ComponentProps, useState } from "react"
 
 import { HStack, IconButton } from "@/components"
 import { useConvergence } from "@/hooks/useConvergence"

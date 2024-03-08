@@ -1,6 +1,6 @@
-import { MessageKey, translate } from "@/i18n"
+import { type MessageKey, translate } from "@/i18n"
 import { Text as Template } from "@gluestack-ui/themed"
-import React, { ComponentProps } from "react"
+import React, { type ComponentProps } from "react"
 
 export type TextProps = ComponentProps<typeof Template> & {
   tx?: MessageKey

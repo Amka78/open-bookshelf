@@ -12,7 +12,7 @@
  *
  * @refresh reset
  */
-import { RootStore } from "@/models/RootStore"
+import type { RootStore } from "@/models/RootStore"
 import { goBack, navigate, resetRoot } from "@/navigators/navigationUtilities"
 import { clear } from "@/utils/storage"
 import AsyncStorage from "@react-native-async-storage/async-storage"
@@ -22,7 +22,7 @@ import { ArgType } from "reactotron-core-client"
 import { mst } from "reactotron-mst"
 
 import { Reactotron } from "./reactotronClient"
-import { DEFAULT_REACTOTRON_CONFIG, ReactotronConfig } from "./reactotronConfig"
+import { DEFAULT_REACTOTRON_CONFIG, type ReactotronConfig } from "./reactotronConfig"
 import { fakeReactotron } from "./reactotronFake"
 
 /**

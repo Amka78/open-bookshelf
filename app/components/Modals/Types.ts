@@ -1,7 +1,7 @@
-import { MessageKey } from "@/i18n"
-import { LoginType } from "./LoginModal"
-import { Book } from "@/models/CalibreRootStore"
-import { FieldMetadataMap } from "@/models/calibre"
+import type { MessageKey } from "@/i18n"
+import type { Book } from "@/models/CalibreRootStore"
+import type { FieldMetadataMap, Metadata } from "@/models/calibre"
+import type { LoginType } from "./LoginModal"
 export type ModalStackParams = {
   ConfirmModal: {
     title?: string
@@ -27,7 +27,7 @@ export type ModalStackParams = {
     onOpenBook?: () => Promise<void>
     onDownloadBook?: () => Promise<void>
     onConvertBook?: () => void
-    onShowEdit?: () => void
+    onEditBook?: () => void
     onDeleteBook?: () => void
     onDeleteConfirmOKPress?: () => void
   }
@@ -35,6 +35,6 @@ export type ModalStackParams = {
     imageUrl: string
     selectedBook?: Book
     fieldMetadataList?: FieldMetadataMap
-    onOKPress: () => void
+    onOKPress: (value: Metadata) => void
   }
 }

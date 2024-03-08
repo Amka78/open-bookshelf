@@ -1,5 +1,5 @@
-import { Controller, ControllerProps } from "react-hook-form"
-import { ImageUploader, ImageUploaderProps } from "../ImageUploader/ImageUploader"
+import { Controller, type ControllerProps } from "react-hook-form"
+import { ImageUploader, type ImageUploaderProps } from "../ImageUploader/ImageUploader"
 
 export type FormImageUploaderProps<T> = Omit<ImageUploaderProps, "onImageUpload"> &
   Omit<ControllerProps<T>, "render">

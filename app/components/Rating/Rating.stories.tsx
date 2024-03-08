@@ -1,5 +1,5 @@
-import { Meta, StoryObj } from "@storybook/react"
 import { Rating } from "@/components"
+import type { Meta, StoryObj } from "@storybook/react"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
@@ -22,52 +22,51 @@ type StoryProps = StoryObj<typeof Rating>
 
 export const FiveStar: StoryProps = {
   args: {
-    rating: 10
-  }
+    rating: 10,
+  },
 }
 export const FourStar: StoryProps = {
   args: {
-    rating: 8
-  }
+    rating: 8,
+  },
 }
 export const ThreeStar: StoryProps = {
   args: {
-    rating: 6
-  }
+    rating: 6,
+  },
 }
 export const TwoStar: StoryProps = {
   args: {
-    rating: 4
-  }
+    rating: 4,
+  },
 }
 export const OneStar: StoryProps = {
   args: {
-    rating: 2
-  }
+    rating: 2,
+  },
 }
 export const NoStar: StoryProps = {}
 
 export const SelectableRating: StoryProps = {
   args: {
     variant: "selectable",
-    rating: 10
-  }
+    rating: 10,
+  },
 }
 
 export const SelectableNoRating: StoryProps = {
   args: {
     variant: "selectable",
-  }
+  },
 }
 export const SelectedRating: StoryProps = {
   args: {
     variant: "selected",
-    rating: 4
-  }
+    rating: 4,
+  },
 }
 export const SelectedNoRating: StoryProps = {
   args: {
-    variant: "selected"
-
-  }
+    variant: "selected",
+  },
 }

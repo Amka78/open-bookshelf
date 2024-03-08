@@ -1,4 +1,4 @@
-import { Button, ButtonProps, HStack, VStack, Text } from "@/components"
+import { Button, type ButtonProps, HStack, Text, VStack } from "@/components"
 
 export type LinkInfo = {
   value: string
@@ -12,12 +12,11 @@ export type LinkButtonProps = Omit<ButtonProps, "children" | "onPress"> & {
 }
 
 export function LinkButton(props: LinkButtonProps) {
-
   const links = props.links ? props.links : props.children
   if (Array.isArray(links)) {
     const linkInfos = links as LinkInfo[]
     return (
-      <HStack flexWrap="wrap" flex={1} alignContent={"flex-start"} >
+      <HStack flexWrap="wrap" flex={1} alignContent={"flex-start"}>
         {linkInfos.map((linkInfo, index) => {
           let link = (
             <Button

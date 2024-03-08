@@ -1,9 +1,9 @@
-import { Category } from "@/models/calibre"
-import React from "react"
+import type { Category } from "@/models/calibre"
 import { ScrollView } from "@gluestack-ui/themed"
+import React from "react"
 
-import { LeftSideMenuItem } from "../LeftSideMenuItem/LeftSideMenuItem"
 import { observer } from "mobx-react-lite"
+import { LeftSideMenuItem } from "../LeftSideMenuItem/LeftSideMenuItem"
 
 export type LeftSideMenuProps = {
   tagBrowser: Category[]

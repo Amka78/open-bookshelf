@@ -1,5 +1,5 @@
-import { Meta, StoryObj } from "@storybook/react"
 import { ViewerHeader } from "@/components"
+import type { Meta, StoryObj } from "@storybook/react"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 import { Basic as ViewerMenuBasic } from "../ViewerMenu/ViewerMenu.stories"
@@ -14,7 +14,7 @@ export default {
   },
   argTypes: {
     ...ViewerMenuBasic.argTypes,
-    onLeftArrowPress: { action: "Pressed Left Arrow."}
+    onLeftArrowPress: { action: "Pressed Left Arrow." },
   },
   decorators: [
     (Story) => (
@@ -33,11 +33,11 @@ type StoryProps = StoryObj<typeof ViewerHeader>
 export const Basic: StoryProps = {}
 export const LongTitle: StoryProps = {
   args: {
-    title: "HeaderTitleXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-  }
+    title: "HeaderTitleXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  },
 }
 export const Hide: StoryProps = {
   args: {
-    visible: false
-  }
+    visible: false,
+  },
 }

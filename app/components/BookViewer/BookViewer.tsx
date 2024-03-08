@@ -1,10 +1,11 @@
 import { Box, HStack, PageManager, PagePressable, ViewerHeader } from "@/components"
 import { useViewer } from "@/hooks/useViewer"
-import { ApppNavigationProp } from "@/navigators"
-import { BookReadingStyleType } from "@/type/types"
+import type { ApppNavigationProp } from "@/navigators"
+import type { BookReadingStyleType } from "@/type/types"
 import { useNavigation } from "@react-navigation/native"
 import { FlashList } from "@shopify/flash-list"
-import React, { useEffect, useRef, useState } from "react"
+import type React from "react"
+import { useEffect, useRef, useState } from "react"
 import { StyleSheet, useWindowDimensions } from "react-native"
 
 type FacingPageType = { page1?: number; page2?: number }
@@ -38,7 +39,7 @@ export function BookViewer(props: BookViewerProps) {
   }, [props.totalPage])
 
   const renderPage = (renderProps: RenderPageProps) => {
-    let alignItems
+    let alignItems: string
 
     switch (renderProps.pageType) {
       case "singlePage":
@@ -71,7 +72,7 @@ export function BookViewer(props: BookViewerProps) {
     )
   }
   const renderItem = ({ item, index }: { item: number | FacingPageType; index: number }) => {
-    let renderComp
+    let renderComp: React.JSX.Element
     if (typeof item === "number" || (item as FacingPageType).page2 === undefined) {
       const num = typeof item === "number" ? item : (item as FacingPageType).page1
       renderComp = (
@@ -158,14 +159,14 @@ export function BookViewer(props: BookViewerProps) {
               const index = (pages[viewerHook.readingStyle][scrollIndex] as FacingPageType).page1
 
               const newIndex = (pages[newReadingStyle] as FacingPageType[]).findIndex((value) => {
-                return value.page1 === index || value.page2 == index
+                return value.page1 === index || value.page2 === index
               })
               setScrollToIndex(newIndex)
               flastListRef.current.scrollToIndex({ index: newIndex })
             }
           } else {
             const newIndex = (pages[newReadingStyle] as FacingPageType[]).findIndex((value) => {
-              return value.page1 === scrollIndex || value.page2 == scrollIndex
+              return value.page1 === scrollIndex || value.page2 === scrollIndex
             })
             setScrollToIndex(newIndex)
             flastListRef.current.scrollToIndex({ index: newIndex })
@@ -201,6 +202,10 @@ export function BookViewer(props: BookViewerProps) {
       ) : null}
       <PageManager
         currentPage={currentPage}
+        facintPage={
+          viewerHook.readingStyle === "facingPage" ||
+          viewerHook.readingStyle === "facingPageWithTitle"
+        }
         totalPage={props.totalPage}
         onPageChange={(page) => {
           let index = page

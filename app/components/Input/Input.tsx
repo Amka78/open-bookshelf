@@ -1,5 +1,5 @@
 import { Input as Template } from "@gluestack-ui/themed"
-import React, { ComponentProps, forwardRef } from "react"
+import React, { type ComponentProps, forwardRef } from "react"
 
 export type InputProps = ComponentProps<typeof Template>
 

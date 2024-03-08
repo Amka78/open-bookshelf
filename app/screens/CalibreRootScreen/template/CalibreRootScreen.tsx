@@ -1,6 +1,6 @@
 import { FlatList, ListItem, RootContainer, Text } from "@/components"
-import { ModalStackParams } from "@/components/Modals/Types"
-import { LibraryMap } from "@/models/CalibreRootStore"
+import type { ModalStackParams } from "@/components/Modals/Types"
+import type { LibraryMap } from "@/models/CalibreRootStore"
 import { View } from "react-native"
 import { useModal } from "react-native-modalfy"
 

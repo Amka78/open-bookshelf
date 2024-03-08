@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react"
 import { ImageUploaderWithState } from "./ImageUploaderWithState"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"

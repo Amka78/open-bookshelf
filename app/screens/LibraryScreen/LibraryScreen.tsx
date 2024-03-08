@@ -3,28 +3,28 @@ import {
   BookDescriptionItem,
   BookImageItem,
   FlatList,
+  IconButton,
   LeftSideMenu,
   LibraryViewButton,
   SortMenu,
   StaggerContainer,
-  IconButton,
 } from "@/components"
-import { ModalStackParams } from "@/components/Modals/Types"
+import { AuthButton } from "@/components/AuthButton/AuthButton"
+import type { ModalStackParams } from "@/components/Modals/Types"
+import { useConvergence } from "@/hooks/useConvergence"
+import { useOpenViewer } from "@/hooks/useOpenViewer"
 import { useStores } from "@/models"
-import { Book } from "@/models/CalibreRootStore"
-import { ApppNavigationProp } from "@/navigators"
-import { useNavigation } from "@react-navigation/native"
-import { observer } from "mobx-react-lite"
+import type { Book } from "@/models/CalibreRootStore"
+import type { ApppNavigationProp } from "@/navigators"
 import { HStack } from "@gluestack-ui/themed"
-import React, { FC, useLayoutEffect, useRef } from "react"
+import { useNavigation } from "@react-navigation/native"
+import { values } from "mobx"
+import { observer } from "mobx-react-lite"
+import React, { type FC, useLayoutEffect, useRef } from "react"
 import { useWindowDimensions } from "react-native"
 import { useModal } from "react-native-modalfy"
+import type { SearchBarCommands } from "react-native-screens"
 import { useLibrary } from "./hook/useLibrary"
-import { useConvergence } from "@/hooks/useConvergence"
-import { AuthButton } from "@/components/AuthButton/AuthButton"
-import { useOpenViewer } from "@/hooks/useOpenViewer"
-import { SearchBarCommands } from "react-native-screens"
-import { values } from "mobx"
 
 export const LibraryScreen: FC = observer(() => {
   const { authenticationStore, calibreRootStore, settingStore } = useStores()
@@ -155,8 +155,8 @@ export const LibraryScreen: FC = observer(() => {
             convergenceHook.isLarge
               ? undefined
               : async () => {
-                await search()
-              }
+                  await search()
+                }
           }
           onEndReached={async () => {
             await calibreRootStore.searchMoreLibrary()

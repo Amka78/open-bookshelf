@@ -1,9 +1,9 @@
-import { ModalStackConfig } from "react-native-modalfy"
+import type { ModalStackConfig } from "react-native-modalfy"
+import { BookDetailModal } from "./BookDetailModal"
+import { ConfirmModal } from "./ConfirmModal"
 import { ErrorModal } from "./ErrorModal"
 import { FormatSelectModal } from "./FormatSelectModal"
 import { LoginModal } from "./LoginModal"
-import { BookDetailModal } from "./BookDetailModal"
-import { ConfirmModal } from "./ConfirmModal"
 
 export const modalConfig: ModalStackConfig = {
   BookDetailModal,

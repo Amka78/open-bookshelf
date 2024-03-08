@@ -1,6 +1,6 @@
-import { Button, RootContainer, Text, Heading } from "@/components"
-import React, { ErrorInfo } from "react"
-import { ScrollView, TextStyle, View, ViewStyle } from "react-native"
+import { Button, Heading, RootContainer, Text } from "@/components"
+import React, { type ErrorInfo } from "react"
+import { ScrollView, type TextStyle, View, type ViewStyle } from "react-native"
 
 export interface ErrorDetailsProps {
   error: Error

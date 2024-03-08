@@ -1,5 +1,5 @@
-import { Meta, StoryObj } from "@storybook/react"
 import { Box, ScrollView } from "@/components"
+import type { Meta, StoryObj } from "@storybook/react"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
@@ -22,9 +22,12 @@ type StoryProps = StoryObj<typeof ScrollView>
 
 export const Basic: StoryProps = {
   args: {
-    children: (<>
-      <Box width={"$32"} height={"$32"} backgroundColor="blue" />
-      <Box width={"$32"} height={"$32"} backgroundColor="red" />
-      <Box width={"$32"} height={"$32"} backgroundColor="green" /></>)
-  }
+    children: (
+      <>
+        <Box width={"$32"} height={"$32"} backgroundColor="blue" />
+        <Box width={"$32"} height={"$32"} backgroundColor="red" />
+        <Box width={"$32"} height={"$32"} backgroundColor="green" />
+      </>
+    ),
+  },
 }

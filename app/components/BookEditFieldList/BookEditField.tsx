@@ -1,15 +1,15 @@
-import { Book } from "@/models/CalibreRootStore"
-import { FieldMetadata, Metadata } from "@/models/calibre"
-import { Control } from "react-hook-form"
 import {
-  FormRatingGroup,
-  VStack,
-  Text,
-  Input,
-  FormInputField,
   FormDateTimePicker,
+  FormInputField,
   FormMultipleInputField,
+  FormRatingGroup,
+  Input,
+  Text,
+  VStack,
 } from "@/components"
+import type { Book } from "@/models/CalibreRootStore"
+import type { FieldMetadata, Metadata } from "@/models/calibre"
+import type { Control } from "react-hook-form"
 
 export type BookEditFieldProps = {
   book: Book

@@ -1,9 +1,9 @@
-import { FieldMetadataMap, Metadata } from "@/models/calibre"
-import { Book } from "@/models/CalibreRootStore"
 import { Box, ScrollView, Text } from "@/components"
-import { ComponentProps } from "react"
+import type { Book } from "@/models/CalibreRootStore"
+import type { FieldMetadataMap, Metadata } from "@/models/calibre"
+import type { ComponentProps } from "react"
+import type { Control } from "react-hook-form"
 import { BookEditField } from "./BookEditField"
-import { Control } from "react-hook-form"
 
 export type BookEditFieldListProps = {
   fieldMetadataList: FieldMetadataMap

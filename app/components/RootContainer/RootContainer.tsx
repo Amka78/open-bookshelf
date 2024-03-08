@@ -1,5 +1,5 @@
-import React, { ComponentProps } from "react"
 import { Box, useBreakpointValue } from "@gluestack-ui/themed"
+import React, { type ComponentProps } from "react"
 import { useWindowDimensions } from "react-native"
 
 export type ContainerProps = ComponentProps<typeof Box>

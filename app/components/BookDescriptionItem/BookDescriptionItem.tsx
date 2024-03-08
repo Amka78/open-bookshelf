@@ -4,12 +4,12 @@ import { StyleSheet } from "react-native"
 import {
   Box,
   Image,
-  ImageProps,
-  ListItem,
-  Text,
+  type ImageProps,
   LabeledSpinner,
   LinkButton,
-  LinkInfo,
+  type LinkInfo,
+  ListItem,
+  Text,
 } from "@/components"
 
 export type BookDescriptionItemProps = Pick<ImageProps, "source"> & {

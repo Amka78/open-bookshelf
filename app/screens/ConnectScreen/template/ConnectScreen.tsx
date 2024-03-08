@@ -1,17 +1,17 @@
 import {
   Button,
   FormCheckbox,
-  Input,
   FormInputField,
   Heading,
+  Input,
   RootContainer,
   Text,
   VStack,
 } from "@/components"
 import { useForm } from "react-hook-form"
 
-import { ConnectType } from "../type/ConnectType"
-import { LoginType } from "@/components/Modals/LoginModal"
+import type { LoginType } from "@/components/Modals/LoginModal"
+import type { ConnectType } from "../type/ConnectType"
 
 export type ConnectScreenProps = {
   baseUrl: string

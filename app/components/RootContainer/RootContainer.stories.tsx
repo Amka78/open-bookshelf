@@ -1,5 +1,5 @@
-import { Meta, StoryObj } from "@storybook/react"
 import { Box, RootContainer, Text } from "@/components"
+import type { Meta, StoryObj } from "@storybook/react"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
@@ -22,8 +22,10 @@ type StoryProps = StoryObj<typeof RootContainer>
 
 export const Basic: StoryProps = {
   args: {
-    children: <Box flex={1} backgroundColor="blue">
-      <Text>{"RootContainer Test"}</Text>
-    </Box>
-  }
+    children: (
+      <Box flex={1} backgroundColor="blue">
+        <Text>{"RootContainer Test"}</Text>
+      </Box>
+    ),
+  },
 }

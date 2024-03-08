@@ -1,5 +1,5 @@
+import { Image as Original, type ImageProps as OriginalProps } from "expo-image"
 import React from "react"
-import { Image as Original, ImageProps as OriginalProps } from "expo-image"
 
 export type ImageProps = OriginalProps
 export function Image(props: ImageProps) {

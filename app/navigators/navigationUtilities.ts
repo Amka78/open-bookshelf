@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from "react"
-import { BackHandler, Platform } from "react-native"
 import {
-  PartialState,
-  NavigationState,
-  NavigationAction,
+  type NavigationAction,
+  type NavigationState,
+  type PartialState,
   createNavigationContainerRef,
 } from "@react-navigation/native"
+import { useEffect, useRef, useState } from "react"
+import { BackHandler, Platform } from "react-native"
 import Config from "../config"
 import type { PersistNavigationConfig } from "../config/config.base"
 import { useIsMounted } from "../utils/isMounted"

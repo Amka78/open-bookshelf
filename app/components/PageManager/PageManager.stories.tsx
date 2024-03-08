@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react"
 import { PageManagerWithState } from "./PageManagerWithState"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
@@ -12,12 +12,12 @@ export default {
   args: {
     initialPage: 0,
     totalPage: 199,
-    variant: "free"
+    variant: "free",
   },
   argTypes: {
     onPageChange: (page) => {
       console.log(`Selected page${page}`)
-    }
+    },
   },
   decorators: [
     (Story) => (
@@ -33,16 +33,16 @@ type StoryProps = StoryObj<typeof PageManagerWithState>
 export const Basic: StoryProps = {}
 export const Reverse: StoryProps = {
   args: {
-    reverse: true
-  }
+    reverse: true,
+  },
 }
 export const Invisible: StoryProps = {
   args: {
-    visible: false
-  }
+    visible: false,
+  },
 }
 export const FixedRepresentation: StoryProps = {
   args: {
-    variant: "fix"
-  }
+    variant: "fix",
+  },
 }

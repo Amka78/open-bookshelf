@@ -1,5 +1,5 @@
-import React from "react"
-import { ModalContent, Modal } from "@gluestack-ui/themed"
+import { Modal, ModalContent } from "@gluestack-ui/themed"
+import type React from "react"
 
 export type RootProps = {
   children: React.ReactNode

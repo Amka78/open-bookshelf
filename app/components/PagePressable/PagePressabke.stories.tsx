@@ -1,5 +1,5 @@
-import { Meta, StoryObj } from "@storybook/react"
 import { BookImageItem, PagePressable } from "@/components"
+import type { Meta, StoryObj } from "@storybook/react"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
@@ -10,9 +10,7 @@ export default {
     notes: `Manages the page press process.`,
   },
   args: {
-    children: <BookImageItem
-      source={require("../../../assets/images/sample-image-1.png")}
-    />,
+    children: <BookImageItem source={require("../../../assets/images/sample-image-1.png")} />,
     currentPage: 0,
     totalPages: 200,
     direction: "previous",
@@ -23,7 +21,7 @@ export default {
     onPageChanged: { action: "Change page." },
     onPageChanging: (currentPage) => {
       console.log(`Next page: ${currentPage}`)
-    }
+    },
   },
   decorators: [
     (Story) => (
@@ -39,27 +37,27 @@ type StoryProps = StoryObj<typeof PagePressable>
 export const FirstPagwePageDirectionPrevious: StoryProps = {
   args: {
     currentPage: 0,
-    direction: "previous"
-  }
+    direction: "previous",
+  },
 }
 
 export const FirstPagwePageDirectionNext: StoryProps = {
   args: {
     currentPage: 0,
-    direction: "next"
-  }
+    direction: "next",
+  },
 }
 
 export const LastPagwePageDirectionPrevious: StoryProps = {
   args: {
     currentPage: 200,
-    direction: "previous"
-  }
+    direction: "previous",
+  },
 }
 
 export const LastPagwePageDirectionNext: StoryProps = {
   args: {
     currentPage: 200,
-    direction: "next"
-  }
+    direction: "next",
+  },
 }

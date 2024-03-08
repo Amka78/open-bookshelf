@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react"
 import { ModalTestContainer } from "./ModalTestContainer"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"

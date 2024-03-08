@@ -1,4 +1,4 @@
-import { Image, ImageProps } from "@/components"
+import { Image, type ImageProps } from "@/components"
 import React, { useState } from "react"
 import { useWindowDimensions } from "react-native"
 

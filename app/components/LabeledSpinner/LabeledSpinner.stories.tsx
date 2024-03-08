@@ -1,5 +1,5 @@
-import { Meta, StoryObj } from "@storybook/react"
 import { LabeledSpinner } from "@/components"
+import type { Meta, StoryObj } from "@storybook/react"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
@@ -11,7 +11,7 @@ export default {
   },
   args: {
     labelTx: "bookImage.loading",
-    labelDirection: "vertical"
+    labelDirection: "vertical",
   },
   decorators: [
     (Story) => (
@@ -27,11 +27,11 @@ type StoryProps = StoryObj<typeof LabeledSpinner>
 export const VerticalLoading: StoryProps = {}
 export const LinkWithLabel: StoryProps = {
   args: {
-    labelDirection: "horizontal"
-  }
+    labelDirection: "horizontal",
+  },
 }
 export const NoTranslationLabel: StoryProps = {
   args: {
-    label: "Now Loading..."
-  }
-} 
+    label: "Now Loading...",
+  },
+}

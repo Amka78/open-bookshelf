@@ -1,5 +1,5 @@
-import { Meta, StoryObj } from "@storybook/react"
 import { AddFileButton } from "@/components"
+import type { Meta, StoryObj } from "@storybook/react"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 

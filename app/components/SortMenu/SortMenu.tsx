@@ -1,9 +1,9 @@
-import { translate } from "@/i18n"
-import { SortField } from "@/models/calibre"
-import { Menu, MenuItem, MenuItemLabel } from "@gluestack-ui/themed"
 import { IconButton } from "@/components"
+import { translate } from "@/i18n"
+import type { SortField } from "@/models/calibre"
+import { Menu, MenuItem, MenuItemLabel } from "@gluestack-ui/themed"
+import type { ComponentProps } from "react"
 import { useWindowDimensions } from "react-native"
-import { ComponentProps } from "react"
 
 export type SortMenuProps = {
   selectedSort?: string
@@ -29,8 +29,8 @@ export function SortMenu(props: SortMenuProps) {
         const text =
           value.id === props.selectedSort
             ? `${value.name}-${translate(
-              props.selectedSortOrder === "asc" ? "sortMenu.asc" : "sortMenu.desc",
-            )}`
+                props.selectedSortOrder === "asc" ? "sortMenu.asc" : "sortMenu.desc",
+              )}`
             : value.name
         return (
           <MenuItem

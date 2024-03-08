@@ -1,4 +1,4 @@
-import { Instance, types } from "mobx-state-tree"
+import { type Instance, types } from "mobx-state-tree"
 import { withSetPropAction } from "../helpers/withSetPropAction"
 
 const PageDirectionLiterals = types.union(types.literal("left"), types.literal("right"))

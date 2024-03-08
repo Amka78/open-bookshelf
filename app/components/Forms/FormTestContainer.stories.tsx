@@ -1,7 +1,7 @@
+import type { Meta, StoryObj } from "@storybook/react"
 import React from "react"
-import { Meta, StoryObj } from "@storybook/react"
-import { FormTestContainer } from "./FormTestContainer"
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
+import { FormTestContainer } from "./FormTestContainer"
 
 export default {
   title: "FormTestContainer",

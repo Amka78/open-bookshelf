@@ -1,10 +1,10 @@
 import { Button, Heading, Text } from "@/components"
 import { ScrollView } from "@gluestack-ui/themed"
 import React from "react"
-import { ModalComponentProp } from "react-native-modalfy"
+import type { ModalComponentProp } from "react-native-modalfy"
 
 import { Body, CloseButton, Footer, Header, Root } from "./"
-import { ModalStackParams } from "./Types"
+import type { ModalStackParams } from "./Types"
 
 export type ErrorModalProps = ModalComponentProp<ModalStackParams, void, "ErrorModal">
 
@@ -17,7 +17,9 @@ export function ErrorModal(props: ErrorModalProps) {
   return (
     <Root>
       <Header>
-        <Heading tx={titleTx} isTruncated={true}>{title}</Heading>
+        <Heading tx={titleTx} isTruncated={true}>
+          {title}
+        </Heading>
         <CloseButton
           onPress={() => {
             props.modal.closeModal()

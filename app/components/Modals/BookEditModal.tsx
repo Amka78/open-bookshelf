@@ -1,17 +1,38 @@
-import { Button, HStack, Heading, FormImageUploader, BookEditFieldList } from "@/components"
-import { ModalComponentProp } from "react-native-modalfy"
+import { BookEditFieldList, Button, FormImageUploader, HStack, Heading } from "@/components"
+import type { ModalComponentProp } from "react-native-modalfy"
 
-import { Body, CloseButton, Header, Root, Footer } from "."
-import { ModalStackParams } from "./Types"
-import { Metadata } from "@/models/calibre"
-import { useForm, Control } from "react-hook-form"
+import { useStores } from "@/models"
+import type { Metadata } from "@/models/calibre"
+import { observer } from "mobx-react-lite"
+import { useForm } from "react-hook-form"
+import { Body, CloseButton, Footer, Header, Root } from "."
+import type { ModalStackParams } from "./Types"
 
 export type BookEditModalProps = ModalComponentProp<ModalStackParams, void, "BookEditModal">
 
-type MetadataWithImage = Metadata & { image: string }
+export const BookEditModal = observer((props: BookEditModalProps) => {
+  const { authenticationStore, calibreRootStore, settingStore } = useStores()
 
+  const selectedLibrary = calibreRootStore.selectedLibrary
+  const selectedBook = selectedLibrary.selectedBook
+
+  return (
+    <BookEditModalTemplate
+      modal={{
+        ...props.modal,
+        params: {
+          ...props.modal.params,
+          selectedBook: selectedBook,
+          onOKPress(value) {
+            selectedBook.update(value)
+          },
+        },
+      }}
+    />
+  )
+})
 export function BookEditModalTemplate(props: BookEditModalProps) {
-  const form = useForm<MetadataWithImage, unknown, MetadataWithImage>({
+  const form = useForm<Metadata, unknown, Metadata>({
     defaultValues: props.modal.params.selectedBook.metaData,
   })
   return (
@@ -33,7 +54,7 @@ export function BookEditModalTemplate(props: BookEditModalProps) {
           />
           <BookEditFieldList
             book={props.modal.params.selectedBook}
-            control={form.control as Control<Metadata, unknown>}
+            control={form.control}
             fieldMetadataList={props.modal.params.fieldMetadataList}
             height={320}
             width={240}
@@ -42,9 +63,9 @@ export function BookEditModalTemplate(props: BookEditModalProps) {
       </Body>
       <Footer>
         <Button
-          onPress={form.handleSubmit(() => {
+          onPress={form.handleSubmit((value) => {
             if (props.modal.params.onOKPress) {
-              props.modal.params.onOKPress()
+              props.modal.params.onOKPress(value)
             }
             props.modal.closeModal()
           })}

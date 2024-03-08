@@ -1,7 +1,7 @@
 import React from "react"
-import { Controller, ControllerProps } from "react-hook-form"
+import { Controller, type ControllerProps } from "react-hook-form"
 
-import { Checkbox, ICheckboxProps } from "../Checkbox/Checkbox"
+import { Checkbox, type ICheckboxProps } from "../Checkbox/Checkbox"
 
 export type FormCheckboxProps<T> = Omit<ICheckboxProps, "onChangeText" | "value"> &
   Omit<ControllerProps<T>, "render">

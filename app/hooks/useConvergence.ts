@@ -1,10 +1,9 @@
 import useOrientation from "@/hooks/useOrientation"
-import * as ScreenOrientation from "expo-screen-orientation"
 import { useBreakpointValue } from "@gluestack-ui/themed"
+import * as ScreenOrientation from "expo-screen-orientation"
 
 type OrientationType = "vertical" | "horizontal"
 export function useConvergence() {
-
   const screenOrientation = useOrientation()
 
   const isLarge = useBreakpointValue({

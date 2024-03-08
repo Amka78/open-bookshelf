@@ -1,4 +1,4 @@
-import { Instance, SnapshotOut, types } from "mobx-state-tree"
+import { type Instance, type SnapshotOut, types } from "mobx-state-tree"
 import { api } from "../services/api"
 
 const ApiModel = types.model("ApiModel").props({

@@ -1,5 +1,5 @@
 import { useStores } from "@/models"
-import { ApppNavigationProp } from "@/navigators"
+import type { ApppNavigationProp } from "@/navigators"
 import { useNavigation } from "@react-navigation/native"
 import { values } from "mobx"
 

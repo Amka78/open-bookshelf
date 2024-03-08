@@ -1,14 +1,13 @@
-import React, { ReactElement } from "react"
+import React, { type ReactElement } from "react"
 import {
-  StyleProp,
-  TextStyle,
+  type StyleProp,
+  type TextStyle,
   TouchableOpacity,
-  TouchableOpacityProps,
+  type TouchableOpacityProps,
   View,
-  ViewStyle,
+  type ViewStyle,
 } from "react-native"
-
-import { Text, TextProps } from "../components/Text/Text"
+import { Text, type TextProps } from "../components/Text/Text"
 
 export interface ListItemProps extends TouchableOpacityProps {
   /**

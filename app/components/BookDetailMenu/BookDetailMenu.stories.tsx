@@ -1,5 +1,5 @@
 import { BookDetailMenu } from "@/components"
-import { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
@@ -14,11 +14,11 @@ export default {
     ),
   ],
   argTypes: {
-    onConvertBook: { action: "convert book."},
-    onDeleteBook: { action: "delete book."},
-    onDownloadBook: { action: "download book."},
-    onOpenBook: { action: "open book."},
-    onShowEdit: { action: "show eidt"},
+    onConvertBook: { action: "convert book." },
+    onDeleteBook: { action: "delete book." },
+    onDownloadBook: { action: "download book." },
+    onOpenBook: { action: "open book." },
+    onShowEdit: { action: "show eidt" },
   },
   parameters: {
     notes: `

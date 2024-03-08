@@ -1,6 +1,6 @@
-import React from "react"
-import { Meta, StoryObj } from "@storybook/react"
 import { Heading } from "@/components"
+import type { Meta, StoryObj } from "@storybook/react"
+import React from "react"
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
 export default {
@@ -14,8 +14,8 @@ export default {
     ),
   ],
   parameters: {
-    notes: `String display for text highlighting.`
-  }
+    notes: `String display for text highlighting.`,
+  },
 } as Meta<typeof Heading>
 
 type HeadingStory = StoryObj<typeof Heading>
@@ -27,6 +27,6 @@ export const SupportMultiLingual: HeadingStory = {
 }
 export const DirectInput: HeadingStory = {
   args: {
-    children: "Direct Text Input."
+    children: "Direct Text Input.",
   },
 }

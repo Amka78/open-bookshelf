@@ -1,5 +1,5 @@
-import { Meta, StoryObj } from "@storybook/react"
 import { IconButton } from "@/components"
+import type { Meta, StoryObj } from "@storybook/react"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
@@ -7,10 +7,10 @@ export default {
   title: "IconButton",
   component: IconButton,
   args: {
-    name: "access-point"
+    name: "access-point",
   },
   argTypes: {
-    onPress: { action: "Press IconButton." }
+    onPress: { action: "Press IconButton." },
   },
   parameters: {
     notes: `Pressable icon`,
@@ -28,5 +28,5 @@ type StoryProps = StoryObj<typeof IconButton>
 
 export const Basic: StoryProps = {}
 export const NoPressable: StoryProps = {
-  pressable: false
+  pressable: false,
 }

@@ -1,8 +1,8 @@
 import { observer } from "mobx-react-lite"
-import React, { FC } from "react"
+import React, { type FC } from "react"
 
-import { CalibreRootScreen as Template } from "./template/CalibreRootScreen"
 import { useCalibreRoot } from "./hook/useCalibreRoot"
+import { CalibreRootScreen as Template } from "./template/CalibreRootScreen"
 
 export const CalibreRootScreen: FC = observer(() => {
   const calibreRootHook = useCalibreRoot()

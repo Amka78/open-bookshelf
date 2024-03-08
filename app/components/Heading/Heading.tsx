@@ -1,6 +1,6 @@
-import React, { ComponentProps } from "react"
+import { type MessageKey, translate } from "@/i18n"
 import { Heading as Template } from "@gluestack-ui/themed"
-import { MessageKey, translate } from "@/i18n"
+import React, { type ComponentProps } from "react"
 
 export type HeadingProps = ComponentProps<typeof Template> & {
   tx?: MessageKey

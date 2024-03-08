@@ -1,11 +1,11 @@
-import { ModalStackParams } from "@/components/Modals/Types"
-import { Book } from "@/models/CalibreRootStore"
-import { UsableModalProp } from "react-native-modalfy"
-import { useNavigation } from "@react-navigation/native"
-import { ApppNavigationProp } from "@/navigators"
+import type { ModalStackParams } from "@/components/Modals/Types"
 import { useStores } from "@/models"
-import { Image } from "expo-image"
+import type { Book } from "@/models/CalibreRootStore"
 import { ReadingHistoryModel } from "@/models/calibre"
+import type { ApppNavigationProp } from "@/navigators"
+import { useNavigation } from "@react-navigation/native"
+import { Image } from "expo-image"
+import type { UsableModalProp } from "react-native-modalfy"
 
 export function useOpenViewer() {
   const navigation = useNavigation<ApppNavigationProp>()

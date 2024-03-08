@@ -1,5 +1,5 @@
-import { Meta, StoryObj } from "@storybook/react"
 import { LinkButton } from "@/components"
+import type { Meta, StoryObj } from "@storybook/react"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
@@ -9,8 +9,7 @@ export default {
   parameters: {
     notes: `Search for books by the link you press.`,
   },
-  args: {
-  },
+  args: {},
   decorators: [
     (Story) => (
       <ComponentHolder>
@@ -26,7 +25,7 @@ export const Basic: StoryProps = {
   args: {
     conjunction: "&",
     links: { value: "test1" },
-  }
+  },
 }
 export const LinkWithLabel: StoryProps = {
   args: {
@@ -34,16 +33,12 @@ export const LinkWithLabel: StoryProps = {
     links: [
       { value: "Link1", label: "LabelName1" },
       { value: "Link2", label: "LabelName2" },
-    ]
-  }
+    ],
+  },
 }
 export const MultipleLink: StoryProps = {
   args: {
     conjunction: "&",
-    links: [
-      { value: "Link1" },
-      { value: "Link2" },
-      { value: "Link3" },
-    ]
-  }
-} 
+    links: [{ value: "Link1" }, { value: "Link2" }, { value: "Link3" }],
+  },
+}

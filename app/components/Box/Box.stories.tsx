@@ -1,5 +1,5 @@
-import { Meta, StoryObj } from "@storybook/react"
 import { Box, VStack } from "@/components"
+import type { Meta, StoryObj } from "@storybook/react"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
@@ -9,7 +9,7 @@ export default {
   args: {
     height: "$32",
     width: "$32",
-    backgroundColor: "red"
+    backgroundColor: "red",
   },
   parameters: {
     notes: `Standard container`,
@@ -17,7 +17,7 @@ export default {
   decorators: [
     (Story) => (
       <ComponentHolder>
-        <Story/>
+        <Story />
       </ComponentHolder>
     ),
   ],

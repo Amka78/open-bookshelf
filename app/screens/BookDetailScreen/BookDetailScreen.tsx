@@ -1,11 +1,11 @@
-import { BookDetailMenu, RootContainer, BookImageItem, BookDetailFieldList } from "@/components"
-import { ModalStackParams } from "@/components/Modals/Types"
+import { BookDetailFieldList, BookDetailMenu, BookImageItem, RootContainer } from "@/components"
+import type { ModalStackParams } from "@/components/Modals/Types"
 import { useOpenViewer } from "@/hooks/useOpenViewer"
 import { useStores } from "@/models"
-import { ApppNavigationProp, AppStackParamList } from "@/navigators"
-import { useNavigation, RouteProp, useRoute } from "@react-navigation/native"
+import type { AppStackParamList, ApppNavigationProp } from "@/navigators"
+import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
-import { FC, useLayoutEffect } from "react"
+import { type FC, useLayoutEffect } from "react"
 import { useModal } from "react-native-modalfy"
 
 type BookDetailScreenRouteProp = RouteProp<AppStackParamList, "BookDetail">

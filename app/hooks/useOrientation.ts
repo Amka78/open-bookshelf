@@ -1,7 +1,7 @@
 import {
+  type Orientation,
   addOrientationChangeListener,
   getOrientationAsync,
-  Orientation,
   removeOrientationChangeListener,
 } from "expo-screen-orientation"
 import { useEffect, useState } from "react"

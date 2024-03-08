@@ -1,6 +1,6 @@
-import { MessageKey, translate } from "@/i18n"
-import { Button as Template, ButtonText, ButtonSpinner } from "@gluestack-ui/themed"
-import React, { ComponentProps, useState } from "react"
+import { type MessageKey, translate } from "@/i18n"
+import { ButtonSpinner, ButtonText, Button as Template } from "@gluestack-ui/themed"
+import React, { type ComponentProps, useState } from "react"
 
 export type ButtonProps = ComponentProps<typeof Template> & {
   tx?: MessageKey

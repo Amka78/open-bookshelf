@@ -1,5 +1,5 @@
-import { FlashList as Origin, FlashListProps } from "@shopify/flash-list"
 import { Center, Spinner } from "@gluestack-ui/themed"
+import { type FlashListProps, FlashList as Origin } from "@shopify/flash-list"
 import React, { useState } from "react"
 import { LabeledSpinner } from "../LabeledSpinner/LabeledSpinner"
 

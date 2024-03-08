@@ -1,5 +1,5 @@
-import { Meta, StoryObj } from "@storybook/react"
 import { LeftSideMenuItem } from "@/components"
+import type { Meta, StoryObj } from "@storybook/react"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
@@ -13,10 +13,10 @@ export default {
     count: 10,
     mode: "category",
     name: "LeftSideMenu1",
-    selected: true
+    selected: true,
   },
   argTypes: {
-    onLastNodePress: { action: "Press last node." }
+    onLastNodePress: { action: "Press last node." },
   },
   decorators: [
     (Story) => (
@@ -31,13 +31,18 @@ type StoryProps = StoryObj<typeof LeftSideMenuItem>
 
 export const Category: StoryProps = {
   args: {
-    children: <LeftSideMenuItem mode={"subCategory"} name="SubCategory" count={1} children={
-      [<LeftSideMenuItem mode={"node"} name="Node" count={20} />]
-    } />
-  }
+    children: (
+      <LeftSideMenuItem
+        mode={"subCategory"}
+        name="SubCategory"
+        count={1}
+        children={[<LeftSideMenuItem mode={"node"} name="Node" count={20} />]}
+      />
+    ),
+  },
 }
 export const SubCategory: StoryProps = {
   args: {
-    mode: "subCategory"
-  }
+    mode: "subCategory",
+  },
 }

@@ -1,23 +1,28 @@
-import { flow, Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
+import { type Instance, type SnapshotIn, type SnapshotOut, flow, types } from "mobx-state-tree"
 
-import { api, ApiBookInfo, ApiBookInfoCore, ApiBookManifestResultType } from "../services/api"
+import { delay } from "@/utils/delay"
+import {
+  type ApiBookInfo,
+  type ApiBookInfoCore,
+  type ApiBookManifestResultType,
+  api,
+} from "../services/api"
 import {
   CategoryModel,
-  SubCategoryModel,
-  NodeModel,
   ClientSettingModel,
-  MetadataModel,
-  SearchSettingModel,
-  FieldMetadataModel,
-  ReadingHistoryModel,
-  SortFieldModel,
   DateFormatModel,
+  FieldMetadataModel,
   IsMultipleModel,
-  ReadingHistory,
+  MetadataModel,
+  NodeModel,
+  type ReadingHistory,
+  ReadingHistoryModel,
+  SearchSettingModel,
+  SortFieldModel,
+  SubCategoryModel,
 } from "./calibre"
 import { handleCommonApiError } from "./errors/errors"
 import { withSetPropAction } from "./helpers/withSetPropAction"
-import { delay } from "@/utils/delay"
 
 export const BookModel = types
   .model("BookModel")

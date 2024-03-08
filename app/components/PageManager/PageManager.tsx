@@ -1,12 +1,6 @@
-import {
-  Slider,
-  SliderTrack,
-  SliderFilledTrack,
-  SliderThumb,
-  styled,
-} from "@gluestack-ui/themed"
-import { IconButton, VStack, HStack, Text } from "@/components"
+import { HStack, IconButton, Text, VStack } from "@/components"
 import { goToNextPage, goToPreviousPage } from "@/utils/pageTurnning"
+import { Slider, SliderFilledTrack, SliderThumb, SliderTrack, styled } from "@gluestack-ui/themed"
 
 export type PageManagerProps = {
   currentPage: number
@@ -39,19 +33,24 @@ function PageManagerCore({ reverse = false, visible = true, ...restProps }: Page
   }
 
   return props.visible ? (
-    <VStack
-      {...props}
-      height={"10%"}
-      alignItems={"center"}
-      justifyContent={"center"}
-    >
+    <VStack {...props} height={"10%"} alignItems={"center"} justifyContent={"center"}>
       <HStack width={"$full"}>
-        <IconButton name="fast-forward" rotate="180" onPress={() => {
-          onPageFastMoveButtonPress(props.reverse ? true : false)
-        }} />
-        <IconButton name="forward" rotate="180" iconSize={"md-"} onPress={() => {
-          onPageMoveButtonPress(props.reverse ? true : false)
-        }} marginRight={"$2"} />
+        <IconButton
+          name="fast-forward"
+          rotate="180"
+          onPress={() => {
+            onPageFastMoveButtonPress(props.reverse ? true : false)
+          }}
+        />
+        <IconButton
+          name="forward"
+          rotate="180"
+          iconSize={"md-"}
+          onPress={() => {
+            onPageMoveButtonPress(props.reverse ? true : false)
+          }}
+          marginRight={"$2"}
+        />
         <Slider
           w="$3/4"
           maxWidth={900}
@@ -70,16 +69,20 @@ function PageManagerCore({ reverse = false, visible = true, ...restProps }: Page
           </SliderTrack>
           <SliderThumb />
         </Slider>
-        <IconButton name="forward" iconSize={"md-"} onPress={
-          () => {
+        <IconButton
+          name="forward"
+          iconSize={"md-"}
+          onPress={() => {
             onPageMoveButtonPress(props.reverse ? false : true)
-          }
-        } marginLeft={"$2"} />
-        <IconButton name="fast-forward" onPress={
-          () => {
+          }}
+          marginLeft={"$2"}
+        />
+        <IconButton
+          name="fast-forward"
+          onPress={() => {
             onPageFastMoveButtonPress(props.reverse ? false : true)
-          }
-        } />
+          }}
+        />
       </HStack>
       <Text textAlign="center">
         {pageNum}/{props.totalPage + 1}
@@ -89,20 +92,20 @@ function PageManagerCore({ reverse = false, visible = true, ...restProps }: Page
 }
 
 export const PageManager = styled(PageManagerCore, {
-  "variants": {
-    "variant": {
-      "fix": {
-        "position": "absolute",
-        "left": 0,
-        "right": 0,
-        "bottom": 0,
+  variants: {
+    variant: {
+      fix: {
+        position: "absolute",
+        left: 0,
+        right: 0,
+        bottom: 0,
       },
-      "free": {
-        "width": "$full"
-      }
-    }
+      free: {
+        width: "$full",
+      },
+    },
   },
   defaultProps: {
-    "variant": "fix"
-  }
+    variant: "fix",
+  },
 })

@@ -1,6 +1,5 @@
-import { CSSProperties, createElement, forwardRef } from "react"
 import { Input } from "@/components"
-import { styled } from "@gluestack-ui/themed"
+import { type CSSProperties, createElement, forwardRef } from "react"
 
 export type DateTimePickerProps = {
   value: string

@@ -1,6 +1,6 @@
-import { Controller, ControllerProps } from "react-hook-form"
-import { InputField, InputFieldProps } from "../InputField/InputField"
 import { Input } from "@/components"
+import { Controller, type ControllerProps } from "react-hook-form"
+import { InputField, type InputFieldProps } from "../InputField/InputField"
 
 export type FormInputFiledProps<T> = Omit<InputFieldProps, "onChangeText"> &
   Omit<ControllerProps<T>, "render">

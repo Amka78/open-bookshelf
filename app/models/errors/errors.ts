@@ -1,6 +1,6 @@
-import { ModalStackParams } from "@/components/Modals/Types"
-import { MessageKey } from "@/i18n"
-import { GeneralApiProblem } from "@/services/api/apiProblem"
+import type { ModalStackParams } from "@/components/Modals/Types"
+import type { MessageKey } from "@/i18n"
+import type { GeneralApiProblem } from "@/services/api/apiProblem"
 import { modalfy } from "react-native-modalfy"
 
 type ApiErrorConstructoArgs = {

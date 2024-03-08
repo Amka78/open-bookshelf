@@ -1,11 +1,11 @@
 import { Box, FlatList, ListItem, RootContainer, Text } from "@/components"
 import { useStores } from "@/models"
-import { Entry } from "@/models/opds"
-import { ApppNavigationProp } from "@/navigators"
+import type { Entry } from "@/models/opds"
+import type { ApppNavigationProp } from "@/navigators"
 import { useNavigation } from "@react-navigation/native"
 import { Image } from "expo-image"
 import { observer } from "mobx-react-lite"
-import React, { FC, useEffect } from "react"
+import React, { type FC, useEffect } from "react"
 import { View } from "react-native"
 
 export const OPDSRootScreen: FC = observer(() => {

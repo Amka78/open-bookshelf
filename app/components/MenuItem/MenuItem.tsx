@@ -1,5 +1,5 @@
 import { MessageKey, translate } from "@/i18n"
-import { MenuItem as Original, MenuItemLabel } from "@gluestack-ui/themed"
+import { MenuItemLabel, MenuItem as Original } from "@gluestack-ui/themed"
 import React, { ComponentProps } from "react"
 
 /*export type MenuItemProps = Omit<ComponentProps<typeof Original>, "children"> & {

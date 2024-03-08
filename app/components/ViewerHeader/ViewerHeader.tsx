@@ -1,5 +1,5 @@
-import { ViewerMenu, ViewerMenuProps } from "../ViewerMenu/ViewerMenu"
 import { HStack, IconButton, Text } from "@/components"
+import { ViewerMenu, type ViewerMenuProps } from "../ViewerMenu/ViewerMenu"
 
 export type ViewerHeaderProps = ViewerMenuProps & {
   visible: boolean

@@ -1,14 +1,14 @@
-import { Instance, SnapshotOut, types } from "mobx-state-tree"
-import { AuthenticationStoreModel } from "./AuthenticationStore" 
-import { OpdsRootStore } from "./opds/OpdsRootStore"
-import { SettingStoreModel } from "./SettingStore"
+import { type Instance, type SnapshotOut, types } from "mobx-state-tree"
+import { AuthenticationStoreModel } from "./AuthenticationStore"
 import { CalibreRootStore } from "./CalibreRootStore"
+import { SettingStoreModel } from "./SettingStore"
+import { OpdsRootStore } from "./opds/OpdsRootStore"
 
 /**
  * A RootStore model.
  */
 export const RootStoreModel = types.model("RootStore").props({
-  authenticationStore: types.optional(AuthenticationStoreModel, {}), 
+  authenticationStore: types.optional(AuthenticationStoreModel, {}),
   settingStore: types.optional(SettingStoreModel, {}),
   opdsRootStore: types.optional(OpdsRootStore, {}),
   calibreRootStore: types.optional(CalibreRootStore, {}),

@@ -1,6 +1,6 @@
-import React from "react"
-import { Meta, StoryObj } from "@storybook/react"
 import { Button } from "@/components"
+import type { Meta, StoryObj } from "@storybook/react"
+import React from "react"
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
 export default {

@@ -1,5 +1,5 @@
-import { Meta, StoryObj } from "@storybook/react"
 import { Text } from "@/components"
+import type { Meta, StoryObj } from "@storybook/react"
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
 export default {
@@ -13,8 +13,8 @@ export default {
     ),
   ],
   parameters: {
-    notes: `standard string representation.`
-  }
+    notes: `standard string representation.`,
+  },
 } as Meta<typeof Text>
 
 type Story = StoryObj<typeof Text>
@@ -26,6 +26,6 @@ export const SupportMultiLingual: Story = {
 }
 export const DirectInput: Story = {
   args: {
-    children: "Direct Text Input."
+    children: "Direct Text Input.",
   },
 }

@@ -1,10 +1,10 @@
-import { BookViewer, RenderPageProps } from "@/components"
+import { BookViewer, type RenderPageProps } from "@/components"
 import { useViewer } from "@/hooks/useViewer"
+import { PDF } from "@/library/PDF/Pdf"
 import { useStores } from "@/models"
 import { observer } from "mobx-react-lite"
 import React, { useState } from "react"
 import { StyleSheet, useWindowDimensions } from "react-native"
-import { PDF } from "@/library/PDF/Pdf"
 
 export const PDFViewerScreen = observer(() => {
   const { authenticationStore, calibreRootStore, settingStore } = useStores()

@@ -1,4 +1,4 @@
-import { Instance, types } from "mobx-state-tree"
+import { type Instance, types } from "mobx-state-tree"
 import { withSetPropAction } from "../helpers/withSetPropAction"
 
 export const MetadataModel = types
@@ -21,6 +21,7 @@ export const MetadataModel = types
     languages: types.array(types.string),
     langNames: types.map(types.string),
     formatSizes: types.map(types.number),
+    image: types.maybe(types.string),
   })
   .actions(withSetPropAction)
 

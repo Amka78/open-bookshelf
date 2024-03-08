@@ -1,5 +1,5 @@
-import { styled } from "@gluestack-ui/themed"
 import { MaterialCommunityIcons } from "@expo/vector-icons"
+import { styled } from "@gluestack-ui/themed"
 
 export const MaterialCommunityIcon = styled(
   MaterialCommunityIcons,

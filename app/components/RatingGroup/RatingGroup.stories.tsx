@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react"
 import { RatingGroup } from "./RatingGroup"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"

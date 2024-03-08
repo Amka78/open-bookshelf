@@ -1,15 +1,15 @@
 import { Button, FormInputField, Heading, Input } from "@/components"
 import React from "react"
-import { ModalComponentProp } from "react-native-modalfy"
+import type { ModalComponentProp } from "react-native-modalfy"
 
-import { Body, CloseButton, Footer, Header, Root } from ".."
-import { ModalStackParams } from "../Types"
-import { useForm } from "react-hook-form"
-import { LoginType } from "./type"
-import { observer } from "mobx-react-lite"
 import { useStores } from "@/models"
+import type { ApppNavigationProp } from "@/navigators"
 import { useNavigation } from "@react-navigation/native"
-import { ApppNavigationProp } from "@/navigators"
+import { observer } from "mobx-react-lite"
+import { useForm } from "react-hook-form"
+import { Body, CloseButton, Footer, Header, Root } from ".."
+import type { ModalStackParams } from "../Types"
+import type { LoginType } from "./type"
 
 export type LoginModalProps = ModalComponentProp<ModalStackParams, void, "LoginModal">
 
@@ -23,12 +23,16 @@ export const LoginModal = observer((props: LoginModalProps) => {
   }
 
   return (
-    <LoginModalTemplate modal={{ ...props.modal, params: { ...props.modal.params, onLoginPress: onLoginPress } }} />
+    <LoginModalTemplate
+      modal={{ ...props.modal, params: { ...props.modal.params, onLoginPress: onLoginPress } }}
+    />
   )
 })
 
-
-export type LoginModalTemplateProps = Pick<ModalComponentProp<ModalStackParams, void, "LoginModal">, "modal">
+export type LoginModalTemplateProps = Pick<
+  ModalComponentProp<ModalStackParams, void, "LoginModal">,
+  "modal"
+>
 
 export function LoginModalTemplate(props: LoginModalTemplateProps) {
   const form = useForm<LoginType, unknown, LoginType>()
@@ -77,5 +81,6 @@ export function LoginModalTemplate(props: LoginModalTemplateProps) {
           marginLeft={"$2"}
         />
       </Footer>
-    </Root>)
+    </Root>
+  )
 }
