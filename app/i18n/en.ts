@@ -66,6 +66,9 @@ const en = {
       title: "Confirmation of deletion",
       message: "Are you sure you want to delete {0}?",
     },
+    bookEditModal: {
+      title: "Book Edit",
+    },
   },
   rating: {
     noRate: "No Rate",

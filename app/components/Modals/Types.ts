@@ -17,19 +17,24 @@ export type ModalStackParams = {
     messageTx?: MessageKey
   }
   FormatSelectModal: { formats: string[]; onSelectFormat: (format: string) => void }
-  LoginModal: { onLoginPress?: (data: LoginType) => void } 
+  LoginModal: { onLoginPress?: (data: LoginType) => void }
   BookDetailModal: {
     imageUrl: string
-    selectedBook?: Book,
-    fieldNameList?: string[],
-    fieldMetadataList?: FieldMetadataMap,
+    selectedBook?: Book
+    fieldNameList?: string[]
+    fieldMetadataList?: FieldMetadataMap
     onLinkPress?: (linkName: string) => void
-    onOpenBook?: () => Promise<void>,
+    onOpenBook?: () => Promise<void>
     onDownloadBook?: () => Promise<void>
     onConvertBook?: () => void
     onShowEdit?: () => void
     onDeleteBook?: () => void
     onDeleteConfirmOKPress?: () => void
   }
+  BookEditModal: {
+    imageUrl: string
+    selectedBook?: Book
+    fieldMetadataList?: FieldMetadataMap
+    onOKPress: () => void
+  }
 }
-

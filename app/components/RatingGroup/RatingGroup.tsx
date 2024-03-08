@@ -45,6 +45,7 @@ const RatingGroupCore = forwardRef(({ ticks = 2, ...restProps }: RatingGroupProp
 export const RatingGroup = styled(
   RatingGroupCore,
   {
+    flexWrap: "wrap",
     variants: {
       variant: {
         common: {

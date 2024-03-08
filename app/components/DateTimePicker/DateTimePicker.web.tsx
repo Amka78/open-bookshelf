@@ -27,6 +27,10 @@ const DateTimePickerCore = forwardRef((props: DateTimePickerProps, ref) => {
       borderWidth: 0,
       marginLeft: 1.5,
       fontSize: 20,
+      backgroundColor: "transparent",
+      borderTop: 0,
+      borderLeft: 0,
+      borderRight: 0,
     },
   })
 })

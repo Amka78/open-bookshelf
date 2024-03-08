@@ -6,11 +6,13 @@ export type RatingProps = {
   onPress?: (rating: number) => void
 }
 
-const RatingText = styled(Text, {
-
-}, {
-  ancestorStyle: ["_text"]
-})
+const RatingText = styled(
+  Text,
+  {},
+  {
+    ancestorStyle: ["_text"],
+  },
+)
 
 function RatingCore({ ticks = 2, ...restProps }: RatingProps) {
   const props = { ticks, ...restProps }
@@ -31,96 +33,103 @@ function RatingCore({ ticks = 2, ...restProps }: RatingProps) {
   }
 
   const rating = <HStack alignSelf="center">{ratingCore}</HStack>
-  return <Box {...props}>
-    {props.onPress ? (
-      <Pressable
-        onPress={() => {
-          props.onPress(props.rating)
-        }}
-      >
-        {rating}
-      </Pressable>
-    ) : (
-      rating
-    )}</Box>
+  return (
+    <Box {...props}>
+      {props.onPress ? (
+        <Pressable
+          onPress={() => {
+            props.onPress(props.rating)
+          }}
+        >
+          {rating}
+        </Pressable>
+      ) : (
+        rating
+      )}
+    </Box>
+  )
 }
 
-export const Rating = styled(RatingCore, {
-  _dark: {
-    // @ts-ignore
-    borderColor: "$white",
-  },
-  _light: {
-    // @ts-ignore
-    borderColor: "$coolGray800",
-  },
-  "variants": {
-    variant: {
-      common: {
-
-      },
-      "selectable": {
-        // @ts-ignore
-        borderWidth: "$1",
-        borderRadius: "$full",
-        paddingHorizontal: "$2",
-        _light: {
-          _icon: {
-            color: "$coolGray500"
-          }
+export const Rating = styled(
+  RatingCore,
+  {
+    _dark: {
+      // @ts-ignore
+      borderColor: "$white",
+    },
+    _light: {
+      // @ts-ignore
+      borderColor: "$coolGray800",
+    },
+    variants: {
+      variant: {
+        common: {},
+        selectable: {
+          borderWidth: "$1",
+          borderRadius: "$full",
+          paddingHorizontal: "$2",
+          _light: {
+            _icon: {
+              color: "$coolGray500",
+            },
+          },
+          _dark: {
+            _icon: {
+              color: "$white",
+            },
+            _text: {
+              color: "$white",
+            },
+          },
         },
-        _dark: {
+        selected: {
+          // @ts-ignore
+          borderWidth: "$2",
+          borderRadius: "$full",
+          backgroundColor: "$blue500",
+          paddingHorizontal: "$2",
+          _light: {
+            _icon: {
+              color: "$coolGray500",
+            },
+          },
+          _dark: {
+            _icon: {
+              color: "$white",
+            },
+            _text: {
+              color: "$white",
+            },
+          },
+        },
+      },
+      ratingSize: {
+        md: {
           _icon: {
-            color: "$white"
+            props: {
+              iconSize: "sm",
+            },
+          },
+        },
+        sm: {
+          _icon: {
+            props: {
+              iconSize: "tiny",
+            },
           },
           _text: {
-            color: "$white"
+            fontSize: 12,
           },
-        }
-      },
-      "selected": {
-        // @ts-ignore
-        borderWidth: "$2",
-        borderRadius: "$full",
-        backgroundColor: "$blue500",
-        paddingHorizontal: "$2",
-        _light: {
-          _icon: {
-            color: "$coolGray500"
-          }
         },
-        _dark: {
-          _icon: {
-            color: "$white"
-          },
-          _text: {
-            color: "$white"
-          },
-        }
-      }
-    },
-    "ratingSize": {
-      "md": {
-        "_icon": {
-          props: {
-            "iconSize": "sm"
-          }
-        }
       },
-      "sm": {
-        "_icon": {
-          props: {
-            "iconSize": "sm-"
-          }
-        }
-      }
+    },
+    defaultProps: {
+      variant: "common",
+      ratingSize: "md",
     },
   },
-  defaultProps: {
-    variant: "common",
-    ratingSize: "md"
-  }
-}, {
-  descendantStyle: ["_text", "_icon"],
-  ancestorStyle: ["_rating"]
-})
+  {
+    descendantStyle: ["_text", "_icon"],
+    ancestorStyle: ["_rating"],
+  },
+)

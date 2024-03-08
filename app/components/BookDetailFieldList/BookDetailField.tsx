@@ -20,10 +20,7 @@ export function BookDetailField(props: BookDetailFieldProps) {
     case "rating":
       {
         if (typeof props.value === "number") {
-
-          field = (
-            <Rating rating={props.value} />
-          )
+          field = <Rating rating={props.value} />
         }
       }
       break
@@ -80,8 +77,13 @@ export function BookDetailField(props: BookDetailFieldProps) {
       break
   }
   return (
-    <HStack key={props.fieldMetadata.label} alignItems="flex-start" space="sm">
-      <Text width={"$24"} isTruncated={true}>
+    <HStack
+      key={props.fieldMetadata.label}
+      alignItems="flex-start"
+      space="md"
+      justifyContent={"center"}
+    >
+      <Text width={"$24"} isTruncated={true} fontWeight="bold">
         {props.fieldMetadata.name}
       </Text>
       <Box width={"$32"} alignItems="flex-start">

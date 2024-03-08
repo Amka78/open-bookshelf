@@ -62,7 +62,6 @@ export function BookEditField(props: BookEditFieldProps) {
       alignItems="flex-start"
       space={"sm"}
       marginBottom={"$2.5"}
-      height={"$16"}
     >
       <Text isTruncated={true} fontWeight="$bold">
         {props.fieldMetadata.name}
