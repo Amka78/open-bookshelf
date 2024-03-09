@@ -20,7 +20,8 @@ import { HStack } from "@gluestack-ui/themed"
 import { useNavigation } from "@react-navigation/native"
 import { values } from "mobx"
 import { observer } from "mobx-react-lite"
-import React, { type FC, useLayoutEffect, useRef } from "react"
+import type React from "react"
+import { type FC, useLayoutEffect, useRef } from "react"
 import { useWindowDimensions } from "react-native"
 import { useModal } from "react-native-modalfy"
 import type { SearchBarCommands } from "react-native-screens"
@@ -92,7 +93,7 @@ export const LibraryScreen: FC = observer(() => {
       await openViewerHook.execute(modal)
     }
 
-    let listItem
+    let listItem: React.JSX.Element
 
     const imageUrl = encodeURI(
       `${settingStore.api.baseUrl}/get/thumb/${item.id}/${selectedLibrary.id}?sz=300x400`,
@@ -192,8 +193,6 @@ export const LibraryScreen: FC = observer(() => {
               onPress={libraryHook.onChangeListStyle}
             />
             <SortMenu
-              position="absolute"
-              left={dimension.width - 260}
               selectedSort={selectedLibrary?.searchSetting?.sort}
               selectedSortOrder={selectedLibrary?.searchSetting?.sortOrder}
               field={selectedLibrary?.sortField}

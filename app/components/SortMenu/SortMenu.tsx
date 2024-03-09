@@ -1,7 +1,7 @@
-import { IconButton } from "@/components"
+import { IconButton, MaterialCommunityIcon } from "@/components"
 import { translate } from "@/i18n"
 import type { SortField } from "@/models/calibre"
-import { Menu, MenuItem, MenuItemLabel } from "@gluestack-ui/themed"
+import { Menu, MenuItem, MenuItemLabel, Pressable } from "@gluestack-ui/themed"
 import type { ComponentProps } from "react"
 import { useWindowDimensions } from "react-native"
 
@@ -16,13 +16,14 @@ export function SortMenu(props: SortMenuProps) {
 
   return (
     <Menu
-      placement="top"
+      placement="left bottom"
       trigger={(triggerProps) => {
-        return <IconButton {...triggerProps} name="sort" iconSize="md-" variant="staggerChild" />
+        return (
+          <Pressable {...triggerProps}>
+            <MaterialCommunityIcon name="sort" iconSize="md-" variant="staggerChild" />
+          </Pressable>
+        )
       }}
-      // :TODO Forced layout adjustments because library settings do not work well.
-      // Temporary improvements pending library fixes.
-      //marginLeft={"$4/5"}
       closeOnSelect={true}
     >
       {props.field?.map((value) => {

@@ -8,7 +8,7 @@ import {
 } from "@gluestack-ui/themed"
 import { type ComponentProps, useState } from "react"
 
-import { HStack, IconButton } from "@/components"
+import { HStack, IconButton, MaterialCommunityIcon } from "@/components"
 import { useConvergence } from "@/hooks/useConvergence"
 
 export type ViewerMenuProps = {
@@ -45,7 +45,7 @@ export function ViewerMenu(props: ViewerMenuProps) {
         trigger={(triggerProps) => {
           return (
             <Pressable {...triggerProps}>
-              <IconButton
+              <MaterialCommunityIcon
                 iconSize="md-"
                 name="book-settings"
                 labelTx={
@@ -53,7 +53,6 @@ export function ViewerMenu(props: ViewerMenuProps) {
                     ? (`bookReadingStyle.${readingStyleState}` as MessageKey)
                     : undefined
                 }
-                pressable={false}
               />
             </Pressable>
           )
