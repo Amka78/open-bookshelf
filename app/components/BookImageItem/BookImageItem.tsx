@@ -36,7 +36,7 @@ export function BookImageItem({ loading = false, ...restProps }: BookImageprops)
 
   return (
     <Box marginHorizontal={"$2"} marginTop={"$2"}>
-      {loading ? (
+      {loading || loadingState ? (
         <LabeledSpinner
           containerStyle={styles.imageSize}
           labelTx={"bookImage.loading"}
