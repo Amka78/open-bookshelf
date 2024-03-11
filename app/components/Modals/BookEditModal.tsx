@@ -23,8 +23,9 @@ export const BookEditModal = observer((props: BookEditModalProps) => {
         params: {
           ...props.modal.params,
           selectedBook: selectedBook,
+          fieldMetadataList: selectedLibrary.fieldMetadataList,
           onOKPress(value) {
-            selectedBook.update(value)
+            //selectedBook.update(value)
           },
         },
       }}

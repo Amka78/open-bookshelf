@@ -35,6 +35,6 @@ export type ModalStackParams = {
     imageUrl: string
     selectedBook?: Book
     fieldMetadataList?: FieldMetadataMap
-    onOKPress: (value: Metadata) => void
+    onOKPress?: (value: Metadata) => void
   }
 }
