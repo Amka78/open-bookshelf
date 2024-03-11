@@ -7,6 +7,8 @@ import { type RouteProp, useNavigation, useRoute } from "@react-navigation/nativ
 import { observer } from "mobx-react-lite"
 import { type FC, useLayoutEffect } from "react"
 import { useModal } from "react-native-modalfy"
+import { BookDetailScreen as Template } from "./template/BookDetailScreen"
+import { useDeleteBook } from "@/hooks/useDeleteBook"
 
 type BookDetailScreenRouteProp = RouteProp<AppStackParamList, "BookDetail">
 export const BookDetailScreen: FC = observer(() => {
@@ -18,6 +20,7 @@ export const BookDetailScreen: FC = observer(() => {
   const modal = useModal<ModalStackParams>()
 
   const openViewerHook = useOpenViewer()
+  const deleteBookHook = useDeleteBook()
   useLayoutEffect(() => {
     navigation.setOptions({
       headerTitle: selectedBook.metaData.title,
@@ -25,27 +28,24 @@ export const BookDetailScreen: FC = observer(() => {
   }, [navigation, selectedBook.metaData.title])
 
   return (
-    <RootContainer alignItems="center">
-      <BookImageItem source={route.params.imageUrl} />
-      <BookDetailMenu
-        onOpenBook={async () => {
-          await openViewerHook.execute(modal)
-        }}
-        onDownloadBook={() => {}}
-        onConvertBook={() => {}}
-        onShowEdit={() => {}}
-        onDeleteBook={() => {}}
-      />
-      <BookDetailFieldList
-        book={selectedBook}
-        fieldMetadataList={selectedLibrary.fieldMetadataList}
-        fieldNameList={selectedLibrary.bookDisplayFields}
-        onFieldPress={(query) => {
-          route.params.onLinkPress(query)
-          navigation.goBack()
-        }}
-        marginTop={"$3"}
-      />
-    </RootContainer>
+    <Template
+      imageUrl={route.params.imageUrl}
+      onOpenBook={async () => {
+        await openViewerHook.execute(modal)
+      }}
+      onDownloadBook={() => {}}
+      onConvertBook={() => {}}
+      onShowEdit={() => {}}
+      onDeleteBook={async () => {
+        await deleteBookHook.execute(modal)
+      }}
+      book={selectedBook}
+      fieldMetadataList={selectedLibrary.fieldMetadataList}
+      fieldNameList={selectedLibrary.bookDisplayFields}
+      onFieldPress={(query) => {
+        route.params.onLinkPress(query)
+        navigation.goBack()
+      }}
+    />
   )
 })
