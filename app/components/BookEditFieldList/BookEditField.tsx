@@ -27,7 +27,11 @@ export function BookEditField(props: BookEditFieldProps) {
       field = <FormRatingGroup control={props.control} name={label} max={10} />
       break
     case "float":
-      field = <FormInputField control={props.control} name={label} inputMode="numeric" />
+      field = (
+        <Input>
+          <FormInputField control={props.control} name={label} inputMode="numeric" />
+        </Input>
+      )
       break
     case "datetime":
       field = <FormDateTimePicker control={props.control} name={label} />
