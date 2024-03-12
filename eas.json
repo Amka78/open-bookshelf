@@ -6,7 +6,6 @@
       "env": {
         "APP_VARIANT": "development"
       },
-      "node": "20.5.1",
       "channel": "development"
     },
     "storybookDev": {
@@ -15,7 +14,6 @@
       "env": {
         "APP_VARIANT": "storybookDev"
       },
-      "node": "20.5.1",
       "channel": "storybook-dev"
     },
     "preview": {
@@ -23,7 +21,6 @@
       "env": {
         "APP_VARIANT": "preview"
       },
-      "node": "20.5.1",
       "channel": "preview"
     },
     "storybookPreview": {
