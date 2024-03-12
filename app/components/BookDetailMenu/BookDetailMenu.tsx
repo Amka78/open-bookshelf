@@ -4,7 +4,7 @@ export type BookDetailMenuProps = {
   onOpenBook: () => Promise<void>
   onDownloadBook: () => void
   onConvertBook: () => void
-  onShowEdit: () => void
+  onEditBook: () => void
   onDeleteBook: () => void
 }
 export function BookDetailMenu(props: BookDetailMenuProps) {
@@ -13,7 +13,7 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
       <IconButton name={"book-open"} iconSize="md-" onPress={props.onOpenBook} />
       <IconButton name={"download"} iconSize="md-" onPress={props.onDownloadBook} />
       <IconButton name={"sync-circle"} iconSize="md-" onPress={props.onConvertBook} />
-      <IconButton name={"book-edit"} iconSize="md-" onPress={props.onShowEdit} />
+      <IconButton name={"book-edit"} iconSize="md-" onPress={props.onEditBook} />
       <IconButton name={"trash-can"} iconSize="md-" onPress={props.onDeleteBook} />
     </HStack>
   )

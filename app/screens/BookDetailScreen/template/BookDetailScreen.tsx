@@ -9,7 +9,7 @@ export type BookDetailScreenProps = {
   onOpenBook: () => Promise<void>
   onDownloadBook: () => void
   onConvertBook: () => void
-  onShowBook: () => void
+  onEditBook: () => void
   onDeleteBook: () => void
   onFieldPress: (query: string) => void
 }
@@ -21,7 +21,7 @@ export function BookDetailScreen(props: BookDetailScreenProps) {
         onOpenBook={props.onOpenBook}
         onDownloadBook={props.onDownloadBook}
         onConvertBook={props.onConvertBook}
-        onShowEdit={props.onShowBook}
+        onEditBook={props.onEditBook}
         onDeleteBook={props.onDeleteBook}
       />
       <BookDetailFieldList

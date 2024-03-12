@@ -9,18 +9,21 @@ import { type FC, useLayoutEffect } from "react"
 import { useModal } from "react-native-modalfy"
 import { BookDetailScreen as Template } from "./template/BookDetailScreen"
 import { useDeleteBook } from "@/hooks/useDeleteBook"
+import { useDownloadBook } from "@/hooks/useDownloadBook"
 
 type BookDetailScreenRouteProp = RouteProp<AppStackParamList, "BookDetail">
 export const BookDetailScreen: FC = observer(() => {
   const { calibreRootStore } = useStores()
   const navigation = useNavigation<ApppNavigationProp>()
   const route = useRoute<BookDetailScreenRouteProp>()
-  const selectedLibrary = calibreRootStore.selectedLibrary
-  const selectedBook = selectedLibrary.selectedBook
   const modal = useModal<ModalStackParams>()
-
   const openViewerHook = useOpenViewer()
   const deleteBookHook = useDeleteBook()
+  const downloadBookHook = useDownloadBook()
+
+  const selectedLibrary = calibreRootStore.selectedLibrary
+  const selectedBook = selectedLibrary.selectedBook
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerTitle: selectedBook.metaData.title,
@@ -33,9 +36,15 @@ export const BookDetailScreen: FC = observer(() => {
       onOpenBook={async () => {
         await openViewerHook.execute(modal)
       }}
-      onDownloadBook={() => {}}
+      onDownloadBook={async () => {
+        await downloadBookHook.execute(modal)
+      }}
       onConvertBook={() => {}}
-      onShowEdit={() => {}}
+      onEditBook={() => {
+        navigation.navigate("BookEdit", {
+          imageUrl: route.params.imageUrl,
+        })
+      }}
       onDeleteBook={async () => {
         await deleteBookHook.execute(modal)
       }}

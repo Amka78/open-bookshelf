@@ -18,7 +18,7 @@ export default {
     onDeleteBook: { action: "delete book." },
     onDownloadBook: { action: "download book." },
     onOpenBook: { action: "open book." },
-    onShowEdit: { action: "show eidt" },
+    onEditBook: { action: "show eidt" },
   },
   parameters: {
     notes: `
