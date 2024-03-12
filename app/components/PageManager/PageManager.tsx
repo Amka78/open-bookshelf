@@ -9,6 +9,7 @@ export type PageManagerProps = {
   reverse?: boolean
   visible?: boolean
   variant: "fix" | "free"
+  facingPage: boolean
 }
 
 function PageManagerCore({ reverse = false, visible = true, ...restProps }: PageManagerProps) {
@@ -25,16 +26,17 @@ function PageManagerCore({ reverse = false, visible = true, ...restProps }: Page
   }
 
   const onPageMoveButtonPress = (forward: boolean) => {
+    const forwardStep = props.facingPage ? 2 : 1
     if (forward) {
-      props.onPageChange(goToNextPage(props.currentPage, props.totalPage, 1))
+      props.onPageChange(goToNextPage(props.currentPage, props.totalPage, forwardStep))
     } else {
-      props.onPageChange(goToPreviousPage(props.currentPage, 1))
+      props.onPageChange(goToPreviousPage(props.currentPage, forwardStep))
     }
   }
 
   return props.visible ? (
     <VStack {...props} height={"10%"} alignItems={"center"} justifyContent={"center"}>
-      <HStack width={"$full"}>
+      <HStack width={"$full"} justifyContent={"center"}>
         <IconButton
           name="fast-forward"
           rotate="180"
@@ -84,7 +86,7 @@ function PageManagerCore({ reverse = false, visible = true, ...restProps }: Page
           }}
         />
       </HStack>
-      <Text textAlign="center">
+      <Text textAlign="center" marginBottom={"$4"}>
         {pageNum}/{props.totalPage + 1}
       </Text>
     </VStack>
@@ -99,6 +101,8 @@ export const PageManager = styled(PageManagerCore, {
         left: 0,
         right: 0,
         bottom: 0,
+        width: "$full",
+        backgroundColor: "$white",
       },
       free: {
         width: "$full",
