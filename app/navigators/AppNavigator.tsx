@@ -1,16 +1,17 @@
 import { DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/native"
 import {
   createNativeStackNavigator,
-  NativeStackNavigationProp,
-  NativeStackScreenProps,
+  type NativeStackNavigationProp,
+  type NativeStackScreenProps,
 } from "@react-navigation/native-stack"
 import { observer } from "mobx-react-lite"
-import React, { useEffect } from "react"
+import type React from "react"
+import { useEffect } from "react"
 import { useColorScheme } from "react-native"
 
 import Config from "../config"
 import { useStores } from "../models"
-import { Link } from "../models/opds"
+import type { Link } from "../models/opds"
 import {
   AcquisitionScreen,
   CalibreRootScreen,
@@ -19,6 +20,7 @@ import {
   OPDSRootScreen,
   ViewerScreen,
   BookDetailScreen,
+  BookEditScreen,
 } from "../screens"
 import { PDFViewerScreen } from "../screens/PDFViewerScreen/PDFViewerScreen"
 import { api } from "../services/api"
@@ -53,6 +55,9 @@ export type AppStackParamList = {
   BookDetail: {
     imageUrl: string
     onLinkPress: (query) => void
+  }
+  BookEdit: {
+    imageUrl: string
   }
 }
 
@@ -100,6 +105,7 @@ const AppStack = observer(function AppStack() {
         options={{ statusBarHidden: true, headerShown: false }}
       />
       <Stack.Screen name="BookDetail" component={BookDetailScreen} />
+      <Stack.Screen name="BookEdit" component={BookEditScreen} />
     </Stack.Navigator>
   )
 })

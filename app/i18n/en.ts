@@ -7,6 +7,9 @@ const en = {
     logOut: "Log Out",
     error: "Error",
   },
+  bookEditScreen: {
+    save: "Save",
+  },
   errorScreen: {
     title: "Something went wrong!",
     friendlySubtitle:

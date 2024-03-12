@@ -1,5 +1,5 @@
 import { ConnectScreen } from "@/screens/ConnectScreen/template/ConnectScreen"
-import { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react"
 import React from "react"
 
 import { ScreenContainer } from "./ScreenContainer"

@@ -1,6 +1,5 @@
 import { modalConfig } from "@/components/Modals/ModalConfig"
 import { GluestackUIProvider } from "@gluestack-ui/themed"
-import React from "react"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { createModalStack, ModalProvider } from "react-native-modalfy"
 import { initialWindowMetrics, SafeAreaProvider } from "react-native-safe-area-context"
