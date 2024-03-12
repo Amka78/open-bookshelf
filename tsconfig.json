@@ -32,7 +32,7 @@
     "ios",
     "node_modules",
     "yarn.lock",
-    ".git",
+    ".git"
   ],
   "include": [
     "App.tsx",
@@ -40,7 +40,8 @@
     "app",
     "test",
     ".storybook/stories/*",
-    ".storybook/stories/screens/*"
+    ".storybook/stories/screens/*",
+    "plugins"
   ],
   "extends": "expo/tsconfig.base"
 }

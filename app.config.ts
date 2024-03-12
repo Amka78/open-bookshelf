@@ -60,6 +60,7 @@ export default {
     plugins: [
       "@config-plugins/react-native-blob-util",
       "@config-plugins/react-native-pdf",
+      "./withAndroidMainActivityAttributes.js",
       [
         "expo-screen-orientation",
         {
@@ -83,9 +84,10 @@ export default {
       [
         "expo-image-picker",
         {
-          "photosPermission": "The app accesses your photos to let you share them with your friends.The app accesses your photos to let you share them with your friends."
-        }
-      ]
+          photosPermission:
+            "The app accesses your photos to let you share them with your friends.The app accesses your photos to let you share them with your friends.",
+        },
+      ],
     ],
     extra: {
       eas: {
