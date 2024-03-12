@@ -21,6 +21,7 @@ import type {
   ApiConfig,
   ApiFeedResponse,
   ApiTagBrowser,
+  SetBookMetadata,
 } from "./api.types"
 
 /**
@@ -274,6 +275,25 @@ export class Api {
     }
 
     return { kind: "ok" }
+  }
+  /**
+   * Delete the book with the specified ID.
+   * @param libraryId
+   * @param bookId
+   * @returns
+   */
+  async editBook(libraryId: string, bookId: number, bookData: SetBookMetadata) {
+    const response: ApiResponse<SetBookResult> = await this.apisauce.post(
+      `cdb/set-fields/${bookId}/${libraryId}`,
+      bookData,
+    )
+
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response)
+      if (problem) return problem
+    }
+
+    return { kind: "ok", data: response.data }
   }
 
   async uploadFile(

@@ -334,8 +334,15 @@ export type ApiBookInfo = {
   book_details_vertical_categories: unknown
   book_display_fields: CommonFieldName[]
   bools_are_tristate: boolean
-  field_metadata: Record<CommonFieldName, FieldMetadata>
+  field_metadata: Map<CommonFieldName, FieldMetadata>
   virtual_libraries: unknown
   fts_enabled: boolean
   library_id: string
 } & ApiBookInfoCore
+
+export type SetBookMetadata = {
+  changes: Map<CommonFieldName, unknown>
+  loaded_book_ids: Array<number>
+}
+
+export type SetBookResult = Map<number, FieldMetadata>
