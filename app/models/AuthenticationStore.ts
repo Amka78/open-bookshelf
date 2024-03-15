@@ -1,4 +1,3 @@
-import { Buffer } from "buffer"
 import { type Instance, type SnapshotOut, types } from "mobx-state-tree"
 import { api } from "../services/api"
 
@@ -12,6 +11,13 @@ export const AuthenticationStoreModel = types
   .views((store) => ({
     get isAuthenticated() {
       return !!store.token
+    },
+    get AuthenticationHeader() {
+      return store.token
+        ? {
+            Authorization: `Basic ${store.token}`,
+          }
+        : undefined
     },
   }))
   .actions((store) => ({
