@@ -1,6 +1,6 @@
 import { camelCaseToLowerCase, lowerCaseToCamelCase } from "./convert"
 
-describe("Convert Test", () => {
+describe("convert Test", () => {
   test("success lowerCaseToCamelCase", () => {
     const result = lowerCaseToCamelCase("authors_list")
     expect(result).toBe("authorsList")
