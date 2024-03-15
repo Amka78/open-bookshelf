@@ -1,4 +1,11 @@
-import { type Instance, type SnapshotIn, type SnapshotOut, flow, types } from "mobx-state-tree"
+import {
+  type Instance,
+  type SnapshotIn,
+  type SnapshotOut,
+  flow,
+  types,
+  getParent,
+} from "mobx-state-tree"
 
 import { delay } from "@/utils/delay"
 import {
@@ -23,6 +30,8 @@ import {
 } from "./calibre"
 import { handleCommonApiError } from "./errors/errors"
 import { withSetPropAction } from "./helpers/withSetPropAction"
+import { camelCaseToLowerCase, lowerCaseToCamelCase } from "@/utils/convert"
+import type { Metadata } from "./calibre"
 
 export const BookModel = types
   .model("BookModel")
@@ -119,6 +128,33 @@ export const BookModel = types
         root.setProp("pageProgressionDirection", response.data.page_progression_direction)
       }
       onPostConvert()
+    }),
+    update: flow(function* (libraryId: string, updateInfo: Metadata, updateField: string[]) {
+      const changes = {}
+
+      const loaded_book_ids: number[] = []
+
+      const rootParent = getParent(root) as Array<Book>
+
+      Object.keys(rootParent).forEach((key) => {
+        loaded_book_ids.push(rootParent[key].id)
+      })
+      updateField.map((field: string) => {
+        root.metaData[field] = updateInfo[field]
+        changes[camelCaseToLowerCase(field)] = updateInfo[field]
+      })
+      const response = yield api.editBook(libraryId, root.id, {
+        changes,
+        loaded_book_ids,
+      })
+      if (response.kind === "ok") {
+        updateField.map((field: string) => {
+          root.metaData[field] = updateInfo[field]
+        })
+        return true
+      }
+      handleCommonApiError(response)
+      return false
     }),
   }))
 export type Book = Instance<typeof BookModel>
@@ -377,13 +413,13 @@ function convertLibraryInformation(bookInfo: ApiBookInfo, libraryInfo: LibraryMa
       isCustom: bookInfo.field_metadata[key].is_custom,
       isEditable: bookInfo.field_metadata[key].is_editable,
       kind: bookInfo.field_metadata[key].kind,
-      label: bookInfo.field_metadata[key].label,
+      label: lowerCaseToCamelCase(bookInfo.field_metadata[key].label),
       linkColumn: bookInfo.field_metadata[key].link_column,
       name: bookInfo.field_metadata[key].name,
       recIndex: bookInfo.field_metadata[key].rec_index,
       searchTerms: bookInfo.field_metadata[key].search_terms,
       table: bookInfo.field_metadata[key].table,
     })
-    libraryInfo.fieldMetadataList.set(key, fieldMetadata)
+    libraryInfo.fieldMetadataList.set(lowerCaseToCamelCase(key), fieldMetadata)
   })
 }

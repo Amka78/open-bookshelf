@@ -20,8 +20,7 @@ export type BookEditFieldProps = {
 export function BookEditField(props: BookEditFieldProps) {
   let field: React.ReactNode
 
-  console.log("Edit Field Created.")
-  const label = props.fieldMetadata.label as any
+  const label = props.fieldMetadata.label
   switch (props.fieldMetadata.datatype) {
     case "rating":
       field = <FormRatingGroup control={props.control} name={label} max={10} />
@@ -34,7 +33,13 @@ export function BookEditField(props: BookEditFieldProps) {
       )
       break
     case "datetime":
-      field = <FormDateTimePicker control={props.control} name={label} />
+      field = (
+        <FormDateTimePicker
+          control={props.control}
+          name={label}
+          dateFormat={props.fieldMetadata.display.dateFormat}
+        />
+      )
       break
     case "text":
       if (props.fieldMetadata.isMultiple) {

@@ -12,6 +12,9 @@ export function FormMultipleInputField<T>(props: FormMultipleInputFiledProps<T>)
     <Controller
       {...props}
       render={(renderProps) => {
+        const value = renderProps.field.value
+          ? renderProps.field.value.join(props.valueToText)
+          : undefined
         return (
           <InputField
             {...props}
@@ -25,7 +28,7 @@ export function FormMultipleInputField<T>(props: FormMultipleInputFiledProps<T>)
               }
             }}
             onBlur={renderProps.field.onBlur}
-            value={renderProps.field.value as string}
+            value={value}
             ref={renderProps.field.ref}
           />
         )

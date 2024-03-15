@@ -104,9 +104,6 @@ export const LibraryScreen: FC = observer(() => {
       if (convergenceHook.isLarge) {
         modal.openModal("BookDetailModal", {
           imageUrl: imageUrl,
-          onDeleteConfirmOKPress: () => {
-            selectedLibrary.deleteBook(item.id)
-          },
           onLinkPress: (query) => {
             libraryHook.onSearch(query)
           },

@@ -29,12 +29,11 @@ export type ModalStackParams = {
     onConvertBook?: () => void
     onEditBook?: () => void
     onDeleteBook?: () => void
-    onDeleteConfirmOKPress?: () => void
   }
   BookEditModal: {
     imageUrl: string
     selectedBook?: Book
     fieldMetadataList?: FieldMetadataMap
-    onOKPress?: (value: Metadata) => void
+    onOKPress?: (value: Metadata, editFields: string[]) => void
   }
 }

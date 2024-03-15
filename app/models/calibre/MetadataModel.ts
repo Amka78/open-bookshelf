@@ -21,7 +21,7 @@ export const MetadataModel = types
     languages: types.array(types.string),
     langNames: types.map(types.string),
     formatSizes: types.map(types.number),
-    image: types.maybe(types.string),
+    cover: types.maybe(types.string),
   })
   .actions(withSetPropAction)
 

@@ -11,7 +11,7 @@ import type { ModalStackParams } from "./Types"
 export type BookEditModalProps = ModalComponentProp<ModalStackParams, void, "BookEditModal">
 
 export const BookEditModal = observer((props: BookEditModalProps) => {
-  const { authenticationStore, calibreRootStore, settingStore } = useStores()
+  const { calibreRootStore } = useStores()
 
   const selectedLibrary = calibreRootStore.selectedLibrary
   const selectedBook = selectedLibrary.selectedBook
@@ -24,8 +24,9 @@ export const BookEditModal = observer((props: BookEditModalProps) => {
           ...props.modal.params,
           selectedBook: selectedBook,
           fieldMetadataList: selectedLibrary.fieldMetadataList,
-          onOKPress(value) {
-            //selectedBook.update(value)
+          onOKPress(value, updateFields) {
+            selectedBook.update(selectedLibrary.id, value, updateFields)
+            props.modal.closeModal()
           },
         },
       }}
@@ -36,6 +37,7 @@ export function BookEditModalTemplate(props: BookEditModalProps) {
   const form = useForm<Metadata, unknown, Metadata>({
     defaultValues: props.modal.params.selectedBook.metaData,
   })
+
   return (
     <Root>
       <Header>
@@ -50,7 +52,7 @@ export function BookEditModalTemplate(props: BookEditModalProps) {
         <HStack space={"sm"}>
           <FormImageUploader
             control={form.control}
-            name={"image"}
+            name={"cover"}
             defaultValue={props.modal.params.imageUrl}
           />
           <BookEditFieldList
@@ -65,12 +67,14 @@ export function BookEditModalTemplate(props: BookEditModalProps) {
       <Footer>
         <Button
           onPress={form.handleSubmit((value) => {
+            console.log(form.formState.dirtyFields)
             if (props.modal.params.onOKPress) {
-              props.modal.params.onOKPress(value)
+              props.modal.params.onOKPress(value, Object.keys(form.formState.dirtyFields))
             }
-            props.modal.closeModal()
+            //props.modal.closeModal()
           })}
           tx={"common.ok"}
+          disabled={Object.keys(form.formState.dirtyFields).length <= 0}
         />
         <Button
           onPress={() => {

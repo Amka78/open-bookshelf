@@ -11,11 +11,27 @@ export type BookEditFieldListProps = {
   control: Control<Metadata, unknown>
 } & ComponentProps<typeof Box>
 
+const EditFieldSort = [
+  "authors",
+  "authorSort",
+  "title",
+  "sort",
+  "series",
+  "tags",
+  "languages",
+  "publisher",
+  "pubdate",
+  "formats",
+  "identifiers",
+  "rating",
+  "comments",
+]
 export function BookEditFieldList(props: BookEditFieldListProps) {
   const fields = []
 
-  props.fieldMetadataList.forEach((value) => {
-    if (value.isEditable) {
+  EditFieldSort.forEach((label) => {
+    const value = props.fieldMetadataList.get(label)
+    if (value.isEditable && value.name) {
       fields.push(<BookEditField book={props.book} control={props.control} fieldMetadata={value} />)
     }
   })
