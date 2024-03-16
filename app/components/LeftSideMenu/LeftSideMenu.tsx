@@ -13,7 +13,7 @@ export type LeftSideMenuProps = {
 
 export const LeftSideMenu = observer((props: LeftSideMenuProps) => {
   return props.tagBrowser ? (
-    <ScrollView backgroundColor={"white"} maxWidth={"$32"}>
+    <ScrollView backgroundColor={"white"} maxWidth={"$32"} height={"$full"}>
       {props.tagBrowser.map((category) => {
         return (
           <LeftSideMenuItem name={category.name} count={category.count} key={category.name}>
