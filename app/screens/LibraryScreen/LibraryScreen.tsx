@@ -1,22 +1,22 @@
 import {
   AddFileButton,
+  AuthButton,
   BookDescriptionItem,
   BookImageItem,
   FlatList,
+  HStack,
   IconButton,
   LeftSideMenu,
   LibraryViewButton,
   SortMenu,
   StaggerContainer,
 } from "@/components"
-import { AuthButton } from "@/components/AuthButton/AuthButton"
 import type { ModalStackParams } from "@/components/Modals/Types"
 import { useConvergence } from "@/hooks/useConvergence"
 import { useOpenViewer } from "@/hooks/useOpenViewer"
 import { useStores } from "@/models"
-import type { Book } from "@/models/CalibreRootStore"
+import type { Book } from "@/models/calibre"
 import type { ApppNavigationProp } from "@/navigators"
-import { HStack } from "@gluestack-ui/themed"
 import { useNavigation } from "@react-navigation/native"
 import { values } from "mobx"
 import { observer } from "mobx-react-lite"

@@ -1,4 +1,4 @@
-import { type IMSTMap, IMapType, type Instance, types } from "mobx-state-tree"
+import { type IMSTMap, type Instance, types } from "mobx-state-tree"
 
 export const DateFormatModel = types.model("DateFormatModel").props({
   dateFormat: types.string,

@@ -8,13 +8,13 @@ import {
 } from "@/components"
 import type { ModalComponentProp } from "react-native-modalfy"
 
+import { useDeleteBook } from "@/hooks/useDeleteBook"
+import { useDownloadBook } from "@/hooks/useDownloadBook"
 import { useOpenViewer } from "@/hooks/useOpenViewer"
 import { useStores } from "@/models"
 import { observer } from "mobx-react-lite"
 import { Body, CloseButton, Header, Root } from "./"
 import type { ModalStackParams } from "./Types"
-import { useDeleteBook } from "@/hooks/useDeleteBook"
-import { useDownloadBook } from "@/hooks/useDownloadBook"
 
 export type BookDetailModalProps = ModalComponentProp<ModalStackParams, void, "BookDetailModal">
 

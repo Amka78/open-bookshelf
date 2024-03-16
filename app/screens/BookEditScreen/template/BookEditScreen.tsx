@@ -1,4 +1,4 @@
-import { Button, RootContainer, FormImageUploader, BookEditFieldList, VStack } from "@/components"
+import { BookEditFieldList, Button, FormImageUploader, RootContainer, VStack } from "@/components"
 import type { Book } from "@/models/CalibreRootStore"
 import type { FieldMetadataMap, Metadata } from "@/models/calibre"
 import { useForm } from "react-hook-form"

@@ -341,7 +341,7 @@ export type ApiBookInfo = {
 } & ApiBookInfoCore
 
 export type SetBookMetadata = {
-  changes: Map<CommonFieldName, unknown>
+  changes: Record<CommonFieldName, unknown>
   loaded_book_ids: Array<number>
 }
 

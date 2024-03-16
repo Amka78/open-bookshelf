@@ -1,6 +1,5 @@
 import { BookDetailFieldList, BookDetailMenu, BookImageItem, RootContainer } from "@/components"
-import type { Book } from "@/models/CalibreRootStore"
-import type { FieldMetadataMap } from "@/models/calibre"
+import type { Book, FieldMetadataMap } from "@/models/calibre"
 export type BookDetailScreenProps = {
   book: Book
   fieldMetadataList: FieldMetadataMap
