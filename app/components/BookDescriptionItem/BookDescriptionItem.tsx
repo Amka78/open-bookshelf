@@ -15,7 +15,7 @@ import {
 export type BookDescriptionItemProps = Pick<ImageProps, "source"> & {
   title: string
   authors: string[]
-  conjunction: string
+  conjunction?: string
   onPress: () => Promise<void>
   onLongPress: () => void
   onLinkPress: (link: string) => void

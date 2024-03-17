@@ -134,6 +134,9 @@ export const LibraryScreen: FC = observer(() => {
           onLongPress={onLongPress}
           authors={item.metaData.authors}
           title={item.metaData.title}
+          onLinkPress={(link) => {
+            libraryHook.onSearch(`authors:=${link}`)
+          }}
         />
       )
     }
