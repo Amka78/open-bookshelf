@@ -1,4 +1,4 @@
-import { Instance, types } from "mobx-state-tree"
+import { types } from "mobx-state-tree"
 import { withSetPropAction } from "../helpers/withSetPropAction"
 export const SearchSettingModel = types
   .model("SearchSettingModel")
