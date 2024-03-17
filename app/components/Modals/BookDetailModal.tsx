@@ -19,7 +19,7 @@ import type { ModalStackParams } from "./Types"
 export type BookDetailModalProps = ModalComponentProp<ModalStackParams, void, "BookDetailModal">
 
 export const BookDetailModal = observer((props: BookDetailModalProps) => {
-  const { authenticationStore, calibreRootStore, settingStore } = useStores()
+  const { calibreRootStore } = useStores()
   const openViewerHook = useOpenViewer()
   const deleteBookHook = useDeleteBook()
   const downloadBookHook = useDownloadBook()
@@ -42,6 +42,10 @@ export const BookDetailModal = observer((props: BookDetailModalProps) => {
       imageUrl: props.modal.params.imageUrl,
     })
   }
+
+  const onDeleteBook = async () => {
+    await deleteBookHook.execute(props.modal)
+  }
   return (
     <BookDetailModalTemplate
       modal={{
@@ -53,7 +57,7 @@ export const BookDetailModal = observer((props: BookDetailModalProps) => {
           fieldMetadataList: selectedLibrary.fieldMetadataList,
           onOpenBook,
           onDownloadBook,
-          onDeleteBook: deleteBookHook.execute,
+          onDeleteBook,
           onEditBook,
         },
       }}
