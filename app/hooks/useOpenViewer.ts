@@ -1,7 +1,6 @@
 import type { ModalStackParams } from "@/components/Modals/Types"
 import { useStores } from "@/models"
-import type { Book } from "@/models/CalibreRootStore"
-import { ReadingHistoryModel } from "@/models/calibre"
+import { ReadingHistoryModel, type Book } from "@/models/calibre"
 import type { ApppNavigationProp } from "@/navigators"
 import { useNavigation } from "@react-navigation/native"
 import { Image } from "expo-image"
@@ -40,9 +39,7 @@ export function useOpenViewer() {
                 `${settingStore.api.baseUrl}/book-file/${book.id}/${book.metaData.selectedFormat}/${book.metaData.size}/${book.hash}/${value}?library_id=${calibreRootStore.selectedLibrary.id}`,
               )
               bookImageList.push(imageUrl)
-              await Image.prefetch(imageUrl)
             })
-
             const historyModel = ReadingHistoryModel.create({
               bookId: book.id,
               currentPage: 0,
