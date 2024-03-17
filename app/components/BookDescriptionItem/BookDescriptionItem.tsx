@@ -30,40 +30,44 @@ export function BookDescriptionItem({ loading = false, ...restProps }: BookDescr
   for (const author of props.authors) {
     linkInfoList.push({ value: author })
   }
-  return loadingState ? (
-    <LabeledSpinner
-      labelDirection="horizontal"
-      labelTx={"bookImage.loading"}
-      containerStyle={styles.spinnerSize}
-    />
-  ) : (
-    <ListItem
-      LeftComponent={
-        <Box flexDirection={"row"} width={"$full"}>
-          <Box flexDirection={"row"} width={"$5/6"} marginLeft={2}>
-            <Image source={props.source} style={styles.coverImage} resizeMode={"contain"} />
-            <Box marginLeft={"$1.5"}>
-              <Text fontSize={"$lg"} lineBreakMode="tail" numberOfLines={1}>
-                {props.title}
-              </Text>
-              <LinkButton conjunction={"&"} onPress={props.onLinkPress}>
-                {linkInfoList}
-              </LinkButton>
+  return (
+    <Box height={50} width={"$full"} justifyContent="center">
+      {loadingState ? (
+        <LabeledSpinner
+          labelDirection="horizontal"
+          labelTx={"bookImage.loading"}
+          containerStyle={styles.spinnerSize}
+        />
+      ) : (
+        <ListItem
+          LeftComponent={
+            <Box flexDirection={"row"} width={"$full"}>
+              <Box flexDirection={"row"} width={"$5/6"} marginLeft={2}>
+                <Image source={props.source} style={styles.coverImage} resizeMode={"contain"} />
+                <Box marginLeft={"$1.5"}>
+                  <Text fontSize={"$lg"} lineBreakMode="tail" numberOfLines={1}>
+                    {props.title}
+                  </Text>
+                  <LinkButton conjunction={"&"} onPress={props.onLinkPress}>
+                    {linkInfoList}
+                  </LinkButton>
+                </Box>
+              </Box>
             </Box>
-          </Box>
-        </Box>
-      }
-      onPress={async () => {
-        setLoadingState(true)
-        await props.onPress()
-        setLoadingState(false)
-      }}
-      onLongPress={() => {
-        if (props.onLongPress) {
-          props.onLongPress()
-        }
-      }}
-    />
+          }
+          onPress={async () => {
+            setLoadingState(true)
+            await props.onPress()
+            setLoadingState(false)
+          }}
+          onLongPress={() => {
+            if (props.onLongPress) {
+              props.onLongPress()
+            }
+          }}
+        />
+      )}
+    </Box>
   )
 }
 
