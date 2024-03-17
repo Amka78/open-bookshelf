@@ -30,19 +30,20 @@ export const LibraryMapModel = types
   })
   .actions(withSetPropAction)
   .actions((root) => ({
+    setBook: (bookId?: number) => {
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+      root.selectedBook = bookId as any
+    },
     deleteBook: flow(function* (bookId: number) {
       const response = yield api.deleteBook(root.id, bookId)
       if (response.kind === "ok") {
+        root.selectedBook = undefined
         root.books.delete(bookId.toString())
         return true
       }
       handleCommonApiError(response)
       return false
     }),
-    setBook: (bookId?: number) => {
-      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-      root.selectedBook = bookId as any
-    },
     addReadingHistory: (model: ReadingHistory) => {
       root.readingHistory.push(model)
     },
