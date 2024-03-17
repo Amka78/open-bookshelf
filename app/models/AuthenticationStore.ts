@@ -1,6 +1,7 @@
+// biome-ignore lint/style/useNodejsImportProtocol: <explanation>
+import { Buffer } from "buffer"
 import { type Instance, type SnapshotOut, types } from "mobx-state-tree"
 import { api } from "../services/api"
-
 export const AuthenticationStoreModel = types
   .model("AuthenticationStore")
   .props({
