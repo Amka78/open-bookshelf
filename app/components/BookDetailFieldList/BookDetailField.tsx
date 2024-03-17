@@ -79,14 +79,14 @@ export function BookDetailField(props: BookDetailFieldProps) {
   return (
     <HStack
       key={props.fieldMetadata.label}
-      alignItems="flex-start"
+      alignItems="center"
       space="md"
       justifyContent={"center"}
     >
       <Text width={"$24"} isTruncated={true} fontWeight="bold">
         {props.fieldMetadata.name}
       </Text>
-      <Box width={"$32"} alignItems="flex-start">
+      <Box width={"$32"} alignItems="flex-start" justifyContent="center">
         {field}
       </Box>
     </HStack>
