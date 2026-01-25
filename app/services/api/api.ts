@@ -5,11 +5,11 @@
  * See the [Backend API Integration](https://github.com/infinitered/ignite/blob/master/docs/Backend-API-Integration.md)
  * documentation for more details.
  */
-import Config from "@/config"
-import { type ApiResponse, type ApisauceInstance, create } from "apisauce"
+import Config from "@/config";
+import { type ApiResponse, type ApisauceInstance, create } from "apisauce";
 
-import * as FileSystem from "expo-file-system"
-import { type GeneralApiProblem, getGeneralApiProblem } from "./apiProblem"
+import * as FileSystem from "expo-file-system";
+import { type GeneralApiProblem, getGeneralApiProblem } from "./apiProblem";
 
 import type {
   ApiBookFile,
@@ -22,49 +22,49 @@ import type {
   ApiFeedResponse,
   ApiTagBrowser,
   SetBookMetadata,
-} from "./api.types"
+} from "./api.types";
 
 /**
  * Configuring the apisauce instance.
  */
 export const DEFAULT_API_CONFIG: ApiConfig = {
   url: Config.API_URL,
-  timeout: 10000,
-}
+  timeout: 20000,
+};
 
 /**
  * Manages all requests to the API. You can use this class to build out
  * various requests that you need to call from your backend API.
  */
 export class Api {
-  apisauce: ApisauceInstance
-  config: ApiConfig
-  authenticaion: Record<string, string>
+  apisauce: ApisauceInstance;
+  config: ApiConfig;
+  authenticaion: Record<string, string>;
 
   /**
    * Set up our API instance. Keep this lightweight!
    */
   constructor(config: ApiConfig = DEFAULT_API_CONFIG) {
-    this.config = config
+    this.config = config;
     this.apisauce = create({
-      baseURL: "",
+      baseURL: "/calibre-api",
       timeout: this.config.timeout,
       headers: {
         Accept: "application/atom+xml",
       },
-    })
+    });
   }
 
   setUrl(baseUrl: string) {
-    this.apisauce.setBaseURL(baseUrl)
+    this.apisauce.setBaseURL("/test-url");
   }
 
   setAuthorization(token: string) {
-    this.apisauce.setHeader("Authorization", `Basic ${token}`)
+    this.apisauce.setHeader("Authorization", `Basic ${token}`);
   }
 
   clearAuthorization() {
-    this.apisauce.deleteHeader("Authorization")
+    this.apisauce.deleteHeader("Authorization");
   }
 
   /**
@@ -75,16 +75,20 @@ export class Api {
    */
 
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  async loadOPDS(path?: string): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
+  async loadOPDS(
+    path?: string,
+  ): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
     // make the api call
-    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get(path)
+    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get(
+      path,
+    );
 
     if (!response.ok) {
-      const problem = getGeneralApiProblem(response)
-      if (problem) return problem
+      const problem = getGeneralApiProblem(response);
+      if (problem) return problem;
     }
 
-    return { kind: "ok", data: response.data }
+    return { kind: "ok", data: response.data };
   }
 
   /**
@@ -124,16 +128,15 @@ export class Api {
     }
 
     return { kind: "ok", data: response.data } */
-    const response: ApiResponse<ApiCalibreInterfaceType> = await this.apisauce.get(
-      `/interface-data/update?${Date.now()}`,
-    )
+    const response: ApiResponse<ApiCalibreInterfaceType> =
+      await this.apisauce.get(`/interface-data/update?${Date.now()}`);
 
     if (!response.ok) {
-      const problem = getGeneralApiProblem(response)
-      if (problem) return problem
+      const problem = getGeneralApiProblem(response);
+      if (problem) return problem;
     }
 
-    return { kind: "ok", data: response.data }
+    return { kind: "ok", data: response.data };
   }
 
   /**
@@ -152,14 +155,14 @@ export class Api {
       `interface-data/books-init?library_id=${library}${
         searchText ? `&search=${searchText}` : ""
       }&sort=${sort}.${sortOrder}&${Date.now()}`,
-    )
+    );
 
     if (!response.ok) {
-      const problem = getGeneralApiProblem(response)
-      if (problem) return problem
+      const problem = getGeneralApiProblem(response);
+      if (problem) return problem;
     }
 
-    return { kind: "ok", data: response.data }
+    return { kind: "ok", data: response.data };
   }
 
   /**
@@ -175,14 +178,14 @@ export class Api {
     const response: ApiResponse<ApiBookInfoCore> = await this.apisauce.post(
       `interface-data/more-books?library_id=${library}`,
       json,
-    )
+    );
 
     if (!response.ok) {
-      const problem = getGeneralApiProblem(response)
-      if (problem) return problem
+      const problem = getGeneralApiProblem(response);
+      if (problem) return problem;
     }
 
-    return { kind: "ok", data: response.data }
+    return { kind: "ok", data: response.data };
   }
 
   /**
@@ -196,14 +199,14 @@ export class Api {
   ): Promise<{ kind: "ok"; data: ApiTagBrowser } | GeneralApiProblem> {
     const response: ApiResponse<ApiTagBrowser> = await this.apisauce.get(
       `interface-data/tag-browser?collapse_at=25&hide_empty_categories=no&library_id=${library}&partition_method=first%20letter&sort_tags_by=name`,
-    )
+    );
 
     if (!response.ok) {
-      const problem = getGeneralApiProblem(response)
-      if (problem) return problem
+      const problem = getGeneralApiProblem(response);
+      if (problem) return problem;
     }
 
-    return { kind: "ok", data: response.data }
+    return { kind: "ok", data: response.data };
   }
 
   /**
@@ -217,19 +220,24 @@ export class Api {
     bookId: number,
     bookType: string,
   ): Promise<
-    { kind: "ok"; data: ApiBookManifestStatusType | ApiBookManifestResultType } | GeneralApiProblem
+    | {
+        kind: "ok";
+        data: ApiBookManifestStatusType | ApiBookManifestResultType;
+      }
+    | GeneralApiProblem
   > {
-    const response: ApiResponse<ApiBookManifestStatusType | ApiBookManifestResultType> =
-      await this.apisauce.get(
-        `book-manifest/${bookId}/${bookType}?library_id=${libraryId}&${Date.now()}`,
-      )
+    const response: ApiResponse<
+      ApiBookManifestStatusType | ApiBookManifestResultType
+    > = await this.apisauce.get(
+      `book-manifest/${bookId}/${bookType}?library_id=${libraryId}&${Date.now()}`,
+    );
 
     if (!response.ok) {
-      const problem = getGeneralApiProblem(response)
-      if (problem) return problem
+      const problem = getGeneralApiProblem(response);
+      if (problem) return problem;
     }
 
-    return { kind: "ok", data: response.data }
+    return { kind: "ok", data: response.data };
   }
 
   /**
@@ -248,14 +256,14 @@ export class Api {
   ): Promise<{ kind: "ok"; data: ApiBookFile } | GeneralApiProblem> {
     const response: ApiResponse<ApiBookFile> = await this.apisauce.get(
       `book-file/${bookId}/${bookType}/${bookSize}/${hash}/${spine}?library_id=${libraryId}&${Date.now()}`,
-    )
+    );
 
     if (!response.ok) {
-      const problem = getGeneralApiProblem(response)
-      if (problem) return problem
+      const problem = getGeneralApiProblem(response);
+      if (problem) return problem;
     }
 
-    return { kind: "ok", data: response.data }
+    return { kind: "ok", data: response.data };
   }
 
   /**
@@ -267,14 +275,14 @@ export class Api {
   async deleteBook(libraryId: string, bookId: number) {
     const response: ApiResponse<unknown> = await this.apisauce.post(
       `cdb/delete-books/${bookId}/${libraryId}?${Date.now()}`,
-    )
+    );
 
     if (!response.ok) {
-      const problem = getGeneralApiProblem(response)
-      if (problem) return problem
+      const problem = getGeneralApiProblem(response);
+      if (problem) return problem;
     }
 
-    return { kind: "ok" }
+    return { kind: "ok" };
   }
   /**
    * Delete the book with the specified ID.
@@ -286,14 +294,14 @@ export class Api {
     const response: ApiResponse<SetBookResult> = await this.apisauce.post(
       `cdb/set-fields/${bookId}/${libraryId}`,
       bookData,
-    )
+    );
 
     if (!response.ok) {
-      const problem = getGeneralApiProblem(response)
-      if (problem) return problem
+      const problem = getGeneralApiProblem(response);
+      if (problem) return problem;
     }
 
-    return { kind: "ok", data: response.data }
+    return { kind: "ok", data: response.data };
   }
 
   async uploadFile(
@@ -307,16 +315,16 @@ export class Api {
       {
         headers: this.apisauce.headers,
       },
-    )
+    );
 
     /*if (!response.ok) {
       const problem = getGeneralApiProblem(response)
       if (problem) return problem
     }*/
 
-    return { kind: "ok" }
+    return { kind: "ok" };
   }
 }
 
 // Singleton instance of the API for convenience
-export const api = new Api()
+export const api = new Api();

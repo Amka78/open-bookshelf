@@ -81,7 +81,7 @@ function App(props: AppProps) {
   // You can replace with your own loading component if you wish.
   if (!rehydrated || !isNavigationStateRestored || !areFontsLoaded) return null
 
-  if (Application.applicationName.includes("Sb")) {
+  if (Application.applicationName?.includes("Sb")) {
     const StorybookUI = require("../.storybook/native").default
     return (
       <View style={{ flex: 1 }}>
