@@ -47,7 +47,7 @@ export class Api {
   constructor(config: ApiConfig = DEFAULT_API_CONFIG) {
     this.config = config;
     this.apisauce = create({
-      baseURL: "/calibre-api",
+      baseURL: Config.PROXY,
       timeout: this.config.timeout,
       headers: {
         Accept: "application/atom+xml",
@@ -56,7 +56,7 @@ export class Api {
   }
 
   setUrl(baseUrl: string) {
-    this.apisauce.setBaseURL("/test-url");
+    this.apisauce.setBaseURL(baseUrl);
   }
 
   setAuthorization(token: string) {
