@@ -1,24 +1,24 @@
-let idSuffix = ""
-let appNameSuffix = ""
+let idSuffix = "";
+let appNameSuffix = "";
 switch (process.env.APP_VARIANT) {
   case "development":
-    idSuffix = "_dev"
-    appNameSuffix = "Dev"
-    break
+    idSuffix = "_dev";
+    appNameSuffix = "Dev";
+    break;
   case "storybookDev":
-    idSuffix = "_sb_dev"
-    appNameSuffix = "SbDev"
-    break
+    idSuffix = "_sb_dev";
+    appNameSuffix = "SbDev";
+    break;
   case "preview":
-    idSuffix = "_preview"
-    appNameSuffix = "Preview"
-    break
+    idSuffix = "_preview";
+    appNameSuffix = "Preview";
+    break;
   case "previewDev":
-    idSuffix = "_sb-preview"
-    appNameSuffix = "SbPreview"
-    break
+    idSuffix = "_sb-preview";
+    appNameSuffix = "SbPreview";
+    break;
   default:
-    break
+    break;
 }
 
 export default {
@@ -56,6 +56,7 @@ export default {
     },
     web: {
       bundler: "metro",
+      homepage: process.env.GITHUB_PAGES === "true" ? "/open-bookshelf/" : "/",
     },
     plugins: [
       "@config-plugins/react-native-blob-util",
@@ -95,4 +96,4 @@ export default {
       },
     },
   },
-}
+};

@@ -12,11 +12,15 @@ const plugins = [
 
 module.exports = function(api) {
   api.cache(true);
+  const isWeb = api.env(['web', 'test']);
   return {
     presets: ["babel-preset-expo"],
     env: {
       production: {},
     },
-    plugins,
+    plugins: [
+      ...(isWeb ? ["react-refresh/babel"] : []),
+      ...plugins,
+    ],
   };
 };
