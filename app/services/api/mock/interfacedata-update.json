@@ -138,11 +138,11 @@
   "default_book_list_mode": "cover_grid",
   "donate_link": "https://calibre-ebook.com/ja/donate",
   "lang_code_for_user_manual": "ja",
-  "library_map": { "calibre": "calibre" },
+  "library_map": { "test1": "test1", "test2": "test2" },
   "default_library_id": "calibre",
   "recently_read_by_user": [
     {
-      "library_id": "calibre",
+      "library_id": "test1",
       "book_id": 35,
       "format": "CBZ",
       "cfi": "epubcfi(/2/2/4/2[page_1]@50:49.87)",
@@ -151,9 +151,9 @@
       "tooltip": "testBook/testAuthor1"
     },
     {
-      "library_id": "calibreライブラリ",
+      "library_id": "test2",
       "book_id": 24,
-      "format": "CBZ",
+      "format": "EPUB",
       "cfi": "epubcfi(/2/2/4/32[page_16]@50:49.87)",
       "epoch": 1707669438608326700,
       "pos_frac": 0.07772020725388601,

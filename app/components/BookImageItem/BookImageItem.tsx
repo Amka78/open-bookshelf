@@ -13,7 +13,7 @@ export function BookImageItem({ loading = false, ...restProps }: BookImageprops)
   const props = { loading, ...restProps }
   const [loadingState, setLoadingState] = useState(props.loading)
 
-  const image = <Image source={props.source} style={styles.imageSize} resizeMode={"contain"} />
+  const image = <Image source={props.source} style={styles.imageSize} contentFit={"fill"} />
   const content =
     props.onPress || props.onLongPress ? (
       <Pressable

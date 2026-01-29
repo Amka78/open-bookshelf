@@ -3,6 +3,7 @@ import {
   AuthButton,
   BookDescriptionItem,
   BookImageItem,
+  Box,
   FlatList,
   HStack,
   IconButton,
@@ -148,6 +149,7 @@ export const LibraryScreen: FC = observer(() => {
     <>
       {selectedLibrary ? (
         <FlatList<Book>
+          key={libraryHook.currentListStyle} // to force re-render when list style change
           data={selectedLibrary.books ? values(selectedLibrary.books).slice() : undefined}
           renderItem={renderItem}
           estimatedItemSize={214}
@@ -207,16 +209,18 @@ export const LibraryScreen: FC = observer(() => {
   )
 
   return convergenceHook.isLarge ? (
-    <HStack flex={1}>
-      <LeftSideMenu
-        onNodePress={async (name) => {
-          libraryHook.onSearch(name)
-        }}
-        tagBrowser={selectedLibrary?.tagBrowser}
-        selectedName={selectedLibrary?.searchSetting?.query}
-      />
-      {LibraryCore}
-    </HStack>
+    <Box flex={1} flexDirection="row">
+      <Box flex={0.1}>
+        <LeftSideMenu
+          onNodePress={async (name) => {
+            libraryHook.onSearch(name)
+          }}
+          tagBrowser={selectedLibrary?.tagBrowser}
+          selectedName={selectedLibrary?.searchSetting?.query}
+        />
+      </Box>
+      <Box flex={1}>{LibraryCore}</Box>
+    </Box>
   ) : (
     LibraryCore
   )
