@@ -4,6 +4,7 @@ module.exports = {
   typescript: { reactDocgen: "none" },
   stories: [
     "../../app/components/**/*.stories.?(ts|tsx|js|jsx)",
+    "../../app/screens/**/*.stories.?(ts|tsx|js|jsx)",
     "../stories/**/*.stories.?(ts|tsx|js|jsx)",
   ],
   addons: [

@@ -15,6 +15,12 @@ export function BookPage(props: BookImageProps) {
       contentFit={"contain"}
       onLoad={(e) => {
         if (!dimension) {
+          if (!e?.source?.height || !e?.source?.width) {
+            // Web can omit source dimensions; fall back to window size.
+            setDimension({ height: windowDimension.height, width: windowDimension.width })
+            return
+          }
+
           let imageHeight = e.source.height
           let imageWidth = e.source.width
 
