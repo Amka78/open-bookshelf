@@ -56,7 +56,9 @@ export default {
     },
     web: {
       bundler: "metro",
-      homepage: process.env.GITHUB_PAGES === "true" ? "/open-bookshelf/" : "/",
+      output: "single",
+      publicPath:
+        process.env.GITHUB_PAGES === "true" ? "/open-bookshelf/" : "/",
     },
     plugins: [
       "@config-plugins/react-native-blob-util",
