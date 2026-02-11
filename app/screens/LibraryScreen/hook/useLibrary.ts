@@ -20,8 +20,11 @@ export function useLibrary() {
   const books = undefined
   const search = async () => {
     setSearching(true)
-    await calibreRootStore.searchLibrary()
-    setSearching(false)
+    try {
+      await calibreRootStore.searchLibrary()
+    } finally {
+      setSearching(false)
+    }
   }
 
   useEffect(() => {
@@ -30,9 +33,9 @@ export function useLibrary() {
     calibreRootStore.getTagBrowser()
   }, [])
 
-  const onSearch = (searchCondition?: string) => {
+  const onSearch = async (searchCondition?: string) => {
     selectedLibrary.searchSetting.setProp("query", searchCondition ?? "")
-    search()
+    await search()
   }
 
   const onSort = (sortKey: string) => {
@@ -59,9 +62,21 @@ export function useLibrary() {
   }
 
   const onUploadFile = async (assets: DocumentPickerAsset[]) => {
+
     setSearching(true)
-    await api.uploadFile(assets[0].name, selectedLibrary.id, assets[0].uri)
-    onSearch()
+
+    console.log("onUploadFile", assets);
+
+    try {
+      await api.uploadFile(
+        assets[0].name,
+        selectedLibrary.id,
+        assets[0].file ?? assets[0].uri,
+      )
+      await onSearch()
+    } finally {
+      setSearching(false)
+    }
   }
 
   const currentListStyle = convergenceHook.isLarge ? desktopViewStyle : mobileViewStyle

@@ -8,6 +8,7 @@
 import Config from "@/config";
 import { type ApiResponse, type ApisauceInstance, create } from "apisauce";
 
+import { Platform } from "react-native";
 import * as FileSystem from "expo-file-system";
 import { type GeneralApiProblem, getGeneralApiProblem } from "./apiProblem";
 
@@ -307,20 +308,40 @@ export class Api {
   async uploadFile(
     fileName: string,
     libraryName: string,
-    formData: string,
+    file: string | File,
   ): Promise<{ kind: "ok" } | GeneralApiProblem> {
-    await FileSystem.uploadAsync(
+    console.log("uploadFile", fileName, libraryName, file);
+
+    if (Platform.OS === "web") {
+      const formData = new FormData();
+      if (typeof file === "string") {
+        const response = await fetch(file);
+        const blob = await response.blob();
+        formData.append("file", blob, fileName);
+      } else {
+        formData.append("file", file, fileName);
+      }
+
+      await fetch(
+        `${this.apisauce.getBaseURL()}/cdb/add-book/0/n/${fileName}/${libraryName}`,
+        {
+          method: "POST",
+          headers: this.apisauce.headers,
+          body: formData,
+        },
+      );
+
+      return { kind: "ok" };
+    }
+
+    const result = await FileSystem.uploadAsync(
       `${this.apisauce.getBaseURL()}/cdb/add-book/0/n/${fileName}/${libraryName}`,
-      formData,
+      file as string,
       {
         headers: this.apisauce.headers,
       },
     );
-
-    /*if (!response.ok) {
-      const problem = getGeneralApiProblem(response)
-      if (problem) return problem
-    }*/
+    console.log("uploadFile result", result);
 
     return { kind: "ok" };
   }
