@@ -10,7 +10,7 @@ import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenConta
 const Stack = createNativeStackNavigator<AppStackParamList>()
 
 const sampleImage =
-  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII="
+  "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='1200'><rect width='100%25' height='100%25' fill='%23f0f0f0'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='48' fill='%23555'>Sample Page</text></svg>"
 
 const cachedPath = [sampleImage, sampleImage, sampleImage, sampleImage, sampleImage, sampleImage]
 
