@@ -330,11 +330,15 @@ GITHUB_PAGES=true bun run build:web -- --verbose
 
 ## Code Style
 
-- **Formatter**: Prettier (configured in `.prettierignore`)
-- **Linter**: ESLint with TypeScript support
-- **Code Quality**: Biome (configured in `biome.json`)
+- **Formatter/Linter**: Biome (configured in `biome.json`)
 
-Run code formatting:
+Run formatting:
+
+```bash
+bun run format
+```
+
+Run linting:
 
 ```bash
 bun run lint
