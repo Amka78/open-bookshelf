@@ -39,7 +39,7 @@ git push origin main
 
 ```bash
 # ビルド
-GITHUB_PAGES=true yarn build:web
+GITHUB_PAGES=true bun run build:web
 
 # 出力は dist/ ディレクトリに生成されます
 ```
@@ -65,14 +65,14 @@ https://<your-username>.github.io/open-bookshelf/
 2. 依存関係を再インストール：
 
    ```bash
-   yarn install --frozen-lockfile
+   bun install
    ```
 
 3. キャッシュをクリア：
    ```bash
-   yarn clean
-   yarn install
-   GITHUB_PAGES=true yarn build:web
+   bun run clean
+   bun install
+   GITHUB_PAGES=true bun run build:web
    ```
 
 ### ページが表示されない場合

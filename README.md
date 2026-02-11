@@ -64,8 +64,8 @@ open-bookshelf
 
 ### Prerequisites
 
-- Node.js 18+ and Yarn
-- Expo CLI: `npm install -g expo-cli`
+- Node.js 18+ and Bun
+- Expo CLI: `bunx expo --version`
 - For iOS: Xcode 15+
 - For Android: Android Studio and SDK
 
@@ -77,10 +77,10 @@ git clone https://github.com/yourusername/open-bookshelf.git
 cd open-bookshelf
 
 # Install dependencies
-yarn install
+bun install
 
 # Optional: Link native dependencies
-yarn patch
+bun run patch
 ```
 
 ### Development
@@ -89,50 +89,50 @@ yarn patch
 
 ```bash
 # Start the web development server
-yarn expo:web
+bun run expo:web
 
 # Build for production
-GITHUB_PAGES=true yarn build:web
+GITHUB_PAGES=true bun run build:web
 ```
 
 #### iOS Development
 
 ```bash
 # Run on iOS simulator
-yarn expo:ios
+bun run expo:ios
 
 # Or use React Native CLI
-yarn ios
+bun run ios
 ```
 
 #### Android Development
 
 ```bash
 # Run on Android emulator
-yarn expo:android
+bun run expo:android
 
 # Or use React Native CLI
-yarn android
+bun run android
 ```
 
 #### Storybook (Component Development)
 
 ```bash
 # Web Storybook
-yarn storybook:web
+bun run storybook:web
 
 # Native Storybook (with Expo dev client)
-yarn storybook-native
+bun run storybook-native
 ```
 
 ## Available Scripts
 
 ```
-"start": "npx expo start --dev-client"           // Start development client
-"expo:web": "npx expo start --web"               // Start web development
-"expo:ios": "npx expo start --ios"               // Start iOS simulator
-"expo:android": "npx expo start --android"       // Start Android emulator
-"build:web": "expo export --platform web --output-dir dist"  // Build web for production
+"start": "bunx expo start --dev-client"           // Start development client
+"expo:web": "bunx expo start --web"               // Start web development
+"expo:ios": "bunx expo start --ios"               // Start iOS simulator
+"expo:android": "bunx expo start --android"       // Start Android emulator
+"build:web": "bunx expo export --platform web --output-dir dist"  // Build web for production
 "test": "jest"                                   // Run unit tests
 "test:watch": "jest --watch"                     // Run tests in watch mode
 "lint": "eslint app test --fix"                  // Lint and fix code
@@ -235,15 +235,15 @@ Add or modify translations in `app/i18n/`:
 ### Unit Tests
 
 ```bash
-yarn test
-yarn test:watch
+bun test
+bun run test:watch
 ```
 
 ### End-to-End Tests (Detox)
 
 ```bash
-yarn build:detox
-yarn test:detox
+bun run build:detox
+bun run test:detox
 ```
 
 See [Detox Setup](./detox/README.md) for detailed instructions.
@@ -251,7 +251,7 @@ See [Detox Setup](./detox/README.md) for detailed instructions.
 ### Component Testing with Storybook
 
 ```bash
-yarn storybook:web
+bun run storybook:web
 ```
 
 ## Debugging
@@ -266,7 +266,7 @@ yarn storybook:web
 
 ```bash
 # Start with debugging enabled
-yarn start --verbose
+bun run start -- --verbose
 ```
 
 ## Platform-Specific Features
@@ -303,22 +303,22 @@ yarn start --verbose
 
 ```bash
 # Clear all caches and rebuild
-yarn clean-all
-yarn install
+bun run clean-all
+bun install
 ```
 
 ### Metro Cache Issues
 
 ```bash
 # Clear Metro cache
-yarn start --reset-cache
+bun run start -- --reset-cache
 ```
 
 ### Web Build Errors
 
 ```bash
 # Rebuild with verbose output
-GITHUB_PAGES=true yarn build:web --verbose
+GITHUB_PAGES=true bun run build:web -- --verbose
 ```
 
 ## Contributing
@@ -337,7 +337,7 @@ GITHUB_PAGES=true yarn build:web --verbose
 Run code formatting:
 
 ```bash
-yarn lint
+bun run lint
 ```
 
 ## License

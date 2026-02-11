@@ -31,7 +31,7 @@
     "ignite",
     "ios",
     "node_modules",
-    "yarn.lock",
+    "bun.lockb",
     ".git"
   ],
   "include": [

@@ -28,7 +28,7 @@ brew tap wix/brew && brew install applesimutils
 4. Install the Detox CLI
 
 ```bash
-npm install -g detox-cli
+bunx detox --help
 ```
 
 ## Configuring tests
@@ -58,23 +58,23 @@ Note that in order to pick up elements by ID, we've added the `testID` prop to t
 1. Start the packager
 
 ```
-yarn start
+bun run start
 ```
 
-_(Expo-only note: for testing [production code](https://docs.expo.io/workflow/development-mode/#production-mode), start the packager with `yarn start --no-dev --minify`)_
+_(Expo-only note: for testing [production code](https://docs.expo.io/workflow/development-mode/#production-mode), start the packager with `bun run start -- --no-dev --minify`)_
 
 2. Run the tests
 
 ```
-yarn build:detox
-yarn test:detox
+bun run build:detox
+bun run test:detox
 ```
 
 or for Expo:
 
 ```
-yarn expo:build:detox
-yarn expo:test:detox
+bun run expo:build:detox
+bun run expo:test:detox
 ```
 
 For more information, make sure to check out the official [Detox Docs](https://github.com/wix/Detox/blob/master/docs/README.md)
@@ -84,7 +84,7 @@ For more information, make sure to check out the official [Detox Docs](https://g
 To debug and see view hierarchy, run the command with `--loglevel verbose`.
 
 ```
-yarn test:detox --loglevel verbose
+bun run test:detox -- --loglevel verbose
 ```
 
 You can also read the official recommendations here: [https://github.com/wix/Detox/blob/master/docs/Troubleshooting.Flakiness.md](https://github.com/wix/Detox/blob/master/docs/Troubleshooting.Flakiness.md)

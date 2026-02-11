@@ -22,22 +22,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: "18"
-          cache: "yarn"
+          bun-version: "latest"
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: bun install
 
       - name: Build web
         env:
           GITHUB_PAGES: "true"
-        run: yarn build:web
+        run: bun run build:web
 
       - name: Fix asset paths for GitHub Pages
         run: |

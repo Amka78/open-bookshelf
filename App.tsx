@@ -1,13 +1,13 @@
-// This is the entry point if you run `yarn expo:start`
-// If you run `yarn ios` or `yarn android`, it'll use ./index.js instead.
-import App from "./app/app.tsx"
-import React from "react"
-import * as SplashScreen from "expo-splash-screen"
+// This is the entry point if you run `bun run expo:start`
+// If you run `bun run ios` or `bun run android`, it'll use ./index.js instead.
+import App from "./app/app.tsx";
+import React from "react";
+import * as SplashScreen from "expo-splash-screen";
 
-SplashScreen.preventAutoHideAsync()
+SplashScreen.preventAutoHideAsync();
 
 function IgniteApp() {
-  return <App hideSplashScreen={SplashScreen.hideAsync} />
+  return <App hideSplashScreen={SplashScreen.hideAsync} />;
 }
 
-export default IgniteApp
+export default IgniteApp;
