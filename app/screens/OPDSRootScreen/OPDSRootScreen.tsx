@@ -2,6 +2,7 @@ import { Box, FlatList, ListItem, RootContainer, Text } from "@/components"
 import { useStores } from "@/models"
 import type { Entry } from "@/models/opds"
 import type { ApppNavigationProp } from "@/navigators"
+import { usePalette } from "@/theme"
 import { useNavigation } from "@react-navigation/native"
 import { Image } from "expo-image"
 import { observer } from "mobx-react-lite"
@@ -10,6 +11,7 @@ import { View } from "react-native"
 
 export const OPDSRootScreen: FC = observer(() => {
   const { opdsRootStore, settingStore } = useStores()
+  const palette = usePalette()
 
   const navigation = useNavigation<ApppNavigationProp>()
   const initialize = async () => {
@@ -23,7 +25,7 @@ export const OPDSRootScreen: FC = observer(() => {
               style={{ height: 30, width: 30 }}
               resizeMode={"cover"}
             />
-            <Text color="white" paddingLeft={"2.5"} fontSize={"2xl"}>
+            <Text color={palette.textPrimary} paddingLeft={"2.5"} fontSize={"2xl"}>
               {opdsRootStore.root.title}
             </Text>
           </Box>

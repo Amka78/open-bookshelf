@@ -1,7 +1,15 @@
-import { Box, HStack, PageManager, PagePressable, ViewerHeader } from "@/components"
+import {
+  Box,
+  GradientBackground,
+  HStack,
+  PageManager,
+  PagePressable,
+  ViewerHeader,
+} from "@/components"
 import { useViewer } from "@/hooks/useViewer"
 import type { ApppNavigationProp } from "@/navigators"
 import type { BookReadingStyleType } from "@/type/types"
+import { usePalette } from "@/theme"
 import { useNavigation } from "@react-navigation/native"
 import { FlashList } from "@shopify/flash-list"
 import type React from "react"
@@ -24,6 +32,7 @@ export type BookViewerProps = {
 }
 
 export function BookViewer(props: BookViewerProps) {
+  const palette = usePalette()
   const viewerHook = useViewer()
 
   const flastListRef = useRef<FlashList<number | FacingPageType>>()
@@ -123,7 +132,12 @@ export function BookViewer(props: BookViewerProps) {
   }
 
   return (
-    <>
+    <GradientBackground
+      colors={palette.gradient}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.viewerGradient}
+    >
       <ViewerHeader
         title={props.bookTitle}
         visible={viewerHook.showMenu}
@@ -227,7 +241,7 @@ export function BookViewer(props: BookViewerProps) {
         }
         visible={viewerHook.showMenu}
       />
-    </>
+    </GradientBackground>
   )
 
   function createData(totalPage: number) {
@@ -271,6 +285,9 @@ export function BookViewer(props: BookViewerProps) {
 }
 
 const styles = StyleSheet.create({
+  viewerGradient: {
+    flex: 1,
+  },
   pageRoot: {
     flex: 1,
     zIndex: 0,

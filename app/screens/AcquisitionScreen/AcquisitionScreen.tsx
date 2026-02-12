@@ -11,6 +11,7 @@ import { useStores } from "@/models"
 import type { Entry } from "@/models/opds"
 import { OpdsChildrenModel, OpdsModel, type OpdsRoot } from "@/models/opds/OpdsRootStore"
 import type { AppStackParamList, ApppNavigationProp } from "@/navigators"
+import { usePalette } from "@/theme"
 import { MaterialCommunityIcons } from "@expo/vector-icons"
 import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { Image } from "expo-image"
@@ -20,6 +21,7 @@ import React, { type FC, useEffect, useState } from "react"
 type AcquisitionScreenRouteProp = RouteProp<AppStackParamList, "Acquisition">
 export const AcquisitionScreen: FC = observer(() => {
   const { opdsRootStore, settingStore } = useStores()
+  const palette = usePalette()
 
   const route = useRoute<AcquisitionScreenRouteProp>()
 
@@ -63,7 +65,7 @@ export const AcquisitionScreen: FC = observer(() => {
               style={{ height: 30, width: 30 }}
               resizeMode={"cover"}
             />
-            <Text color="white" paddingLeft={"2.5"} fontSize={"2xl"}>
+            <Text color={palette.textPrimary} paddingLeft={"2.5"} fontSize={"2xl"}>
               {currentOpds?.title}
             </Text>
           </Box>

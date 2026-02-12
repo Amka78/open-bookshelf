@@ -1,5 +1,6 @@
 import { HStack, MaterialCommunityIcon, Text } from "@/components"
 import type { MessageKey } from "@/i18n"
+import { usePalette } from "@/theme"
 import { ButtonSpinner, Pressable } from "@gluestack-ui/themed"
 import { type ComponentProps, forwardRef, useState } from "react"
 
@@ -16,6 +17,7 @@ export const IconButton = forwardRef(
     { iconSize = "md", variant = "common", pressable = true, ...restProps }: IconButtonProps,
     ref,
   ) => {
+    const palette = usePalette()
     const [loading, setLoading] = useState(false)
     const props = restProps
     const icon = (
@@ -47,7 +49,7 @@ export const IconButton = forwardRef(
         }}
         disabled={loading}
       >
-        {loading ? <ButtonSpinner color="$coolGray500" size={35} /> : content}
+        {loading ? <ButtonSpinner color={palette.textSecondary} size={35} /> : content}
       </Pressable>
     ) : (
       content

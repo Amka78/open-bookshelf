@@ -8,6 +8,7 @@ import {
   type ViewStyle,
 } from "react-native"
 import { Text, type TextProps } from "../components/Text/Text"
+import { usePalette } from "@/theme"
 
 export interface ListItemProps extends TouchableOpacityProps {
   /**
@@ -91,6 +92,7 @@ interface ListItemActionProps {
  * - [Documentation and Examples](https://github.com/infinitered/ignite/blob/master/docs/Components-ListItem.md)
  */
 export function ListItem(props: ListItemProps) {
+  const palette = usePalette()
   const {
     bottomSeparator,
     children,
@@ -112,9 +114,19 @@ export function ListItem(props: ListItemProps) {
 
   const $textStyles = [$textStyle, $textStyleOverride, TextProps?.style]
 
+  const separatorTop: ViewStyle = {
+    borderTopWidth: 1,
+    borderTopColor: palette.borderSubtle,
+  }
+
+  const separatorBottom: ViewStyle = {
+    borderBottomWidth: 1,
+    borderBottomColor: palette.borderSubtle,
+  }
+
   const $containerStyles = [
-    topSeparator && $separatorTop,
-    bottomSeparator && $separatorBottom,
+    topSeparator && separatorTop,
+    bottomSeparator && separatorBottom,
     $containerStyleOverride,
   ]
 
@@ -153,16 +165,6 @@ function ListItemAction(props: ListItemActionProps) {
   if (Component) return Component
 
   return null
-}
-
-const $separatorTop: ViewStyle = {
-  borderTopWidth: 1,
-  borderTopColor: "#D7CEC9",
-}
-
-const $separatorBottom: ViewStyle = {
-  borderBottomWidth: 1,
-  borderBottomColor: "#D7CEC9",
 }
 
 const $textStyle: TextStyle = {

@@ -1,4 +1,4 @@
-import { DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/native"
+import { DefaultTheme, NavigationContainer } from "@react-navigation/native"
 import {
   createNativeStackNavigator,
   type NativeStackNavigationProp,
@@ -8,6 +8,7 @@ import { observer } from "mobx-react-lite"
 import type React from "react"
 import { useEffect } from "react"
 import { useColorScheme } from "react-native"
+import { getPalette } from "@/theme"
 
 import Config from "../config"
 import { useStores } from "../models"
@@ -77,6 +78,8 @@ const Stack = createNativeStackNavigator<AppStackParamList>()
 export type ApppNavigationProp = NativeStackNavigationProp<AppStackParamList>
 const AppStack = observer(function AppStack() {
   const { authenticationStore, settingStore } = useStores()
+  const colorScheme = useColorScheme()
+  const palette = getPalette(colorScheme === "dark" ? "dark" : "light")
   useEffect(() => {
     if (settingStore.api.baseUrl) {
       api.setUrl(settingStore.api.baseUrl)
@@ -88,7 +91,16 @@ const AppStack = observer(function AppStack() {
   }, [])
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: true }} initialRouteName={"Connect"}>
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: true,
+        headerStyle: { backgroundColor: palette.surfaceStrong },
+        headerTintColor: palette.textPrimary,
+        headerTitleStyle: { color: palette.textPrimary },
+        headerShadowVisible: false,
+      }}
+      initialRouteName={"Connect"}
+    >
       <Stack.Screen name="Connect" component={ConnectScreen} />
       <Stack.Screen name="OPDSRoot" component={OPDSRootScreen} />
       <Stack.Screen name="Acquisition" component={AcquisitionScreen} />
@@ -114,6 +126,19 @@ type NavigationProps = Partial<React.ComponentProps<typeof NavigationContainer>>
 
 export const AppNavigator = observer(function AppNavigator(props: NavigationProps) {
   const colorScheme = useColorScheme()
+  const palette = getPalette(colorScheme === "dark" ? "dark" : "light")
+  const appTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: palette.bg0,
+      card: palette.surfaceStrong,
+      text: palette.textPrimary,
+      border: palette.borderSubtle,
+      primary: palette.textPrimary,
+      notification: palette.accent,
+    },
+  }
 
   useBackButtonHandler((routeName) => exitRoutes.includes(routeName))
 
@@ -121,7 +146,7 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
   return (
     <NavigationContainer
       ref={navigationRef}
-      theme={/* colorScheme === "dark" ? DarkTheme : */ DefaultTheme}
+      theme={/* colorScheme === "dark" ? DarkTheme : */ appTheme}
       {...props}
     >
       <ModalProvider stack={stack}>

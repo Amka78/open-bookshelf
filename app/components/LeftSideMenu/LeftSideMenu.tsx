@@ -1,4 +1,5 @@
 import type { Category } from "@/models/calibre"
+import { usePalette } from "@/theme"
 import { ScrollView } from "@gluestack-ui/themed"
 import React from "react"
 
@@ -12,8 +13,15 @@ export type LeftSideMenuProps = {
 }
 
 export const LeftSideMenu = observer((props: LeftSideMenuProps) => {
+  const palette = usePalette()
   return props.tagBrowser ? (
-    <ScrollView backgroundColor={"white"} maxWidth={"$32"} height={"$full"}>
+    <ScrollView
+      backgroundColor={palette.surface}
+      maxWidth={"$32"}
+      height={"$full"}
+      borderRightWidth={1}
+      borderRightColor={palette.borderSubtle}
+    >
       {props.tagBrowser.map((category) => {
         return (
           <LeftSideMenuItem name={category.name} count={category.count} key={category.name}>

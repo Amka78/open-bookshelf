@@ -1,5 +1,6 @@
 import { HStack, IconButton, Text, VStack } from "@/components"
 import { goToNextPage, goToPreviousPage } from "@/utils/pageTurnning"
+import { usePalette } from "@/theme"
 import { Slider, SliderFilledTrack, SliderThumb, SliderTrack, styled } from "@gluestack-ui/themed"
 
 export type PageManagerProps = {
@@ -14,6 +15,7 @@ export type PageManagerProps = {
 
 function PageManagerCore({ reverse = false, visible = true, ...restProps }: PageManagerProps) {
   const props = { reverse, visible, ...restProps }
+  const palette = usePalette()
 
   const pageNum = props.currentPage ? props.currentPage + 1 : 1
 
@@ -35,7 +37,18 @@ function PageManagerCore({ reverse = false, visible = true, ...restProps }: Page
   }
 
   return props.visible ? (
-    <VStack {...props} height={"10%"} alignItems={"center"} justifyContent={"center"}>
+    <VStack
+      {...props}
+      height={"10%"}
+      alignItems={"center"}
+      justifyContent={"center"}
+      backgroundColor={props.variant === "fix" ? palette.surfaceStrong : "transparent"}
+      style={
+        props.variant === "fix"
+          ? { borderTopWidth: 1, borderTopColor: palette.borderSubtle }
+          : undefined
+      }
+    >
       <HStack width={"$full"} justifyContent={"center"}>
         <IconButton
           name="fast-forward"
@@ -102,7 +115,6 @@ export const PageManager = styled(PageManagerCore, {
         right: 0,
         bottom: 0,
         width: "$full",
-        backgroundColor: "$white",
       },
       free: {
         width: "$full",

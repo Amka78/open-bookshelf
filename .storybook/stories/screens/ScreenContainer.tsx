@@ -1,4 +1,6 @@
 import { modalConfig } from "@/components/Modals/ModalConfig"
+import { getPalette } from "@/theme"
+import { useColorScheme } from "react-native"
 import { GluestackUIProvider } from "@gluestack-ui/themed"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { createModalStack, ModalProvider } from "react-native-modalfy"
@@ -9,11 +11,13 @@ export type ScreenContainerProps = {
   children: React.ReactNode
 }
 export function ScreenContainer(props: ScreenContainerProps) {
+  const colorScheme = useColorScheme()
+  const palette = getPalette(colorScheme === "dark" ? "dark" : "light")
   const stack = createModalStack(modalConfig, {})
   return (
     <SafeAreaProvider
       initialMetrics={initialWindowMetrics}
-      style={{ backgroundColor: "black", flex: 1, height: "100%" }}
+      style={{ backgroundColor: palette.bg0, flex: 1, height: "100%" }}
     >
       <GestureHandlerRootView style={{ flex: 1 }}>
         <GluestackUIProvider config={config}>

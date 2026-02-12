@@ -1,7 +1,9 @@
+import { usePalette } from "@/theme"
 import { MaterialCommunityIcons } from "@expo/vector-icons"
 import { styled } from "@gluestack-ui/themed"
+import type { ComponentProps } from "react"
 
-export const MaterialCommunityIcon = styled(
+const StyledIcon = styled(
   MaterialCommunityIcons,
   {
     variants: {
@@ -31,32 +33,11 @@ export const MaterialCommunityIcon = styled(
           props: {
             size: 21,
           },
-          px: 0.2,
-          py: 0.2,
         },
         tiny: {
           props: {
             size: 14,
           },
-        },
-        px: 0.1,
-        py: 0.1,
-      },
-      variant: {
-        common: {
-          borderRadius: "$none",
-          color: "$coolGray800",
-        },
-        staggerRoot: {
-          borderRadius: "$full",
-          color: "white",
-          bgColor: "$coolGray800",
-        },
-        staggerChild: {
-          borderRadius: "$full",
-          color: "$coolGray800",
-          bgColor: "white",
-          borderColor: "$coolGray800",
         },
       },
       rotate: {
@@ -74,8 +55,47 @@ export const MaterialCommunityIcon = styled(
     },
     defaultProps: {
       iconSize: "md",
-      variant: "common",
     },
   },
   { ancestorStyle: ["_icon"] },
 )
+
+export type MaterialCommunityIconProps = ComponentProps<typeof StyledIcon> & {
+  variant?: "common" | "staggerRoot" | "staggerChild"
+}
+
+export function MaterialCommunityIcon({
+  variant = "common",
+  ...props
+}: MaterialCommunityIconProps) {
+  const palette = usePalette()
+
+  const variantColors: Record<
+    NonNullable<MaterialCommunityIconProps["variant"]>,
+    { color: string; bgColor?: string; borderColor?: string }
+  > = {
+    common: {
+      color: palette.textSecondary,
+    },
+    staggerRoot: {
+      color: palette.textPrimary,
+      bgColor: palette.surfaceStrong,
+    },
+    staggerChild: {
+      color: palette.textPrimary,
+      bgColor: palette.surfaceMuted,
+      borderColor: palette.borderStrong,
+    },
+  } as const
+
+  const resolved = variantColors[variant]
+
+  return (
+    <StyledIcon
+      {...props}
+      color={props.color ?? resolved.color}
+      bgColor={props.bgColor ?? resolved.bgColor}
+      borderColor={props.borderColor ?? resolved.borderColor}
+    />
+  )
+}
