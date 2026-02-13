@@ -11,9 +11,9 @@ import type { ApppNavigationProp } from "@/navigators"
 import type { BookReadingStyleType } from "@/type/types"
 import { usePalette } from "@/theme"
 import { useNavigation } from "@react-navigation/native"
-import { FlashList } from "@shopify/flash-list"
+import { FlashList, type ListRenderItem } from "@shopify/flash-list"
 import type React from "react"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { StyleSheet, useWindowDimensions } from "react-native"
 
 type FacingPageType = { page1?: number; page2?: number }
@@ -35,7 +35,7 @@ export function BookViewer(props: BookViewerProps) {
   const palette = usePalette()
   const viewerHook = useViewer()
 
-  const flastListRef = useRef<FlashList<number | FacingPageType>>()
+  const flashListRef = useRef<FlashList<number | FacingPageType>>(null)
 
   const dimension = useWindowDimensions()
 
@@ -47,76 +47,99 @@ export function BookViewer(props: BookViewerProps) {
     createData(props.totalPage)
   }, [props.totalPage])
 
-  const renderPage = (renderProps: RenderPageProps) => {
-    let alignItems: string
+  const renderPage = useCallback(
+    (renderProps: RenderPageProps) => {
+      let alignItems: string
 
-    switch (renderProps.pageType) {
-      case "singlePage":
-        alignItems = "center"
-        break
-      case "leftPage":
-        alignItems = "flex-end"
-        break
-      case "rightPage":
-        alignItems = "flex-start"
-        break
-    }
-    return (
-      <PagePressable
-        currentPage={renderProps.scrollIndex}
-        direction={renderProps.direction}
-        onLongPress={viewerHook.onManageMenu}
-        onPageChanging={(page) => {
-          console.tron.log(`current scroll index ${scrollIndex}`)
-          console.tron.log(`page pressed next page:${page}`)
-          setScrollToIndex(page)
-          flastListRef.current.scrollToIndex({ index: page })
-        }}
-        totalPages={pages[viewerHook.readingStyle].length}
-        transitionPages={1}
-        style={{ ...styles.pageRoot, alignItems }}
-      >
-        {props.renderPage(renderProps)}
-      </PagePressable>
-    )
-  }
-  const renderItem = ({ item, index }: { item: number | FacingPageType; index: number }) => {
-    let renderComp: React.JSX.Element
-    if (typeof item === "number" || (item as FacingPageType).page2 === undefined) {
-      const num = typeof item === "number" ? item : (item as FacingPageType).page1
-      renderComp = (
-        <Box width={dimension.width} height={dimension.height}>
-          {renderPage({
-            page: num,
-            direction: "next",
-            pageType: "singlePage",
-            scrollIndex: index,
-          })}
-        </Box>
+      switch (renderProps.pageType) {
+        case "singlePage":
+          alignItems = "center"
+          break
+        case "leftPage":
+          alignItems = "flex-end"
+          break
+        case "rightPage":
+          alignItems = "flex-start"
+          break
+      }
+      return (
+        <PagePressable
+          currentPage={renderProps.scrollIndex}
+          direction={renderProps.direction}
+          onLongPress={viewerHook.onManageMenu}
+          onPageChanging={(page) => {
+            console.tron.log(`current scroll index ${scrollIndex}`)
+            console.tron.log(`page pressed next page:${page}`)
+            setScrollToIndex(page)
+            flashListRef.current?.scrollToIndex({ index: page })
+          }}
+          totalPages={pages[viewerHook.readingStyle].length}
+          transitionPages={1}
+          style={{ ...styles.pageRoot, alignItems }}
+        >
+          {props.renderPage(renderProps)}
+        </PagePressable>
       )
-    } else {
-      const leftPage = renderPage({
-        page: viewerHook.pageDirection === "left" ? item.page2 : item.page1,
-        direction: viewerHook.pageDirection === "left" ? "next" : "previous",
-        pageType: "leftPage",
-        scrollIndex: index,
-      })
-      const rightPage = renderPage({
-        page: viewerHook.pageDirection === "left" ? item.page1 : item.page2,
-        direction: viewerHook.pageDirection === "left" ? "previous" : "next",
-        pageType: "rightPage",
-        scrollIndex: index,
-      })
-      renderComp = (
-        <HStack width={dimension.width} height={dimension.height}>
-          {leftPage}
-          {rightPage}
-        </HStack>
-      )
-    }
+    },
+    [pages, props.renderPage, scrollIndex, viewerHook]
+  )
 
-    return renderComp
-  }
+  const renderItem: ListRenderItem<number | FacingPageType> = useCallback(
+    ({ item, index }) => {
+      let renderComp: React.JSX.Element
+      if (typeof item === "number" || (item as FacingPageType).page2 === undefined) {
+        const num = typeof item === "number" ? item : (item as FacingPageType).page1
+        renderComp = (
+          <Box width={dimension.width} height={dimension.height}>
+            {renderPage({
+              page: num,
+              direction: "next",
+              pageType: "singlePage",
+              scrollIndex: index,
+            })}
+          </Box>
+        )
+      } else {
+        const leftPage = renderPage({
+          page: viewerHook.pageDirection === "left" ? item.page2 : item.page1,
+          direction: viewerHook.pageDirection === "left" ? "next" : "previous",
+          pageType: "leftPage",
+          scrollIndex: index,
+        })
+        const rightPage = renderPage({
+          page: viewerHook.pageDirection === "left" ? item.page1 : item.page2,
+          direction: viewerHook.pageDirection === "left" ? "previous" : "next",
+          pageType: "rightPage",
+          scrollIndex: index,
+        })
+        renderComp = (
+          <HStack width={dimension.width} height={dimension.height}>
+            {leftPage}
+            {rightPage}
+          </HStack>
+        )
+      }
+
+      return renderComp
+    },
+    [dimension.height, dimension.width, renderPage, viewerHook.pageDirection]
+  )
+
+  const data = useMemo(() => {
+    if (!pages) return []
+    return pages[viewerHook.readingStyle]
+  }, [pages, viewerHook.readingStyle])
+
+  const estimatedItemSize =
+    viewerHook.readingStyle === "verticalScroll" ? dimension.height : dimension.width
+
+  const onViewableItemsChanged = useRef(
+    (info: { viewableItems: { index?: number | null }[] }) => {
+      const nextIndex = info.viewableItems[0]?.index
+      if (nextIndex === undefined || nextIndex === null) return
+      setScrollToIndex((prev) => (prev === nextIndex ? prev : nextIndex))
+    }
+  ).current
 
   let currentPage = 0
 
@@ -154,7 +177,7 @@ export function BookViewer(props: BookViewerProps) {
             if (newReadingStyle === "singlePage" || newReadingStyle === "verticalScroll") {
               const index = (pages[viewerHook.readingStyle][scrollIndex] as FacingPageType).page1
               setScrollToIndex(index)
-              flastListRef.current.scrollToIndex({ index })
+              flashListRef.current?.scrollToIndex({ index })
             } else if (
               viewerHook.readingStyle === "facingPage" &&
               newReadingStyle === "facingPageWithTitle"
@@ -165,7 +188,7 @@ export function BookViewer(props: BookViewerProps) {
                 return value.page1 === index || value.page2 === index
               })
               setScrollToIndex(newIndex)
-              flastListRef.current.scrollToIndex({ index: newIndex })
+              flashListRef.current?.scrollToIndex({ index: newIndex })
             } else if (
               viewerHook.readingStyle === "facingPageWithTitle" &&
               newReadingStyle === "facingPage"
@@ -176,14 +199,14 @@ export function BookViewer(props: BookViewerProps) {
                 return value.page1 === index || value.page2 === index
               })
               setScrollToIndex(newIndex)
-              flastListRef.current.scrollToIndex({ index: newIndex })
+              flashListRef.current?.scrollToIndex({ index: newIndex })
             }
           } else {
             const newIndex = (pages[newReadingStyle] as FacingPageType[]).findIndex((value) => {
               return value.page1 === scrollIndex || value.page2 === scrollIndex
             })
             setScrollToIndex(newIndex)
-            flastListRef.current.scrollToIndex({ index: newIndex })
+            flashListRef.current?.scrollToIndex({ index: newIndex })
           }
           viewerHook.onSetBookReadingStyle(newReadingStyle)
         }}
@@ -194,23 +217,29 @@ export function BookViewer(props: BookViewerProps) {
       {pages ? (
         <Box style={styles.viewerRoot}>
           <FlashList<number | FacingPageType>
-            data={pages[viewerHook.readingStyle].slice()}
+            data={data}
             renderItem={renderItem}
             horizontal={viewerHook?.readingStyle !== "verticalScroll"}
             pagingEnabled={true}
             inverted={
               viewerHook.pageDirection === "left" && viewerHook.readingStyle !== "verticalScroll"
             }
-            ref={flastListRef}
-            onViewableItemsChanged={(info) => {
-              if (info.changed[0].index !== scrollIndex) {
-                setScrollToIndex(info.changed[0].index)
-              }
-            }}
+            ref={flashListRef}
+            keyExtractor={(_, index) => `${index}`}
+            onViewableItemsChanged={onViewableItemsChanged}
             viewabilityConfig={{
               itemVisiblePercentThreshold: 100,
             }}
-            estimatedItemSize={1920}
+            estimatedItemSize={estimatedItemSize}
+            estimatedListSize={{ width: dimension.width, height: dimension.height }}
+            overrideItemLayout={(layout, _, index) => {
+              layout.size = estimatedItemSize
+              layout.offset = estimatedItemSize * index
+            }}
+            removeClippedSubviews={true}
+            windowSize={3}
+            initialNumToRender={1}
+            maxToRenderPerBatch={2}
           />
         </Box>
       ) : null}
@@ -234,7 +263,7 @@ export function BookViewer(props: BookViewerProps) {
             })
           }
           setScrollToIndex(index)
-          flastListRef.current.scrollToIndex({ index })
+          flashListRef.current?.scrollToIndex({ index })
         }}
         reverse={
           viewerHook.pageDirection === "left" && viewerHook.readingStyle !== "verticalScroll"
