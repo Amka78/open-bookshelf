@@ -10,15 +10,36 @@ export function useOpenViewer() {
   const navigation = useNavigation<ApppNavigationProp>()
   const { calibreRootStore, settingStore } = useStores()
 
+  type ViewerRoute = "Viewer" | "PDFViewer"
+  type ExecuteOptions = {
+    navigate?: boolean
+    onComplete?: (info: {
+      route: ViewerRoute
+      format: string
+      bookId: number
+      libraryId: string
+    }) => void
+  }
+
   const onItemPress = async (
     book: Book,
     format: string,
     selectedLibraryId: string,
     modal: UsableModalProp<ModalStackParams>,
+    options: ExecuteOptions,
   ) => {
+    const shouldNavigate = options.navigate !== false
     book.metaData.setProp("selectedFormat", format)
     if (format === "PDF") {
-      navigation.navigate("PDFViewer")
+      options.onComplete?.({
+        route: "PDFViewer",
+        format,
+        bookId: book.id,
+        libraryId: selectedLibraryId,
+      })
+      if (shouldNavigate) {
+        navigation.navigate("PDFViewer")
+      }
     } else {
       try {
         const history = calibreRootStore.selectedLibrary.readingHistory.find((value) => {
@@ -30,7 +51,15 @@ export function useOpenViewer() {
         })
 
         if (history) {
-          navigation.navigate("Viewer")
+          options.onComplete?.({
+            route: "Viewer",
+            format,
+            bookId: book.id,
+            libraryId: selectedLibraryId,
+          })
+          if (shouldNavigate) {
+            navigation.navigate("Viewer")
+          }
         } else {
           await book.convert(format, selectedLibraryId, async () => {
             const bookImageList = []
@@ -48,7 +77,15 @@ export function useOpenViewer() {
               format: format,
             })
             calibreRootStore.selectedLibrary.addReadingHistory(historyModel)
-            navigation.navigate("Viewer")
+            options.onComplete?.({
+              route: "Viewer",
+              format,
+              bookId: book.id,
+              libraryId: selectedLibraryId,
+            })
+            if (shouldNavigate) {
+              navigation.navigate("Viewer")
+            }
           })
         }
       } catch (e) {
@@ -56,18 +93,18 @@ export function useOpenViewer() {
       }
     }
   }
-  const execute = async (modal: UsableModalProp<ModalStackParams>) => {
+  const execute = async (modal: UsableModalProp<ModalStackParams>, options: ExecuteOptions = {}) => {
     const selectedLibraryId = calibreRootStore.selectedLibrary.id
     const book = calibreRootStore.selectedLibrary.selectedBook
     if (book.metaData.formats.length > 1) {
       modal.openModal("FormatSelectModal", {
         formats: book.metaData.formats,
         onSelectFormat: async (format) => {
-          await onItemPress(book, format, selectedLibraryId, modal)
+          await onItemPress(book, format, selectedLibraryId, modal, options)
         },
       })
     } else {
-      await onItemPress(book, book.metaData.formats[0], selectedLibraryId, modal)
+      await onItemPress(book, book.metaData.formats[0], selectedLibraryId, modal, options)
     }
   }
   return {

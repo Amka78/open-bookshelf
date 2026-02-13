@@ -25,7 +25,7 @@ import { values } from "mobx"
 import { observer } from "mobx-react-lite"
 import type React from "react"
 import { type FC, useLayoutEffect, useRef } from "react"
-import { useWindowDimensions } from "react-native"
+import { Platform, useWindowDimensions } from "react-native"
 import { useModal } from "react-native-modalfy"
 import type { SearchBarCommands } from "react-native-screens"
 import { useLibrary } from "./hook/useLibrary"
@@ -104,8 +104,41 @@ export const LibraryScreen: FC = observer(() => {
       `${settingStore.api.baseUrl}/get/thumb/${item.id}/${selectedLibrary.id}?sz=300x400`,
     )
 
-    const onLongPress = () => {
+    const openViewerInNewTab = (info: {
+      route: "Viewer" | "PDFViewer"
+      format: string
+      bookId: number
+      libraryId: string
+    }) => {
+      if (Platform.OS !== "web" || typeof globalThis === "undefined") {
+        return
+      }
+
+      const location = (globalThis as { location?: Location }).location
+      if (!location?.href) {
+        return
+      }
+
+      const url = new URL(location.href)
+      url.searchParams.set("viewerTab", info.route)
+      url.searchParams.set("viewerBookId", String(info.bookId))
+      url.searchParams.set("viewerLibraryId", info.libraryId)
+      url.searchParams.set("viewerFormat", info.format)
+      globalThis.open?.(url.toString(), "_blank", "noopener,noreferrer")
+    }
+
+    const onLongPress = async () => {
       selectedLibrary.setBook(item.id)
+      if (Platform.OS === "web") {
+        await openViewerHook.execute(modal, {
+          navigate: false,
+          onComplete: (info) => {
+            openViewerInNewTab(info)
+          },
+        })
+        return
+      }
+
       if (convergenceHook.isLarge) {
         modal.openModal("BookDetailModal", {
           imageUrl: imageUrl,
