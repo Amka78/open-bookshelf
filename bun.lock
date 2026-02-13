@@ -5,6 +5,7 @@
     "": {
       "name": "open-book-shelf",
       "dependencies": {
+        "@expo-google-fonts/noto-serif-jp": "^0.2.2",
         "@expo-google-fonts/space-grotesk": "^0.2.2",
         "@expo/config-plugins": "~7.8.0",
         "@expo/dev-server": "^0.5.5",
@@ -503,6 +504,8 @@
     "@esbuild/win32-ia32": ["@esbuild/win32-ia32@0.18.20", "", { "os": "win32", "cpu": "ia32" }, "sha512-Wv7QBi3ID/rROT08SABTS7eV4hX26sVduqDOTe1MvGMjNd3EjOz4b7zeexIR62GTIEKrfJXKL9LFxTYgkyeu7g=="],
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.18.20", "", { "os": "win32", "cpu": "x64" }, "sha512-kTdfRcSiDfQca/y9QIkng02avJ+NCaQvrMejlsB3RRv5sE9rRoeBPISaZpKxHELzRxZyLvNts1P27W3wV+8geQ=="],
+
+    "@expo-google-fonts/noto-serif-jp": ["@expo-google-fonts/noto-serif-jp@0.2.3", "", {}, "sha512-ULMkZyZDEjzmseSaLMiJiR8RNbbjB/4riCT1FIHTA8WYSEt/uYcJZ2wgTsTWq+xz+oRsPrWC5gctG+SC/Rm6ZA=="],
 
     "@expo-google-fonts/space-grotesk": ["@expo-google-fonts/space-grotesk@0.2.3", "", {}, "sha512-UYEMIrzegR02pauH7gVMI7j6cUroTtJug6dH/aQFjMNz0UwZe6GUcrEtJDmsUHJjEZdxbYgHhaiIwswWVo0CMA=="],
 
