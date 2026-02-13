@@ -1,5 +1,8 @@
 import React, { Component, type ErrorInfo, type ReactNode } from "react"
 import { resetRoot } from "@/navigators"
+import * as storage from "@/utils/storage"
+
+const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
 
 import { ErrorDetails } from "./ErrorDetails"
 
@@ -39,8 +42,9 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   // Reset the error back to null
-  resetError = () => {
+  resetError = async () => {
     this.setState({ error: null, errorInfo: null })
+    await storage.remove(NAVIGATION_PERSISTENCE_KEY)
     resetRoot({ index: 0, routes: [{ name: "Connect" }] })
   }
 
