@@ -1,4 +1,5 @@
 import React, { Component, type ErrorInfo, type ReactNode } from "react"
+import { resetRoot } from "@/navigators"
 
 import { ErrorDetails } from "./ErrorDetails"
 
@@ -40,6 +41,7 @@ export class ErrorBoundary extends Component<Props, State> {
   // Reset the error back to null
   resetError = () => {
     this.setState({ error: null, errorInfo: null })
+    resetRoot({ index: 0, routes: [{ name: "Connect" }] })
   }
 
   // To avoid unnecessary re-renders

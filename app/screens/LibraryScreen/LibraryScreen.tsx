@@ -14,6 +14,8 @@ import {
 } from "@/components"
 import type { ModalStackParams } from "@/components/Modals/Types"
 import { useConvergence } from "@/hooks/useConvergence"
+import { useDeleteBook } from "@/hooks/useDeleteBook"
+import { useDownloadBook } from "@/hooks/useDownloadBook"
 import { useOpenViewer } from "@/hooks/useOpenViewer"
 import { useStores } from "@/models"
 import type { Book } from "@/models/calibre"
@@ -39,6 +41,8 @@ export const LibraryScreen: FC = observer(() => {
   const window = useWindowDimensions()
 
   const openViewerHook = useOpenViewer()
+  const deleteBookHook = useDeleteBook()
+  const downloadBookHook = useDownloadBook()
   const libraryHook = useLibrary()
 
   const searchBar = useRef<SearchBarCommands>()
@@ -119,12 +123,77 @@ export const LibraryScreen: FC = observer(() => {
       }
     }
 
+    const onOpenBook = async () => {
+      selectedLibrary.setBook(item.id)
+      await openViewerHook.execute(modal)
+    }
+
+    const onDownloadBook = async () => {
+      selectedLibrary.setBook(item.id)
+      await downloadBookHook.execute(modal)
+    }
+
+    const onConvertBook = async () => {
+      selectedLibrary.setBook(item.id)
+      const book = selectedLibrary.selectedBook
+      if (!book?.metaData?.formats?.length) {
+        return
+      }
+
+      const runConvert = async (format: string) => {
+        try {
+          await book.convert(format, selectedLibrary.id, () => {})
+        } catch (e) {
+          modal.openModal("ErrorModal", {
+            message: e instanceof Error ? e.message : String(e),
+            titleTx: "errors.failedConvert",
+          })
+        }
+      }
+
+      if (book.metaData.formats.length > 1) {
+        modal.openModal("FormatSelectModal", {
+          formats: book.metaData.formats,
+          onSelectFormat: async (format) => {
+            await runConvert(format)
+          },
+        })
+      } else {
+        await runConvert(book.metaData.formats[0])
+      }
+    }
+
+    const onEditBook = () => {
+      selectedLibrary.setBook(item.id)
+      if (convergenceHook.isLarge) {
+        modal.openModal("BookEditModal", {
+          imageUrl: imageUrl,
+        })
+      } else {
+        navigation.navigate("BookEdit", {
+          imageUrl: imageUrl,
+        })
+      }
+    }
+
+    const onDeleteBook = async () => {
+      selectedLibrary.setBook(item.id)
+      await deleteBookHook.execute(modal)
+    }
+
     if (libraryHook.currentListStyle === "gridView") {
       listItem = (
         <BookImageItem
           source={{ uri: imageUrl, headers: authenticationStore.getHeader() }}
           onPress={onPress}
           onLongPress={onLongPress}
+          detailMenuProps={{
+            onOpenBook: onOpenBook,
+            onDownloadBook: onDownloadBook,
+            onConvertBook: onConvertBook,
+            onEditBook: onEditBook,
+            onDeleteBook: onDeleteBook,
+          }}
         />
       )
     } else {

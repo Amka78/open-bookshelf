@@ -14,7 +14,7 @@ import { useNavigation } from "@react-navigation/native"
 import { FlashList, type ListRenderItem } from "@shopify/flash-list"
 import type React from "react"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { StyleSheet, useWindowDimensions } from "react-native"
+import { Platform, StyleSheet, useWindowDimensions } from "react-native"
 
 type FacingPageType = { page1?: number; page2?: number }
 
@@ -42,6 +42,7 @@ export function BookViewer(props: BookViewerProps) {
   const [scrollIndex, setScrollToIndex] = useState(0)
   const [pages, setPages] = useState<PageStyles>()
   const navigation = useNavigation<ApppNavigationProp>()
+  const isWeb = Platform.OS === "web"
 
   useEffect(() => {
     createData(props.totalPage)
@@ -134,8 +135,13 @@ export function BookViewer(props: BookViewerProps) {
     viewerHook.readingStyle === "verticalScroll" ? dimension.height : dimension.width
 
   const onViewableItemsChanged = useRef(
-    (info: { viewableItems: { index?: number | null }[] }) => {
-      const nextIndex = info.viewableItems[0]?.index
+    (info: { viewableItems: { index?: number | null; isViewable?: boolean }[] }) => {
+      const nextIndex = info.viewableItems
+        .filter((item) => item.isViewable && item.index !== undefined && item.index !== null)
+        .map((item) => item.index as number)
+        .sort((a, b) => a - b)
+        .pop()
+
       if (nextIndex === undefined || nextIndex === null) return
       setScrollToIndex((prev) => (prev === nextIndex ? prev : nextIndex))
     }
@@ -228,16 +234,22 @@ export function BookViewer(props: BookViewerProps) {
             keyExtractor={(_, index) => `${index}`}
             onViewableItemsChanged={onViewableItemsChanged}
             viewabilityConfig={{
-              itemVisiblePercentThreshold: 100,
+              itemVisiblePercentThreshold: isWeb ? 95 : 100,
             }}
             estimatedItemSize={estimatedItemSize}
-            estimatedListSize={{ width: dimension.width, height: dimension.height }}
-            overrideItemLayout={(layout, _, index) => {
-              layout.size = estimatedItemSize
-              layout.offset = estimatedItemSize * index
-            }}
-            removeClippedSubviews={true}
-            windowSize={3}
+            estimatedListSize={
+              isWeb ? undefined : { width: dimension.width, height: dimension.height }
+            }
+            overrideItemLayout={
+              isWeb
+                ? undefined
+                : (layout, _, index) => {
+                    layout.size = estimatedItemSize
+                    layout.offset = estimatedItemSize * index
+                  }
+            }
+            removeClippedSubviews={!isWeb}
+            windowSize={isWeb ? 5 : 3}
             initialNumToRender={1}
             maxToRenderPerBatch={2}
           />
