@@ -2,9 +2,8 @@ name: Deploy Web to Github Pages
 
 on:
   push:
-    branches:
-      - main
-  workflow_dispatch:
+    tags:
+      - "*"
 
 permissions:
   contents: read
