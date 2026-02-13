@@ -27,7 +27,11 @@ export const BookModel = types
   })
   .actions(withSetPropAction)
   .actions((root) => ({
-    convert: flow(function* (format: string, libraryId: string, onPostConvert: () => void) {
+    convert: flow(function* (
+      format: string,
+      libraryId: string,
+      onPostConvert: () => void | Promise<void>,
+    ) {
       let response
       while (response?.data?.files === undefined) {
         response = yield api.CheckBookConverting(libraryId, root.id, format)
@@ -108,7 +112,7 @@ export const BookModel = types
       if (response.data.page_progression_direction) {
         root.setProp("pageProgressionDirection", response.data.page_progression_direction)
       }
-      onPostConvert()
+      yield onPostConvert()
     }),
     update: flow(function* (libraryId: string, updateInfo: Metadata, updateField: string[]) {
       const changes = {}

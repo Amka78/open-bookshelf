@@ -13,6 +13,7 @@ import { getPalette } from "@/theme"
 import Config from "../config"
 import { useStores } from "../models"
 import { ReadingHistoryModel } from "../models/calibre"
+import { buildBookImageUrl, cacheBookImages } from "@/utils/bookImageCache"
 import { api } from "../services/api"
 import type { Link } from "../models/opds"
 import {
@@ -304,13 +305,35 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
 
           if (!history) {
             await selectedBook.convert(format, selectedLibrary.id, async () => {
-              const bookImageList = []
-              selectedBook.path.map((value) => {
-                const imageUrl = encodeURI(
-                  `${settingStore.api.baseUrl}/book-file/${selectedBook.id}/${selectedBook.metaData.selectedFormat}/${selectedBook.metaData.size}/${selectedBook.hash}/${value}?library_id=${selectedLibrary.id}`,
+              const size = selectedBook.metaData?.size
+              const hash = selectedBook.hash
+              let bookImageList: string[] = []
+
+              if (size !== null && size !== undefined && hash !== null && hash !== undefined) {
+                bookImageList = await cacheBookImages({
+                  bookId: selectedBook.id,
+                  format,
+                  libraryId: selectedLibrary.id,
+                  baseUrl: settingStore.api.baseUrl,
+                  size,
+                  hash,
+                  pathList: selectedBook.path,
+                  headers: authenticationStore.getHeader(),
+                })
+              } else {
+                bookImageList = selectedBook.path.map((value) =>
+                  buildBookImageUrl(
+                    settingStore.api.baseUrl,
+                    selectedBook.id,
+                    format,
+                    size ?? 0,
+                    hash ?? 0,
+                    value,
+                    selectedLibrary.id,
+                  ),
                 )
-                bookImageList.push(imageUrl)
-              })
+              }
+
               const historyModel = ReadingHistoryModel.create({
                 bookId: selectedBook.id,
                 currentPage: 0,

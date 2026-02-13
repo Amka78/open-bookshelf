@@ -2,13 +2,13 @@ import type { ModalStackParams } from "@/components/Modals/Types"
 import { useStores } from "@/models"
 import { ReadingHistoryModel, type Book } from "@/models/calibre"
 import type { ApppNavigationProp } from "@/navigators"
+import { buildBookImageUrl, cacheBookImages } from "@/utils/bookImageCache"
 import { useNavigation } from "@react-navigation/native"
-import { Image } from "expo-image"
 import type { UsableModalProp } from "react-native-modalfy"
 
 export function useOpenViewer() {
   const navigation = useNavigation<ApppNavigationProp>()
-  const { calibreRootStore, settingStore } = useStores()
+  const { authenticationStore, calibreRootStore, settingStore } = useStores()
 
   type ViewerRoute = "Viewer" | "PDFViewer"
   type ExecuteOptions = {
@@ -62,13 +62,35 @@ export function useOpenViewer() {
           }
         } else {
           await book.convert(format, selectedLibraryId, async () => {
-            const bookImageList = []
-            book.path.map(async (value, index) => {
-              const imageUrl = encodeURI(
-                `${settingStore.api.baseUrl}/book-file/${book.id}/${book.metaData.selectedFormat}/${book.metaData.size}/${book.hash}/${value}?library_id=${calibreRootStore.selectedLibrary.id}`,
+            const size = book.metaData?.size
+            const hash = book.hash
+            let bookImageList: string[] = []
+
+            if (size !== null && size !== undefined && hash !== null && hash !== undefined) {
+              bookImageList = await cacheBookImages({
+                bookId: book.id,
+                format,
+                libraryId: selectedLibraryId,
+                baseUrl: settingStore.api.baseUrl,
+                size,
+                hash,
+                pathList: book.path,
+                headers: authenticationStore.getHeader(),
+              })
+            } else {
+              bookImageList = book.path.map((value) =>
+                buildBookImageUrl(
+                  settingStore.api.baseUrl,
+                  book.id,
+                  format,
+                  size ?? 0,
+                  hash ?? 0,
+                  value,
+                  calibreRootStore.selectedLibrary.id,
+                ),
               )
-              bookImageList.push(imageUrl)
-            })
+            }
+
             const historyModel = ReadingHistoryModel.create({
               bookId: book.id,
               currentPage: 0,
