@@ -28,6 +28,7 @@ export * from "./ViewerHeader/ViewerHeader";
 export * from "./StaggerContainer/StaggerContainer";
 export * from "./Image/Image";
 export * from "./IconButton/IconButton";
+export * from "./TooltipIconButton/TooltipIconButton";
 export * from "./AddFileButton/AddFileButton";
 export * from "./VStack/VStack";
 export * from "./LinkButton/LinkButton";

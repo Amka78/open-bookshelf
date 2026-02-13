@@ -26,6 +26,13 @@ const ar: Translations = {
     invalidEmail: "عنوان البريد الالكتروني غير صالح",
   },
   // @demo remove-block-end
+  bookDetailMenu: {
+    openBookTooltip: "فتح الكتاب",
+    downloadTooltip: "تنزيل الكتاب",
+    convertTooltip: "تحويل الكتاب",
+    editTooltip: "تعديل الكتاب",
+    deleteTooltip: "حذف الكتاب",
+  },
 }
 
 export default ar

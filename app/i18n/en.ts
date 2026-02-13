@@ -76,6 +76,13 @@ const en = {
   rating: {
     noRate: "No Rate",
   },
+  bookDetailMenu: {
+    openBookTooltip: "Open book",
+    downloadTooltip: "Download book",
+    convertTooltip: "Convert book",
+    editTooltip: "Edit book",
+    deleteTooltip: "Delete book",
+  },
 }
 
 export default en

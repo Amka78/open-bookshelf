@@ -56,6 +56,13 @@ const ko: Translations = {
     hireUsLink: "메세지 보내기",
   },
   // @demo remove-block-end
+  bookDetailMenu: {
+    openBookTooltip: "책 열기",
+    downloadTooltip: "책 다운로드",
+    convertTooltip: "책 변환",
+    editTooltip: "책 편집",
+    deleteTooltip: "책 삭제",
+  },
 }
 
 export default ko

@@ -1,4 +1,4 @@
-import { HStack, IconButton } from "@/components"
+import { HStack, IconButton, TooltipIconButton } from "@/components"
 import type { HStackProps, IconButtonProps } from "@/components"
 
 export type BookDetailMenuProps = {
@@ -20,35 +20,40 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
   }
   return (
     <HStack bgColor="transparent" {...props.containerProps}>
-      <IconButton
+      <TooltipIconButton
         {...sharedIconButtonProps}
         name={"book-open"}
         iconSize="md-"
         onPress={props.onOpenBook}
+        tooltipTx="bookDetailMenu.openBookTooltip"
       />
-      <IconButton
+      <TooltipIconButton
         {...sharedIconButtonProps}
         name={"download"}
         iconSize="md-"
         onPress={props.onDownloadBook}
+        tooltipTx="bookDetailMenu.downloadTooltip"
       />
-      <IconButton
+      <TooltipIconButton
         {...sharedIconButtonProps}
         name={"sync-circle"}
         iconSize="md-"
         onPress={props.onConvertBook}
+        tooltipTx="bookDetailMenu.convertTooltip"
       />
-      <IconButton
+      <TooltipIconButton
         {...sharedIconButtonProps}
         name={"book-edit"}
         iconSize="md-"
         onPress={props.onEditBook}
+        tooltipTx="bookDetailMenu.editTooltip"
       />
-      <IconButton
+      <TooltipIconButton
         {...sharedIconButtonProps}
         name={"trash-can"}
         iconSize="md-"
         onPress={props.onDeleteBook}
+        tooltipTx="bookDetailMenu.deleteTooltip"
       />
     </HStack>
   )
