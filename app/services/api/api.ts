@@ -177,6 +177,7 @@ export class Api {
     library: string,
     json,
   ): Promise<{ kind: "ok"; data: ApiBookInfoCore } | GeneralApiProblem> {
+    logger.debug("getMoreLibrary", library, json);
     const response: ApiResponse<ApiBookInfoCore> = await this.apisauce.post(
       `interface-data/more-books?library_id=${library}`,
       json,

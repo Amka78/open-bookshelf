@@ -13,7 +13,7 @@ import { getPalette } from "@/theme"
 import Config from "../config"
 import { useStores } from "../models"
 import { ReadingHistoryModel } from "../models/calibre"
-import { buildBookImageUrl, cacheBookImages } from "@/utils/bookImageCache"
+import { cacheBookImages } from "@/utils/bookImageCache"
 import { api } from "../services/api"
 import type { Link } from "../models/opds"
 import {
@@ -156,11 +156,12 @@ const getViewerTabInfo = (): ViewerTabInfo | null => {
     return null
   }
 
-  const route = rawRoute === "Viewer" || rawRoute === "PDFViewer"
-    ? rawRoute
-    : format === "PDF"
-      ? "PDFViewer"
-      : "Viewer"
+  const route =
+    rawRoute === "Viewer" || rawRoute === "PDFViewer"
+      ? rawRoute
+      : format === "PDF"
+        ? "PDFViewer"
+        : "Viewer"
 
   return {
     route,
@@ -305,34 +306,18 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
 
           if (!history) {
             await selectedBook.convert(format, selectedLibrary.id, async () => {
-              const size = selectedBook.metaData?.size
-              const hash = selectedBook.hash
-              let bookImageList: string[] = []
-
-              if (size !== null && size !== undefined && hash !== null && hash !== undefined) {
-                bookImageList = await cacheBookImages({
-                  bookId: selectedBook.id,
-                  format,
-                  libraryId: selectedLibrary.id,
-                  baseUrl: settingStore.api.baseUrl,
-                  size,
-                  hash,
-                  pathList: selectedBook.path,
-                  headers: authenticationStore.getHeader(),
-                })
-              } else {
-                bookImageList = selectedBook.path.map((value) =>
-                  buildBookImageUrl(
-                    settingStore.api.baseUrl,
-                    selectedBook.id,
-                    format,
-                    size ?? 0,
-                    hash ?? 0,
-                    value,
-                    selectedLibrary.id,
-                  ),
-                )
-              }
+              const size = selectedBook.metaData?.size ?? 0
+              const hash = selectedBook.hash ?? 0
+              const bookImageList = await cacheBookImages({
+                bookId: selectedBook.id,
+                format,
+                libraryId: selectedLibrary.id,
+                baseUrl: settingStore.api.baseUrl,
+                size,
+                hash,
+                pathList: selectedBook.path.slice(),
+                headers: authenticationStore.getHeader(),
+              })
 
               const historyModel = ReadingHistoryModel.create({
                 bookId: selectedBook.id,

@@ -20,7 +20,7 @@ import { useOpenViewer } from "@/hooks/useOpenViewer"
 import { useStores } from "@/models"
 import type { Book } from "@/models/calibre"
 import type { ApppNavigationProp } from "@/navigators"
-import { useNavigation } from "@react-navigation/native"
+import { useIsFocused, useNavigation } from "@react-navigation/native"
 import { values } from "mobx"
 import { observer } from "mobx-react-lite"
 import type React from "react"
@@ -36,6 +36,7 @@ export const LibraryScreen: FC = observer(() => {
   const selectedLibrary = calibreRootStore.selectedLibrary
   const navigation = useNavigation<ApppNavigationProp>()
   const modal = useModal<ModalStackParams>()
+  const isFocused = useIsFocused()
 
   const convergenceHook = useConvergence()
   const window = useWindowDimensions()
@@ -264,6 +265,9 @@ export const LibraryScreen: FC = observer(() => {
                 }
           }
           onEndReached={async () => {
+            if (!isFocused) {
+              return
+            }
             await calibreRootStore.searchMoreLibrary()
           }}
           preparing={libraryHook.searching}

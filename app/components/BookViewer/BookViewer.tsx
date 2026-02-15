@@ -29,6 +29,7 @@ export type BookViewerProps = {
   totalPage: number
   renderPage: (props: RenderPageProps) => React.ReactNode
   bookTitle: string
+  onPageChange?: (page: number) => void
 }
 
 export function BookViewer(props: BookViewerProps) {
@@ -82,7 +83,7 @@ export function BookViewer(props: BookViewerProps) {
         </PagePressable>
       )
     },
-    [pages, props.renderPage, scrollIndex, viewerHook]
+    [pages, props.renderPage, scrollIndex, viewerHook],
   )
 
   const renderItem: ListRenderItem<number | FacingPageType> = useCallback(
@@ -123,7 +124,7 @@ export function BookViewer(props: BookViewerProps) {
 
       return renderComp
     },
-    [dimension.height, dimension.width, renderPage, viewerHook.pageDirection]
+    [dimension.height, dimension.width, renderPage, viewerHook.pageDirection],
   )
 
   const data = useMemo(() => {
@@ -144,21 +145,33 @@ export function BookViewer(props: BookViewerProps) {
 
       if (nextIndex === undefined || nextIndex === null) return
       setScrollToIndex((prev) => (prev === nextIndex ? prev : nextIndex))
-    }
+    },
   ).current
 
-  let currentPage = 0
+  const currentPage = useMemo(() => {
+    if (!pages) return 0
 
-  if (scrollIndex !== 0) {
-    if (viewerHook.readingStyle === "singlePage" || viewerHook.readingStyle === "verticalScroll") {
-      currentPage = scrollIndex
-    } else if (
-      viewerHook.readingStyle === "facingPage" ||
-      viewerHook.readingStyle === "facingPageWithTitle"
-    ) {
-      currentPage = (pages[viewerHook.readingStyle][scrollIndex] as FacingPageType).page1
+    if (scrollIndex !== 0) {
+      if (
+        viewerHook.readingStyle === "singlePage" ||
+        viewerHook.readingStyle === "verticalScroll"
+      ) {
+        return scrollIndex
+      }
+      if (
+        viewerHook.readingStyle === "facingPage" ||
+        viewerHook.readingStyle === "facingPageWithTitle"
+      ) {
+        return (pages[viewerHook.readingStyle][scrollIndex] as FacingPageType).page1 ?? 0
+      }
     }
-  }
+
+    return 0
+  }, [pages, scrollIndex, viewerHook.readingStyle])
+
+  useEffect(() => {
+    props.onPageChange?.(currentPage)
+  }, [currentPage, props.onPageChange])
 
   return (
     <GradientBackground
