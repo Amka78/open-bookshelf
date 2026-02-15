@@ -12,18 +12,22 @@
  *
  * @refresh reset
  */
-import type { RootStore } from "@/models/RootStore"
-import { goBack, navigate, resetRoot } from "@/navigators/navigationUtilities"
-import { clear } from "@/utils/storage"
-import AsyncStorage from "@react-native-async-storage/async-storage"
-import { onSnapshot } from "mobx-state-tree"
-import { Platform } from "react-native"
-import { ArgType } from "reactotron-core-client"
-import { mst } from "reactotron-mst"
+import type { RootStore } from "@/models/RootStore";
+import { goBack, navigate, resetRoot } from "@/navigators/navigationUtilities";
+import { logger } from "@/utils/logger";
+import { clear } from "@/utils/storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { onSnapshot } from "mobx-state-tree";
+import { Platform } from "react-native";
+import { ArgType } from "reactotron-core-client";
+import { mst } from "reactotron-mst";
 
-import { Reactotron } from "./reactotronClient"
-import { DEFAULT_REACTOTRON_CONFIG, type ReactotronConfig } from "./reactotronConfig"
-import { fakeReactotron } from "./reactotronFake"
+import { Reactotron } from "./reactotronClient";
+import {
+  DEFAULT_REACTOTRON_CONFIG,
+  type ReactotronConfig,
+} from "./reactotronConfig";
+import { fakeReactotron } from "./reactotronFake";
 
 /**
  * We tell typescript we intend to hang Reactotron off of the console object.
@@ -41,19 +45,19 @@ declare global {
      * Reactotron client for logging, displaying, measuring performance,
      * and more. See https://github.com/infinitered/reactotron for more!
      */
-    tron: typeof Reactotron
+    tron: typeof Reactotron;
   }
 }
 
 // in dev, we attach Reactotron, in prod we attach a interface-compatible mock.
 if (__DEV__) {
-  console.tron = Reactotron // attach reactotron to `console.tron`
+  console.tron = Reactotron; // attach reactotron to `console.tron`
 } else {
   // attach a mock so if things sneak by our __DEV__ guards, we won't crash.
-  console.tron = fakeReactotron
+  console.tron = fakeReactotron;
 }
 
-const config = DEFAULT_REACTOTRON_CONFIG
+const config = DEFAULT_REACTOTRON_CONFIG;
 
 /**
  * Hook into the root store for doing awesome state-related things.
@@ -62,28 +66,32 @@ const config = DEFAULT_REACTOTRON_CONFIG
  */
 export function setReactotronRootStore(rootStore: RootStore, initialData: any) {
   if (__DEV__) {
-    const { logInitialState, logSnapshots } = config
-    const name = "ROOT STORE"
+    const { logInitialState, logSnapshots } = config;
+    const name = "ROOT STORE";
 
     // logging features
     if (logInitialState) {
-      Reactotron.display({ name, value: initialData, preview: "Initial State" })
+      Reactotron.display({
+        name,
+        value: initialData,
+        preview: "Initial State",
+      });
     }
 
     // log state changes?
     if (logSnapshots) {
       onSnapshot(rootStore, (snapshot) => {
-        Reactotron.display({ name, value: snapshot, preview: "New State" })
-      })
+        Reactotron.display({ name, value: snapshot, preview: "New State" });
+      });
     }
 
     // tracks the current MobX-State-Tree tree in Reactotron's "State" tab
-    Reactotron.trackMstNode(rootStore)
+    Reactotron.trackMstNode(rootStore);
   }
 }
 
 // Avoid setting up Reactotron multiple times with Fast Refresh
-let _reactotronIsSetUp = false
+let _reactotronIsSetUp = false;
 
 /**
  * Configure reactotron based on the the config settings passed in, then connect if we need to.
@@ -92,39 +100,39 @@ export function setupReactotron(customConfig: ReactotronConfig = {}) {
   // only run this in dev... metro bundler will ignore this block: 🎉
   if (__DEV__) {
     // only setup once.
-    if (_reactotronIsSetUp) return
+    if (_reactotronIsSetUp) return;
 
     // merge the passed in config with our default config
-    Object.assign(config, customConfig)
+    Object.assign(config, customConfig);
 
     // configure reactotron
     Reactotron.configure({
       name: config.name || require("@/../package.json").name,
       host: config.host,
-    })
+    });
 
     // hookup middleware
     if (Platform.OS !== "web") {
       if (config.useAsyncStorage) {
-        Reactotron.setAsyncStorageHandler(AsyncStorage)
+        Reactotron.setAsyncStorageHandler(AsyncStorage);
       }
       Reactotron.useReactNative({
         asyncStorage: config.useAsyncStorage ? undefined : false,
-      })
+      });
     }
 
     // ignore some chatty `mobx-state-tree` actions
-    const RX = /postProcessSnapshot|@APPLY_SNAPSHOT/
+    const RX = /postProcessSnapshot|@APPLY_SNAPSHOT/;
 
     // hookup mobx-state-tree middleware
     Reactotron.use(
       mst({
         filter: (event) => RX.test(event.name) === false,
       }),
-    )
+    );
 
     // connect to the app
-    Reactotron.connect()
+    Reactotron.connect();
 
     /**
      * Reactotron allows you to define custom commands that you can run
@@ -139,30 +147,30 @@ export function setupReactotron(customConfig: ReactotronConfig = {}) {
       description: "Resets the MST store",
       command: "resetStore",
       handler: () => {
-        Reactotron.log("resetting store")
-        clear()
+        Reactotron.log("resetting store");
+        clear();
       },
-    })
+    });
 
     Reactotron.onCustomCommand({
       title: "Reset Navigation State",
       description: "Resets the navigation state",
       command: "resetNavigation",
       handler: () => {
-        Reactotron.log("resetting navigation state")
-        resetRoot({ index: 0, routes: [] })
+        Reactotron.log("resetting navigation state");
+        resetRoot({ index: 0, routes: [] });
       },
-    })
+    });
 
     Reactotron.onCustomCommand({
       command: "navigateTo",
       handler: (args) => {
-        const { route } = args
+        const { route } = args;
         if (route) {
-          console.log(`Navigating to: ${route}`)
-          navigate(route)
+          logger.debug("Navigating to", route);
+          navigate(route);
         } else {
-          console.log("Could not navigate. No route provided.")
+          logger.debug("Could not navigate. No route provided.");
         }
       },
       title: "Navigate To Screen",
@@ -173,23 +181,23 @@ export function setupReactotron(customConfig: ReactotronConfig = {}) {
           type: ArgType.String,
         },
       ],
-    })
+    });
 
     Reactotron.onCustomCommand({
       title: "Go Back",
       description: "Goes back",
       command: "goBack",
       handler: () => {
-        Reactotron.log("Going back")
-        goBack()
+        Reactotron.log("Going back");
+        goBack();
       },
-    })
+    });
 
     // clear if we should
     if (config.clearOnLoad) {
-      Reactotron.clear()
+      Reactotron.clear();
     }
 
-    _reactotronIsSetUp = true
+    _reactotronIsSetUp = true;
   }
 }

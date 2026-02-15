@@ -12,6 +12,7 @@ import type { Entry } from "@/models/opds"
 import { OpdsChildrenModel, OpdsModel, type OpdsRoot } from "@/models/opds/OpdsRootStore"
 import type { AppStackParamList, ApppNavigationProp } from "@/navigators"
 import { usePalette } from "@/theme"
+import { logger } from "@/utils/logger"
 import { MaterialCommunityIcons } from "@expo/vector-icons"
 import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { Image } from "expo-image"
@@ -40,7 +41,7 @@ export const AcquisitionScreen: FC = observer(() => {
     const linkOopds = OpdsModel.create()
     await linkOopds.load(route.params.link.href)
 
-    console.log(linkOopds)
+    logger.debug("OPDS loaded", linkOopds)
 
     setCurrentOPDS(linkOopds)
     const children = OpdsChildrenModel.create({
@@ -75,7 +76,7 @@ export const AcquisitionScreen: FC = observer(() => {
   }, [currentOpds])
 
   const renderItem = ({ item }: { item: Entry }) => {
-    console.log(item)
+    logger.debug("OPDS entry", item)
     const thumbnail = item.link.find((value) => {
       return value.rel === "http://opds-spec.org/image/thumbnail"
     })

@@ -1,5 +1,6 @@
 import Picker from "@react-native-community/datetimepicker"
 import { HStack, IconButton, Text } from "@/components"
+import { logger } from "@/utils/logger"
 import { useState } from "react"
 import { formatDate } from "@/utils/formatDate"
 import { parseISO } from "date-fns"
@@ -11,8 +12,7 @@ export type DateTimePickerProps = {
 }
 export function DateTimePicker(props: DateTimePickerProps) {
   const [show, setShow] = useState(false)
-  console.log(props.value)
-  console.log(props.dateFormat)
+  logger.debug("DateTimePicker props", { value: props.value, dateFormat: props.dateFormat })
   return (
     <>
       <HStack>

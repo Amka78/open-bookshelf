@@ -6,6 +6,7 @@
  * documentation for more details.
  */
 import Config from "@/config";
+import { logger } from "@/utils/logger";
 import { type ApiResponse, type ApisauceInstance, create } from "apisauce";
 
 import { Platform } from "react-native";
@@ -310,7 +311,7 @@ export class Api {
     libraryName: string,
     file: string | File,
   ): Promise<{ kind: "ok" } | GeneralApiProblem> {
-    console.log("uploadFile", fileName, libraryName, file);
+    logger.debug("uploadFile", fileName, libraryName, file);
 
     if (Platform.OS === "web") {
       const formData = new FormData();
@@ -341,7 +342,7 @@ export class Api {
         headers: this.apisauce.headers,
       },
     );
-    console.log("uploadFile result", result);
+    logger.debug("uploadFile result", result);
 
     return { kind: "ok" };
   }

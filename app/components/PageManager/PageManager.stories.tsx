@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { PageManagerWithState } from "./PageManagerWithState"
+import { logger } from "@/utils/logger"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
@@ -16,7 +17,7 @@ export default {
   },
   argTypes: {
     onPageChange: (page) => {
-      console.log(`Selected page${page}`)
+      logger.debug("Selected page", page)
     },
   },
   decorators: [

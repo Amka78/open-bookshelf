@@ -12,6 +12,7 @@ import { useDeleteBook } from "@/hooks/useDeleteBook"
 import { useDownloadBook } from "@/hooks/useDownloadBook"
 import { useOpenViewer } from "@/hooks/useOpenViewer"
 import { useStores } from "@/models"
+import { logger } from "@/utils/logger"
 import { observer } from "mobx-react-lite"
 import { Body, CloseButton, Header, Root } from "./"
 import type { ModalStackParams } from "./Types"
@@ -72,7 +73,7 @@ export type BookDetailModalTemplateProps = ModalComponentProp<
 >
 
 export function BookDetailModalTemplate(props: BookDetailModalTemplateProps) {
-  console.log(props.modal.params)
+  logger.debug("BookDetailModal params", props.modal.params)
   return (
     <Root>
       <Header>

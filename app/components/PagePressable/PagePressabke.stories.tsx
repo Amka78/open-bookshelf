@@ -1,4 +1,5 @@
 import { BookImageItem, PagePressable } from "@/components"
+import { logger } from "@/utils/logger"
 import type { Meta, StoryObj } from "@storybook/react"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
@@ -20,7 +21,7 @@ export default {
     onLongPress: { action: "Long press page." },
     onPageChanged: { action: "Change page." },
     onPageChanging: (currentPage) => {
-      console.log(`Next page: ${currentPage}`)
+      logger.debug("Next page", currentPage)
     },
   },
   decorators: [

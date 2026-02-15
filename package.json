@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "start": "bunx expo start --dev-client",
+    "start:debug": "EXPO_PUBLIC_LOG_LEVEL=debug bunx expo start --dev-client",
     "ios": "bunx react-native run-ios",
     "android": "bunx react-native run-android --active-arch-only",
     "test:detox": "detox test -c ios.sim.debug",
@@ -28,6 +29,7 @@
     "expo:android": "bunx expo start --android",
     "expo:ios": "bunx expo start --ios",
     "expo:web": "bunx expo start --web",
+    "debug:web": "EXPO_PUBLIC_LOG_LEVEL=debug bunx expo start --web",
     "desktop": "tauri dev",
     "expo:build:detox": "detox build -c ios.sim.expo",
     "expo:test:detox": "./bin/downloadExpoApp.sh && detox test --configuration ios.sim.expo",

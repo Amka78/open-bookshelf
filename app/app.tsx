@@ -24,6 +24,7 @@ import { ErrorBoundary } from "./screens/ErrorScreen/ErrorBoundary"
 import { setupReactotron } from "./services/reactotron"
 import { customFontsToLoad } from "./theme"
 import * as storage from "./utils/storage"
+import { logger } from "./utils/logger"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { GluestackUIProvider } from "@gluestack-ui/themed"
 import { config } from "@gluestack-ui/config"
@@ -63,8 +64,14 @@ function App(props: AppProps) {
 
   const [areFontsLoaded] = useFonts(customFontsToLoad)
 
+  React.useEffect(() => {
+    logger.debug("App mounted", { dev: __DEV__, logLevel: logger.level })
+  }, [])
+
   const { rehydrated } = useInitialRootStore(() => {
     // This runs after the root store has been initialized and rehydrated.
+
+    logger.debug("Root store rehydrated")
 
     // If your initialization scripts run very fast, it's good to show the splash screen for just a bit longer to prevent flicker.
     // Slightly delaying splash screen hiding for better UX; can be customized or removed as needed,
@@ -72,6 +79,16 @@ function App(props: AppProps) {
     // Note: (vanilla iOS) You might notice the splash-screen logo change size. This happens in debug/development mode. Try building the app for release.
     setTimeout(hideSplashScreen, 500)
   })
+
+  React.useEffect(() => {
+    if (rehydrated && isNavigationStateRestored && areFontsLoaded) {
+      logger.debug("App ready", {
+        rehydrated,
+        navigationRestored: isNavigationStateRestored,
+        fontsLoaded: areFontsLoaded,
+      })
+    }
+  }, [rehydrated, isNavigationStateRestored, areFontsLoaded])
 
   // Before we show the app, we have to wait for our state to be ready.
   // In the meantime, don't render anything. This will be the background

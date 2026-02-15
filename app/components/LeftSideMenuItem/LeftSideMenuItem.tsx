@@ -1,4 +1,5 @@
 import { Box, HStack, MaterialCommunityIcon, Text } from "@/components"
+import { logger } from "@/utils/logger"
 import { Pressable } from "@gluestack-ui/themed"
 import { useState } from "react"
 
@@ -29,7 +30,7 @@ export function LeftSideMenuItem({ mode = "category", ...restProps }: LeftSideMe
           if (isParentNode) {
             setIsOpen(!isOpen)
           } else {
-            console.log("called")
+            logger.debug("LeftSideMenuItem leaf pressed", { name: props.name })
             props.onLastNodePress()
           }
         }}

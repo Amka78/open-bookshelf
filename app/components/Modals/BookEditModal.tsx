@@ -3,6 +3,7 @@ import type { ModalComponentProp } from "react-native-modalfy"
 
 import { useStores } from "@/models"
 import type { Metadata } from "@/models/calibre"
+import { logger } from "@/utils/logger"
 import { observer } from "mobx-react-lite"
 import { useForm } from "react-hook-form"
 import { Body, CloseButton, Footer, Header, Root } from "."
@@ -67,7 +68,7 @@ export function BookEditModalTemplate(props: BookEditModalProps) {
       <Footer>
         <Button
           onPress={form.handleSubmit((value) => {
-            console.log(form.formState.dirtyFields)
+            logger.debug("BookEditModal dirty fields", form.formState.dirtyFields)
             if (props.modal.params.onOKPress) {
               props.modal.params.onOKPress(value, Object.keys(form.formState.dirtyFields))
             }

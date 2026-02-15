@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { RatingGroup } from "./RatingGroup"
+import { logger } from "@/utils/logger"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
@@ -25,7 +26,7 @@ export const Basic: StoryProps = {
     max: 10,
     selectedValue: 8,
     onSelectRating: (rating) => {
-      console.log(`Selected rating: ${rating}.`)
+      logger.debug("Selected rating", rating)
     },
   },
 }
