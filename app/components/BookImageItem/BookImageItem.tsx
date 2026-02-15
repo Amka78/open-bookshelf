@@ -7,6 +7,7 @@ import {
   Image,
   type ImageProps,
   LabeledSpinner,
+  MaterialCommunityIcon,
 } from "@/components"
 import type { BookDetailMenuProps } from "@/components"
 import { Pressable } from "@gluestack-ui/themed"
@@ -16,6 +17,7 @@ export type BookImageprops = Pick<ImageProps, "source"> & {
   onLongPress?: () => void
   loading?: boolean
   detailMenuProps?: BookDetailMenuProps
+  showCachedIcon?: boolean
 }
 export function BookImageItem({ loading = false, ...restProps }: BookImageprops) {
   const props = { loading, ...restProps }
@@ -55,6 +57,11 @@ export function BookImageItem({ loading = false, ...restProps }: BookImageprops)
   const contentWithMenu = (
     <Box style={styles.imageContainer} onMouseEnter={handleHoverIn} onMouseLeave={handleHoverOut}>
       {image}
+      {props.showCachedIcon ? (
+        <Box style={styles.cachedIconBadge}>
+          <MaterialCommunityIcon name="cloud-check" iconSize="sm-" />
+        </Box>
+      ) : null}
       {showDetailMenu ? (
         <Box style={styles.detailMenuOverlay}>
           <BookDetailMenu
@@ -68,25 +75,24 @@ export function BookImageItem({ loading = false, ...restProps }: BookImageprops)
     </Box>
   )
   const shouldUsePressable = Boolean(props.onPress || props.onLongPress || props.detailMenuProps)
-  const content =
-    shouldUsePressable ? (
-      <Pressable
-        onPress={
-          props.onPress
-            ? async () => {
-                setLoadingState(true)
-                await props.onPress()
-                setLoadingState(false)
-              }
-            : undefined
-        }
-        onLongPress={props.onLongPress}
-      >
-        {contentWithMenu}
-      </Pressable>
-    ) : (
-      contentWithMenu
-    )
+  const content = shouldUsePressable ? (
+    <Pressable
+      onPress={
+        props.onPress
+          ? async () => {
+              setLoadingState(true)
+              await props.onPress()
+              setLoadingState(false)
+            }
+          : undefined
+      }
+      onLongPress={props.onLongPress}
+    >
+      {contentWithMenu}
+    </Pressable>
+  ) : (
+    contentWithMenu
+  )
 
   return (
     <Box marginHorizontal={"$2"} marginTop={"$2"}>
@@ -112,6 +118,16 @@ const styles = StyleSheet.create({
     height: 320,
     width: 240,
     position: "relative",
+  },
+  cachedIconBadge: {
+    position: "absolute",
+    top: 6,
+    left: 6,
+    backgroundColor: "rgba(0, 0, 0, 0.55)",
+    borderColor: "rgba(255, 255, 255, 0.35)",
+    borderRadius: 999,
+    borderWidth: 1,
+    padding: 2,
   },
   detailMenuOverlay: {
     position: "absolute",

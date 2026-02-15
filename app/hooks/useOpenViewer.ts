@@ -51,6 +51,7 @@ export function useOpenViewer() {
             );
           },
         );
+        console.log("history", history);
 
         if (history) {
           options.onComplete?.({

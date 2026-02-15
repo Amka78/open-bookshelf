@@ -100,6 +100,11 @@ export const LibraryScreen: FC = observer(() => {
     }
 
     let listItem: React.JSX.Element
+    const hasReadingHistory = Boolean(
+      selectedLibrary.readingHistory.find((value) => {
+        return value.bookId === item.id && value.libraryId === selectedLibrary.id
+      }),
+    )
 
     const imageUrl = encodeURI(
       `${settingStore.api.baseUrl}/get/thumb/${item.id}/${selectedLibrary.id}?sz=300x400`,
@@ -219,6 +224,7 @@ export const LibraryScreen: FC = observer(() => {
       listItem = (
         <BookImageItem
           source={{ uri: imageUrl, headers: authenticationStore.getHeader() }}
+          showCachedIcon={hasReadingHistory}
           onPress={onPress}
           onLongPress={onLongPress}
           detailMenuProps={{

@@ -3,6 +3,7 @@ import useOrientation from "@/hooks/useOrientation"
 import { useStores } from "@/models"
 import type { ApppNavigationProp } from "@/navigators"
 import { isRemoteBookImagePath } from "@/utils/bookImageCache"
+import { logger } from "@/utils/logger"
 import { useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import React, { type FC, useLayoutEffect, useState } from "react"
@@ -17,10 +18,11 @@ export const ViewerScreen: FC = observer(() => {
   const selectedBook = calibreRootStore.selectedLibrary?.selectedBook
 
   useLayoutEffect(() => {
-    if (!calibreRootStore.selectedLibrary?.selectedBook) {
+    logger.debug("ViewerScreen selectedBook", selectedBook)
+    if (!selectedBook) {
       navigation.navigate("Library")
     }
-  }, [])
+  }, [selectedBook, navigation])
   const history = calibreRootStore.selectedLibrary?.readingHistory.find((value) => {
     return (
       value.bookId === selectedBook?.id &&
