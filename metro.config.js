@@ -1,6 +1,7 @@
 // Learn more https://docs.expo.io/guides/customizing-metro
 const { getDefaultConfig } = require("expo/metro-config");
 const { createProxyMiddleware } = require("http-proxy-middleware");
+const path = require("path");
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(__dirname);
 
@@ -31,5 +32,8 @@ config.server = {
   },
 };
 
-(config.resolver.sourceExts = [...config.resolver.sourceExts, "mjs", "cjs"]),
-  (module.exports = config);
+config.resolver.sourceExts = [...config.resolver.sourceExts, "mjs", "cjs"];
+
+// pdfjs-dist は npm から削除し、CDN 経由でロードするため特別な設定は不要
+
+module.exports = config;
