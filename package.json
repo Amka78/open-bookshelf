@@ -104,7 +104,8 @@
     "react-native-screens": "~3.29.0",
     "react-native-svg": "14.1.0",
     "react-native-web": "~0.19.6",
-    "xmldom": "^0.6.0"
+    "xmldom": "^0.6.0",
+    "pdfjs-dist": "^4.10.38"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

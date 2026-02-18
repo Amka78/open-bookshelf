@@ -5,6 +5,7 @@ const plugins = [
       legacy: true,
     },
   ],
+  ["@babel/plugin-transform-class-static-block"],
   ["@babel/plugin-proposal-optional-catch-binding"],
   "react-native-reanimated/plugin", // NOTE: this must be last in the plugins
   //["babel-plugin-react-docgen-typescript", { exclude: "node_modules" }],
