@@ -2,12 +2,13 @@ import { BookViewer, type RenderPageProps } from "@/components"
 import { useViewer } from "@/hooks/useViewer"
 import { PDF } from "@/library/PDF/Pdf"
 import { useStores } from "@/models"
+import { api } from "@/services/api"
 import { observer } from "mobx-react-lite"
 import React, { useState } from "react"
 import { StyleSheet, useWindowDimensions } from "react-native"
 
 export const PDFViewerScreen = observer(() => {
-  const { authenticationStore, calibreRootStore, settingStore } = useStores()
+  const { authenticationStore, calibreRootStore } = useStores()
 
   const [totalPages, setTotalPages] = useState(undefined)
   const [imageSize, setImageSize] = useState(undefined)
@@ -15,13 +16,13 @@ export const PDFViewerScreen = observer(() => {
 
   const windowDimension = useWindowDimensions()
 
-  let header
+  let header: Record<string, string> | undefined
 
   if (authenticationStore.isAuthenticated) {
     header = { Authorization: `Basic ${authenticationStore.token}` }
   }
   const source = {
-    uri: `${settingStore.api.baseUrl}/get/PDF/${selectedBook.id}/config?content_disposition=inline`,
+    uri: api.getInlineBookUrl("PDF", selectedBook.id),
     cache: true,
     headers: header,
   }

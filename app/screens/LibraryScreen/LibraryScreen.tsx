@@ -20,6 +20,7 @@ import { useOpenViewer } from "@/hooks/useOpenViewer"
 import { useStores } from "@/models"
 import type { Book } from "@/models/calibre"
 import type { ApppNavigationProp } from "@/navigators"
+import { api } from "@/services/api"
 import { useIsFocused, useNavigation } from "@react-navigation/native"
 import { values } from "mobx"
 import { observer } from "mobx-react-lite"
@@ -31,7 +32,7 @@ import type { SearchBarCommands } from "react-native-screens"
 import { useLibrary } from "./hook/useLibrary"
 
 export const LibraryScreen: FC = observer(() => {
-  const { authenticationStore, calibreRootStore, settingStore } = useStores()
+  const { authenticationStore, calibreRootStore } = useStores()
 
   const selectedLibrary = calibreRootStore.selectedLibrary
   const navigation = useNavigation<ApppNavigationProp>()
@@ -106,9 +107,7 @@ export const LibraryScreen: FC = observer(() => {
       }),
     )
 
-    const imageUrl = encodeURI(
-      `${settingStore.api.baseUrl}/get/thumb/${item.id}/${selectedLibrary.id}?sz=300x400`,
-    )
+    const imageUrl = encodeURI(api.getBookThumbnailUrl(item.id, selectedLibrary.id))
 
     const openViewerInNewTab = (info: {
       route: "Viewer" | "PDFViewer"

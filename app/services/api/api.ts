@@ -23,6 +23,7 @@ import type {
   ApiConfig,
   ApiFeedResponse,
   ApiTagBrowser,
+  SetBookResult,
   SetBookMetadata,
 } from "./api.types";
 
@@ -67,6 +68,53 @@ export class Api {
 
   clearAuthorization() {
     this.apisauce.deleteHeader("Authorization");
+  }
+
+  getBookDownloadUrl(
+    format: string,
+    bookId: number,
+    libraryId: string,
+  ): string {
+    return `${this.apisauce.getBaseURL()}/get/${encodeURIComponent(
+      format,
+    )}/${bookId}/${libraryId}`;
+  }
+
+  getBookThumbnailUrl(
+    bookId: number,
+    libraryId: string,
+    size = "300x400",
+  ): string {
+    return `${this.apisauce.getBaseURL()}/get/thumb/${bookId}/${libraryId}?sz=${encodeURIComponent(
+      size,
+    )}`;
+  }
+
+  getInlineBookUrl(
+    format: string,
+    bookId: number,
+    libraryId = "config",
+  ): string {
+    return `${this.apisauce.getBaseURL()}/get/${encodeURIComponent(
+      format,
+    )}/${bookId}/${libraryId}?content_disposition=inline`;
+  }
+
+  getBookFileUrl(
+    bookId: number,
+    format: string,
+    size: number,
+    hash: number,
+    path: string,
+    libraryId: string,
+    baseUrl?: string,
+  ): string {
+    const targetBaseUrl = baseUrl ?? this.apisauce.getBaseURL();
+    return encodeURI(
+      `${targetBaseUrl}/book-file/${bookId}/${encodeURIComponent(
+        format,
+      )}/${size}/${hash}/${path}?library_id=${libraryId}`,
+    );
   }
 
   /**

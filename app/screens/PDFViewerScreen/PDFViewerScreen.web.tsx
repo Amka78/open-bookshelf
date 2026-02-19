@@ -1,5 +1,6 @@
 import { BookViewer, type RenderPageProps } from "@/components"
 import { useStores } from "@/models"
+import { api } from "@/services/api"
 import { observer } from "mobx-react-lite"
 import React, { useMemo, useState } from "react"
 import { StyleSheet, View, useWindowDimensions } from "react-native"
@@ -8,7 +9,7 @@ import { Document, Page, pdfjs } from "react-pdf"
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`
 
 export const PDFViewerScreen = observer(() => {
-  const { authenticationStore, calibreRootStore, settingStore } = useStores()
+  const { authenticationStore, calibreRootStore } = useStores()
 
   const [totalPages, setTotalPages] = useState<number | undefined>(undefined)
   const selectedBook = calibreRootStore.selectedLibrary.selectedBook
@@ -20,7 +21,7 @@ export const PDFViewerScreen = observer(() => {
   if (authenticationStore.isAuthenticated) {
     header = { Authorization: `Basic ${authenticationStore.token}` }
   }
-  const sourceUri = `${settingStore.api.baseUrl}/get/PDF/${selectedBook.id}/config?content_disposition=inline`
+  const sourceUri = api.getInlineBookUrl("PDF", selectedBook.id)
 
   const documentFile = useMemo(
     () => ({
