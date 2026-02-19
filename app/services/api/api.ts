@@ -56,6 +56,27 @@ export class Api {
         Accept: "application/atom+xml",
       },
     });
+
+    this.apisauce.addRequestTransform((request) => {
+      logger.debug("[Api] request", {
+        method: request.method,
+        url: request.url,
+        params: request.params,
+        data: request.data,
+      });
+    });
+
+    this.apisauce.addMonitor((response) => {
+      logger.debug("[Api] response", {
+        ok: response.ok,
+        status: response.status,
+        duration: response.duration,
+        problem: response.problem,
+        url: response.config?.url,
+        method: response.config?.method,
+        data: response.data,
+      });
+    });
   }
 
   setUrl(baseUrl: string) {
@@ -361,36 +382,60 @@ export class Api {
     file: string | File,
   ): Promise<{ kind: "ok" } | GeneralApiProblem> {
     logger.debug("uploadFile", fileName, libraryName, file);
+    const uploadUrl = `${this.apisauce.getBaseURL()}/cdb/add-book/0/n/${fileName}/${libraryName}`;
 
     if (Platform.OS === "web") {
       const formData = new FormData();
       if (typeof file === "string") {
+        logger.debug("[Api] request", { method: "GET", url: file });
         const response = await fetch(file);
+        logger.debug("[Api] response", {
+          ok: response.ok,
+          status: response.status,
+          url: file,
+          method: "GET",
+        });
         const blob = await response.blob();
         formData.append("file", blob, fileName);
       } else {
         formData.append("file", file, fileName);
       }
 
-      await fetch(
-        `${this.apisauce.getBaseURL()}/cdb/add-book/0/n/${fileName}/${libraryName}`,
-        {
-          method: "POST",
-          headers: this.apisauce.headers,
-          body: formData,
-        },
-      );
+      logger.debug("[Api] request", {
+        method: "POST",
+        url: uploadUrl,
+        data: { fileName, libraryName },
+      });
+      const response = await fetch(uploadUrl, {
+        method: "POST",
+        headers: this.apisauce.headers,
+        body: formData,
+      });
+      logger.debug("[Api] response", {
+        ok: response.ok,
+        status: response.status,
+        url: uploadUrl,
+        method: "POST",
+      });
 
       return { kind: "ok" };
     }
 
-    const result = await FileSystem.uploadAsync(
-      `${this.apisauce.getBaseURL()}/cdb/add-book/0/n/${fileName}/${libraryName}`,
-      file as string,
-      {
-        headers: this.apisauce.headers,
-      },
-    );
+    logger.debug("[Api] request", {
+      method: "POST",
+      url: uploadUrl,
+      data: { fileName, libraryName },
+    });
+    const result = await FileSystem.uploadAsync(uploadUrl, file as string, {
+      headers: this.apisauce.headers,
+    });
+    logger.debug("[Api] response", {
+      ok: result.status >= 200 && result.status < 300,
+      status: result.status,
+      url: uploadUrl,
+      method: "POST",
+      data: result,
+    });
     logger.debug("uploadFile result", result);
 
     return { kind: "ok" };
