@@ -45,14 +45,14 @@ function WebPdf(props: PDFProps) {
 
     // 新しい iframe を作成
     const iframe = document.createElement("iframe")
-    
+
     // URLに page パラメータを追加 (1ベースのページ番号)
     const pageAnchor = page ? `#page=${page}` : ""
     iframe.src = `${source.uri}${pageAnchor}`
     iframe.style.width = "100%"
     iframe.style.height = "100%"
     iframe.style.border = "none"
-    iframe.allow = "fullscreen"
+    //iframe.allow = "fullscreen"
 
     iframe.onload = () => {
       if (!loadedRef.current) {
@@ -71,13 +71,7 @@ function WebPdf(props: PDFProps) {
   }, [source.uri, page, onLoadComplete])
 
   return (
-    <View
-      style={[
-        { flex: 1, width: "100%", height: "100%" },
-        style,
-      ]}
-      ref={containerRef as any}
-    />
+    <View style={[{ flex: 1, width: "100%", height: "100%" }, style]} ref={containerRef as any} />
   )
 }
 
