@@ -5,6 +5,7 @@ import { ConfirmModal } from "./ConfirmModal"
 import { ErrorModal } from "./ErrorModal"
 import { FormatSelectModal } from "./FormatSelectModal"
 import { LoginModal } from "./LoginModal"
+import { ViewerAutoPageTurnSettingModal } from "./ViewerAutoPageTurnSettingModal"
 
 export const modalConfig: ModalStackConfig = {
   BookDetailModal,
@@ -13,4 +14,5 @@ export const modalConfig: ModalStackConfig = {
   ErrorModal,
   FormatSelectModal,
   LoginModal,
+  ViewerAutoPageTurnSettingModal,
 }

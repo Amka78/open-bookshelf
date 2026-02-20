@@ -36,4 +36,8 @@ export type ModalStackParams = {
     fieldMetadataList?: FieldMetadataMap
     onOKPress?: (value: Metadata, editFields: string[]) => void
   }
+  ViewerAutoPageTurnSettingModal: {
+    intervalMs: number
+    onSave: (intervalMs: number) => void
+  }
 }

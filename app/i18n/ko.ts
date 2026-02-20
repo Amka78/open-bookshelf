@@ -1,11 +1,14 @@
-import { Translations } from "./en"
+import type { Translations } from "./en";
 
 const ko: Translations = {
   common: {
     ok: "확인!",
+    save: "저장",
     cancel: "취소",
     back: "뒤로",
+    login: "로그인",
     logOut: "로그아웃", // @demo remove-current-line
+    error: "오류",
   },
   welcomeScreen: {
     postscript:
@@ -24,13 +27,10 @@ const ko: Translations = {
   emptyStateComponent: {
     generic: {
       heading: "너무 텅 비어서.. 너무 슬퍼요..",
-      content: "데이터가 없습니다. 버튼을 눌러서 리프레쉬 하시거나 앱을 리로드하세요.",
+      content:
+        "데이터가 없습니다. 버튼을 눌러서 리프레쉬 하시거나 앱을 리로드하세요.",
       button: "다시 시도해봅시다",
     },
-  },
-  // @demo remove-block-start
-  errors: {
-    invalidEmail: "잘못된 이메일 주소 입니다.",
   },
   demoCommunityScreen: {
     title: "커뮤니티와 함께해요",
@@ -45,7 +45,8 @@ const ko: Translations = {
       "Ignite 을 더 좋게 만들 아이디어가 있나요? 기쁜 소식이네요. 우리는 항상 최고의 React Native 도구를 구축하는데 도움을 줄 수 있는 분들을 찾고 있습니다. GitHub 에서 Ignite 의 미래를 만들어 가는것에 함께해 주세요.",
     contributeToIgniteLink: "Ignite 에 기여하기",
     theLatestInReactNativeTitle: "React Native 의 최신정보",
-    theLatestInReactNative: "React Native 가 제공하는 모든 최신 정보를 알려드립니다.",
+    theLatestInReactNative:
+      "React Native 가 제공하는 모든 최신 정보를 알려드립니다.",
     reactNativeRadioLink: "React Native 라디오",
     reactNativeNewsletterLink: "React Native 뉴스레터",
     reactNativeLiveLink: "React Native 라이브 스트리밍",
@@ -63,6 +64,74 @@ const ko: Translations = {
     editTooltip: "책 편집",
     deleteTooltip: "책 삭제",
   },
-}
+  modal: {
+    viewerHeaderAutoPageTurn: {
+      title: "자동 페이지 넘김",
+      intervalLabel: "간격 (ms)",
+      minIntervalHelp: "100ms 이상으로 설정해 주세요.",
+    },
+    formatSelectModal: {
+      title: "형식을 선택하세요.",
+    },
+    loginModal: {
+      title: "로그인 정보를 입력하세요.",
+      userIdPlaceholder: "사용자 ID",
+      passwordPlaceholder: "비밀번호",
+    },
+    bookDetailModal: {
+      title: "책 상세",
+    },
+    deleteConfirmModal: {
+      title: "삭제 확인",
+      message: "{0}을(를) 삭제하시겠습니까?",
+    },
+    bookEditModal: {
+      title: "책 편집",
+    },
+  },
+  pageDirection: "페이지 방향",
+  bookReadingStyle: {
+    title: "읽기 스타일",
+    singlePage: "단일 페이지",
+    facingPage: "양면 페이지",
+    facingPageWithTitle: "표지 포함 양면 페이지",
+    verticalScroll: "세로 스크롤",
+  },
+  connectScreen: {
+    welcome: "환영합니다!!",
+    detail:
+      "OpenBookshelf를 이용해 주셔서 감사합니다. 먼저 Calibre URL을 설정해 주세요.",
+    connectDetail: "Calibre URL을 설정하세요.",
+    connect: "연결",
+    placeHolder: "(http 또는 https)://{Address}:{Port}",
+    checkbox: "opds 사용?",
+  },
+  libraryScreen: {
+    dataSearching: "검색 중",
+  },
+  sortMenu: {
+    sort: "정렬",
+    asc: "오름차순",
+    desc: "내림차순",
+  },
+  bookImage: {
+    loading: "책을 읽을 준비 중입니다.",
+  },
+  rating: {
+    noRate: "평점 없음",
+  },
+  bookEditScreen: {
+    save: "저장",
+  },
+  errors: {
+    canNotConnect: "Calibre에 연결할 수 없습니다.",
+    canNotConnectDescription:
+      "Calibre에 연결할 수 없습니다. URL이 올바른지, 서버가 동작 중인지 확인하세요.",
+    failedConvert: "책 변환 오류",
+    timeout: "Calibre와의 연결 시간이 초과되었습니다.",
+    timeoutDescription:
+      "Calibre 연결이 너무 오래 걸리고 있습니다. 잠시 후 다시 시도하거나 서버를 재시작해 주세요.",
+  },
+};
 
-export default ko
+export default ko;

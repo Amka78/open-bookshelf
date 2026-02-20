@@ -7,9 +7,11 @@ import {
   ViewerHeader,
 } from "@/components"
 import { useViewer } from "@/hooks/useViewer"
+import { useStores } from "@/models"
 import type { ApppNavigationProp } from "@/navigators"
 import type { BookReadingStyleType } from "@/type/types"
 import { usePalette } from "@/theme"
+import { goToNextPage } from "@/utils/pageTurnning"
 import { useNavigation } from "@react-navigation/native"
 import { FlashList, type ListRenderItem } from "@shopify/flash-list"
 import type React from "react"
@@ -35,6 +37,7 @@ export type BookViewerProps = {
 export function BookViewer(props: BookViewerProps) {
   const palette = usePalette()
   const viewerHook = useViewer()
+  const { settingStore } = useStores()
 
   const flashListRef = useRef<FlashList<number | FacingPageType>>(null)
 
@@ -42,8 +45,38 @@ export function BookViewer(props: BookViewerProps) {
 
   const [scrollIndex, setScrollToIndex] = useState(0)
   const [pages, setPages] = useState<PageStyles>()
+  const [autoPageTurning, setAutoPageTurning] = useState(false)
+  const [autoPageTurnIntervalMs, setAutoPageTurnIntervalMs] = useState(
+    settingStore.autoPageTurnIntervalMs,
+  )
   const navigation = useNavigation<ApppNavigationProp>()
   const isWeb = Platform.OS === "web"
+
+  const onAutoPageTurning = useCallback(() => {
+    if (!pages) return
+    const totalPages = pages[viewerHook.readingStyle].length
+    if (totalPages <= 1) return
+
+    setScrollToIndex((prevIndex) => {
+      const nextIndex = goToNextPage(prevIndex, totalPages, 1)
+      flashListRef.current?.scrollToIndex({ index: nextIndex })
+      return nextIndex
+    })
+  }, [pages, viewerHook.readingStyle])
+
+  useEffect(() => {
+    if (!autoPageTurning) {
+      return () => {}
+    }
+
+    const intervalId = setInterval(() => {
+      onAutoPageTurning()
+    }, autoPageTurnIntervalMs)
+
+    return () => {
+      clearInterval(intervalId)
+    }
+  }, [autoPageTurning, autoPageTurnIntervalMs, onAutoPageTurning])
 
   useEffect(() => {
     createData(props.totalPage)
@@ -183,6 +216,16 @@ export function BookViewer(props: BookViewerProps) {
       <ViewerHeader
         title={props.bookTitle}
         visible={viewerHook.showMenu}
+        autoPageTurning={autoPageTurning}
+        autoPageTurnIntervalMs={autoPageTurnIntervalMs}
+        onToggleAutoPageTurning={() => {
+          setAutoPageTurning((prev) => !prev)
+        }}
+        onAutoPageTurnIntervalChange={(intervalMs) => {
+          const normalizedIntervalMs = Math.max(100, Math.floor(intervalMs))
+          settingStore.setAutoPageTurnIntervalMs(normalizedIntervalMs)
+          setAutoPageTurnIntervalMs(normalizedIntervalMs)
+        }}
         onLeftArrowPress={() => {
           navigation.goBack()
         }}
@@ -250,9 +293,7 @@ export function BookViewer(props: BookViewerProps) {
               itemVisiblePercentThreshold: isWeb ? 95 : 100,
             }}
             estimatedItemSize={estimatedItemSize}
-            estimatedListSize={
-              isWeb ? undefined : { width: dimension.width, height: dimension.height }
-            }
+            estimatedListSize={{ width: dimension.width, height: dimension.height }}
             overrideItemLayout={
               isWeb
                 ? undefined

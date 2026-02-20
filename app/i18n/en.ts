@@ -1,6 +1,7 @@
 const en = {
   common: {
     ok: "OK",
+    save: "Save",
     cancel: "Cancel",
     back: "Back",
     login: "Login",
@@ -54,6 +55,11 @@ const en = {
     loading: "Preparing to read the book.",
   },
   modal: {
+    viewerHeaderAutoPageTurn: {
+      title: "Auto page turning",
+      intervalLabel: "Interval (ms)",
+      minIntervalHelp: "Please set 100ms or more.",
+    },
     formatSelectModal: {
       title: "Select format.",
     },

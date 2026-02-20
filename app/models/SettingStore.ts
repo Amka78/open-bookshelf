@@ -12,6 +12,7 @@ export const SettingStoreModel = types
   .model("SettingStore")
   .props({
     api: types.optional(ApiModel, {}),
+    autoPageTurnIntervalMs: types.optional(types.number, 3000),
   })
   .actions((store) => ({
     async setConnectionSetting(baseUrl: string, type: boolean) {
@@ -28,6 +29,10 @@ export const SettingStoreModel = types
           api.setUrl(baseUrl);
         }
       }
+    },
+    setAutoPageTurnIntervalMs(intervalMs: number) {
+      if (!Number.isFinite(intervalMs)) return;
+      store.autoPageTurnIntervalMs = Math.max(100, Math.floor(intervalMs));
     },
   }));
 
