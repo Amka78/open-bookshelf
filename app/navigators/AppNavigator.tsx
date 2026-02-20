@@ -1,4 +1,4 @@
-import { DefaultTheme, NavigationContainer } from "@react-navigation/native"
+import { DefaultTheme, NavigationContainer, type LinkingOptions } from "@react-navigation/native"
 import {
   createNativeStackNavigator,
   type NativeStackNavigationProp,
@@ -61,6 +61,29 @@ export type AppStackParamList = {
   }
   BookEdit: {
     imageUrl: string
+  }
+}
+
+/**
+ * Linking configuration for web routing.
+ * This enables URL path synchronization with navigation states.
+ */
+const getLinking = (): LinkingOptions<AppStackParamList> => {
+  return {
+    prefixes: [""],
+    config: {
+      screens: {
+        Connect: "connect",
+        OPDSRoot: "opds",
+        CalibreRoot: "calibre",
+        Library: "library",
+        Acquisition: "acquisition",
+        Viewer: "viewer",
+        PDFViewer: "pdf-viewer",
+        BookDetail: "book-detail",
+        BookEdit: "book-edit",
+      },
+    },
   }
 }
 
@@ -221,6 +244,55 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
 
   const stack = createModalStack(modalConfig, {})
 
+  // Sync URL with navigation state on web
+  useEffect(() => {
+    if (Platform.OS !== "web" || typeof globalThis === "undefined") {
+      return
+    }
+
+    const unsubscribe = navigationRef.addListener("state", (event) => {
+      const state = event.data.state
+
+      if (!state) {
+        return
+      }
+
+      // Get the current route name
+      const getRouteName = (navState: any): string => {
+        if (!navState) return ""
+        const route = navState.routes[navState.index]
+        if (route.state) {
+          return getRouteName(route.state)
+        }
+        return route.name
+      }
+
+      const currentRoute = getRouteName(state)
+
+      // Map route names to URL paths
+      const routePathMap: Record<string, string> = {
+        Connect: "/connect",
+        OPDSRoot: "/opds",
+        CalibreRoot: "/calibre",
+        Library: "/library",
+        Acquisition: "/acquisition",
+        Viewer: "/viewer",
+        PDFViewer: "/pdf-viewer",
+        BookDetail: "/book-detail",
+        BookEdit: "/book-edit",
+      }
+
+      const pathName = routePathMap[currentRoute] || "/"
+
+      const location = (globalThis as { location?: Location }).location
+      if (location && location.pathname !== pathName) {
+        globalThis.history?.replaceState({}, "", pathName)
+      }
+    })
+
+    return unsubscribe
+  }, [])
+
   useEffect(() => {
     if (!pendingViewerInfo || handlingViewerInfoRef.current) {
       return
@@ -360,6 +432,7 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
     <NavigationContainer
       ref={navigationRef}
       theme={/* colorScheme === "dark" ? DarkTheme : */ appTheme}
+      linking={Platform.OS === "web" ? getLinking() : undefined}
       onReady={() => {
         const viewerInfo = getViewerTabInfo()
         if (viewerInfo && navigationRef.isReady()) {
