@@ -42,15 +42,13 @@ export function useOpenViewer() {
       }
     } else {
       try {
-        const history = calibreRootStore.selectedLibrary.readingHistory.find(
-          (value) => {
-            return (
-              value.libraryId === selectedLibraryId &&
-              value.bookId === book.id &&
-              value.format === format
-            );
-          },
-        );
+        const history = calibreRootStore.readingHistories.find((value) => {
+          return (
+            value.libraryId === selectedLibraryId &&
+            value.bookId === book.id &&
+            value.format === format
+          );
+        });
         console.log("history", history);
 
         if (history) {
@@ -85,7 +83,7 @@ export function useOpenViewer() {
               cachedPath: bookImageList,
               format: format,
             });
-            calibreRootStore.selectedLibrary.addReadingHistory(historyModel);
+            calibreRootStore.addReadingHistory(historyModel);
             options.onComplete?.({
               route: "Viewer",
               format,

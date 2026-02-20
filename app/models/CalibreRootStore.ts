@@ -25,6 +25,7 @@ import {
   LibraryMapModel,
   type LibraryMap,
   ReadingHistoryModel,
+  ReadingHistory,
 } from "./calibre";
 import { handleCommonApiError } from "./errors/errors";
 import { withSetPropAction } from "./helpers/withSetPropAction";
@@ -74,6 +75,7 @@ export const CalibreRootStore = types
               libraryId: readingInfo.library_id,
               format: readingInfo.format,
             });
+            root.readingHistories.push(readingHistory);
           }
         });
         return true;
@@ -183,6 +185,9 @@ export const CalibreRootStore = types
     setLibrary: (libraryId?: string) => {
       // biome-ignore lint/suspicious/noExplicitAny: <explanation>
       root.selectedLibrary = libraryId as any;
+    },
+     addReadingHistory: (model: ReadingHistory) => {
+      root.readingHistories.push(model)
     },
   }));
 

@@ -23,7 +23,7 @@ export const ViewerScreen: FC = observer(() => {
       navigation.navigate("Library")
     }
   }, [selectedBook, navigation])
-  const history = calibreRootStore.selectedLibrary?.readingHistory.find((value) => {
+  const history = calibreRootStore.readingHistories.find((value) => {
     return (
       value.bookId === selectedBook?.id &&
       value.libraryId === calibreRootStore.selectedLibrary.id &&

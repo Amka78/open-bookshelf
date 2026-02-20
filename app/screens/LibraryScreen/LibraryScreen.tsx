@@ -102,7 +102,7 @@ export const LibraryScreen: FC = observer(() => {
 
     let listItem: React.JSX.Element
     const hasReadingHistory = Boolean(
-      selectedLibrary.readingHistory.find((value) => {
+      calibreRootStore.readingHistories.find((value) => {
         return value.bookId === item.id && value.libraryId === selectedLibrary.id
       }),
     )

@@ -1,6 +1,5 @@
 import type { MessageKey } from "@/i18n";
-import type { Book } from "@/models/CalibreRootStore";
-import type { FieldMetadataMap, Metadata } from "@/models/calibre";
+import type { Book, FieldMetadataMap, Metadata } from "@/models/calibre";
 import type { LoginType } from "./LoginModal";
 export type ModalStackParams = {
   ConfirmModal: {
