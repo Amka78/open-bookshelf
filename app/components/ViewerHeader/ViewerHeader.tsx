@@ -1,7 +1,5 @@
 import { HStack, IconButton, Text } from "@/components"
-import type { ModalStackParams } from "@/components/Modals/Types"
 import { usePalette } from "@/theme"
-import { useModal } from "react-native-modalfy"
 import { ViewerMenu, type ViewerMenuProps } from "../ViewerMenu/ViewerMenu"
 
 export type ViewerHeaderProps = ViewerMenuProps & {
@@ -16,7 +14,6 @@ export type ViewerHeaderProps = ViewerMenuProps & {
 
 export function ViewerHeader(props: ViewerHeaderProps) {
   const palette = usePalette()
-  const modal = useModal<ModalStackParams>()
 
   return props.visible ? (
     <>
@@ -37,24 +34,15 @@ export function ViewerHeader(props: ViewerHeaderProps) {
           </Text>
         </HStack>
         <HStack justifyContent={"flex-end"} marginRight={"$4"}>
-          <IconButton name="timer-outline" iconSize="sm" onPress={props.onToggleAutoPageTurning} />
-          <IconButton
-            name="cog-outline"
-            iconSize="sm"
-            onPress={() => {
-              modal.openModal("ViewerAutoPageTurnSettingModal", {
-                intervalMs: props.autoPageTurnIntervalMs,
-                onSave: (intervalMs) => {
-                  props.onAutoPageTurnIntervalChange?.(intervalMs)
-                },
-              })
-            }}
-          />
           <ViewerMenu
             pageDirection={props.pageDirection}
             readingStyle={props.readingStyle}
             onSelectReadingStyle={props.onSelectReadingStyle}
             onSelectPageDirection={props.onSelectPageDirection}
+            autoPageTurning={props.autoPageTurning}
+            autoPageTurnIntervalMs={props.autoPageTurnIntervalMs}
+            onToggleAutoPageTurning={props.onToggleAutoPageTurning}
+            onAutoPageTurnIntervalChange={props.onAutoPageTurnIntervalChange}
           />
         </HStack>
       </HStack>

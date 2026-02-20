@@ -9,13 +9,20 @@ import {
 import { type ComponentProps, useState } from "react"
 
 import { HStack, IconButton, MaterialCommunityIcon } from "@/components"
+import { AutoPageTurningIconButton } from "@/components/AutoPageTurningIconButton"
 import { useConvergence } from "@/hooks/useConvergence"
+import { useModal } from "react-native-modalfy"
+import type { ModalStackParams } from "@/components/Modals/Types"
 
 export type ViewerMenuProps = {
   pageDirection: "left" | "right"
   readingStyle: BookReadingStyleType
   onSelectReadingStyle: (readingStyle: BookReadingStyleType) => void
   onSelectPageDirection: (pageDirection) => void
+  autoPageTurning: boolean
+  autoPageTurnIntervalMs: number
+  onToggleAutoPageTurning?: () => void
+  onAutoPageTurnIntervalChange?: (intervalMs: number) => void
 }
 
 type MenuItemLabelProps = ComponentProps<typeof MenuItemLabelOrigin> & {
@@ -33,13 +40,14 @@ export function ViewerMenu(props: ViewerMenuProps) {
   const [readingStyleState, setReadingStyleState] = useState(props.readingStyle)
 
   const convergenceHook = useConvergence()
+  const modal = useModal<ModalStackParams>()
   const onUpdateReadingStyle = (readingStyle: BookReadingStyleType) => {
     props.onSelectReadingStyle(readingStyle)
     setReadingStyleState(readingStyle)
   }
 
   return (
-    <HStack>
+    <HStack gap="$3">
       <Menu
         placement="bottom"
         trigger={(triggerProps) => {
@@ -95,6 +103,24 @@ export function ViewerMenu(props: ViewerMenuProps) {
           }}
         />
       ) : null}
+
+      <AutoPageTurningIconButton
+        isActive={props.autoPageTurning}
+        onPress={props.onToggleAutoPageTurning}
+        iconSize="md-"
+      />
+      <IconButton
+        name="cog-outline"
+        iconSize="md-"
+        onPress={() => {
+          modal.openModal("ViewerAutoPageTurnSettingModal", {
+            intervalMs: props.autoPageTurnIntervalMs,
+            onSave: (intervalMs) => {
+              props.onAutoPageTurnIntervalChange?.(intervalMs)
+            },
+          })
+        }}
+      />
     </HStack>
   )
 }
