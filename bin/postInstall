@@ -7,11 +7,11 @@
  */
 
 // Patch any packages that need patching
-run("bunx patch-package");
+run(resolvePatchPackageCommand());
 
 // Kill the metro bundler if it's running.
 if (["darwin", "linux"].includes(process.platform)) {
-  run('pkill -f "cli.js start" || set exit 0');
+  run('pkill -f "[c]li.js start"', { ignoreError: true });
 }
 
 // On iOS, make sure CocoaPods are installed
@@ -20,13 +20,41 @@ if (process.platform === "darwin") {
 }
 
 // Run baby run
-function run(command) {
+function run(command, options = {}) {
+  const { ignoreError = false } = options;
   console.log(`./bin/postInstall script running: ${command}`);
 
   try {
     require("child_process").execSync(command, { stdio: "inherit" });
   } catch (error) {
+    if (ignoreError) {
+      return;
+    }
+
     console.error(`./bin/postInstall failed on command:\n  ${command}`);
     process.exit(error.status);
+  }
+}
+
+function resolvePatchPackageCommand() {
+  if (hasCommand("bunx")) {
+    return "bunx patch-package";
+  }
+
+  if (hasCommand("npx")) {
+    return "npx --yes patch-package";
+  }
+
+  return "./node_modules/.bin/patch-package";
+}
+
+function hasCommand(command) {
+  try {
+    require("child_process").execSync(`command -v ${command}`, {
+      stdio: "ignore",
+    });
+    return true;
+  } catch (_) {
+    return false;
   }
 }
