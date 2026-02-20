@@ -7,29 +7,67 @@ const ar: Translations = {
     cancel: "حذف",
     back: "خلف",
     login: "تسجيل الدخول",
-    logOut: "تسجيل خروج", // @demo remove-current-line
+    logOut: "تسجيل خروج",
     error: "خطأ",
   },
-  welcomeScreen: {
-    postscript:
-      "ربما لا يكون هذا هو الشكل الذي يبدو عليه تطبيقك مالم يمنحك المصمم هذه الشاشات وشحنها في هذه الحالة",
-    readyForLaunch: "تطبيقك تقريبا جاهز للتشغيل",
-    exciting: "اوه هذا مثير",
-    letsGo: "لنذهب", // @demo remove-current-line
+  bookEditScreen: {
+    save: "حفظ",
   },
   errorScreen: {
     title: "هناك خطأ ما",
     friendlySubtitle:
       "هذه هي الشاشة التي سيشاهدها المستخدمون في عملية الانتاج عند حدوث خطأ. سترغب في تخصيص هذه الرسالة ( الموجودة في 'ts.en/i18n/app') وربما التخطيط ايضاً ('app/screens/ErrorScreen'). إذا كنت تريد إزالة هذا بالكامل، تحقق من 'app/app.tsp' من اجل عنصر <ErrorBoundary>.",
     reset: "اعادة تعيين التطبيق",
-    traceTitle: "خطأ من مجموعة %{name}", // @demo remove-current-line
+    traceTitle: "خطأ من مجموعة %{name}",
   },
-  bookDetailMenu: {
-    openBookTooltip: "فتح الكتاب",
-    downloadTooltip: "تنزيل الكتاب",
-    convertTooltip: "تحويل الكتاب",
-    editTooltip: "تعديل الكتاب",
-    deleteTooltip: "حذف الكتاب",
+  errors: {
+    canNotConnect: "تعذر الاتصال بـ Calibre.",
+    canNotConnectDescription:
+      "لا يمكن الاتصال بـ Calibre. يرجى التحقق من صحة الرابط وأن الخادم يعمل.",
+    failedConvert: "خطأ في تحويل الكتاب",
+    timeout: "انتهت مهلة الاتصال مع Calibre.",
+    timeoutDescription:
+      "استغرق الاتصال بـ Calibre وقتًا طويلًا. يرجى الانتظار قليلًا قبل إعادة المحاولة أو إعادة تشغيل الخادم.",
+  },
+  connectScreen: {
+    welcome: "مرحبًا!!",
+    detail: "شكرًا لاستخدام OpenBookshelf. يرجى إعداد رابط Calibre أولًا.",
+    connectDetail: "اضبط رابط Calibre.",
+    connect: "اتصال",
+    placeHolder: "(http أو https)://{Address}:{Port}",
+    checkbox: "استخدام opds؟",
+  },
+  libraryScreen: {
+    dataSearching: "جارٍ البحث",
+  },
+  sortMenu: {
+    sort: "ترتيب",
+    asc: "تصاعدي",
+    desc: "تنازلي",
+  },
+  bookReadingStyle: {
+    title: "نمط القراءة",
+    singlePage: "صفحة واحدة",
+    singlePageDescription: "عرض صفحة واحدة في المرة",
+    facingPage: "صفحتان متقابلتان",
+    facingPageDescription: "عرض صفحتين متقابلتين جنباً إلى جنب",
+    facingPageWithTitle: "صفحتان متقابلتان مع الغلاف",
+    facingPageWithTitleDescription: "وضع الصقحات المتقابلة مع عرض الغلاف بمفرده",
+    verticalScroll: "تمرير عمودي",
+    verticalScrollDescription: "تمرير الصفحات عمودياً في تدفق مستمر",
+  },
+  pageDirection: {
+    label: "اتجاه الصفحة",
+    leftToRight: "تقليب الصفحة من اليسار إلى اليمين",
+    rightToLeft: "تقليب الصفحة من اليمين إلى اليسار",
+  },
+  autoPageTurning: {
+    tooltip: "تبديل تقليب الصفحة التلقائي",
+    tooltipActive: "تقليب الصفحة التلقائي قيد التشغيل",
+    tooltipInactive: "تقليب الصفحة التلقائي متوقف",
+  },
+  bookImage: {
+    loading: "يتم تجهيز الكتاب للقراءة.",
   },
   modal: {
     viewerHeaderAutoPageTurn: {
@@ -56,47 +94,15 @@ const ar: Translations = {
       title: "تعديل الكتاب",
     },
   },
-  pageDirection: "اتجاه الصفحة",
-  bookReadingStyle: {
-    title: "نمط القراءة",
-    singlePage: "صفحة واحدة",
-    facingPage: "صفحتان متقابلتان",
-    facingPageWithTitle: "صفحتان متقابلتان مع الغلاف",
-    verticalScroll: "تمرير عمودي",
-  },
-  connectScreen: {
-    welcome: "مرحبًا!!",
-    detail: "شكرًا لاستخدام OpenBookshelf. يرجى إعداد رابط Calibre أولًا.",
-    connectDetail: "اضبط رابط Calibre.",
-    connect: "اتصال",
-    placeHolder: "(http أو https)://{Address}:{Port}",
-    checkbox: "استخدام opds؟",
-  },
-  libraryScreen: {
-    dataSearching: "جارٍ البحث",
-  },
-  sortMenu: {
-    sort: "ترتيب",
-    asc: "تصاعدي",
-    desc: "تنازلي",
-  },
-  bookImage: {
-    loading: "يتم تجهيز الكتاب للقراءة.",
-  },
   rating: {
     noRate: "بدون تقييم",
   },
-  bookEditScreen: {
-    save: "حفظ",
-  },
-  errors: {
-    canNotConnect: "تعذر الاتصال بـ Calibre.",
-    canNotConnectDescription:
-      "لا يمكن الاتصال بـ Calibre. يرجى التحقق من صحة الرابط وأن الخادم يعمل.",
-    failedConvert: "خطأ في تحويل الكتاب",
-    timeout: "انتهت مهلة الاتصال مع Calibre.",
-    timeoutDescription:
-      "استغرق الاتصال بـ Calibre وقتًا طويلًا. يرجى الانتظار قليلًا قبل إعادة المحاولة أو إعادة تشغيل الخادم.",
+  bookDetailMenu: {
+    openBookTooltip: "فتح الكتاب",
+    downloadTooltip: "تنزيل الكتاب",
+    convertTooltip: "تحويل الكتاب",
+    editTooltip: "تعديل الكتاب",
+    deleteTooltip: "حذف الكتاب",
   },
 };
 

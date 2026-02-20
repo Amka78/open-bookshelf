@@ -5,10 +5,12 @@ import {
   MenuItem,
   MenuItemLabel as MenuItemLabelOrigin,
   Pressable,
+  VStack as VStackOrigin,
+  Text,
 } from "@gluestack-ui/themed"
 import { type ComponentProps, useState } from "react"
 
-import { HStack, IconButton, MaterialCommunityIcon } from "@/components"
+import { HStack, IconButton, MaterialCommunityIcon, TooltipIconButton } from "@/components"
 import { AutoPageTurningIconButton } from "@/components/AutoPageTurningIconButton"
 import { useConvergence } from "@/hooks/useConvergence"
 import { useModal } from "react-native-modalfy"
@@ -27,12 +29,19 @@ export type ViewerMenuProps = {
 
 type MenuItemLabelProps = ComponentProps<typeof MenuItemLabelOrigin> & {
   tx: MessageKey
+  descriptionTx?: MessageKey
 }
 function MenuItemLabel(props: MenuItemLabelProps) {
+  const { descriptionTx, ...restProps } = props
   return (
-    <MenuItemLabelOrigin {...props}>
-      {props.tx ? translate(props.tx) : props.children}
-    </MenuItemLabelOrigin>
+    <VStackOrigin {...restProps}>
+      <MenuItemLabelOrigin>
+        {props.tx ? translate(props.tx) : props.children}
+      </MenuItemLabelOrigin>
+      {descriptionTx ? (
+        <Text fontSize={"$xs"} color="$textSecondary">{translate(descriptionTx)}</Text>
+      ) : null}
+    </VStackOrigin>
   )
 }
 export function ViewerMenu(props: ViewerMenuProps) {
@@ -66,12 +75,18 @@ export function ViewerMenu(props: ViewerMenuProps) {
           )
         }}
       >
-        <MenuItem textValue="singlePage" onPress={() => onUpdateReadingStyle("singlePage")}>
-          <MenuItemLabel tx={"bookReadingStyle.singlePage"} />
+        <MenuItem 
+          textValue="singlePage" 
+          onPress={() => onUpdateReadingStyle("singlePage")}
+        >
+          <MenuItemLabel tx={"bookReadingStyle.singlePage"} descriptionTx="bookReadingStyle.singlePageDescription" />
         </MenuItem>
         {convergenceHook.orientation === "horizontal" ? (
-          <MenuItem textValue="facingPage" onPress={() => onUpdateReadingStyle("facingPage")}>
-            <MenuItemLabel tx="bookReadingStyle.facingPage" />
+          <MenuItem 
+            textValue="facingPage" 
+            onPress={() => onUpdateReadingStyle("facingPage")}
+          >
+            <MenuItemLabel tx="bookReadingStyle.facingPage" descriptionTx="bookReadingStyle.facingPageDescription" />
           </MenuItem>
         ) : null}
         {convergenceHook.orientation === "horizontal" ? (
@@ -79,21 +94,21 @@ export function ViewerMenu(props: ViewerMenuProps) {
             textValue="facingPageWithTitle"
             onPress={() => onUpdateReadingStyle("facingPageWithTitle")}
           >
-            <MenuItemLabel tx="bookReadingStyle.facingPageWithTitle" />
+            <MenuItemLabel tx="bookReadingStyle.facingPageWithTitle" descriptionTx="bookReadingStyle.facingPageWithTitleDescription" />
           </MenuItem>
         ) : null}
         <MenuItem
           textValue={"verticalScroll"}
           onPress={() => onUpdateReadingStyle("verticalScroll")}
         >
-          <MenuItemLabel tx="bookReadingStyle.verticalScroll" />
+          <MenuItemLabel tx="bookReadingStyle.verticalScroll" descriptionTx="bookReadingStyle.verticalScrollDescription" />
         </MenuItem>
       </Menu>
       {props.readingStyle !== "verticalScroll" ? (
-        <IconButton
+        <TooltipIconButton
           name={`arrow-${pageDirectionState}-bold`}
           iconSize={"md-"}
-          labelTx={convergenceHook.isLarge ? "pageDirection" : undefined}
+          tooltipTx={(pageDirectionState === "left" ? "pageDirection.leftToRight" : "pageDirection.rightToLeft") as MessageKey}
           onPress={() => {
             console.tron.log(`current page direction: ${pageDirectionState}`)
             const direction = pageDirectionState === "left" ? "right" : "left"
@@ -108,6 +123,7 @@ export function ViewerMenu(props: ViewerMenuProps) {
         isActive={props.autoPageTurning}
         onPress={props.onToggleAutoPageTurning}
         iconSize="md-"
+        tooltipTx={(props.autoPageTurning ? "autoPageTurning.tooltipActive" : "autoPageTurning.tooltipInactive") as MessageKey}
       />
       <IconButton
         name="cog-outline"

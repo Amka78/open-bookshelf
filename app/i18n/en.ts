@@ -46,11 +46,24 @@ const en = {
   bookReadingStyle: {
     title: "Book Reading Style",
     singlePage: "Single Page",
+    singlePageDescription: "Display one page at a time",
     facingPage: "Facing Page",
+    facingPageDescription: "Display two facing pages side by side",
     facingPageWithTitle: "Facing Page With Title",
+    facingPageWithTitleDescription: "Facing pages mode with a single cover page displayed alone",
     verticalScroll: "VerticalScroll",
+    verticalScrollDescription: "Scroll through pages vertically in a continuous flow",
   },
-  pageDirection: "Page Direction",
+  pageDirection: {
+    label: "Page Direction",
+    leftToRight: "Left to right page turning",
+    rightToLeft: "Right to left page turning",
+  },
+  autoPageTurning: {
+    tooltip: "Toggle automatic page turning",
+    tooltipActive: "Automatic page turning is ON",
+    tooltipInactive: "Automatic page turning is OFF",
+  },
   bookImage: {
     loading: "Preparing to read the book.",
   },
