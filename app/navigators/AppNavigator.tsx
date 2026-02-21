@@ -158,6 +158,31 @@ type ViewerTabInfo = {
   format?: string
 }
 
+type NavigationLikeState = {
+  index?: number
+  routes?: Array<{
+    name?: string
+    state?: NavigationLikeState
+  }>
+}
+
+const getRouteName = (navState?: NavigationLikeState): string => {
+  if (!navState || !Array.isArray(navState.routes) || navState.routes.length === 0) {
+    return ""
+  }
+
+  const routeIndex =
+    typeof navState.index === "number" ? navState.index : navState.routes.length - 1
+  const safeIndex = Math.min(Math.max(routeIndex, 0), navState.routes.length - 1)
+  const route = navState.routes[safeIndex]
+  const nestedState = route?.state
+  if (nestedState) {
+    return getRouteName(nestedState)
+  }
+
+  return typeof route?.name === "string" ? route.name : ""
+}
+
 const getViewerTabInfo = (): ViewerTabInfo | null => {
   if (Platform.OS !== "web" || typeof globalThis === "undefined") {
     return null
@@ -244,55 +269,6 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
 
   const stack = createModalStack(modalConfig, {})
 
-  // Sync URL with navigation state on web
-  useEffect(() => {
-    if (Platform.OS !== "web" || typeof globalThis === "undefined") {
-      return
-    }
-
-    const unsubscribe = navigationRef.addListener("state", (event) => {
-      const state = event.data.state
-
-      if (!state) {
-        return
-      }
-
-      // Get the current route name
-      const getRouteName = (navState: any): string => {
-        if (!navState) return ""
-        const route = navState.routes[navState.index]
-        if (route.state) {
-          return getRouteName(route.state)
-        }
-        return route.name
-      }
-
-      const currentRoute = getRouteName(state)
-
-      // Map route names to URL paths
-      const routePathMap: Record<string, string> = {
-        Connect: "/connect",
-        OPDSRoot: "/opds",
-        CalibreRoot: "/calibre",
-        Library: "/library",
-        Acquisition: "/acquisition",
-        Viewer: "/viewer",
-        PDFViewer: "/pdf-viewer",
-        BookDetail: "/book-detail",
-        BookEdit: "/book-edit",
-      }
-
-      const pathName = routePathMap[currentRoute] || "/"
-
-      const location = (globalThis as { location?: Location }).location
-      if (location && location.pathname !== pathName) {
-        globalThis.history?.replaceState({}, "", pathName)
-      }
-    })
-
-    return unsubscribe
-  }, [])
-
   useEffect(() => {
     if (!pendingViewerInfo || handlingViewerInfoRef.current) {
       return
@@ -326,6 +302,10 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
 
         const selectedLibrary = calibreRootStore.selectedLibrary
         if (!selectedLibrary) {
+          if (!cancelled) {
+            clearViewerTabRoute()
+            setPendingViewerInfo(null)
+          }
           return
         }
 
@@ -347,6 +327,10 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
 
         const selectedBook = selectedLibrary.selectedBook
         if (!selectedBook) {
+          if (!cancelled) {
+            clearViewerTabRoute()
+            setPendingViewerInfo(null)
+          }
           return
         }
 
@@ -408,6 +392,11 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
           clearViewerTabRoute()
           setPendingViewerInfo(null)
         }
+      } catch (error) {
+        if (!cancelled) {
+          clearViewerTabRoute()
+          setPendingViewerInfo(null)
+        }
       } finally {
         if (!cancelled) {
           handlingViewerInfoRef.current = false
@@ -430,16 +419,26 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
 
   return (
     <NavigationContainer
+      {...props}
       ref={navigationRef}
       theme={/* colorScheme === "dark" ? DarkTheme : */ appTheme}
       linking={Platform.OS === "web" ? getLinking() : undefined}
+      onStateChange={(state) => {
+        props.onStateChange?.(state)
+        const navState = state as NavigationLikeState | undefined
+
+        const currentRoute = getRouteName(navState)
+        if (pendingViewerInfo && currentRoute !== "Viewer" && currentRoute !== "PDFViewer") {
+          clearViewerTabRoute()
+          setPendingViewerInfo(null)
+        }
+      }}
       onReady={() => {
         const viewerInfo = getViewerTabInfo()
         if (viewerInfo && navigationRef.isReady()) {
           setPendingViewerInfo(viewerInfo)
         }
       }}
-      {...props}
     >
       <ModalProvider stack={stack}>
         <AppStack />

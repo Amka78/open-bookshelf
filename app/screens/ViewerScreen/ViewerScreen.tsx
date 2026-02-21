@@ -13,20 +13,6 @@ export const ViewerScreen: FC = observer(() => {
   const [_, setRefresh] = useState<object>({})
   const navigation = useNavigation<ApppNavigationProp>()
 
-  React.useEffect(() => {
-    const unsubscribe = navigation.addListener("beforeRemove", (event) => {
-      const actionType = event.data.action.type
-      if (actionType !== "GO_BACK" && actionType !== "POP") {
-        return
-      }
-
-      event.preventDefault()
-      navigation.navigate("Library")
-    })
-
-    return unsubscribe
-  }, [navigation])
-
   useOrientation(() => {
     setRefresh({})
   })

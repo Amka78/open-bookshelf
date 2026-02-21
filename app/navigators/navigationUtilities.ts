@@ -24,17 +24,30 @@ export const RootNavigation = {
 
 export const navigationRef = createNavigationContainerRef()
 
+type NavigationStateLike = NavigationState | PartialState<NavigationState>
+
 /**
  * Gets the current screen from any navigation state.
  */
 export function getActiveRouteName(state: NavigationState | PartialState<NavigationState>) {
-  const route = state.routes[state.index]
+  if (!state || !Array.isArray(state.routes) || state.routes.length === 0) {
+    return ""
+  }
 
-  // Found the active route -- return the name
-  if (!route.state) return route.name
+  const routeIndex = typeof state.index === "number" ? state.index : state.routes.length - 1
+  const safeIndex = Math.min(Math.max(routeIndex, 0), state.routes.length - 1)
+  const route = state.routes[safeIndex]
 
-  // Recursive call to deal with nested routers
-  return getActiveRouteName(route.state)
+  if (!route) {
+    return ""
+  }
+
+  const nestedState = route?.state as NavigationStateLike | undefined
+  if (!nestedState) {
+    return route?.name ?? ""
+  }
+
+  return getActiveRouteName(nestedState)
 }
 
 /**
@@ -112,7 +125,11 @@ export function useNavigationPersistence(storage: any, persistenceKey: string) {
 
   const routeNameRef = useRef<string | undefined>()
 
-  const onNavigationStateChange = (state) => {
+  const onNavigationStateChange = (state?: NavigationState) => {
+    if (!state) {
+      return
+    }
+
     const previousRouteName = routeNameRef.current
     const currentRouteName = getActiveRouteName(state)
 

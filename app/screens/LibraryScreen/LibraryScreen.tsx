@@ -21,6 +21,7 @@ import { useStores } from "@/models"
 import type { Book } from "@/models/calibre"
 import type { ApppNavigationProp } from "@/navigators"
 import { api } from "@/services/api"
+import { deleteCachedBookImages } from "@/utils/bookImageCache"
 import { useIsFocused, useNavigation } from "@react-navigation/native"
 import { values } from "mobx"
 import { observer } from "mobx-react-lite"
@@ -48,6 +49,8 @@ export const LibraryScreen: FC = observer(() => {
   const libraryHook = useLibrary()
 
   const searchBar = useRef<SearchBarCommands>()
+  const lastClearCacheDialogOpenedAt = useRef(0)
+  const clearCacheDialogOpened = useRef(false)
 
   const search = async () => {
     await calibreRootStore.searchLibrary()
@@ -101,11 +104,13 @@ export const LibraryScreen: FC = observer(() => {
     }
 
     let listItem: React.JSX.Element
-    const hasReadingHistory = Boolean(
-      calibreRootStore.readingHistories.find((value) => {
-        return value.bookId === item.id && value.libraryId === selectedLibrary.id
-      }),
-    )
+    const hasReadingHistory = calibreRootStore.readingHistories.some((value) => {
+      return (
+        value.bookId === item.id &&
+        value.libraryId === selectedLibrary.id &&
+        value.cachedPath.length > 0
+      )
+    })
 
     const imageUrl = encodeURI(api.getBookThumbnailUrl(item.id, selectedLibrary.id))
 
@@ -219,11 +224,54 @@ export const LibraryScreen: FC = observer(() => {
       await deleteBookHook.execute(modal)
     }
 
+    const onClearBookCache = () => {
+      if (clearCacheDialogOpened.current) {
+        return
+      }
+
+      const now = Date.now()
+      if (now - lastClearCacheDialogOpenedAt.current < 1200) {
+        return
+      }
+      lastClearCacheDialogOpenedAt.current = now
+      clearCacheDialogOpened.current = true
+
+      modal.openModal("ConfirmModal", {
+        titleTx: "modal.cacheClearConfirmModal.title",
+        messageTx: "modal.cacheClearConfirmModal.message",
+        onCancelPress: () => {
+          lastClearCacheDialogOpenedAt.current = Date.now()
+          clearCacheDialogOpened.current = false
+        },
+        onOKPress: async () => {
+          try {
+            const targetReadingHistories = calibreRootStore.readingHistories.filter((history) => {
+              return history.libraryId === selectedLibrary.id && history.bookId === item.id
+            })
+
+            const cachedPathList = targetReadingHistories.flatMap((history) => history.cachedPath)
+            calibreRootStore.removeReadingHistoriesByBook(selectedLibrary.id, item.id)
+
+            await deleteCachedBookImages(cachedPathList)
+          } catch (e) {
+            modal.openModal("ErrorModal", {
+              titleTx: "common.error",
+              message: e instanceof Error ? e.message : String(e),
+            })
+          } finally {
+            lastClearCacheDialogOpenedAt.current = Date.now()
+            clearCacheDialogOpened.current = false
+          }
+        },
+      })
+    }
+
     if (libraryHook.currentListStyle === "gridView") {
       listItem = (
         <BookImageItem
           source={{ uri: imageUrl, headers: authenticationStore.getHeader() }}
           showCachedIcon={hasReadingHistory}
+          onCachedIconPress={onClearBookCache}
           onPress={onPress}
           onLongPress={onLongPress}
           detailMenuProps={{
