@@ -10,8 +10,23 @@ import React, { type FC, useLayoutEffect, useState } from "react"
 
 export const ViewerScreen: FC = observer(() => {
   const { authenticationStore, calibreRootStore } = useStores()
-  const [_, setRefresh] = useState()
+  const [_, setRefresh] = useState<object>({})
   const navigation = useNavigation<ApppNavigationProp>()
+
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", (event) => {
+      const actionType = event.data.action.type
+      if (actionType !== "GO_BACK" && actionType !== "POP") {
+        return
+      }
+
+      event.preventDefault()
+      navigation.navigate("Library")
+    })
+
+    return unsubscribe
+  }, [navigation])
+
   useOrientation(() => {
     setRefresh({})
   })
@@ -50,6 +65,11 @@ export const ViewerScreen: FC = observer(() => {
       bookTitle={selectedBook.metaData.title}
       renderPage={renderPage}
       totalPage={selectedBook.path.length}
+      onPageChange={(page) => {
+        if (history?.currentPage !== page) {
+          history?.setCurrentPage(page)
+        }
+      }}
     />
   ) : undefined
 })

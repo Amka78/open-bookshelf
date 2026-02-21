@@ -15,6 +15,7 @@ import { Pressable } from "@gluestack-ui/themed"
 export type BookImageprops = Pick<ImageProps, "source"> & {
   onPress?: () => Promise<void>
   onLongPress?: () => void
+  onCachedIconPress?: () => void
   loading?: boolean
   detailMenuProps?: BookDetailMenuProps
   showCachedIcon?: boolean
@@ -58,9 +59,15 @@ export function BookImageItem({ loading = false, ...restProps }: BookImageprops)
     <Box style={styles.imageContainer} onMouseEnter={handleHoverIn} onMouseLeave={handleHoverOut}>
       {image}
       {props.showCachedIcon ? (
-        <Box style={styles.cachedIconBadge}>
+        <Pressable
+          onPress={(event) => {
+            event.stopPropagation?.()
+            props.onCachedIconPress?.()
+          }}
+          style={styles.cachedIconBadge}
+        >
           <MaterialCommunityIcon name="cloud-check" iconSize="sm-" />
-        </Box>
+        </Pressable>
       ) : null}
       {showDetailMenu ? (
         <Box style={styles.detailMenuOverlay}>

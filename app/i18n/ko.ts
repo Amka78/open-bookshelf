@@ -31,7 +31,8 @@ const ko: Translations = {
   },
   connectScreen: {
     welcome: "환영합니다!!",
-    detail: "OpenBookshelf를 이용해 주셔서 감사합니다. 먼저 Calibre URL을 설정해 주세요.",
+    detail:
+      "OpenBookshelf를 이용해 주셔서 감사합니다. 먼저 Calibre URL을 설정해 주세요.",
     connectDetail: "Calibre URL을 설정하세요.",
     connect: "연결",
     placeHolder: "(http 또는 https)://{Address}:{Port}",
@@ -92,6 +93,10 @@ const ko: Translations = {
     },
     bookEditModal: {
       title: "책 편집",
+    },
+    cacheClearConfirmModal: {
+      title: "캐시 삭제",
+      message: "캐시를 삭제하시겠습니까?",
     },
   },
   rating: {

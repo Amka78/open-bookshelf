@@ -52,7 +52,8 @@ const ar: Translations = {
     facingPage: "صفحتان متقابلتان",
     facingPageDescription: "عرض صفحتين متقابلتين جنباً إلى جنب",
     facingPageWithTitle: "صفحتان متقابلتان مع الغلاف",
-    facingPageWithTitleDescription: "وضع الصقحات المتقابلة مع عرض الغلاف بمفرده",
+    facingPageWithTitleDescription:
+      "وضع الصقحات المتقابلة مع عرض الغلاف بمفرده",
     verticalScroll: "تمرير عمودي",
     verticalScrollDescription: "تمرير الصفحات عمودياً في تدفق مستمر",
   },
@@ -92,6 +93,10 @@ const ar: Translations = {
     },
     bookEditModal: {
       title: "تعديل الكتاب",
+    },
+    cacheClearConfirmModal: {
+      title: "مسح التخزين المؤقت",
+      message: "هل تريد مسح التخزين المؤقت؟",
     },
   },
   rating: {

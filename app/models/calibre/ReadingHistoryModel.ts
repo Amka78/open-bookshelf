@@ -1,4 +1,4 @@
-import { type Instance, types } from "mobx-state-tree"
+import { type Instance, types } from "mobx-state-tree";
 
 export const ReadingHistoryModel = types
   .model("ReadingHistoryModel")
@@ -11,8 +11,11 @@ export const ReadingHistoryModel = types
   })
   .actions((root) => ({
     setCachePath: (bookImagePathList: string[]) => {
-      root.cachedPath.clear()
-      root.cachedPath.push(...bookImagePathList)
+      root.cachedPath.clear();
+      root.cachedPath.push(...bookImagePathList);
     },
-  }))
-export type ReadingHistory = Instance<typeof ReadingHistoryModel>
+    setCurrentPage: (page: number) => {
+      root.currentPage = page;
+    },
+  }));
+export type ReadingHistory = Instance<typeof ReadingHistoryModel>;

@@ -186,8 +186,14 @@ export const CalibreRootStore = types
       // biome-ignore lint/suspicious/noExplicitAny: <explanation>
       root.selectedLibrary = libraryId as any;
     },
-     addReadingHistory: (model: ReadingHistory) => {
-      root.readingHistories.push(model)
+    addReadingHistory: (model: ReadingHistory) => {
+      root.readingHistories.push(model);
+    },
+    removeReadingHistoriesByBook: (libraryId: string, bookId: number) => {
+      const remainedHistories = root.readingHistories.filter((history) => {
+        return !(history.libraryId === libraryId && history.bookId === bookId);
+      });
+      root.readingHistories.replace(remainedHistories);
     },
   }));
 

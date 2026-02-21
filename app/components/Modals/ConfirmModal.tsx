@@ -14,6 +14,13 @@ export function ConfirmModal(props: ConfirmModalProps) {
   const messageTx = props.modal.params.messageTx
   const message = props.modal.params.message
 
+  const onCancelPress = () => {
+    if (props.modal.params.onCancelPress) {
+      props.modal.params.onCancelPress()
+    }
+    props.modal.closeModal()
+  }
+
   return (
     <Root>
       <Header>
@@ -22,7 +29,7 @@ export function ConfirmModal(props: ConfirmModalProps) {
         </Heading>
         <CloseButton
           onPress={() => {
-            props.modal.closeModal()
+            onCancelPress()
           }}
         />
       </Header>
@@ -33,9 +40,9 @@ export function ConfirmModal(props: ConfirmModalProps) {
       </Body>
       <Footer>
         <Button
-          onPress={() => {
+          onPress={async () => {
             if (props.modal.params.onOKPress) {
-              props.modal.params.onOKPress()
+              await props.modal.params.onOKPress()
             }
             props.modal.closeModal()
           }}
@@ -43,7 +50,7 @@ export function ConfirmModal(props: ConfirmModalProps) {
         />
         <Button
           onPress={() => {
-            props.modal.closeModal()
+            onCancelPress()
           }}
           tx={"common.cancel"}
           marginLeft={"$1"}

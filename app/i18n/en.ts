@@ -29,7 +29,8 @@ const en = {
   },
   connectScreen: {
     welcome: "Welcome!!",
-    detail: "Thank you for using OpenBookshelf. Please set up your Calibre URL first.",
+    detail:
+      "Thank you for using OpenBookshelf. Please set up your Calibre URL first.",
     connectDetail: "Set the Calibre URL.",
     connect: "Connect",
     placeHolder: "(http or https)://{Address}:{Port}",
@@ -50,9 +51,11 @@ const en = {
     facingPage: "Facing Page",
     facingPageDescription: "Display two facing pages side by side",
     facingPageWithTitle: "Facing Page With Title",
-    facingPageWithTitleDescription: "Facing pages mode with a single cover page displayed alone",
+    facingPageWithTitleDescription:
+      "Facing pages mode with a single cover page displayed alone",
     verticalScroll: "VerticalScroll",
-    verticalScrollDescription: "Scroll through pages vertically in a continuous flow",
+    verticalScrollDescription:
+      "Scroll through pages vertically in a continuous flow",
   },
   pageDirection: {
     label: "Page Direction",
@@ -91,6 +94,10 @@ const en = {
     bookEditModal: {
       title: "Book Edit",
     },
+    cacheClearConfirmModal: {
+      title: "Clear cache",
+      message: "Do you want to clear cache?",
+    },
   },
   rating: {
     noRate: "No Rate",
@@ -102,7 +109,7 @@ const en = {
     editTooltip: "Edit book",
     deleteTooltip: "Delete book",
   },
-}
+};
 
-export default en
-export type Translations = typeof en
+export default en;
+export type Translations = typeof en;

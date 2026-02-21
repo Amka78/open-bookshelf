@@ -8,6 +8,7 @@ export type ModalStackParams = {
     message?: string;
     messageTx?: MessageKey;
     onOKPress?: () => void;
+    onCancelPress?: () => void;
   };
   ErrorModal: {
     title?: string;
