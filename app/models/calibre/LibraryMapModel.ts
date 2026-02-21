@@ -1,12 +1,6 @@
-import {
-  type Instance,
-  type SnapshotIn,
-  type SnapshotOut,
-  flow,
-  types,
-} from "mobx-state-tree";
+import { type Instance, type SnapshotIn, type SnapshotOut, flow, types } from "mobx-state-tree"
 
-import { api } from "@/services/api";
+import { api } from "@/services/api"
 import {
   BookModel,
   CategoryModel,
@@ -16,9 +10,9 @@ import {
   ReadingHistoryModel,
   SearchSettingModel,
   SortFieldModel,
-} from "./";
-import { handleCommonApiError } from "../errors/errors";
-import { withSetPropAction } from "../helpers/withSetPropAction";
+} from "./"
+import { handleCommonApiError } from "../errors/errors"
+import { withSetPropAction } from "../helpers/withSetPropAction"
 
 export const LibraryMapModel = types
   .model("LibrayMapModel")
@@ -31,26 +25,26 @@ export const LibraryMapModel = types
     clientSetting: types.array(ClientSettingModel),
     bookDisplayFields: types.array(types.string),
     fieldMetadataList: types.map(FieldMetadataModel),
-    selectedBook: types.maybe(types.reference(types.late(() => BookModel))),
+    selectedBook: types.safeReference(types.late(() => BookModel)),
   })
   .actions(withSetPropAction)
   .actions((root) => ({
     setBook: (bookId?: number) => {
       // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-      root.selectedBook = bookId as any;
+      root.selectedBook = bookId as any
     },
     deleteBook: flow(function* (bookId: number) {
-      const response = yield api.deleteBook(root.id, bookId);
+      const response = yield api.deleteBook(root.id, bookId)
       if (response.kind === "ok") {
-        root.selectedBook = undefined;
-        root.books.delete(bookId.toString());
-        return true;
+        root.selectedBook = undefined
+        root.books.delete(bookId.toString())
+        return true
       }
-      handleCommonApiError(response);
-      return false;
+      handleCommonApiError(response)
+      return false
     }),
-  }));
+  }))
 
-export type LibraryMap = Instance<typeof LibraryMapModel>;
-export type LibraryMapSnapshotOut = SnapshotOut<typeof LibraryMapModel>;
-export type LibraryMapSnapshotIn = SnapshotIn<typeof LibraryMapModel>;
+export type LibraryMap = Instance<typeof LibraryMapModel>
+export type LibraryMapSnapshotOut = SnapshotOut<typeof LibraryMapModel>
+export type LibraryMapSnapshotIn = SnapshotIn<typeof LibraryMapModel>
