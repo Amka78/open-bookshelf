@@ -13,6 +13,8 @@ export function ConfirmModal(props: ConfirmModalProps) {
   const title = props.modal.params.title
   const messageTx = props.modal.params.messageTx
   const message = props.modal.params.message
+  const okTx = props.modal.params.okTx ?? "common.ok"
+  const cancelTx = props.modal.params.cancelTx ?? "common.cancel"
 
   const onCancelPress = () => {
     if (props.modal.params.onCancelPress) {
@@ -46,13 +48,13 @@ export function ConfirmModal(props: ConfirmModalProps) {
             }
             props.modal.closeModal()
           }}
-          tx={"common.ok"}
+          tx={okTx}
         />
         <Button
           onPress={() => {
             onCancelPress()
           }}
-          tx={"common.cancel"}
+          tx={cancelTx}
           marginLeft={"$1"}
         />
       </Footer>

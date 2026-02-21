@@ -1,8 +1,10 @@
-import type { Translations } from "./en";
+import type { Translations } from "./en"
 
 const ko: Translations = {
   common: {
     ok: "확인!",
+    yes: "예",
+    no: "아니요",
     save: "저장",
     cancel: "취소",
     back: "뒤로",
@@ -31,8 +33,7 @@ const ko: Translations = {
   },
   connectScreen: {
     welcome: "환영합니다!!",
-    detail:
-      "OpenBookshelf를 이용해 주셔서 감사합니다. 먼저 Calibre URL을 설정해 주세요.",
+    detail: "OpenBookshelf를 이용해 주셔서 감사합니다. 먼저 Calibre URL을 설정해 주세요.",
     connectDetail: "Calibre URL을 설정하세요.",
     connect: "연결",
     placeHolder: "(http 또는 https)://{Address}:{Port}",
@@ -98,6 +99,10 @@ const ko: Translations = {
       title: "캐시 삭제",
       message: "캐시를 삭제하시겠습니까?",
     },
+    resumeReadingConfirmModal: {
+      title: "이어 읽기",
+      message: "읽던 페이지가 있습니다. 이어서 읽으시겠습니까?",
+    },
   },
   rating: {
     noRate: "평점 없음",
@@ -109,6 +114,6 @@ const ko: Translations = {
     editTooltip: "책 편집",
     deleteTooltip: "책 삭제",
   },
-};
+}
 
-export default ko;
+export default ko

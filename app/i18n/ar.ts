@@ -1,8 +1,10 @@
-import type { Translations } from "./en";
+import type { Translations } from "./en"
 
 const ar: Translations = {
   common: {
     ok: "نعم",
+    yes: "نعم",
+    no: "لا",
     save: "حفظ",
     cancel: "حذف",
     back: "خلف",
@@ -52,8 +54,7 @@ const ar: Translations = {
     facingPage: "صفحتان متقابلتان",
     facingPageDescription: "عرض صفحتين متقابلتين جنباً إلى جنب",
     facingPageWithTitle: "صفحتان متقابلتان مع الغلاف",
-    facingPageWithTitleDescription:
-      "وضع الصقحات المتقابلة مع عرض الغلاف بمفرده",
+    facingPageWithTitleDescription: "وضع الصقحات المتقابلة مع عرض الغلاف بمفرده",
     verticalScroll: "تمرير عمودي",
     verticalScrollDescription: "تمرير الصفحات عمودياً في تدفق مستمر",
   },
@@ -98,6 +99,10 @@ const ar: Translations = {
       title: "مسح التخزين المؤقت",
       message: "هل تريد مسح التخزين المؤقت؟",
     },
+    resumeReadingConfirmModal: {
+      title: "متابعة القراءة",
+      message: "لديك كتاب غير مكتمل. هل تريد المتابعة من حيث توقفت؟",
+    },
   },
   rating: {
     noRate: "بدون تقييم",
@@ -109,6 +114,6 @@ const ar: Translations = {
     editTooltip: "تعديل الكتاب",
     deleteTooltip: "حذف الكتاب",
   },
-};
+}
 
-export default ar;
+export default ar

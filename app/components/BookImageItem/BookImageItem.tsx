@@ -61,8 +61,7 @@ export function BookImageItem({ loading = false, ...restProps }: BookImageprops)
       {props.showCachedIcon ? (
         <Pressable
           onPress={(event) => {
-            event.stopPropagation?.()
-            props.onCachedIconPress?.()
+            props.showCachedIcon && props.onCachedIconPress?.()
           }}
           style={styles.cachedIconBadge}
         >

@@ -16,7 +16,7 @@ import { useNavigation } from "@react-navigation/native"
 import { FlashList, type ListRenderItem } from "@shopify/flash-list"
 import type React from "react"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Platform, StyleSheet, useWindowDimensions } from "react-native"
+import { Platform, StyleSheet, type FlexAlignType, useWindowDimensions } from "react-native"
 
 type FacingPageType = { page1?: number; page2?: number }
 
@@ -32,6 +32,7 @@ export type BookViewerProps = {
   renderPage: (props: RenderPageProps) => React.ReactNode
   bookTitle: string
   onPageChange?: (page: number) => void
+  initialPage?: number
 }
 
 export function BookViewer(props: BookViewerProps) {
@@ -49,6 +50,7 @@ export function BookViewer(props: BookViewerProps) {
   const [autoPageTurnIntervalMs, setAutoPageTurnIntervalMs] = useState(
     settingStore.autoPageTurnIntervalMs,
   )
+  const initialPageAppliedRef = useRef(false)
   const navigation = useNavigation<ApppNavigationProp>()
   const isWeb = Platform.OS === "web"
 
@@ -82,9 +84,39 @@ export function BookViewer(props: BookViewerProps) {
     createData(props.totalPage)
   }, [props.totalPage])
 
+  useEffect(() => {
+    initialPageAppliedRef.current = false
+  }, [props.initialPage])
+
+  useEffect(() => {
+    if (!pages || props.initialPage === undefined || initialPageAppliedRef.current) {
+      return
+    }
+
+    const clampedPage = Math.max(0, Math.min(props.initialPage, Math.max(props.totalPage - 1, 0)))
+
+    let initialIndex = clampedPage
+    if (
+      viewerHook.readingStyle === "facingPage" ||
+      viewerHook.readingStyle === "facingPageWithTitle"
+    ) {
+      const pageList = pages[viewerHook.readingStyle] as FacingPageType[]
+      const foundIndex = pageList.findIndex((value) => {
+        return value.page1 === clampedPage || value.page2 === clampedPage
+      })
+      initialIndex = foundIndex >= 0 ? foundIndex : 0
+    }
+
+    setScrollToIndex(initialIndex)
+    requestAnimationFrame(() => {
+      flashListRef.current?.scrollToIndex({ index: initialIndex, animated: false })
+    })
+    initialPageAppliedRef.current = true
+  }, [pages, props.initialPage, props.totalPage, viewerHook.readingStyle])
+
   const renderPage = useCallback(
     (renderProps: RenderPageProps) => {
-      let alignItems: string
+      let alignItems: FlexAlignType = "center"
 
       switch (renderProps.pageType) {
         case "singlePage":

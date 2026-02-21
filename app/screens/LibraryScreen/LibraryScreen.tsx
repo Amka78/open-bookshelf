@@ -49,8 +49,6 @@ export const LibraryScreen: FC = observer(() => {
   const libraryHook = useLibrary()
 
   const searchBar = useRef<SearchBarCommands>()
-  const lastClearCacheDialogOpenedAt = useRef(0)
-  const clearCacheDialogOpened = useRef(false)
 
   const search = async () => {
     await calibreRootStore.searchLibrary()
@@ -225,24 +223,9 @@ export const LibraryScreen: FC = observer(() => {
     }
 
     const onClearBookCache = () => {
-      if (clearCacheDialogOpened.current) {
-        return
-      }
-
-      const now = Date.now()
-      if (now - lastClearCacheDialogOpenedAt.current < 1200) {
-        return
-      }
-      lastClearCacheDialogOpenedAt.current = now
-      clearCacheDialogOpened.current = true
-
       modal.openModal("ConfirmModal", {
         titleTx: "modal.cacheClearConfirmModal.title",
         messageTx: "modal.cacheClearConfirmModal.message",
-        onCancelPress: () => {
-          lastClearCacheDialogOpenedAt.current = Date.now()
-          clearCacheDialogOpened.current = false
-        },
         onOKPress: async () => {
           try {
             const targetReadingHistories = calibreRootStore.readingHistories.filter((history) => {
@@ -254,13 +237,11 @@ export const LibraryScreen: FC = observer(() => {
 
             await deleteCachedBookImages(cachedPathList)
           } catch (e) {
+            modal.closeModal("ConfirmModal")
             modal.openModal("ErrorModal", {
               titleTx: "common.error",
               message: e instanceof Error ? e.message : String(e),
             })
-          } finally {
-            lastClearCacheDialogOpenedAt.current = Date.now()
-            clearCacheDialogOpened.current = false
           }
         },
       })
