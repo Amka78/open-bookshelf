@@ -27,6 +27,7 @@ const ko: Translations = {
     canNotConnectDescription:
       "Calibre에 연결할 수 없습니다. URL이 올바른지, 서버가 동작 중인지 확인하세요.",
     failedConvert: "책 변환 오류",
+    failedRating: "평점 업데이트에 실패했습니다.",
     timeout: "Calibre와의 연결 시간이 초과되었습니다.",
     timeoutDescription:
       "Calibre 연결이 너무 오래 걸리고 있습니다. 잠시 후 다시 시도하거나 서버를 재시작해 주세요.",
@@ -102,6 +103,10 @@ const ko: Translations = {
     resumeReadingConfirmModal: {
       title: "이어 읽기",
       message: "읽던 페이지가 있습니다. 이어서 읽으시겠습니까?",
+    },
+    viewerRatingModal: {
+      title: "이 책 평가",
+      message: "이 책을 평가해 주세요.",
     },
   },
   rating: {

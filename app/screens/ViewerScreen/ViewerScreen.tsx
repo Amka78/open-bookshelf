@@ -1,6 +1,7 @@
 import { BookPage, BookViewer, type RenderPageProps } from "@/components"
 import useOrientation from "@/hooks/useOrientation"
 import { useStores } from "@/models"
+import type { Metadata } from "@/models/calibre"
 import type { ApppNavigationProp } from "@/navigators"
 import { isRemoteBookImagePath } from "@/utils/bookImageCache"
 import { logger } from "@/utils/logger"
@@ -16,6 +17,7 @@ export const ViewerScreen: FC = observer(() => {
   const [initialPage, setInitialPage] = useState(0)
   const [viewerReady, setViewerReady] = useState(false)
   const handledPromptKeyRef = useRef<string | undefined>()
+  const handledRatingPromptKeyRef = useRef<string | undefined>()
   const navigation = useNavigation<ApppNavigationProp>()
   const modal = useModal<ModalStackParams>()
   const selectedLibrary = calibreRootStore.selectedLibrary
@@ -115,10 +117,32 @@ export const ViewerScreen: FC = observer(() => {
       renderPage={renderPage}
       totalPage={totalPage}
       initialPage={initialPage}
-      onPageChange={(page) => {
+      onPageChange={async (page) => {
         if (history?.currentPage !== page) {
           history?.setCurrentPage(page)
         }
+
+        const isLastPage = totalPage > 0 && page >= totalPage - 1
+        if (!isLastPage || handledRatingPromptKeyRef.current === promptKey) {
+          return
+        }
+
+        handledRatingPromptKeyRef.current = promptKey
+        modal.openModal("ViewerRatingModal", {
+          initialRating: selectedBook.metaData.rating ?? 0,
+          onSubmit: async (rating: number) => {
+            const result = await selectedBook.update(selectedLibrary.id, { rating } as Metadata, [
+              "rating",
+            ])
+
+            if (!result) {
+              modal.openModal("ErrorModal", {
+                titleTx: "common.error",
+                message: "Failed to update rating.",
+              })
+            }
+          },
+        })
       }}
     />
   )

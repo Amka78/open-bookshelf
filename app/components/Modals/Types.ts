@@ -45,4 +45,8 @@ export type ModalStackParams = {
     intervalMs: number
     onSave: (intervalMs: number) => void
   }
+  ViewerRatingModal: {
+    initialRating: number
+    onSubmit: (rating: number) => void | Promise<void>
+  }
 }

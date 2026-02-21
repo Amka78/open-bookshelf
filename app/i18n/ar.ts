@@ -27,6 +27,7 @@ const ar: Translations = {
     canNotConnectDescription:
       "لا يمكن الاتصال بـ Calibre. يرجى التحقق من صحة الرابط وأن الخادم يعمل.",
     failedConvert: "خطأ في تحويل الكتاب",
+    failedRating: "فشل تحديث التقييم.",
     timeout: "انتهت مهلة الاتصال مع Calibre.",
     timeoutDescription:
       "استغرق الاتصال بـ Calibre وقتًا طويلًا. يرجى الانتظار قليلًا قبل إعادة المحاولة أو إعادة تشغيل الخادم.",
@@ -102,6 +103,10 @@ const ar: Translations = {
     resumeReadingConfirmModal: {
       title: "متابعة القراءة",
       message: "لديك كتاب غير مكتمل. هل تريد المتابعة من حيث توقفت؟",
+    },
+    viewerRatingModal: {
+      title: "تقييم هذا الكتاب",
+      message: "يرجى تقييم هذا الكتاب.",
     },
   },
   rating: {

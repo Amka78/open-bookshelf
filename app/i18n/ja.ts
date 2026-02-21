@@ -27,6 +27,7 @@ const ja: Translations = {
     canNotConnectDescription:
       "Calibre に接続できません。URL が正しいか、Calibre サーバーが稼働しているか確認してください。",
     failedConvert: "書籍変換エラー",
+    failedRating: "評価の更新に失敗しました。",
     timeout: "Calibre との接続がタイムアウトしました。",
     timeoutDescription:
       "Calibre との接続に時間がかかっています。少し待ってから再接続するか、サーバーを再起動してください。",
@@ -103,6 +104,10 @@ const ja: Translations = {
     resumeReadingConfirmModal: {
       title: "続きから読む",
       message: "読みかけの本です。続きから読みますか？",
+    },
+    viewerRatingModal: {
+      title: "この本の評価",
+      message: "この本を評価してください。",
     },
   },
   rating: {

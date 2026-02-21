@@ -25,6 +25,7 @@ const en = {
     canNotConnectDescription:
       "Can't connect to Calibre, please check URL is correct and Calibre server is working.",
     failedConvert: "Book conversion error",
+    failedRating: "Failed to update rating.",
     timeout: "Connection with Calibre timed out.",
     timeoutDescription:
       "The connection with Calibre is taking too long. Please wait a few moments before connecting or restart the server.",
@@ -100,6 +101,10 @@ const en = {
     resumeReadingConfirmModal: {
       title: "Resume reading",
       message: "You have unfinished progress. Continue from where you left off?",
+    },
+    viewerRatingModal: {
+      title: "Rate this book",
+      message: "Please rate this book.",
     },
   },
   rating: {
