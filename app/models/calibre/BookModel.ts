@@ -115,48 +115,16 @@ export const BookModel = types
       yield onPostConvert()
     }),
     update: flow(function* (libraryId: string, updateInfo: Metadata, updateField: string[]) {
-      const changes: Record<string, unknown> = {}
+      const changes = {}
 
-      const loaded_book_ids: number[] = []
-
-      const rootParent = getParent(root) as unknown
-      const parentAny = rootParent as {
-        values?: () => Iterable<Book>
-        forEach?: (callback: (book: Book) => void) => void
-      }
-
-      if (typeof parentAny.values === "function") {
-        for (const book of parentAny.values()) {
-          if (typeof book?.id === "number") {
-            loaded_book_ids.push(book.id)
-          }
-        }
-      } else if (typeof parentAny.forEach === "function") {
-        parentAny.forEach((book) => {
-          if (typeof book?.id === "number") {
-            loaded_book_ids.push(book.id)
-          }
-        })
-      } else {
-        Object.values(rootParent as Record<string, Book>).forEach((book) => {
-          if (typeof book?.id === "number") {
-            loaded_book_ids.push(book.id)
-          }
-        })
-      }
-
-      if (loaded_book_ids.length === 0) {
-        loaded_book_ids.push(root.id)
-      }
-
+      const rootParent = getParent(root) as Array<Book>
       updateField.map((field: string) => {
         root.metaData[field] = updateInfo[field]
         changes[camelCaseToLowerCase(field)] = updateInfo[field]
       })
       const response = yield api.editBook(libraryId, root.id, {
-        // biome-ignore lint/suspicious/noExplicitAny: API contract accepts dynamic changed fields.
-        changes: changes as any,
-        loaded_book_ids,
+        changes,
+        loaded_book_ids: [root.id, ...loaded_book_ids],
       })
       if (response.kind === "ok") {
         updateField.map((field: string) => {

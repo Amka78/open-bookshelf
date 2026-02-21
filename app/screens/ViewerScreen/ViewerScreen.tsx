@@ -121,9 +121,9 @@ export const ViewerScreen: FC = observer(() => {
         if (history?.currentPage !== page) {
           history?.setCurrentPage(page)
         }
-
-        const isLastPage = totalPage > 0 && page >= totalPage - 1
-        if (!isLastPage || handledRatingPromptKeyRef.current === promptKey) {
+      }}
+      onLastPage={() => {
+        if (handledRatingPromptKeyRef.current === promptKey) {
           return
         }
 

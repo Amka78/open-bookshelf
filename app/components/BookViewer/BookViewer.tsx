@@ -32,6 +32,7 @@ export type BookViewerProps = {
   renderPage: (props: RenderPageProps) => React.ReactNode
   bookTitle: string
   onPageChange?: (page: number) => void
+  onLastPage?: () => void
   initialPage?: number
 }
 
@@ -51,6 +52,7 @@ export function BookViewer(props: BookViewerProps) {
     settingStore.autoPageTurnIntervalMs,
   )
   const initialPageAppliedRef = useRef(false)
+  const lastPageNotifiedKeyRef = useRef<string>()
   const navigation = useNavigation<ApppNavigationProp>()
   const isWeb = Platform.OS === "web"
 
@@ -237,6 +239,26 @@ export function BookViewer(props: BookViewerProps) {
   useEffect(() => {
     props.onPageChange?.(currentPage)
   }, [currentPage, props.onPageChange])
+
+  useEffect(() => {
+    if (!pages) return
+
+    const totalPageCount = pages[viewerHook.readingStyle].length
+    if (totalPageCount <= 0) return
+
+    if (scrollIndex >= totalPageCount - 1) {
+      const lastPageKey = `${viewerHook.readingStyle}:${scrollIndex}:${totalPageCount}`
+      if (lastPageNotifiedKeyRef.current === lastPageKey) {
+        return
+      }
+
+      lastPageNotifiedKeyRef.current = lastPageKey
+      props.onLastPage?.()
+      return
+    }
+
+    lastPageNotifiedKeyRef.current = undefined
+  }, [pages, props.onLastPage, scrollIndex, viewerHook.readingStyle])
 
   return (
     <GradientBackground
