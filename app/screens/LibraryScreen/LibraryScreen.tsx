@@ -7,10 +7,12 @@ import {
   FlatList,
   HStack,
   IconButton,
+  Input,
   LeftSideMenu,
   LibraryViewButton,
   SortMenu,
   StaggerContainer,
+  Text,
 } from "@/components"
 import type { ModalStackParams } from "@/components/Modals/Types"
 import { useConvergence } from "@/hooks/useConvergence"
@@ -26,11 +28,12 @@ import { useIsFocused, useNavigation } from "@react-navigation/native"
 import { values } from "mobx"
 import { observer } from "mobx-react-lite"
 import type React from "react"
-import { type FC, useLayoutEffect, useRef } from "react"
+import { type FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Platform, useWindowDimensions } from "react-native"
 import { useModal } from "react-native-modalfy"
 import type { SearchBarCommands } from "react-native-screens"
 import { useLibrary } from "./hook/useLibrary"
+import { InputField } from "@/components/InputField/InputField"
 
 export const LibraryScreen: FC = observer(() => {
   const { authenticationStore, calibreRootStore } = useStores()
@@ -49,13 +52,112 @@ export const LibraryScreen: FC = observer(() => {
   const libraryHook = useLibrary()
 
   const searchBar = useRef<SearchBarCommands>()
+  const [headerSearchText, setHeaderSearchText] = useState(
+    selectedLibrary?.searchSetting?.query ?? "",
+  )
+
+  const searchParameterCandidates = useMemo(() => {
+    if (!selectedLibrary) {
+      return [] as string[]
+    }
+
+    const terms = Array.from(selectedLibrary.fieldMetadataList.values())
+      .flatMap((metadata) => metadata.searchTerms.slice())
+      .filter((term) => term && term !== "all")
+
+    return Array.from(new Set(terms))
+  }, [selectedLibrary])
+
+  const completeSearchParameter = useCallback(
+    (text: string) => {
+      const lastSpaceIndex = text.lastIndexOf(" ")
+      const prefixText = lastSpaceIndex >= 0 ? text.slice(0, lastSpaceIndex + 1) : ""
+      const token = lastSpaceIndex >= 0 ? text.slice(lastSpaceIndex + 1) : text
+
+      if (!token.endsWith(":")) {
+        return text
+      }
+
+      const rawParameter = token.slice(0, -1).toLowerCase()
+      if (!rawParameter) {
+        return text
+      }
+
+      const matches = searchParameterCandidates.filter((candidate) => {
+        return candidate.toLowerCase().startsWith(rawParameter)
+      })
+
+      if (matches.length !== 1) {
+        return text
+      }
+
+      return `${prefixText}${matches[0]}:=`
+    },
+    [searchParameterCandidates],
+  )
+
+  useEffect(() => {
+    setHeaderSearchText(selectedLibrary?.searchSetting?.query ?? "")
+  }, [selectedLibrary?.searchSetting?.query])
 
   const search = async () => {
     await calibreRootStore.searchLibrary()
   }
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  const libraryActions = useMemo(() => {
+    return (
+      <>
+        <AuthButton
+          mode={authenticationStore.isAuthenticated ? "logout" : "login"}
+          onLoginPress={() => {
+            modal.openModal("LoginModal", {
+              onLoginPress: () => {
+                navigation.navigate("Connect")
+              },
+            })
+          }}
+          onLogoutPress={() => {
+            authenticationStore.logout()
+            navigation.navigate("Connect")
+          }}
+        />
+        <AddFileButton
+          onDocumentSelect={async (documents) => {
+            await libraryHook.onUploadFile(documents)
+          }}
+        />
+        <LibraryViewButton
+          mode={libraryHook.currentListStyle}
+          onPress={libraryHook.onChangeListStyle}
+        />
+        <SortMenu
+          selectedSort={selectedLibrary?.searchSetting?.sort}
+          selectedSortOrder={selectedLibrary?.searchSetting?.sortOrder}
+          field={selectedLibrary?.sortField}
+          onSortChange={(val) => {
+            libraryHook.onSort(val)
+          }}
+        />
+      </>
+    )
+  }, [
+    authenticationStore,
+    authenticationStore.isAuthenticated,
+    libraryHook,
+    libraryHook.currentListStyle,
+    modal,
+    navigation,
+    selectedLibrary,
+    selectedLibrary?.searchSetting?.sort,
+    selectedLibrary?.searchSetting?.sortOrder,
+    selectedLibrary?.sortField,
+  ])
+
   useLayoutEffect(() => {
+    const headerTitleText = selectedLibrary?.searchSetting?.query
+      ? selectedLibrary.searchSetting.query
+      : calibreRootStore.selectedLibrary?.id
+
     navigation.setOptions({
       headerLeft: (props) => {
         return (
@@ -72,9 +174,38 @@ export const LibraryScreen: FC = observer(() => {
           />
         )
       },
-      headerTitle: selectedLibrary?.searchSetting?.query
-        ? selectedLibrary?.searchSetting?.query
-        : calibreRootStore.selectedLibrary?.id,
+      headerTitle: convergenceHook.isLarge
+        ? () => {
+            return (
+              <HStack alignItems="center">
+                <Text>{headerTitleText}</Text>
+                <Box w={260} ml={8}>
+                  <Input size="sm">
+                    <InputField
+                      value={headerSearchText}
+                      onChangeText={(text) => {
+                        setHeaderSearchText(completeSearchParameter(text))
+                      }}
+                      textAlign="left"
+                      onSubmitEditing={() => {
+                        libraryHook.onSearch(headerSearchText)
+                      }}
+                      returnKeyType="search"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      clearButtonMode="while-editing"
+                    />
+                  </Input>
+                </Box>
+              </HStack>
+            )
+          }
+        : headerTitleText,
+      headerRight: convergenceHook.isLarge
+        ? () => {
+            return <HStack space="sm">{libraryActions}</HStack>
+          }
+        : undefined,
       headerSearchBarOptions: {
         hideWhenScrolling: false,
 
@@ -82,6 +213,12 @@ export const LibraryScreen: FC = observer(() => {
         onSearchButtonPress: (e) => {
           libraryHook.onSearch(e.nativeEvent.text)
           searchBar.current.blur()
+        },
+        onChangeText: (e) => {
+          const completedText = completeSearchParameter(e.nativeEvent.text)
+          if (completedText !== e.nativeEvent.text) {
+            searchBar.current.setText(completedText)
+          }
         },
         onOpen: () => {
           if (selectedLibrary.searchSetting?.query) {
@@ -93,7 +230,18 @@ export const LibraryScreen: FC = observer(() => {
         },
       },
     })
-  }, [navigation, selectedLibrary?.searchSetting])
+  }, [
+    calibreRootStore.selectedLibrary?.id,
+    convergenceHook.isLarge,
+    completeSearchParameter,
+    headerSearchText,
+    libraryHook,
+    libraryActions,
+    navigation,
+    selectedLibrary,
+    selectedLibrary?.searchSetting,
+    selectedLibrary?.searchSetting?.query,
+  ])
 
   const renderItem = ({ item }: { item: Book }) => {
     const onPress = async () => {
@@ -307,44 +455,9 @@ export const LibraryScreen: FC = observer(() => {
           preparing={libraryHook.searching}
         />
       ) : null}
-      <StaggerContainer
-        menusHeight={230}
-        menus={
-          <>
-            <AuthButton
-              mode={authenticationStore.isAuthenticated ? "logout" : "login"}
-              onLoginPress={() => {
-                modal.openModal("LoginModal", {
-                  onLoginPress: () => {
-                    navigation.navigate("Connect")
-                  },
-                })
-              }}
-              onLogoutPress={() => {
-                authenticationStore.logout()
-                navigation.navigate("Connect")
-              }}
-            />
-            <AddFileButton
-              onDocumentSelect={async (documents) => {
-                await libraryHook.onUploadFile(documents)
-              }}
-            />
-            <LibraryViewButton
-              mode={libraryHook.currentListStyle}
-              onPress={libraryHook.onChangeListStyle}
-            />
-            <SortMenu
-              selectedSort={selectedLibrary?.searchSetting?.sort}
-              selectedSortOrder={selectedLibrary?.searchSetting?.sortOrder}
-              field={selectedLibrary?.sortField}
-              onSortChange={(val) => {
-                libraryHook.onSort(val)
-              }}
-            />
-          </>
-        }
-      />
+      {convergenceHook.isLarge ? null : (
+        <StaggerContainer menusHeight={230} menus={libraryActions} />
+      )}
     </>
   )
 
