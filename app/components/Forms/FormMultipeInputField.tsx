@@ -8,24 +8,41 @@ export type FormMultipleInputFiledProps<T> = Omit<InputFieldProps, "onChangeText
     valueToText: string
   }
 export function FormMultipleInputField<T>(props: FormMultipleInputFiledProps<T>) {
+  const {
+    control,
+    name,
+    rules,
+    shouldUnregister,
+    defaultValue,
+    disabled,
+    textToValue,
+    valueToText,
+    ...inputProps
+  } = props
+
   return (
     <Controller
-      {...props}
+      control={control}
+      name={name}
+      rules={rules}
+      shouldUnregister={shouldUnregister}
+      defaultValue={defaultValue}
+      disabled={disabled}
       render={(renderProps) => {
-        const value = renderProps.field.value
-          ? renderProps.field.value.join(props.valueToText)
-          : undefined
+        const parsedSeparator = textToValue ?? ","
+        const displaySeparator = valueToText ?? ", "
+        const value = Array.isArray(renderProps.field.value)
+          ? renderProps.field.value.join(displaySeparator)
+          : ""
+
         return (
           <InputField
-            {...props}
+            {...inputProps}
             onChangeText={(text) => {
-              const splitted = text.split(props.textToValue)
+              const splitted = parsedSeparator === "" ? [text] : text.split(parsedSeparator)
+              const normalized = splitted.map((entry) => entry.trim()).filter(Boolean)
 
-              if (splitted.length === 1 && splitted[0] === "") {
-                renderProps.field.onChange(undefined)
-              } else {
-                renderProps.field.onChange(splitted)
-              }
+              renderProps.field.onChange(normalized)
             }}
             onBlur={renderProps.field.onBlur}
             value={value}

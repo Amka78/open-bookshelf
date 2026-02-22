@@ -21,6 +21,7 @@ export const BookEditScreen: FC = observer(() => {
       book={selectedBook}
       fieldMetadataList={selectedLibrary.fieldMetadataList}
       onSubmitPress={(query) => {
+        selectedBook.update(selectedLibrary.id, query, Object.keys(query))
         navigation.goBack()
       }}
     />

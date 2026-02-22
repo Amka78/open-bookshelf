@@ -124,7 +124,7 @@ export const BookModel = types
       })
       const response = yield api.editBook(libraryId, root.id, {
         changes,
-        loaded_book_ids: [root.id, ...loaded_book_ids],
+        loaded_book_ids: [root.id],
       })
       if (response.kind === "ok") {
         updateField.map((field: string) => {

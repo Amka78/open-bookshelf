@@ -66,12 +66,7 @@ export function BookEditField(props: BookEditFieldProps) {
       break
   }
   return (
-    <VStack
-      key={props.fieldMetadata.label}
-      alignItems="flex-start"
-      space={"sm"}
-      marginBottom={"$2.5"}
-    >
+    <VStack alignItems="flex-start" space={"sm"} marginBottom={"$2.5"}>
       <Text isTruncated={true} fontWeight="$bold">
         {props.fieldMetadata.name}
       </Text>
