@@ -7,14 +7,14 @@ import {
   Text,
   VStack,
 } from "@/components"
-import type { Book } from "@/models/CalibreRootStore"
-import type { FieldMetadata, Metadata } from "@/models/calibre"
+import type { Book, FieldMetadata, Metadata } from "@/models/calibre"
 import type { Control } from "react-hook-form"
 
 export type BookEditFieldProps = {
   book: Book
   fieldMetadata: FieldMetadata
   control: Control<Metadata, unknown>
+  suggestions?: string[]
 }
 
 export function BookEditField(props: BookEditFieldProps) {
@@ -50,6 +50,7 @@ export function BookEditField(props: BookEditFieldProps) {
               name={label}
               textToValue={props.fieldMetadata.isMultiple.uiToList}
               valueToText={props.fieldMetadata.isMultiple.listToUi}
+              suggestions={props.suggestions}
               width={"$full"}
             />
           </Input>
@@ -57,7 +58,12 @@ export function BookEditField(props: BookEditFieldProps) {
       } else {
         field = (
           <Input height={"$8"} width={"$full"}>
-            <FormInputField control={props.control} name={label} width={"$full"} />
+            <FormInputField
+              control={props.control}
+              name={label}
+              suggestions={props.suggestions}
+              width={"$full"}
+            />
           </Input>
         )
       }

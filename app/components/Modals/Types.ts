@@ -1,5 +1,5 @@
 import type { MessageKey } from "@/i18n"
-import type { Book, FieldMetadataMap, Metadata } from "@/models/calibre"
+import type { Book, Category, FieldMetadataMap, Metadata } from "@/models/calibre"
 import type { LoginType } from "./LoginModal"
 export type ModalStackParams = {
   ConfirmModal: {
@@ -39,6 +39,7 @@ export type ModalStackParams = {
     imageUrl: string
     selectedBook?: Book
     fieldMetadataList?: FieldMetadataMap
+    tagBrowser?: Category[]
     onOKPress?: (value: Metadata, editFields: string[]) => void
   }
   ViewerAutoPageTurnSettingModal: {

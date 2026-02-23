@@ -20,6 +20,7 @@ export const BookEditScreen: FC = observer(() => {
       imageUrl={route.params.imageUrl}
       book={selectedBook}
       fieldMetadataList={selectedLibrary.fieldMetadataList}
+      tagBrowser={selectedLibrary.tagBrowser}
       onSubmitPress={(query) => {
         selectedBook.update(selectedLibrary.id, query, Object.keys(query))
         navigation.goBack()

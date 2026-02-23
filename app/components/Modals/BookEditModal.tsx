@@ -26,6 +26,7 @@ export const BookEditModal = observer((props: BookEditModalProps) => {
           ...props.modal.params,
           selectedBook: selectedBook,
           fieldMetadataList: selectedLibrary.fieldMetadataList,
+          tagBrowser: selectedLibrary.tagBrowser,
           onOKPress(value, updateFields) {
             selectedBook.update(selectedLibrary.id, value, updateFields)
             props.modal.closeModal()
@@ -63,6 +64,7 @@ export function BookEditModalTemplate(props: BookEditModalProps) {
             book={props.modal.params.selectedBook}
             control={form.control}
             fieldMetadataList={props.modal.params.fieldMetadataList}
+            tagBrowser={props.modal.params.tagBrowser}
             height={320}
             width={240}
           />

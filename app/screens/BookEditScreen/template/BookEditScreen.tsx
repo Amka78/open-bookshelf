@@ -7,8 +7,7 @@ import {
   VStack,
 } from "@/components"
 import { useConvergence } from "@/hooks/useConvergence"
-import type { Book } from "@/models/CalibreRootStore"
-import type { FieldMetadataMap, Metadata } from "@/models/calibre"
+import type { Book, Category, FieldMetadataMap, Metadata } from "@/models/calibre"
 import type { ApppNavigationProp } from "@/navigators"
 import { useNavigation } from "@react-navigation/native"
 import { useForm } from "react-hook-form"
@@ -16,6 +15,7 @@ import { useLayoutEffect } from "react"
 export type BookEditScreenProps = {
   book: Book
   fieldMetadataList: FieldMetadataMap
+  tagBrowser: Category[]
   imageUrl: string
   onSubmitPress: (data: Metadata) => void
 }
@@ -41,11 +41,12 @@ export function BookEditScreen(props: BookEditScreenProps) {
   return (
     <RootContainer alignItems="center">
       <VStack justifyContent="flex-start" flex={1}>
-        <FormImageUploader control={form.control} name={"image"} defaultValue={props.imageUrl} />
+        <FormImageUploader control={form.control} name={"cover"} defaultValue={props.imageUrl} />
         <BookEditFieldList
           book={props.book}
           control={form.control}
           fieldMetadataList={props.fieldMetadataList}
+          tagBrowser={props.tagBrowser}
           marginTop={"$3"}
         />
       </VStack>
