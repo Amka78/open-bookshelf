@@ -9,7 +9,7 @@ import {
 
 import { camelCaseToLowerCase, lowerCaseToCamelCase } from "@/utils/convert"
 import { delay } from "@/utils/delay"
-import { type ApiBookManifestResultType, api } from "../../services/api"
+import { type ApiBookManifestResultType, type CommonFieldName, api } from "../../services/api"
 import { type Metadata, MetadataModel, type ReadingHistory } from "../calibre"
 import { handleCommonApiError } from "../errors/errors"
 import { withSetPropAction } from "../helpers/withSetPropAction"
@@ -115,15 +115,22 @@ export const BookModel = types
       yield onPostConvert()
     }),
     update: flow(function* (libraryId: string, updateInfo: Metadata, updateField: string[]) {
-      const changes = {}
+      const changes: Partial<Record<CommonFieldName, unknown>> = {}
 
       const rootParent = getParent(root) as Array<Book>
       updateField.map((field: string) => {
         root.metaData[field] = updateInfo[field]
-        changes[camelCaseToLowerCase(field)] = updateInfo[field]
+        const fieldValue = updateInfo[field]
+        const apiField = camelCaseToLowerCase(field) as CommonFieldName
+        changes[apiField] = Array.isArray(fieldValue)
+          ? fieldValue
+              .map((entry) => `${entry}`.trim())
+              .filter(Boolean)
+              .join("\n")
+          : fieldValue
       })
       const response = yield api.editBook(libraryId, root.id, {
-        changes,
+        changes: changes as Record<CommonFieldName, unknown>,
         loaded_book_ids: [root.id],
       })
       if (response.kind === "ok") {

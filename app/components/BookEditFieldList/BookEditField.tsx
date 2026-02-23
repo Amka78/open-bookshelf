@@ -44,16 +44,14 @@ export function BookEditField(props: BookEditFieldProps) {
     case "text":
       if (props.fieldMetadata.isMultiple) {
         field = (
-          <Input height={"$8"} width={"$full"}>
-            <FormMultipleInputField
-              control={props.control}
-              name={label}
-              textToValue={props.fieldMetadata.isMultiple.uiToList}
-              valueToText={props.fieldMetadata.isMultiple.listToUi}
-              suggestions={props.suggestions}
-              width={"$full"}
-            />
-          </Input>
+          <FormMultipleInputField
+            control={props.control}
+            name={label}
+            textToValue={props.fieldMetadata.isMultiple.uiToList}
+            valueToText={props.fieldMetadata.isMultiple.listToUi}
+            suggestions={props.suggestions}
+            width={"$full"}
+          />
         )
       } else {
         field = (

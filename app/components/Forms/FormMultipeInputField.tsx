@@ -1,4 +1,4 @@
-import { Box, Text } from "@/components"
+import { Box, HStack, IconButton, Input, Text, VStack } from "@/components"
 import { Popover, PopoverBody, PopoverContent, Pressable } from "@gluestack-ui/themed"
 import { useMemo, useState } from "react"
 import { Controller, type ControllerProps } from "react-hook-form"
@@ -14,6 +14,7 @@ export type FormMultipleInputFiledProps<T> = Omit<InputFieldProps, "onChangeText
   }
 export function FormMultipleInputField<T>(props: FormMultipleInputFiledProps<T>) {
   const [isSuggestionOpen, setIsSuggestionOpen] = useState(false)
+  const [activeRowIndex, setActiveRowIndex] = useState<number | null>(null)
 
   const openSuggestion = () => {
     setIsSuggestionOpen((previous) => (previous ? previous : true))
@@ -21,6 +22,7 @@ export function FormMultipleInputField<T>(props: FormMultipleInputFiledProps<T>)
 
   const closeSuggestion = () => {
     setIsSuggestionOpen((previous) => (previous ? false : previous))
+    setActiveRowIndex(null)
   }
 
   const {
@@ -31,7 +33,6 @@ export function FormMultipleInputField<T>(props: FormMultipleInputFiledProps<T>)
     defaultValue,
     disabled,
     textToValue,
-    valueToText,
     suggestions,
     ...inputProps
   } = props
@@ -61,18 +62,22 @@ export function FormMultipleInputField<T>(props: FormMultipleInputFiledProps<T>)
       disabled={disabled}
       render={(renderProps) => {
         const parsedSeparator = textToValue ?? ","
-        const displaySeparator = valueToText ?? ", "
-        const values = Array.isArray(renderProps.field.value) ? renderProps.field.value : []
-        const selectedValueSet = new Set(values)
-        const value = Array.isArray(renderProps.field.value) ? values.join(displaySeparator) : ""
-        const currentToken =
-          parsedSeparator === ""
-            ? value.trim().toLowerCase()
-            : value.split(parsedSeparator).at(-1)?.trim().toLowerCase() ?? ""
+        const values = Array.isArray(renderProps.field.value)
+          ? renderProps.field.value.map((entry) => (typeof entry === "string" ? entry : ""))
+          : []
+        const displayRows = values.length > 0 ? values : [""]
+        const selectedValueSet = new Set(
+          values.map((entry) => entry.trim()).filter((entry) => entry.length > 0),
+        )
+        const focusedRowValue =
+          activeRowIndex !== null && activeRowIndex >= 0 && activeRowIndex < displayRows.length
+            ? displayRows[activeRowIndex]
+            : ""
+        const currentToken = focusedRowValue.trim().toLowerCase()
 
         const candidateValues: string[] = []
         let hasExactMatch = false
-        if (isSuggestionOpen) {
+        if (isSuggestionOpen && activeRowIndex !== null) {
           for (const suggestion of normalizedSuggestions) {
             if (currentToken.length > 0 && suggestion.lowerCaseValue === currentToken) {
               hasExactMatch = true
@@ -95,70 +100,121 @@ export function FormMultipleInputField<T>(props: FormMultipleInputFiledProps<T>)
         }
         const isOpen = candidateValues.length > 0 && isSuggestionOpen && !hasExactMatch
 
-        return (
-          <Popover
-            placement="bottom left"
-            trigger={(triggerProps) => {
-              return (
-                <Box {...triggerProps} width={inputProps.width ?? "$full"}>
-                  <InputField
-                    {...inputProps}
-                    onChangeText={(text) => {
-                      const splitted = parsedSeparator === "" ? [text] : text.split(parsedSeparator)
-                      const normalized = splitted.map((entry) => entry.trim()).filter(Boolean)
+        const commitRows = (nextRows: string[]) => {
+          const normalized = nextRows.map((entry) => (typeof entry === "string" ? entry : ""))
+          renderProps.field.onChange(normalized)
+        }
 
-                      renderProps.field.onChange(normalized)
-                    }}
-                    onFocus={() => {
-                      openSuggestion()
-                    }}
-                    onBlur={() => {
-                      renderProps.field.onBlur()
-                      closeSuggestion()
-                    }}
-                    value={value}
-                    ref={renderProps.field.ref}
-                  />
-                </Box>
-              )
-            }}
-            isOpen={isOpen}
-            trapFocus={false}
-            focusScope={false}
-            onClose={closeSuggestion}
-            offset={4}
-          >
-            <PopoverContent
-              minWidth={inputProps.width ?? "$full"}
-              width={inputProps.width ?? "$full"}
-            >
-              <PopoverBody>
-                <Box>
-                  {candidateValues.map((candidate) => (
-                    <Pressable
-                      key={`${String(name)}-${candidate}`}
-                      onPress={() => {
-                        renderProps.field.onChange([...values, candidate])
-                        closeSuggestion()
-                      }}
-                    >
-                      <Box
-                        borderWidth="$1"
-                        borderRadius="$sm"
-                        paddingHorizontal="$2"
-                        paddingVertical="$1"
-                        marginBottom="$1"
-                      >
-                        <Text fontSize="$sm" isTruncated={true}>
-                          {candidate}
-                        </Text>
+        return (
+          <VStack width={inputProps.width ?? "$full"}>
+            {displayRows.map((rowValue, index) => (
+              <HStack
+                key={`${String(name)}-row-${index}`}
+                alignItems="center"
+                marginBottom={index === displayRows.length - 1 ? undefined : "sm"}
+              >
+                <Popover
+                  placement="bottom left"
+                  trigger={(triggerProps) => {
+                    return (
+                      <Box {...triggerProps} flex={1}>
+                        <Input width={inputProps.width ?? "$full"}>
+                          <InputField
+                            {...inputProps}
+                            onChangeText={(text) => {
+                              const sourceRows = values.length > 0 ? [...values] : [""]
+
+                              if (parsedSeparator === "") {
+                                sourceRows[index] = text
+                                commitRows(sourceRows)
+                                return
+                              }
+
+                              const splitted = text
+                                .split(parsedSeparator)
+                                .map((entry) => entry.trim())
+                                .filter(Boolean)
+
+                              sourceRows.splice(index, 1, ...splitted)
+                              commitRows(sourceRows)
+                            }}
+                            onFocus={() => {
+                              setActiveRowIndex(index)
+                              openSuggestion()
+                            }}
+                            onBlur={() => {
+                              renderProps.field.onBlur()
+                              closeSuggestion()
+                            }}
+                            value={rowValue}
+                            ref={index === 0 ? renderProps.field.ref : undefined}
+                          />
+                        </Input>
                       </Box>
-                    </Pressable>
-                  ))}
-                </Box>
-              </PopoverBody>
-            </PopoverContent>
-          </Popover>
+                    )
+                  }}
+                  isOpen={isOpen && activeRowIndex === index}
+                  trapFocus={false}
+                  focusScope={false}
+                  onClose={closeSuggestion}
+                  offset={4}
+                >
+                  <PopoverContent
+                    minWidth={inputProps.width ?? "$full"}
+                    width={inputProps.width ?? "$full"}
+                  >
+                    <PopoverBody>
+                      <Box>
+                        {candidateValues.map((candidate) => (
+                          <Pressable
+                            key={`${String(name)}-${candidate}`}
+                            onPress={() => {
+                              const sourceRows = values.length > 0 ? [...values] : [""]
+                              sourceRows[index] = candidate
+                              commitRows(sourceRows)
+                              closeSuggestion()
+                            }}
+                          >
+                            <Box
+                              borderWidth="$1"
+                              borderRadius="$sm"
+                              paddingHorizontal="sm"
+                              paddingVertical="xs"
+                              marginBottom="xs"
+                            >
+                              <Text fontSize="$sm" isTruncated={true}>
+                                {candidate}
+                              </Text>
+                            </Box>
+                          </Pressable>
+                        ))}
+                      </Box>
+                    </PopoverBody>
+                  </PopoverContent>
+                </Popover>
+                <IconButton
+                  name="plus"
+                  iconSize="sm"
+                  onPress={async () => {
+                    const sourceRows = values.length > 0 ? [...values] : [""]
+                    sourceRows.splice(index + 1, 0, "")
+                    commitRows(sourceRows)
+                  }}
+                />
+                {displayRows.length > 1 ? (
+                  <IconButton
+                    name="minus"
+                    iconSize="sm"
+                    onPress={async () => {
+                      const sourceRows = values.length > 0 ? [...values] : [""]
+                      sourceRows.splice(index, 1)
+                      commitRows(sourceRows)
+                    }}
+                  />
+                ) : null}
+              </HStack>
+            ))}
+          </VStack>
         )
       }}
     />
