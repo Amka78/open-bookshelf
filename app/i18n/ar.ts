@@ -14,6 +14,7 @@ const ar: Translations = {
   },
   bookEditScreen: {
     save: "حفظ",
+    authorSortAutoTooltip: "إنشاء author_sort تلقائيًا من المؤلفين",
   },
   errorScreen: {
     title: "هناك خطأ ما",

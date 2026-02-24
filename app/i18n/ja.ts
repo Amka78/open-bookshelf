@@ -14,6 +14,7 @@ const ja: Translations = {
   },
   bookEditScreen: {
     save: "保存",
+    authorSortAutoTooltip: "著者から author_sort を自動生成",
   },
   errorScreen: {
     title: "問題が発生しました",
