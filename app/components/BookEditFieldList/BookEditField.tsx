@@ -8,23 +8,26 @@ import {
   VStack,
 } from "@/components"
 import type { Book, FieldMetadata, Metadata } from "@/models/calibre"
-import type { Control } from "react-hook-form"
+import type { ComponentProps } from "react"
+import type { Control, Path } from "react-hook-form"
 
 export type BookEditFieldProps = {
   book: Book
   fieldMetadata: FieldMetadata
   control: Control<Metadata, unknown>
   suggestions?: string[]
+  containerProps?: ComponentProps<typeof VStack>
 }
 
 export function BookEditField(props: BookEditFieldProps) {
   let field: React.ReactNode
 
-  const label = props.fieldMetadata.label
+  const label = props.fieldMetadata.label as Path<Metadata>
   switch (props.fieldMetadata.datatype) {
     case "rating":
       field = <FormRatingGroup control={props.control} name={label} max={10} />
       break
+    case "int":
     case "float":
       field = (
         <Input>
@@ -70,7 +73,7 @@ export function BookEditField(props: BookEditFieldProps) {
       break
   }
   return (
-    <VStack alignItems="flex-start" space={"sm"} marginBottom={"$2.5"}>
+    <VStack alignItems="flex-start" space={"sm"} marginBottom={"$2.5"} {...props.containerProps}>
       <Text isTruncated={true} fontWeight="$bold">
         {props.fieldMetadata.name}
       </Text>

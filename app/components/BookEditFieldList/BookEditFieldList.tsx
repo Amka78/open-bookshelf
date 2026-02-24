@@ -1,8 +1,8 @@
-import { Box, ScrollView } from "@/components"
+import { Box, FormInputField, HStack, Input, ScrollView, Text, VStack } from "@/components"
 import type { Book, Category, FieldMetadataMap, Metadata } from "@/models/calibre"
 import { lowerCaseToCamelCase } from "@/utils/convert"
 import { useMemo, type ComponentProps } from "react"
-import type { Control } from "react-hook-form"
+import type { Control, Path } from "react-hook-form"
 import { BookEditField } from "./BookEditField"
 
 export type BookEditFieldListProps = {
@@ -55,6 +55,35 @@ export function BookEditFieldList(props: BookEditFieldListProps) {
     const value = props.fieldMetadataList.get(label)
     if (!value || !value.isEditable || !value.name) {
       return null
+    }
+
+    if (label === "series") {
+      const seriesIndexName = "seriesIndex" as Path<Metadata>
+      const seriesName = value.label as Path<Metadata>
+
+      return (
+        <HStack key={`${value.label}-seriesIndex`} space="sm" alignItems="flex-start" width="$full">
+          <VStack alignItems="flex-start" space={"sm"} marginBottom={"$2.5"} flex={1} width="$full">
+            <Text isTruncated={true} fontWeight="$bold">
+              {value.name}
+            </Text>
+            <Input>
+              <FormInputField
+                control={props.control}
+                name={seriesName}
+                suggestions={suggestionMap.get(value.label)}
+                width="$full"
+              />
+            </Input>
+          </VStack>
+          <VStack alignItems="flex-start" space={"sm"} marginBottom={"$2.5"} width={"$10"}>
+            <Box height="$6" />
+            <Input width={"$10"}>
+              <FormInputField control={props.control} name={seriesIndexName} inputMode="numeric" />
+            </Input>
+          </VStack>
+        </HStack>
+      )
     }
 
     return (

@@ -1,10 +1,16 @@
 import { Box, HStack, IconButton, Input, Text, VStack } from "@/components"
-import { Popover, PopoverBody, PopoverContent, Pressable } from "@gluestack-ui/themed"
+import {
+  Popover,
+  PopoverBackdrop,
+  PopoverBody,
+  PopoverContent,
+  Pressable,
+} from "@gluestack-ui/themed"
 import { useMemo, useState } from "react"
 import { Controller, type ControllerProps } from "react-hook-form"
 import { InputField, type InputFieldProps } from "../InputField/InputField"
 
-const MAX_SUGGESTIONS = 20
+const MAX_SUGGESTIONS = 5
 
 export type FormMultipleInputFiledProps<T> = Omit<InputFieldProps, "onChangeText"> &
   Omit<ControllerProps<T>, "render"> & {
@@ -76,14 +82,8 @@ export function FormMultipleInputField<T>(props: FormMultipleInputFiledProps<T>)
         const currentToken = focusedRowValue.trim().toLowerCase()
 
         const candidateValues: string[] = []
-        let hasExactMatch = false
         if (isSuggestionOpen && activeRowIndex !== null) {
           for (const suggestion of normalizedSuggestions) {
-            if (currentToken.length > 0 && suggestion.lowerCaseValue === currentToken) {
-              hasExactMatch = true
-              break
-            }
-
             if (selectedValueSet.has(suggestion.value)) {
               continue
             }
@@ -98,7 +98,7 @@ export function FormMultipleInputField<T>(props: FormMultipleInputFiledProps<T>)
             }
           }
         }
-        const isOpen = candidateValues.length > 0 && isSuggestionOpen && !hasExactMatch
+        const isOpen = candidateValues.length > 0 && isSuggestionOpen
 
         const commitRows = (nextRows: string[]) => {
           const normalized = nextRows.map((entry) => (typeof entry === "string" ? entry : ""))
@@ -111,10 +111,12 @@ export function FormMultipleInputField<T>(props: FormMultipleInputFiledProps<T>)
               <HStack
                 key={`${String(name)}-row-${index}`}
                 alignItems="center"
-                marginBottom={index === displayRows.length - 1 ? undefined : "sm"}
+                marginBottom={index === displayRows.length - 1 ? undefined : "$sm"}
               >
                 <Popover
                   placement="bottom left"
+                  shouldFlip={false}
+                  isKeyboardDismissable={true}
                   trigger={(triggerProps) => {
                     return (
                       <Box {...triggerProps} flex={1}>
@@ -122,6 +124,8 @@ export function FormMultipleInputField<T>(props: FormMultipleInputFiledProps<T>)
                           <InputField
                             {...inputProps}
                             onChangeText={(text) => {
+                              setActiveRowIndex(index)
+                              openSuggestion()
                               const sourceRows = values.length > 0 ? [...values] : [""]
 
                               if (parsedSeparator === "") {
@@ -159,6 +163,11 @@ export function FormMultipleInputField<T>(props: FormMultipleInputFiledProps<T>)
                   onClose={closeSuggestion}
                   offset={4}
                 >
+                  <PopoverBackdrop
+                    onPress={() => {
+                      closeSuggestion()
+                    }}
+                  />
                   <PopoverContent
                     minWidth={inputProps.width ?? "$full"}
                     width={inputProps.width ?? "$full"}
@@ -178,9 +187,9 @@ export function FormMultipleInputField<T>(props: FormMultipleInputFiledProps<T>)
                             <Box
                               borderWidth="$1"
                               borderRadius="$sm"
-                              paddingHorizontal="sm"
-                              paddingVertical="xs"
-                              marginBottom="xs"
+                              paddingHorizontal="$sm"
+                              paddingVertical="$xs"
+                              marginBottom="$xs"
                             >
                               <Text fontSize="$sm" isTruncated={true}>
                                 {candidate}

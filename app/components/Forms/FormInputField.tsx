@@ -1,10 +1,16 @@
 import { Box, Text } from "@/components"
-import { Popover, PopoverBody, PopoverContent, Pressable } from "@gluestack-ui/themed"
+import {
+  Popover,
+  PopoverBackdrop,
+  PopoverBody,
+  PopoverContent,
+  Pressable,
+} from "@gluestack-ui/themed"
 import { useMemo, useState } from "react"
 import { Controller, type ControllerProps } from "react-hook-form"
 import { InputField, type InputFieldProps } from "../InputField/InputField"
 
-const MAX_SUGGESTIONS = 20
+const MAX_SUGGESTIONS = 5
 
 export type FormInputFiledProps<T> = Omit<InputFieldProps, "onChangeText"> &
   Omit<ControllerProps<T>, "render"> & {
@@ -56,17 +62,13 @@ export function FormInputField<T>(props: FormInputFiledProps<T>) {
       defaultValue={defaultValue}
       disabled={disabled}
       render={(renderProps) => {
-        const rawValue = ((renderProps.field.value as string) ?? "").trim().toLowerCase()
+        const fieldValue = renderProps.field.value
+        const textValue = fieldValue == null ? "" : String(fieldValue)
+        const rawValue = textValue.trim().toLowerCase()
         const candidateValues: string[] = []
-        let hasExactMatch = false
 
         if (isSuggestionOpen) {
           for (const suggestion of normalizedSuggestions) {
-            if (rawValue.length > 0 && suggestion.lowerCaseValue === rawValue) {
-              hasExactMatch = true
-              break
-            }
-
             if (rawValue.length > 0 && !suggestion.lowerCaseValue.includes(rawValue)) {
               continue
             }
@@ -77,17 +79,20 @@ export function FormInputField<T>(props: FormInputFiledProps<T>) {
             }
           }
         }
-        const isOpen = candidateValues.length > 0 && isSuggestionOpen && !hasExactMatch
+        const isOpen = candidateValues.length > 0 && isSuggestionOpen
 
         return (
           <Popover
             placement="bottom left"
+            shouldFlip={false}
+            isKeyboardDismissable={true}
             trigger={(triggerProps) => {
               return (
                 <Box {...triggerProps} width={inputProps.width ?? "$full"}>
                   <InputField
                     {...inputProps}
                     onChangeText={(text) => {
+                      openSuggestion()
                       if (text !== "") {
                         renderProps.field.onChange(text)
                       } else {
@@ -101,7 +106,7 @@ export function FormInputField<T>(props: FormInputFiledProps<T>) {
                       renderProps.field.onBlur()
                       closeSuggestion()
                     }}
-                    value={(renderProps.field.value as string) ?? ""}
+                    value={textValue}
                     ref={renderProps.field.ref}
                   />
                 </Box>
@@ -113,6 +118,11 @@ export function FormInputField<T>(props: FormInputFiledProps<T>) {
             onClose={closeSuggestion}
             offset={4}
           >
+            <PopoverBackdrop
+              onPress={() => {
+                closeSuggestion()
+              }}
+            />
             <PopoverContent
               minWidth={inputProps.width ?? "$full"}
               width={inputProps.width ?? "$full"}

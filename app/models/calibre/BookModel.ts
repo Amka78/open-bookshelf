@@ -14,6 +14,23 @@ import { type Metadata, MetadataModel, type ReadingHistory } from "../calibre"
 import { handleCommonApiError } from "../errors/errors"
 import { withSetPropAction } from "../helpers/withSetPropAction"
 
+function normalizeUpdateFieldValue(field: string, value: unknown) {
+  if (field === "seriesIndex") {
+    if (value === null || value === undefined || value === "") {
+      return null
+    }
+
+    if (typeof value === "number") {
+      return Number.isFinite(value) ? value : null
+    }
+
+    const parsed = Number(String(value).trim())
+    return Number.isFinite(parsed) ? parsed : null
+  }
+
+  return value
+}
+
 export const BookModel = types
   .model("BookModel")
   .props({
@@ -119,8 +136,8 @@ export const BookModel = types
 
       const rootParent = getParent(root) as Array<Book>
       updateField.map((field: string) => {
-        root.metaData[field] = updateInfo[field]
-        const fieldValue = updateInfo[field]
+        const fieldValue = normalizeUpdateFieldValue(field, updateInfo[field])
+        root.metaData[field] = fieldValue
         const apiField = camelCaseToLowerCase(field) as CommonFieldName
         changes[apiField] = Array.isArray(fieldValue)
           ? fieldValue
@@ -135,7 +152,7 @@ export const BookModel = types
       })
       if (response.kind === "ok") {
         updateField.map((field: string) => {
-          root.metaData[field] = updateInfo[field]
+          root.metaData[field] = normalizeUpdateFieldValue(field, updateInfo[field])
         })
         return true
       }
