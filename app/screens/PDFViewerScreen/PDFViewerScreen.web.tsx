@@ -1,42 +1,30 @@
 import { BookViewer, type RenderPageProps } from "@/components"
-import { useStores } from "@/models"
-import { api } from "@/services/api"
+import { usePDFViewer } from "@/screens/PDFViewerScreen/usePDFViewer"
 import { observer } from "mobx-react-lite"
-import React, { useMemo, useState } from "react"
-import { StyleSheet, View, useWindowDimensions } from "react-native"
+import React from "react"
+import { StyleSheet, View } from "react-native"
 import { Document, Page, pdfjs } from "react-pdf"
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`
 
 export const PDFViewerScreen = observer(() => {
-  const { authenticationStore, calibreRootStore } = useStores()
+  const pdfHook = usePDFViewer()
 
-  const [totalPages, setTotalPages] = useState<number | undefined>(undefined)
-  const selectedBook = calibreRootStore.selectedLibrary.selectedBook
+  const {
+    selectedBook,
+    totalPages,
+    documentFile,
+    windowDimension,
+    calculatePageWidth,
+  } = pdfHook
 
-  const windowDimension = useWindowDimensions()
-
-  let header: Record<string, string> | undefined
-
-  if (authenticationStore.isAuthenticated) {
-    header = { Authorization: `Basic ${authenticationStore.token}` }
+  if (!selectedBook) {
+    return undefined
   }
-  const sourceUri = api.getInlineBookUrl("PDF", selectedBook.id)
-
-  const documentFile = useMemo(
-    () => ({
-      url: sourceUri,
-      httpHeaders: header,
-      withCredentials: false,
-    }),
-    [header, sourceUri],
-  )
 
   const renderPage = (renderProps: RenderPageProps) => {
     const isFacingPage = renderProps.pageType !== "singlePage"
-    const pageWidth = isFacingPage
-      ? Math.max(Math.floor(windowDimension.width / 2) - 24, 1)
-      : Math.max(Math.floor(windowDimension.width) - 32, 1)
+    const pageWidth = calculatePageWidth(isFacingPage, windowDimension.width)
 
     return (
       <View style={styles.page}>
@@ -45,7 +33,9 @@ export const PDFViewerScreen = observer(() => {
           loading={null}
           error={null}
           onLoadSuccess={({ numPages }) => {
-            setTotalPages((prev) => prev ?? numPages)
+            if (!totalPages) {
+              pdfHook.setTotalPages(numPages)
+            }
           }}
         >
           <Page

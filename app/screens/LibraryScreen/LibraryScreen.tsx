@@ -28,11 +28,11 @@ import { useIsFocused, useNavigation } from "@react-navigation/native"
 import { values } from "mobx"
 import { observer } from "mobx-react-lite"
 import type React from "react"
-import { type FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { type FC, useEffect, useLayoutEffect, useMemo, useRef } from "react"
 import { Platform, useWindowDimensions } from "react-native"
 import { useModal } from "react-native-modalfy"
 import type { SearchBarCommands } from "react-native-screens"
-import { useLibrary } from "./hook/useLibrary"
+import { useLibrary } from "./useLibrary"
 import { InputField } from "@/components/InputField/InputField"
 
 export const LibraryScreen: FC = observer(() => {
@@ -52,57 +52,6 @@ export const LibraryScreen: FC = observer(() => {
   const libraryHook = useLibrary()
 
   const searchBar = useRef<SearchBarCommands>()
-  const [headerSearchText, setHeaderSearchText] = useState(
-    selectedLibrary?.searchSetting?.query ?? "",
-  )
-
-  const searchParameterCandidates = useMemo(() => {
-    if (!selectedLibrary) {
-      return [] as string[]
-    }
-
-    const terms = Array.from(selectedLibrary.fieldMetadataList.values())
-      .flatMap((metadata) => metadata.searchTerms.slice())
-      .filter((term) => term && term !== "all")
-
-    return Array.from(new Set(terms))
-  }, [selectedLibrary])
-
-  const completeSearchParameter = useCallback(
-    (text: string) => {
-      const lastSpaceIndex = text.lastIndexOf(" ")
-      const prefixText = lastSpaceIndex >= 0 ? text.slice(0, lastSpaceIndex + 1) : ""
-      const token = lastSpaceIndex >= 0 ? text.slice(lastSpaceIndex + 1) : text
-
-      if (!token.endsWith(":")) {
-        return text
-      }
-
-      const rawParameter = token.slice(0, -1).toLowerCase()
-      if (!rawParameter) {
-        return text
-      }
-
-      const matches = searchParameterCandidates.filter((candidate) => {
-        return candidate.toLowerCase().startsWith(rawParameter)
-      })
-
-      if (matches.length !== 1) {
-        return text
-      }
-
-      return `${prefixText}${matches[0]}:=`
-    },
-    [searchParameterCandidates],
-  )
-
-  useEffect(() => {
-    setHeaderSearchText(selectedLibrary?.searchSetting?.query ?? "")
-  }, [selectedLibrary?.searchSetting?.query])
-
-  const search = async () => {
-    await calibreRootStore.searchLibrary()
-  }
 
   const libraryActions = useMemo(() => {
     return (
@@ -182,13 +131,13 @@ export const LibraryScreen: FC = observer(() => {
                 <Box w={260} ml={8}>
                   <Input size="sm">
                     <InputField
-                      value={headerSearchText}
+                      value={libraryHook.headerSearchText}
                       onChangeText={(text) => {
-                        setHeaderSearchText(completeSearchParameter(text))
+                        libraryHook.setHeaderSearchText(libraryHook.completeSearchParameter(text))
                       }}
                       textAlign="left"
                       onSubmitEditing={() => {
-                        libraryHook.onSearch(headerSearchText)
+                        libraryHook.onSearch(libraryHook.headerSearchText)
                       }}
                       returnKeyType="search"
                       autoCapitalize="none"
@@ -215,7 +164,7 @@ export const LibraryScreen: FC = observer(() => {
           searchBar.current.blur()
         },
         onChangeText: (e) => {
-          const completedText = completeSearchParameter(e.nativeEvent.text)
+          const completedText = libraryHook.completeSearchParameter(e.nativeEvent.text)
           if (completedText !== e.nativeEvent.text) {
             searchBar.current.setText(completedText)
           }
@@ -233,8 +182,6 @@ export const LibraryScreen: FC = observer(() => {
   }, [
     calibreRootStore.selectedLibrary?.id,
     convergenceHook.isLarge,
-    completeSearchParameter,
-    headerSearchText,
     libraryHook,
     libraryActions,
     navigation,
@@ -443,7 +390,7 @@ export const LibraryScreen: FC = observer(() => {
             convergenceHook.isLarge
               ? undefined
               : async () => {
-                  await search()
+                  await libraryHook.onSearch()
                 }
           }
           onEndReached={async () => {

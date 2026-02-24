@@ -1,8 +1,8 @@
-import { CalibreRootScreen } from "@/screens/CalibreRootScreen/template/CalibreRootScreen"
+import { CalibreRootScreen } from "@/screens/CalibreRootScreen/CalibreRootScreen"
 import type { Meta, StoryObj } from "@storybook/react"
 import React from "react"
 
-import { ScreenContainer } from "./ScreenContainer"
+import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
 
 export default {
   component: CalibreRootScreen,

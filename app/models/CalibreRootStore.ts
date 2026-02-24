@@ -301,3 +301,5 @@ function convertLibraryInformation(
     libraryInfo.fieldMetadataList.set(lowerCaseToCamelCase(key), fieldMetadata);
   });
 }
+
+export { LibraryMap };

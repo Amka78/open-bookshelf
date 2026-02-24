@@ -1,33 +1,28 @@
 import { BookViewer, type RenderPageProps } from "@/components"
 import { useViewer } from "@/hooks/useViewer"
+import { usePDFViewer } from "@/screens/PDFViewerScreen/usePDFViewer"
 import { PDF } from "@/library/PDF/Pdf"
-import { useStores } from "@/models"
-import { api } from "@/services/api"
 import { observer } from "mobx-react-lite"
 import React, { useState } from "react"
-import { StyleSheet, useWindowDimensions } from "react-native"
+import { StyleSheet } from "react-native"
 
 export const PDFViewerScreen = observer(() => {
-  const { authenticationStore, calibreRootStore } = useStores()
-
-  const [totalPages, setTotalPages] = useState(undefined)
-  const [imageSize, setImageSize] = useState(undefined)
-  const selectedBook = calibreRootStore.selectedLibrary.selectedBook
-
-  const windowDimension = useWindowDimensions()
-
-  let header: Record<string, string> | undefined
-
-  if (authenticationStore.isAuthenticated) {
-    header = { Authorization: `Basic ${authenticationStore.token}` }
-  }
-  const source = {
-    uri: api.getInlineBookUrl("PDF", selectedBook.id),
-    cache: true,
-    headers: header,
-  }
-
+  const pdfHook = usePDFViewer()
   const viewerHook = useViewer()
+  const [imageSize, setImageSize] = useState(undefined)
+
+  const {
+    selectedBook,
+    totalPages,
+    setTotalPages,
+    pdfSource,
+    windowDimension,
+    calculatePageDimensions,
+  } = pdfHook
+
+  if (!selectedBook) {
+    return undefined
+  }
 
   const renderPage = (renderProps: RenderPageProps) => {
     let alignSelf = "center"
@@ -39,27 +34,20 @@ export const PDFViewerScreen = observer(() => {
     }
     return (
       <PDF
-        source={source}
+        source={pdfSource}
         style={[styles.page, { alignSelf, justifyContent: "center" }, imageSize]}
         onLoadComplete={(numberOfPages, path, size) => {
           if (!imageSize) {
-            let pdfHeight = size.height
-            let pdfWidth = size.width
-
-            if (size.height > windowDimension.height) {
-              pdfWidth = pdfWidth * (windowDimension.height / size.height)
-              pdfHeight = windowDimension.height
-            }
-
-            if (pdfWidth > windowDimension.width) {
-              pdfWidth = windowDimension.width
-            } else if (
+            const isFacingPage =
               viewerHook.readingStyle === "facingPage" ||
               viewerHook.readingStyle === "facingPageWithTitle"
-            ) {
-              if (pdfWidth > windowDimension.width / 2) pdfWidth = windowDimension.width / 2
-            }
-            setImageSize({ height: pdfHeight, width: pdfWidth })
+            const dimensions = calculatePageDimensions(
+              size,
+              windowDimension.width,
+              windowDimension.height,
+              isFacingPage,
+            )
+            setImageSize({ height: dimensions.height, width: dimensions.width })
           }
         }}
         trustAllCerts={false}
@@ -78,12 +66,10 @@ export const PDFViewerScreen = observer(() => {
     />
   ) : (
     <PDF
-      source={source}
+      source={pdfSource}
       style={styles.page}
       onLoadComplete={(numberOfPages) => {
-        if (!totalPages) {
-          setTotalPages(numberOfPages)
-        }
+        setTotalPages(numberOfPages)
       }}
       trustAllCerts={false}
       enablePaging={true}

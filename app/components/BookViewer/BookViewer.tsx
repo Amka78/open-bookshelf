@@ -6,7 +6,7 @@ import {
   PagePressable,
   ViewerHeader,
 } from "@/components"
-import { useViewer } from "@/hooks/useViewer"
+import { useViewer } from "@/screens/ViewerScreen/useViewer"
 import { useStores } from "@/models"
 import type { ApppNavigationProp } from "@/navigators"
 import type { BookReadingStyleType } from "@/type/types"

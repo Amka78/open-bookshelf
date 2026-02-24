@@ -1,42 +1,32 @@
 import { Box, FlatList, ListItem, RootContainer, Text } from "@/components"
-import { useStores } from "@/models"
+import { useODSRoot as useOpdsRoot } from "@/screens/OPDSRootScreen/useOPDSRoot"
 import type { Entry } from "@/models/opds"
 import type { ApppNavigationProp } from "@/navigators"
 import { usePalette } from "@/theme"
 import { useNavigation } from "@react-navigation/native"
-import { Image } from "expo-image"
 import { observer } from "mobx-react-lite"
-import React, { type FC, useEffect } from "react"
+import React, { type FC } from "react"
 import { View } from "react-native"
 
 export const OPDSRootScreen: FC = observer(() => {
-  const { opdsRootStore, settingStore } = useStores()
+  
+  const { entries, navigation } = useOpdsRoot()
   const palette = usePalette()
 
-  const navigation = useNavigation<ApppNavigationProp>()
-  const initialize = async () => {
-    await opdsRootStore.root.load(settingStore.api.initialPath)
-    navigation.setOptions({
-      headerTitle(props) {
-        return (
-          <Box direction="row" alignItems={"center"}>
-            <Image
-              source={`${settingStore.api.baseUrl}${opdsRootStore.root.icon}`}
-              style={{ height: 30, width: 30 }}
-              resizeMode={"cover"}
-            />
-            <Text color={palette.textPrimary} paddingLeft={"2.5"} fontSize={"2xl"}>
-              {opdsRootStore.root.title}
-            </Text>
-          </Box>
-        )
-      },
-    })
+  const setupHeaderTitle = () => {
+    return (
+      <Box direction="row" alignItems={"center"}>
+        <Image
+          source={`${settingStore.api.baseUrl}${opdsRootStore.root.icon}`}
+          style={{ height: 30, width: 30 }}
+          resizeMode={"cover"}
+        />
+        <Text color={palette.textPrimary} paddingLeft={"2.5"} fontSize={"2xl"}>
+          {opdsRootStore.root.title}
+        </Text>
+      </Box>
+    )
   }
-
-  useEffect(() => {
-    initialize()
-  }, [])
 
   const renderItem = ({ item }: { item: Entry }) => {
     return (
@@ -58,7 +48,7 @@ export const OPDSRootScreen: FC = observer(() => {
 
   return (
     <RootContainer>
-      <FlatList<Entry> data={opdsRootStore.root?.entry.slice()} renderItem={renderItem} />
+      <FlatList<Entry> data={entries} renderItem={renderItem} />
     </RootContainer>
   )
 })
