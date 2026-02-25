@@ -1,8 +1,9 @@
-import { BookDetailScreen } from "@/screens/BookDetailScreen/template/BookDetailScreen"
+import { BookDetailScreen } from "@/screens"
 import type { Meta, StoryObj } from "@storybook/react"
 
 import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
 import { Base as BookDetailFieldListStories } from "@/components/BookDetailFieldList/BookDetailFieldList.stories"
+import BookImageItemStories from "@/components/BookImageItem/BookImageItem.stories"
 
 export default {
   component: BookDetailScreen,

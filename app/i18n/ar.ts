@@ -15,6 +15,7 @@ const ar: Translations = {
   bookEditScreen: {
     save: "حفظ",
     authorSortAutoTooltip: "إنشاء author_sort تلقائيًا من المؤلفين",
+    titleSortAutoTooltip: "إنشاء sort تلقائيًا من العنوان",
   },
   errorScreen: {
     title: "هناك خطأ ما",

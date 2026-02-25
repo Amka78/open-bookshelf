@@ -106,6 +106,7 @@
     "react-native-worklets": "0.5.1",
     "react-pdf": "^8.0.2",
     "transliteration": "^2.6.1",
+    "wanakana": "^5.3.1",
     "xmldom": "^0.6.0"
   },
   "devDependencies": {

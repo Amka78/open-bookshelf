@@ -15,6 +15,7 @@ const ko: Translations = {
   bookEditScreen: {
     save: "저장",
     authorSortAutoTooltip: "저자에서 author_sort 자동 생성",
+    titleSortAutoTooltip: "제목에서 sort 자동 생성",
   },
   errorScreen: {
     title: "뭔가 잘못되었습니다!",

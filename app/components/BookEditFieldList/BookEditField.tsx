@@ -9,57 +9,10 @@ import {
   TooltipIconButton,
   VStack,
 } from "@/components"
+import { useRomajiText } from "@/hooks/useRomajiText"
 import type { Book, FieldMetadata, Metadata } from "@/models/calibre"
 import type { ComponentProps } from "react"
 import { useController, type Control, type Path } from "react-hook-form"
-import * as transliterationModule from "transliteration"
-
-function resolveTransliterate() {
-  const candidate = transliterationModule as {
-    transliterate?: unknown
-    default?: unknown
-  }
-
-  if (typeof candidate.transliterate === "function") {
-    return candidate.transliterate as (value: string) => string
-  }
-
-  if (typeof candidate.default === "function") {
-    return candidate.default as (value: string) => string
-  }
-
-  if (
-    typeof candidate.default === "object" &&
-    candidate.default !== null &&
-    "transliterate" in candidate.default &&
-    typeof (candidate.default as { transliterate?: unknown }).transliterate === "function"
-  ) {
-    return (candidate.default as { transliterate: (value: string) => string }).transliterate
-  }
-
-  return (value: string) => value
-}
-
-const transliterate = resolveTransliterate()
-
-function toRomajiText(value: string) {
-  return transliterate(value).replace(/\s+/g, " ").trim()
-}
-
-function toAuthorSortValue(authorsValue: unknown) {
-  const source = Array.isArray(authorsValue)
-    ? authorsValue
-    : typeof authorsValue === "string"
-      ? [authorsValue]
-      : []
-
-  const converted = source
-    .map((entry) => toRomajiText(String(entry ?? "")))
-    .filter((entry) => entry.length > 0)
-    .join(" & ")
-
-  return converted.length > 0 ? converted : null
-}
 
 export type BookEditFieldProps = {
   book: Book
@@ -71,6 +24,7 @@ export type BookEditFieldProps = {
 
 export function BookEditField(props: BookEditFieldProps) {
   let field: React.ReactNode
+  const { toSortValue, toAuthorSortValue } = useRomajiText()
 
   const label = props.fieldMetadata.label as Path<Metadata>
   const authorsController = useController({
@@ -80,6 +34,14 @@ export function BookEditField(props: BookEditFieldProps) {
   const authorSortController = useController({
     control: props.control,
     name: "authorSort" as Path<Metadata>,
+  })
+  const titleController = useController({
+    control: props.control,
+    name: "title" as Path<Metadata>,
+  })
+  const sortController = useController({
+    control: props.control,
+    name: "sort" as Path<Metadata>,
   })
 
   switch (props.fieldMetadata.datatype) {
@@ -145,6 +107,21 @@ export function BookEditField(props: BookEditFieldProps) {
             onPress={() => {
               const converted = toAuthorSortValue(authorsController.field.value)
               authorSortController.field.onChange(converted)
+            }}
+          />
+        </HStack>
+      ) : props.fieldMetadata.label === "title" ? (
+        <HStack alignItems="center" space={"xs"}>
+          <Text isTruncated={true} fontWeight="$bold">
+            {props.fieldMetadata.name}
+          </Text>
+          <TooltipIconButton
+            name="sort-alphabetical-ascending"
+            iconSize="sm"
+            tooltipTx="bookEditScreen.titleSortAutoTooltip"
+            onPress={() => {
+              const converted = toSortValue(titleController.field.value)
+              sortController.field.onChange(converted)
             }}
           />
         </HStack>

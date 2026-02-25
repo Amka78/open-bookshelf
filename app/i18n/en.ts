@@ -13,6 +13,7 @@ const en = {
   bookEditScreen: {
     save: "Save",
     authorSortAutoTooltip: "Generate author sort from authors",
+    titleSortAutoTooltip: "Generate sort from title",
   },
   errorScreen: {
     title: "Something went wrong!",
