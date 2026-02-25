@@ -12,7 +12,7 @@ const plugins = [
 ];
 
 module.exports = function (api) {
-  const isWeb = api.env(["web", "test"]);
+  const isWeb = api.env("web");
   return {
     presets: ["babel-preset-expo"],
     env: {
