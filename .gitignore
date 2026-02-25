@@ -69,6 +69,11 @@ web-build/
 android/
 ios/
 
+# Keep bootsplash source assets in repo for EAS config plugin
+!assets/bootsplash/
+!assets/bootsplash/android/
+!assets/bootsplash/android/**
+
 # Native
 *.orig.*
 *.jks
