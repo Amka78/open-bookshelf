@@ -63,6 +63,10 @@ export default {
     plugins: [
       "@config-plugins/react-native-blob-util",
       "@config-plugins/react-native-pdf",
+      "@react-native-community/datetimepicker",
+      "expo-font",
+      "expo-localization",
+      "react-native-bootsplash",
       "./withAndroidMainActivityAttributes.js",
       [
         "expo-screen-orientation",
