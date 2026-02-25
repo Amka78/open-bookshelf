@@ -1,24 +1,24 @@
-let idSuffix = "";
-let appNameSuffix = "";
+let idSuffix = ""
+let appNameSuffix = ""
 switch (process.env.APP_VARIANT) {
   case "development":
-    idSuffix = "_dev";
-    appNameSuffix = "Dev";
-    break;
+    idSuffix = ".dev"
+    appNameSuffix = "Dev"
+    break
   case "storybookDev":
-    idSuffix = "_sb_dev";
-    appNameSuffix = "SbDev";
-    break;
+    idSuffix = ".sbdev"
+    appNameSuffix = "SbDev"
+    break
   case "preview":
-    idSuffix = "_preview";
-    appNameSuffix = "Preview";
-    break;
+    idSuffix = ".preview"
+    appNameSuffix = "Preview"
+    break
   case "previewDev":
-    idSuffix = "_sb-preview";
-    appNameSuffix = "SbPreview";
-    break;
+    idSuffix = ".sbpreview"
+    appNameSuffix = "SbPreview"
+    break
   default:
-    break;
+    break
 }
 
 export default {
@@ -57,8 +57,7 @@ export default {
     web: {
       bundler: "metro",
       output: "single",
-      publicPath:
-        process.env.GITHUB_PAGES === "true" ? "/open-bookshelf/" : "/",
+      publicPath: process.env.GITHUB_PAGES === "true" ? "/open-bookshelf/" : "/",
     },
     plugins: [
       "@config-plugins/react-native-blob-util",
@@ -66,7 +65,6 @@ export default {
       "@react-native-community/datetimepicker",
       "expo-font",
       "expo-localization",
-      "react-native-bootsplash",
       "./withAndroidMainActivityAttributes.js",
       [
         "expo-screen-orientation",
@@ -102,4 +100,4 @@ export default {
       },
     },
   },
-};
+}
