@@ -11,7 +11,7 @@ describe("pageTutnning Test", () => {
   })
   test("In the case of the final page, success is to proceed no further than that.", () => {
     const nextPage = goToNextPage(200, 200, 3)
-    expect(nextPage).toBe(4)
+    expect(nextPage).toBe(200)
   })
   test("Successful moving backword one page", () => {
     const nextPage = goToPreviousPage(200, 1)

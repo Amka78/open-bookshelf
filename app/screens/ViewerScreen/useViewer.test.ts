@@ -1,10 +1,10 @@
-import { useViewer } from "../../hooks/useViewer"
+import { useViewer } from "./useViewer"
 import { useStores } from "@/models"
 import { useConvergence } from "../../hooks/useConvergence"
 import { useModal } from "react-native-modalfy"
 
 jest.mock("@/models")
-jest.mock("./useConvergence")
+jest.mock("../../hooks/useConvergence")
 jest.mock("react-native-modalfy")
 jest.mock("@react-navigation/native")
 

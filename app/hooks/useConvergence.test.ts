@@ -2,7 +2,7 @@ import { useConvergence } from "./useConvergence"
 import useOrientation from "./useOrientation"
 import { useBreakpointValue } from "@gluestack-ui/themed"
 
-jest.mock("./useOrientaton")
+jest.mock("./useOrientation")
 describe("useConvergent test", () => {
   test("If screen is large, orientation is always horizontal", () => {
     jest.mock("@gluestack-ui/themed", () => {

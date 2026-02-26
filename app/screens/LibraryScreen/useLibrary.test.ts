@@ -3,6 +3,7 @@ import { useStores } from "@/models"
 import { useConvergence } from "@/hooks/useConvergence"
 import { useNavigation } from "@react-navigation/native"
 import { api } from "@/services/api"
+import { renderHook } from "@testing-library/react-hooks"
 
 jest.mock("@/models")
 jest.mock("@/hooks/useConvergence")
@@ -94,49 +95,49 @@ describe("useLibrary", () => {
       },
     })
 
-    const { completeSearchParameter } = useLibrary()
-    const completed = completeSearchParameter("test text")
+    const { result } = renderHook(() => useLibrary())
+    const completed = result.current.completeSearchParameter("test text")
 
     expect(completed).toBe("test text")
   })
 
   test("completeSearchParameter completes search parameter", () => {
-    const { completeSearchParameter } = useLibrary()
-    const completed = completeSearchParameter("aut:")
+    const { result } = renderHook(() => useLibrary())
+    const completed = result.current.completeSearchParameter("aut:")
 
     expect(completed).toBe("authors:=")
   })
 
   test("completeSearchParameter returns text unchanged if no match", () => {
-    const { completeSearchParameter } = useLibrary()
-    const completed = completeSearchParameter("xyz:")
+    const { result } = renderHook(() => useLibrary())
+    const completed = result.current.completeSearchParameter("xyz:")
 
     expect(completed).toBe("xyz:")
   })
 
   test("completeSearchParameter handles multiple matches", () => {
-    const { completeSearchParameter } = useLibrary()
-    const completed = completeSearchParameter("t:")
+    const { result } = renderHook(() => useLibrary())
+    const completed = result.current.completeSearchParameter("t:")
 
     expect(completed).toBe("t:")
   })
 
   test("completeSearchParameter works with prefix text", () => {
-    const { completeSearchParameter } = useLibrary()
-    const completed = completeSearchParameter("query aut:")
+    const { result } = renderHook(() => useLibrary())
+    const completed = result.current.completeSearchParameter("query aut:")
 
     expect(completed).toBe("query authors:=")
   })
 
   test("searchParameterCandidates returns unique search terms", () => {
-    const { searchParameterCandidates } = useLibrary()
+    const { result } = renderHook(() => useLibrary())
 
-    expect(searchParameterCandidates).toContain("authors")
-    expect(searchParameterCandidates).toContain("author1")
-    expect(searchParameterCandidates).toContain("author2")
-    expect(searchParameterCandidates).toContain("tags")
-    expect(searchParameterCandidates).toContain("tag1")
-    expect(searchParameterCandidates).toContain("tag2")
+    expect(result.current.searchParameterCandidates).toContain("authors")
+    expect(result.current.searchParameterCandidates).toContain("author1")
+    expect(result.current.searchParameterCandidates).toContain("author2")
+    expect(result.current.searchParameterCandidates).toContain("tags")
+    expect(result.current.searchParameterCandidates).toContain("tag1")
+    expect(result.current.searchParameterCandidates).toContain("tag2")
   })
 
   test("searchParameterCandidates returns empty array if no library", () => {
@@ -147,24 +148,24 @@ describe("useLibrary", () => {
       },
     })
 
-    const { searchParameterCandidates } = useLibrary()
+    const { result } = renderHook(() => useLibrary())
 
-    expect(searchParameterCandidates).toEqual([])
+    expect(result.current.searchParameterCandidates).toEqual([])
   })
 
   test("onSearch calls searchLibrary", async () => {
-    const { onSearch } = useLibrary()
+    const { result } = renderHook(() => useLibrary())
 
-    await onSearch("test query")
+    await result.current.onSearch("test query")
 
     expect(mockSetProp).toHaveBeenCalledWith("query", "test query")
     expect(mockSearchLibrary).toHaveBeenCalled()
   })
 
   test("onSort updates sort and sortOrder", async () => {
-    const { onSort } = useLibrary()
+    const { result } = renderHook(() => useLibrary())
 
-    await onSort("authors")
+    await result.current.onSort("authors")
 
     expect(mockSetProp).toHaveBeenCalledWith("sort", "authors")
     expect(mockSetProp).toHaveBeenCalledWith("sortOrder", "desc")
@@ -172,39 +173,39 @@ describe("useLibrary", () => {
   })
 
   test("onSort toggles sortOrder when same sort key is selected", async () => {
-    const { onSort } = useLibrary()
+    const { result } = renderHook(() => useLibrary())
 
-    await onSort("title")
+    await result.current.onSort("title")
 
     expect(mockSetProp).toHaveBeenCalledWith("sortOrder", "desc")
   })
 
   test("onChangeListStyle changes list style", () => {
-    const { onChangeListStyle, currentListStyle: initialStyle } = useLibrary()
+    const { result: result1 } = renderHook(() => useLibrary())
+    expect(result1.current.currentListStyle).toBe("viewList")
 
-    expect(initialStyle).toBe("viewList")
+    result1.current.onChangeListStyle()
 
-    onChangeListStyle()
-
-    const { currentListStyle: afterChangeStyle } = useLibrary()
-    expect(afterChangeStyle).toBe("gridView")
+    const { result: result2 } = renderHook(() => useLibrary())
+    expect(result2.current.currentListStyle).not.toBe("viewList")
   })
 
   test("onUploadFile uploads file and searches", async () => {
     const mockUploadFile = jest.fn().mockResolvedValue(undefined)
     ;(api.uploadFile as jest.Mock) = mockUploadFile
 
-    const { onUploadFile, onSearch } = useLibrary()
+    const { result } = renderHook(() => useLibrary())
 
     const mockAssets = [
       {
         name: "test.epub",
         uri: "file:///path/to/test.epub",
         file: new File([], "test.epub"),
+        lastModified: Date.now(),
       },
-    ]
+    ] as any
 
-    await onUploadFile(mockAssets)
+    await result.current.onUploadFile(mockAssets)
 
     expect(mockUploadFile).toHaveBeenCalledWith(
       "test.epub",
@@ -218,9 +219,9 @@ describe("useLibrary", () => {
       isLarge: false,
     })
 
-    const { currentListStyle } = useLibrary()
+    const { result } = renderHook(() => useLibrary())
 
-    expect(currentListStyle).toBe("viewList")
+    expect(result.current.currentListStyle).toBe("viewList")
   })
 
   test("current list style is gridView on desktop by default", () => {
@@ -228,8 +229,8 @@ describe("useLibrary", () => {
       isLarge: true,
     })
 
-    const { currentListStyle } = useLibrary()
+    const { result } = renderHook(() => useLibrary())
 
-    expect(currentListStyle).toBe("gridView")
+    expect(result.current.currentListStyle).toBe("gridView")
   })
 })

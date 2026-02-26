@@ -11,6 +11,9 @@ module.exports = {
   testPathIgnorePatterns: ["<rootDir>/node_modules/", "/detox", "@react-native"],
   testEnvironment: "jsdom",
   setupFiles: ["<rootDir>/test/setup.ts"],
+  moduleNameMapper: {
+    "^wanakana$": "<rootDir>/test/mocks/wanakana.ts",
+  },
   transform:{
     '^.+\\.test.tsx?$': ['ts-jest', {
       tsconfig: '<rootDir>/test/test-tsconfig.json'

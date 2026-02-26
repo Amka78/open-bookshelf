@@ -125,7 +125,7 @@ describe("useODSRoot", () => {
     const result = useODSRoot()
 
     expect(result).toBeDefined()
-    expect(mockODSRootStore.root.icon).toBe("/icon.png")
-    expect(mockODSRootStore.root.title).toBe("OPDS Feed")
+    expect(mockOPDSRootStore.root.icon).toBe("/icon.png")
+    expect(mockOPDSRootStore.root.title).toBe("OPDS Feed")
   })
 })
