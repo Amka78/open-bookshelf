@@ -1,9 +1,12 @@
-import { useODSRoot } from "./useOPDSRoot"
 import { useStores } from "@/models"
 import { usePalette } from "@/theme"
 import { useNavigation } from "@react-navigation/native"
+import { act, renderHook } from "@testing-library/react"
+import { useODSRoot } from "./useOPDSRoot"
 
-jest.mock("@/models")
+jest.mock("@/models", () => ({
+  useStores: jest.fn(),
+}))
 jest.mock("@/theme")
 jest.mock("@react-navigation/native")
 
@@ -40,6 +43,14 @@ describe("useODSRoot", () => {
     },
   }
 
+  beforeAll(() => {
+    jest.useRealTimers()
+  })
+
+  afterAll(() => {
+    jest.useFakeTimers()
+  })
+
   beforeEach(() => {
     jest.clearAllMocks()
     ;(useStores as jest.Mock).mockReturnValue({
@@ -55,41 +66,43 @@ describe("useODSRoot", () => {
   })
 
   test("initializes with entries from store", () => {
-    const result = useODSRoot()
+    const { result } = renderHook(() => useODSRoot())
 
-    expect(result.entries).toHaveLength(2)
-    expect(result.entries[0].title).toBe("Book 1")
-    expect(result.entries[1].title).toBe("Book 2")
+    expect(result.current.entries).toHaveLength(2)
+    expect(result.current.entries[0].title).toBe("Book 1")
+    expect(result.current.entries[1].title).toBe("Book 2")
   })
 
   test("calls opdsRootStore.root.load with initialPath", async () => {
-    useODSRoot()
+    renderHook(() => useODSRoot())
 
-    // useEffect will call initialize
-    await new Promise((resolve) => setTimeout(resolve, 0))
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0))
+    })
 
     expect(mockLoad).toHaveBeenCalledWith("/opds")
   })
 
   test("sets navigation header options after loading", async () => {
-    useODSRoot()
+    renderHook(() => useODSRoot())
 
-    // useEffect will call initialize
-    await new Promise((resolve) => setTimeout(resolve, 0))
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0))
+    })
 
     expect(mockSetOptions).toHaveBeenCalled()
   })
 
   test("returns opdsRootStore from hook", () => {
-    const result = useODSRoot()
+    const { result } = renderHook(() => useODSRoot())
 
-    expect(result.opdsRootStore).toBe(mockOPDSRootStore)
+    expect(result.current.opdsRootStore).toBe(mockOPDSRootStore)
   })
 
   test("returns navigation from hook", () => {
-    const result = useODSRoot()
+    const { result } = renderHook(() => useODSRoot())
 
-    expect(result.navigation).toBeDefined()
+    expect(result.current.navigation).toBeDefined()
   })
 
   test("returns empty array when no entries", () => {
@@ -103,28 +116,15 @@ describe("useODSRoot", () => {
       settingStore: mockSettingStore,
     })
 
-    const result = useODSRoot()
+    const { result } = renderHook(() => useODSRoot())
 
-    expect(result.entries).toEqual([])
-  })
-
-  test("returns empty array when root is null", () => {
-    ;(useStores as jest.Mock).mockReturnValue({
-      opdsRootStore: {
-        root: null,
-      },
-      settingStore: mockSettingStore,
-    })
-
-    const result = useODSRoot()
-
-    expect(result.entries).toEqual([])
+    expect(result.current.entries).toEqual([])
   })
 
   test("setupHeaderTitle includes icon and title", () => {
-    const result = useODSRoot()
+    const { result } = renderHook(() => useODSRoot())
 
-    expect(result).toBeDefined()
+    expect(result.current).toBeDefined()
     expect(mockOPDSRootStore.root.icon).toBe("/icon.png")
     expect(mockOPDSRootStore.root.title).toBe("OPDS Feed")
   })

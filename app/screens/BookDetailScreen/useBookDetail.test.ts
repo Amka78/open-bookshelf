@@ -1,11 +1,11 @@
-import { renderHook } from "@testing-library/react-hooks"
-import { useBookDetail } from "./useBookDetail"
 import { useStores } from "@/models"
 import { useNavigation, useRoute } from "@react-navigation/native"
+import { renderHook } from "@testing-library/react"
 import { useModal } from "react-native-modalfy"
 import { useDeleteBook } from "../../hooks/useDeleteBook"
 import { useDownloadBook } from "../../hooks/useDownloadBook"
 import { useOpenViewer } from "../../hooks/useOpenViewer"
+import { useBookDetail } from "./useBookDetail"
 
 // Mock all dependencies
 jest.mock("@/models")
@@ -58,24 +58,19 @@ describe("useBookDetail", () => {
     ;(useStores as jest.Mock).mockReturnValue({
       calibreRootStore: mockCalibreRootStore,
     })
-
     ;(useNavigation as jest.Mock).mockReturnValue({
       navigate: mockNavigate,
       goBack: mockGoBack,
       setOptions: mockSetOptions,
     })
-
     ;(useRoute as jest.Mock).mockReturnValue(mockRoute)
     ;(useModal as jest.Mock).mockReturnValue(mockModal)
-
     ;(useOpenViewer as jest.Mock).mockReturnValue({
       execute: mockExecute,
     })
-
     ;(useDeleteBook as jest.Mock).mockReturnValue({
       execute: mockExecute,
     })
-
     ;(useDownloadBook as jest.Mock).mockReturnValue({
       execute: mockExecute,
     })

@@ -80,6 +80,14 @@ const sampleXml = `<?xml version='1.0' encoding='utf-8'?>
 </feed>`
 
 describe("OpdsRootStore test", () => {
+  beforeAll(() => {
+    jest.useRealTimers()
+  })
+
+  afterAll(() => {
+    jest.useFakeTimers()
+  })
+
   test("initialize OPDS", async () => {
     const store = OpdsModel.create()
 

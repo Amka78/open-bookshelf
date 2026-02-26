@@ -13,10 +13,14 @@ module.exports = {
   setupFiles: ["<rootDir>/test/setup.ts"],
   moduleNameMapper: {
     "^wanakana$": "<rootDir>/test/mocks/wanakana.ts",
+    "^reactotron-react-native$": "<rootDir>/test/mocks/reactotron-react-native.ts",
   },
-  transform:{
-    '^.+\\.test.tsx?$': ['ts-jest', {
-      tsconfig: '<rootDir>/test/test-tsconfig.json'
-    }]
-  }
+  transform: {
+    "^.+\\.test.tsx?$": [
+      "ts-jest",
+      {
+        tsconfig: "<rootDir>/test/test-tsconfig.json",
+      },
+    ],
+  },
 }

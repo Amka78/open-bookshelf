@@ -1,5 +1,15 @@
+const directMap: Record<string, string> = {
+  "やまだ たろう": "yamada tarou",
+  たろう: "tarou",
+  "ヤマダ ハナコ": "yamada hanako",
+}
+
 export const toRomaji = (str: string): string => {
-  // Simple mock implementation that returns the input string
-  // In real usage, this would convert Japanese to Romaji
-  return str
+  let result = str
+
+  Object.entries(directMap).forEach(([key, value]) => {
+    result = result.replace(new RegExp(key, "g"), value)
+  })
+
+  return result
 }

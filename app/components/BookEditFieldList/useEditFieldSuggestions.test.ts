@@ -1,5 +1,5 @@
 import type { Category, Metadata } from "@/models/calibre"
-import { renderHook } from "@testing-library/react-hooks"
+import { renderHook } from "@testing-library/react"
 import { useEditFieldSuggestions } from "./useEditFieldSuggestions"
 
 describe("useEditFieldSuggestions", () => {

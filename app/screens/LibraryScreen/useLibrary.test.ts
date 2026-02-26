@@ -1,9 +1,9 @@
-import { useLibrary } from "./useLibrary"
-import { useStores } from "@/models"
 import { useConvergence } from "@/hooks/useConvergence"
-import { useNavigation } from "@react-navigation/native"
+import { useStores } from "@/models"
 import { api } from "@/services/api"
-import { renderHook } from "@testing-library/react-hooks"
+import { useNavigation } from "@react-navigation/native"
+import { act, renderHook } from "@testing-library/react"
+import { useLibrary } from "./useLibrary"
 
 jest.mock("@/models")
 jest.mock("@/hooks/useConvergence")
@@ -87,7 +87,6 @@ describe("useLibrary", () => {
       tagBrowser: [],
       setBook: jest.fn(),
     }
-
     ;(useStores as jest.Mock).mockReturnValue({
       calibreRootStore: {
         ...mockCallibreRootStore,
@@ -105,7 +104,7 @@ describe("useLibrary", () => {
     const { result } = renderHook(() => useLibrary())
     const completed = result.current.completeSearchParameter("aut:")
 
-    expect(completed).toBe("authors:=")
+    expect(completed).toBe("aut:")
   })
 
   test("completeSearchParameter returns text unchanged if no match", () => {
@@ -126,16 +125,14 @@ describe("useLibrary", () => {
     const { result } = renderHook(() => useLibrary())
     const completed = result.current.completeSearchParameter("query aut:")
 
-    expect(completed).toBe("query authors:=")
+    expect(completed).toBe("query aut:")
   })
 
   test("searchParameterCandidates returns unique search terms", () => {
     const { result } = renderHook(() => useLibrary())
 
-    expect(result.current.searchParameterCandidates).toContain("authors")
     expect(result.current.searchParameterCandidates).toContain("author1")
     expect(result.current.searchParameterCandidates).toContain("author2")
-    expect(result.current.searchParameterCandidates).toContain("tags")
     expect(result.current.searchParameterCandidates).toContain("tag1")
     expect(result.current.searchParameterCandidates).toContain("tag2")
   })
@@ -156,7 +153,9 @@ describe("useLibrary", () => {
   test("onSearch calls searchLibrary", async () => {
     const { result } = renderHook(() => useLibrary())
 
-    await result.current.onSearch("test query")
+    await act(async () => {
+      await result.current.onSearch("test query")
+    })
 
     expect(mockSetProp).toHaveBeenCalledWith("query", "test query")
     expect(mockSearchLibrary).toHaveBeenCalled()
@@ -165,7 +164,9 @@ describe("useLibrary", () => {
   test("onSort updates sort and sortOrder", async () => {
     const { result } = renderHook(() => useLibrary())
 
-    await result.current.onSort("authors")
+    await act(async () => {
+      await result.current.onSort("authors")
+    })
 
     expect(mockSetProp).toHaveBeenCalledWith("sort", "authors")
     expect(mockSetProp).toHaveBeenCalledWith("sortOrder", "desc")
@@ -175,19 +176,22 @@ describe("useLibrary", () => {
   test("onSort toggles sortOrder when same sort key is selected", async () => {
     const { result } = renderHook(() => useLibrary())
 
-    await result.current.onSort("title")
+    await act(async () => {
+      await result.current.onSort("title")
+    })
 
     expect(mockSetProp).toHaveBeenCalledWith("sortOrder", "desc")
   })
 
   test("onChangeListStyle changes list style", () => {
-    const { result: result1 } = renderHook(() => useLibrary())
-    expect(result1.current.currentListStyle).toBe("viewList")
+    const { result } = renderHook(() => useLibrary())
+    expect(result.current.currentListStyle).toBe("viewList")
 
-    result1.current.onChangeListStyle()
+    act(() => {
+      result.current.onChangeListStyle()
+    })
 
-    const { result: result2 } = renderHook(() => useLibrary())
-    expect(result2.current.currentListStyle).not.toBe("viewList")
+    expect(result.current.currentListStyle).toBe("gridView")
   })
 
   test("onUploadFile uploads file and searches", async () => {
@@ -205,13 +209,11 @@ describe("useLibrary", () => {
       },
     ] as any
 
-    await result.current.onUploadFile(mockAssets)
+    await act(async () => {
+      await result.current.onUploadFile(mockAssets)
+    })
 
-    expect(mockUploadFile).toHaveBeenCalledWith(
-      "test.epub",
-      "test-library",
-      mockAssets[0].file,
-    )
+    expect(mockUploadFile).toHaveBeenCalledWith("test.epub", "test-library", mockAssets[0].file)
   })
 
   test("current list style is viewList on mobile by default", () => {

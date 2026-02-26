@@ -1,21 +1,22 @@
+import { useBreakpointValue } from "@gluestack-ui/themed"
+import { renderHook } from "@testing-library/react"
+import * as ScreenOrientation from "expo-screen-orientation"
 import { useConvergence } from "./useConvergence"
 import useOrientation from "./useOrientation"
-import { useBreakpointValue } from "@gluestack-ui/themed"
 
 jest.mock("./useOrientation")
+jest.mock("@gluestack-ui/themed", () => ({
+  useBreakpointValue: jest.fn(),
+}))
+
 describe("useConvergent test", () => {
   test("If screen is large, orientation is always horizontal", () => {
-    jest.mock("@gluestack-ui/themed", () => {
-      useBreakpointValue: jest.fn().mockReturnValue(true)
-    })
+    ;(useBreakpointValue as jest.Mock).mockReturnValue(true)
+    ;(useOrientation as jest.Mock).mockReturnValue(ScreenOrientation.Orientation.PORTRAIT_UP)
 
-    jest.mock("./useOrientation", () => {
-      3
-    })
+    const { result } = renderHook(() => useConvergence())
 
-    const convergenceHook = useConvergence()
-
-    expect(convergenceHook.isLarge).toBeTruthy()
-    expect(convergenceHook.orientation).toBe("horizontal")
+    expect(result.current.isLarge).toBeTruthy()
+    expect(result.current.orientation).toBe("horizontal")
   })
 })

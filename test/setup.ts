@@ -34,6 +34,8 @@ jest.mock("i18n-js", () => ({
   },
 }))
 
+jest.mock("reactotron-react-native", () => ({}))
+
 declare const tron // eslint-disable-line @typescript-eslint/no-unused-vars
 
 jest.useFakeTimers()

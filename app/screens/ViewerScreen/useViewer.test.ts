@@ -1,7 +1,8 @@
-import { useViewer } from "./useViewer"
 import { useStores } from "@/models"
-import { useConvergence } from "../../hooks/useConvergence"
+import { renderHook } from "@testing-library/react"
 import { useModal } from "react-native-modalfy"
+import { useConvergence } from "../../hooks/useConvergence"
+import { useViewer } from "./useViewer"
 
 jest.mock("@/models")
 jest.mock("../../hooks/useConvergence")
@@ -72,13 +73,13 @@ describe("useViewer", () => {
   })
 
   test("initializes with default values", () => {
-    const result = useViewer()
+    const { result } = renderHook(() => useViewer())
 
-    expect(result.showMenu).toBe(false)
-    expect(result.initialPage).toBe(0)
-    expect(result.orientation).toBe("vertical")
-    expect(result.selectedBook).toBe(mockSelectedBook)
-    expect(result.selectedLibrary).toBe(mockSelectedLibrary)
+    expect(result.current.showMenu).toBe(false)
+    expect(result.current.initialPage).toBe(0)
+    expect(result.current.orientation).toBe("vertical")
+    expect(result.current.selectedBook).toBe(mockSelectedBook)
+    expect(result.current.selectedLibrary).toBe(mockSelectedLibrary)
   })
 
   test("returns correct reading style for vertical orientation", () => {
@@ -87,9 +88,9 @@ describe("useViewer", () => {
       orientation: "vertical",
     })
 
-    const result = useViewer()
+    const { result } = renderHook(() => useViewer())
 
-    expect(result.readingStyle).toBe("singlePage")
+    expect(result.current.readingStyle).toBe("singlePage")
   })
 
   test("returns correct reading style for horizontal orientation", () => {
@@ -98,9 +99,9 @@ describe("useViewer", () => {
       orientation: "horizontal",
     })
 
-    const result = useViewer()
+    const { result } = renderHook(() => useViewer())
 
-    expect(result.readingStyle).toBe("facingPageWithTitle")
+    expect(result.current.readingStyle).toBe("facingPageWithTitle")
   })
 
   test("returns correct page direction for vertical orientation", () => {
@@ -109,9 +110,9 @@ describe("useViewer", () => {
       orientation: "vertical",
     })
 
-    const result = useViewer()
+    const { result } = renderHook(() => useViewer())
 
-    expect(result.pageDirection).toBe("left")
+    expect(result.current.pageDirection).toBe("left")
   })
 
   test("returns correct page direction for horizontal orientation", () => {
@@ -120,61 +121,61 @@ describe("useViewer", () => {
       orientation: "horizontal",
     })
 
-    const result = useViewer()
+    const { result } = renderHook(() => useViewer())
 
-    expect(result.pageDirection).toBe("left")
+    expect(result.current.pageDirection).toBe("left")
   })
 
   test("onManageMenu function exists", () => {
-    const result = useViewer()
+    const { result } = renderHook(() => useViewer())
 
-    expect(typeof result.onManageMenu).toBe("function")
+    expect(typeof result.current.onManageMenu).toBe("function")
   })
 
   test("onSetBookReadingStyle calls setProp with correct style", () => {
-    const result = useViewer()
+    const { result } = renderHook(() => useViewer())
 
-    result.onSetBookReadingStyle("facingPage")
+    result.current.onSetBookReadingStyle("facingPage")
 
     expect(mockSetProp).toHaveBeenCalled()
   })
 
   test("onSetPageDirection calls setProp with correct direction", () => {
-    const result = useViewer()
+    const { result } = renderHook(() => useViewer())
 
-    result.onSetPageDirection("right")
+    result.current.onSetPageDirection("right")
 
     expect(mockSetProp).toHaveBeenCalled()
   })
 
   test("onPageChange updates current page in history", async () => {
-    const result = useViewer()
+    const { result } = renderHook(() => useViewer())
 
-    await result.onPageChange(3)
+    await result.current.onPageChange(3)
 
     expect(mockSetCurrentPage).toHaveBeenCalledWith(3)
   })
 
   test("onPageChange does not update if page is same as current", async () => {
-    const result = useViewer()
+    const { result } = renderHook(() => useViewer())
 
     mockSetCurrentPage.mockClear()
 
-    await result.onPageChange(2)
+    await result.current.onPageChange(2)
 
     expect(mockSetCurrentPage).not.toHaveBeenCalled()
   })
 
   test("cachedPathList returns history cached path", () => {
-    const result = useViewer()
+    const { result } = renderHook(() => useViewer())
 
-    expect(result.cachedPathList).toEqual(["cached1.png", "cached2.png", "cached3.png"])
+    expect(result.current.cachedPathList).toEqual(["cached1.png", "cached2.png", "cached3.png"])
   })
 
   test("totalPage returns cached path length when available", () => {
-    const result = useViewer()
+    const { result } = renderHook(() => useViewer())
 
-    expect(result.totalPage).toBe(3)
+    expect(result.current.totalPage).toBe(3)
   })
 
   test("totalPage returns book path length when no cache", () => {
@@ -182,7 +183,6 @@ describe("useViewer", () => {
       ...mockHistory,
       cachedPath: undefined,
     }
-
     ;(useStores as jest.Mock).mockReturnValue({
       calibreRootStore: {
         selectedLibrary: mockSelectedLibrary,
@@ -190,15 +190,15 @@ describe("useViewer", () => {
       },
     })
 
-    const result = useViewer()
+    const { result } = renderHook(() => useViewer())
 
-    expect(result.totalPage).toBe(5)
+    expect(result.current.totalPage).toBe(5)
   })
 
   test("onLastPage opens rating modal", () => {
-    const result = useViewer()
+    const { result } = renderHook(() => useViewer())
 
-    result.onLastPage()
+    result.current.onLastPage()
 
     expect(mockOpenModal).toHaveBeenCalledWith(
       "ViewerRatingModal",
@@ -209,24 +209,24 @@ describe("useViewer", () => {
   })
 
   test("onLastPage does not open modal twice with same prompt key", () => {
-    const result = useViewer()
+    const { result } = renderHook(() => useViewer())
 
-    result.onLastPage()
+    result.current.onLastPage()
     mockOpenModal.mockClear()
 
-    result.onLastPage()
+    result.current.onLastPage()
 
     expect(mockOpenModal).not.toHaveBeenCalled()
   })
 
   test("returns properties when book and library exist", () => {
-    const result = useViewer()
+    const { result } = renderHook(() => useViewer())
 
-    expect(result.selectedBook).not.toBeNull()
-    expect(result.selectedLibrary).not.toBeNull()
-    expect(result.orientation).toBeDefined()
-    expect(result.onPageChange).toBeDefined()
-    expect(result.onLastPage).toBeDefined()
+    expect(result.current.selectedBook).not.toBeNull()
+    expect(result.current.selectedLibrary).not.toBeNull()
+    expect(result.current.orientation).toBeDefined()
+    expect(result.current.onPageChange).toBeDefined()
+    expect(result.current.onLastPage).toBeDefined()
   })
 
   test("creates default client setting if not found", () => {
@@ -240,9 +240,9 @@ describe("useViewer", () => {
       },
     })
 
-    const result = useViewer()
+    const { result } = renderHook(() => useViewer())
 
-    expect(result.readingStyle).toBe("singlePage")
+    expect(result.current.readingStyle).toBe("singlePage")
   })
 
   test("handles when selected library is null", () => {
@@ -253,16 +253,16 @@ describe("useViewer", () => {
       },
     })
 
-    const result = useViewer()
+    const { result } = renderHook(() => useViewer())
 
-    expect(result.selectedLibrary).toBeNull()
+    expect(result.current.selectedLibrary).toBeNull()
   })
 
   test("history format matches when selected format is defined", () => {
-    const result = useViewer()
+    const { result } = renderHook(() => useViewer())
 
     // When selectedFormat matches, history should be found
-    expect(result.selectedBook?.metaData.selectedFormat).toBe("pdf")
+    expect(result.current.selectedBook?.metaData.selectedFormat).toBe("pdf")
   })
 
   test("returns initial page 0 when no history exists", () => {
@@ -273,8 +273,8 @@ describe("useViewer", () => {
       },
     })
 
-    const result = useViewer()
+    const { result } = renderHook(() => useViewer())
 
-    expect(result.initialPage).toBe(0)
+    expect(result.current.initialPage).toBe(0)
   })
 })

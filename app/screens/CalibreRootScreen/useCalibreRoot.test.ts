@@ -1,9 +1,12 @@
-import { useCalibreRoot } from "./useCalibreRoot"
 import { useStores } from "@/models"
 import { useNavigation } from "@react-navigation/native"
+import { renderHook } from "@testing-library/react"
 import { values } from "mobx"
+import { useCalibreRoot } from "./useCalibreRoot"
 
-jest.mock("@/models")
+jest.mock("@/models", () => ({
+  useStores: jest.fn(),
+}))
 jest.mock("@react-navigation/native")
 jest.mock("mobx")
 
@@ -44,37 +47,37 @@ describe("useCalibreRoot", () => {
   })
 
   test("returns library array from store", () => {
-    const result = useCalibreRoot()
+    const { result } = renderHook(() => useCalibreRoot())
 
-    expect(result.library).toBeDefined()
-    expect(Array.isArray(result.library)).toBe(true)
+    expect(result.current.library).toBeDefined()
+    expect(Array.isArray(result.current.library)).toBe(true)
   })
 
   test("returns onLibraryPress function", () => {
-    const result = useCalibreRoot()
+    const { result } = renderHook(() => useCalibreRoot())
 
-    expect(result.onLibraryPress).toBeDefined()
-    expect(typeof result.onLibraryPress).toBe("function")
+    expect(result.current.onLibraryPress).toBeDefined()
+    expect(typeof result.current.onLibraryPress).toBe("function")
   })
 
   test("onLibraryPress calls setLibrary with correct id", () => {
-    const result = useCalibreRoot()
+    const { result } = renderHook(() => useCalibreRoot())
 
-    result.onLibraryPress("library1")
+    result.current.onLibraryPress("library1")
 
     expect(mockSetLibrary).toHaveBeenCalledWith("library1")
   })
 
   test("onLibraryPress navigates to Library screen", () => {
-    const result = useCalibreRoot()
+    const { result } = renderHook(() => useCalibreRoot())
 
-    result.onLibraryPress("library1")
+    result.current.onLibraryPress("library1")
 
     expect(mockNavigate).toHaveBeenCalledWith("Library")
   })
 
   test("onLibraryPress calls setLibrary before navigating", () => {
-    const result = useCalibreRoot()
+    const { result } = renderHook(() => useCalibreRoot())
     const callOrder: string[] = []
 
     mockSetLibrary.mockImplementation(() => {
@@ -84,25 +87,25 @@ describe("useCalibreRoot", () => {
       callOrder.push("navigate")
     })
 
-    result.onLibraryPress("library1")
+    result.current.onLibraryPress("library1")
 
     expect(callOrder).toEqual(["setLibrary", "navigate"])
   })
 
   test("handles different library ids", () => {
-    const result = useCalibreRoot()
+    const { result } = renderHook(() => useCalibreRoot())
 
-    result.onLibraryPress("library2")
+    result.current.onLibraryPress("library2")
 
     expect(mockSetLibrary).toHaveBeenCalledWith("library2")
     expect(mockNavigate).toHaveBeenCalledWith("Library")
   })
 
   test("onLibraryPress can be called multiple times", () => {
-    const result = useCalibreRoot()
+    const { result } = renderHook(() => useCalibreRoot())
 
-    result.onLibraryPress("library1")
-    result.onLibraryPress("library2")
+    result.current.onLibraryPress("library1")
+    result.current.onLibraryPress("library2")
 
     expect(mockSetLibrary).toHaveBeenCalledTimes(2)
     expect(mockNavigate).toHaveBeenCalledTimes(2)
@@ -114,11 +117,11 @@ describe("useCalibreRoot", () => {
       { id: "lib2", books: new Map() },
     ])
 
-    const result = useCalibreRoot()
+    const { result } = renderHook(() => useCalibreRoot())
 
-    expect(result.library).toHaveLength(2)
-    expect(result.library[0].id).toBe("lib1")
-    expect(result.library[1].id).toBe("lib2")
+    expect(result.current.library).toHaveLength(2)
+    expect(result.current.library[0].id).toBe("lib1")
+    expect(result.current.library[1].id).toBe("lib2")
   })
 
   test("library returns empty array when libraryMap is empty", () => {
@@ -130,13 +133,13 @@ describe("useCalibreRoot", () => {
     })
     ;(values as jest.Mock).mockReturnValue([])
 
-    const result = useCalibreRoot()
+    const { result } = renderHook(() => useCalibreRoot())
 
-    expect(result.library).toEqual([])
+    expect(result.current.library).toEqual([])
   })
 
   test("getLibraryMap is called from calibreRootStore", () => {
-    useCalibreRoot()
+    renderHook(() => useCalibreRoot())
 
     expect(useStores).toHaveBeenCalled()
     const stores = (useStores as jest.Mock).mock.results[0].value

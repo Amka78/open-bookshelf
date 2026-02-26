@@ -1,4 +1,4 @@
-import { renderHook } from "@testing-library/react-hooks"
+import { renderHook } from "@testing-library/react"
 import { type FlashListHandle, useBookViewerState } from "./useBookViewerState"
 
 describe("useBookViewerState", () => {
@@ -61,6 +61,6 @@ describe("useBookViewerState", () => {
       }),
     )
 
-    expect(result.current.getAutoPageTurning).toBeDefined()
+    expect(result.current.setAutoPageTurning).toBeDefined()
   })
 })
