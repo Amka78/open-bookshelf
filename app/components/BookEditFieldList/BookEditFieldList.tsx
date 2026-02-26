@@ -51,11 +51,26 @@ export function BookEditFieldList(props: BookEditFieldListProps) {
     return mappedSuggestions
   }, [props.tagBrowser])
 
+  const languageCodeSuggestions = useMemo(() => {
+    const langNames = props.book.metaData?.langNames
+
+    if (!langNames) {
+      return undefined
+    }
+
+    return Array.from(langNames.keys())
+  }, [props.book.metaData?.langNames])
+
   const fields = EditFieldSort.map((label) => {
     const value = props.fieldMetadataList.get(label)
     if (!value || !value.isEditable || !value.name) {
       return null
     }
+
+    const suggestions =
+      label === "languages" && (value.linkColumn === "lamg_code" || value.linkColumn === "lang_code")
+        ? languageCodeSuggestions
+        : suggestionMap.get(value.label)
 
     if (label === "series") {
       const seriesIndexName = "seriesIndex" as Path<Metadata>
@@ -71,7 +86,7 @@ export function BookEditFieldList(props: BookEditFieldListProps) {
               <FormInputField
                 control={props.control}
                 name={seriesName}
-                suggestions={suggestionMap.get(value.label)}
+                suggestions={suggestions}
                 width="$full"
               />
             </Input>
@@ -92,7 +107,7 @@ export function BookEditFieldList(props: BookEditFieldListProps) {
         book={props.book}
         control={props.control}
         fieldMetadata={value}
-        suggestions={suggestionMap.get(value.label)}
+        suggestions={suggestions}
       />
     )
   })

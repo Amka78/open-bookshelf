@@ -9,6 +9,7 @@ export const MetadataModel = types
     authors: types.array(types.string),
     formats: types.array(types.string),
     lastModified: types.maybeNull(types.string),
+    series: types.maybeNull(types.string),
     seriesIndex: types.maybeNull(types.number),
     size: types.maybeNull(types.number),
     sort: types.maybeNull(types.string),

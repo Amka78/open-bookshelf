@@ -26,6 +26,27 @@ export function BookEditField(props: BookEditFieldProps) {
   let field: React.ReactNode
   const { toSortValue, toAuthorSortValue } = useRomajiText()
 
+  const toSeriesValues = (value: unknown) => {
+    const title = String(value ?? "")
+      .replace(/\s+/g, " ")
+      .trim()
+    const match = title.match(/^(.*)\s(\d+(?:\.\d+)?)$/)
+
+    if (match) {
+      const seriesName = match[1].trim()
+      const seriesIndex = Number(match[2])
+      return {
+        series: seriesName.length > 0 ? seriesName : null,
+        seriesIndex,
+      }
+    }
+
+    return {
+      series: title.length > 0 ? title : null,
+      seriesIndex: null,
+    }
+  }
+
   const label = props.fieldMetadata.label as Path<Metadata>
   const authorsController = useController({
     control: props.control,
@@ -42,6 +63,14 @@ export function BookEditField(props: BookEditFieldProps) {
   const sortController = useController({
     control: props.control,
     name: "sort" as Path<Metadata>,
+  })
+  const seriesController = useController({
+    control: props.control,
+    name: "series" as Path<Metadata>,
+  })
+  const seriesIndexController = useController({
+    control: props.control,
+    name: "seriesIndex" as Path<Metadata>,
   })
 
   switch (props.fieldMetadata.datatype) {
@@ -122,6 +151,16 @@ export function BookEditField(props: BookEditFieldProps) {
             onPress={() => {
               const converted = toSortValue(titleController.field.value)
               sortController.field.onChange(converted)
+            }}
+          />
+          <TooltipIconButton
+            name="format-list-numbered"
+            iconSize="sm"
+            tooltipTx="bookEditScreen.titleSeriesAutoTooltip"
+            onPress={() => {
+              const converted = toSeriesValues(titleController.field.value)
+              seriesController.field.onChange(converted.series)
+              seriesIndexController.field.onChange(converted.seriesIndex)
             }}
           />
         </HStack>

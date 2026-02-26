@@ -69,6 +69,7 @@ export type MetadataType = {
   publisher: string
   author_sort: string
   last_modified: string
+  series: string
   series_index: number
   sort: string
   size: number

@@ -16,6 +16,7 @@ const ja: Translations = {
     save: "保存",
     authorSortAutoTooltip: "著者から author_sort を自動生成",
     titleSortAutoTooltip: "タイトルから sort を自動生成",
+    titleSeriesAutoTooltip: "タイトル末尾の数字を series / series_index に分割",
   },
   errorScreen: {
     title: "問題が発生しました",

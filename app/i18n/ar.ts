@@ -16,6 +16,7 @@ const ar: Translations = {
     save: "حفظ",
     authorSortAutoTooltip: "إنشاء author_sort تلقائيًا من المؤلفين",
     titleSortAutoTooltip: "إنشاء sort تلقائيًا من العنوان",
+    titleSeriesAutoTooltip: "تقسيم الرقم الأخير من العنوان إلى series / series_index",
   },
   errorScreen: {
     title: "هناك خطأ ما",

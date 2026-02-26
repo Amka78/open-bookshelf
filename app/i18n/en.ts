@@ -14,6 +14,7 @@ const en = {
     save: "Save",
     authorSortAutoTooltip: "Generate author sort from authors",
     titleSortAutoTooltip: "Generate sort from title",
+    titleSeriesAutoTooltip: "Split trailing number from title to series/series_index",
   },
   errorScreen: {
     title: "Something went wrong!",
