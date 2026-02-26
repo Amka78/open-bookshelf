@@ -5,16 +5,17 @@ import {
   MenuItem,
   MenuItemLabel as MenuItemLabelOrigin,
   Pressable,
-  VStack as VStackOrigin,
   Text,
+  VStack as VStackOrigin,
 } from "@gluestack-ui/themed"
-import { type ComponentProps, useState } from "react"
+import type { ComponentProps } from "react"
 
 import { HStack, IconButton, MaterialCommunityIcon, TooltipIconButton } from "@/components"
 import { AutoPageTurningIconButton } from "@/components/AutoPageTurningIconButton"
+import type { ModalStackParams } from "@/components/Modals/Types"
 import { useConvergence } from "@/hooks/useConvergence"
 import { useModal } from "react-native-modalfy"
-import type { ModalStackParams } from "@/components/Modals/Types"
+import { useViewerMenuState } from "./useViewerMenuState"
 
 export type ViewerMenuProps = {
   pageDirection: "left" | "right"
@@ -35,25 +36,25 @@ function MenuItemLabel(props: MenuItemLabelProps) {
   const { descriptionTx, ...restProps } = props
   return (
     <VStackOrigin {...restProps}>
-      <MenuItemLabelOrigin>
-        {props.tx ? translate(props.tx) : props.children}
-      </MenuItemLabelOrigin>
+      <MenuItemLabelOrigin>{props.tx ? translate(props.tx) : props.children}</MenuItemLabelOrigin>
       {descriptionTx ? (
-        <Text fontSize={"$xs"} color="$textSecondary">{translate(descriptionTx)}</Text>
+        <Text fontSize={"$xs"} color="$textSecondary">
+          {translate(descriptionTx)}
+        </Text>
       ) : null}
     </VStackOrigin>
   )
 }
 export function ViewerMenu(props: ViewerMenuProps) {
-  const [pageDirectionState, setPageDirectionState] = useState(props.pageDirection)
-  const [readingStyleState, setReadingStyleState] = useState(props.readingStyle)
-
   const convergenceHook = useConvergence()
   const modal = useModal<ModalStackParams>()
-  const onUpdateReadingStyle = (readingStyle: BookReadingStyleType) => {
-    props.onSelectReadingStyle(readingStyle)
-    setReadingStyleState(readingStyle)
-  }
+  const { pageDirectionState, readingStyleState, onUpdateReadingStyle, onTogglePageDirection } =
+    useViewerMenuState({
+      pageDirection: props.pageDirection,
+      readingStyle: props.readingStyle,
+      onSelectReadingStyle: props.onSelectReadingStyle,
+      onSelectPageDirection: props.onSelectPageDirection,
+    })
 
   return (
     <HStack gap="$3">
@@ -75,18 +76,18 @@ export function ViewerMenu(props: ViewerMenuProps) {
           )
         }}
       >
-        <MenuItem 
-          textValue="singlePage" 
-          onPress={() => onUpdateReadingStyle("singlePage")}
-        >
-          <MenuItemLabel tx={"bookReadingStyle.singlePage"} descriptionTx="bookReadingStyle.singlePageDescription" />
+        <MenuItem textValue="singlePage" onPress={() => onUpdateReadingStyle("singlePage")}>
+          <MenuItemLabel
+            tx={"bookReadingStyle.singlePage"}
+            descriptionTx="bookReadingStyle.singlePageDescription"
+          />
         </MenuItem>
         {convergenceHook.orientation === "horizontal" ? (
-          <MenuItem 
-            textValue="facingPage" 
-            onPress={() => onUpdateReadingStyle("facingPage")}
-          >
-            <MenuItemLabel tx="bookReadingStyle.facingPage" descriptionTx="bookReadingStyle.facingPageDescription" />
+          <MenuItem textValue="facingPage" onPress={() => onUpdateReadingStyle("facingPage")}>
+            <MenuItemLabel
+              tx="bookReadingStyle.facingPage"
+              descriptionTx="bookReadingStyle.facingPageDescription"
+            />
           </MenuItem>
         ) : null}
         {convergenceHook.orientation === "horizontal" ? (
@@ -94,27 +95,35 @@ export function ViewerMenu(props: ViewerMenuProps) {
             textValue="facingPageWithTitle"
             onPress={() => onUpdateReadingStyle("facingPageWithTitle")}
           >
-            <MenuItemLabel tx="bookReadingStyle.facingPageWithTitle" descriptionTx="bookReadingStyle.facingPageWithTitleDescription" />
+            <MenuItemLabel
+              tx="bookReadingStyle.facingPageWithTitle"
+              descriptionTx="bookReadingStyle.facingPageWithTitleDescription"
+            />
           </MenuItem>
         ) : null}
         <MenuItem
           textValue={"verticalScroll"}
           onPress={() => onUpdateReadingStyle("verticalScroll")}
         >
-          <MenuItemLabel tx="bookReadingStyle.verticalScroll" descriptionTx="bookReadingStyle.verticalScrollDescription" />
+          <MenuItemLabel
+            tx="bookReadingStyle.verticalScroll"
+            descriptionTx="bookReadingStyle.verticalScrollDescription"
+          />
         </MenuItem>
       </Menu>
       {props.readingStyle !== "verticalScroll" ? (
         <TooltipIconButton
           name={`arrow-${pageDirectionState}-bold`}
           iconSize={"md-"}
-          tooltipTx={(pageDirectionState === "left" ? "pageDirection.leftToRight" : "pageDirection.rightToLeft") as MessageKey}
+          tooltipTx={
+            (pageDirectionState === "left"
+              ? "pageDirection.leftToRight"
+              : "pageDirection.rightToLeft") as MessageKey
+          }
           onPress={() => {
             console.tron.log(`current page direction: ${pageDirectionState}`)
-            const direction = pageDirectionState === "left" ? "right" : "left"
+            const direction = onTogglePageDirection()
             console.tron.log(`next page direction: ${direction}`)
-            props.onSelectPageDirection(direction)
-            setPageDirectionState(direction)
           }}
         />
       ) : null}
@@ -123,7 +132,11 @@ export function ViewerMenu(props: ViewerMenuProps) {
         isActive={props.autoPageTurning}
         onPress={props.onToggleAutoPageTurning}
         iconSize="md-"
-        tooltipTx={(props.autoPageTurning ? "autoPageTurning.tooltipActive" : "autoPageTurning.tooltipInactive") as MessageKey}
+        tooltipTx={
+          (props.autoPageTurning
+            ? "autoPageTurning.tooltipActive"
+            : "autoPageTurning.tooltipInactive") as MessageKey
+        }
       />
       <IconButton
         name="cog-outline"

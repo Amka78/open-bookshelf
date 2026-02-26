@@ -1,9 +1,9 @@
 import { Box, FormInputField, HStack, Input, ScrollView, Text, VStack } from "@/components"
 import type { Book, Category, FieldMetadataMap, Metadata } from "@/models/calibre"
-import { lowerCaseToCamelCase } from "@/utils/convert"
-import { useMemo, type ComponentProps } from "react"
+import type { ComponentProps } from "react"
 import type { Control, Path } from "react-hook-form"
 import { BookEditField } from "./BookEditField"
+import { useEditFieldSuggestions } from "./useEditFieldSuggestions"
 
 export type BookEditFieldListProps = {
   fieldMetadataList: FieldMetadataMap
@@ -28,38 +28,10 @@ const EditFieldSort = [
   "comments",
 ]
 export function BookEditFieldList(props: BookEditFieldListProps) {
-  const suggestionMap = useMemo(() => {
-    const mappedSuggestions = new Map<string, string[]>()
-
-    props.tagBrowser?.forEach((category) => {
-      const metadataLabel = lowerCaseToCamelCase(category.category)
-      const suggestions = new Set<string>()
-
-      category.subCategory.forEach((subCategory) => {
-        subCategory.children.forEach((node) => {
-          if (node.name) {
-            suggestions.add(node.name)
-          }
-        })
-      })
-
-      if (suggestions.size > 0) {
-        mappedSuggestions.set(metadataLabel, Array.from(suggestions))
-      }
-    })
-
-    return mappedSuggestions
-  }, [props.tagBrowser])
-
-  const languageCodeSuggestions = useMemo(() => {
-    const langNames = props.book.metaData?.langNames
-
-    if (!langNames) {
-      return undefined
-    }
-
-    return Array.from(langNames.keys())
-  }, [props.book.metaData?.langNames])
+  const { suggestionMap, languageCodeSuggestions } = useEditFieldSuggestions({
+    tagBrowser: props.tagBrowser,
+    metaData: props.book.metaData,
+  })
 
   const fields = EditFieldSort.map((label) => {
     const value = props.fieldMetadataList.get(label)
@@ -68,7 +40,8 @@ export function BookEditFieldList(props: BookEditFieldListProps) {
     }
 
     const suggestions =
-      label === "languages" && (value.linkColumn === "lamg_code" || value.linkColumn === "lang_code")
+      label === "languages" &&
+      (value.linkColumn === "lamg_code" || value.linkColumn === "lang_code")
         ? languageCodeSuggestions
         : suggestionMap.get(value.label)
 

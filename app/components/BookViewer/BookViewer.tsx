@@ -6,21 +6,17 @@ import {
   PagePressable,
   ViewerHeader,
 } from "@/components"
-import { useViewer } from "@/screens/ViewerScreen/useViewer"
 import { useStores } from "@/models"
 import type { ApppNavigationProp } from "@/navigators"
-import type { BookReadingStyleType } from "@/type/types"
+import { useViewer } from "@/screens/ViewerScreen/useViewer"
 import { usePalette } from "@/theme"
-import { goToNextPage } from "@/utils/pageTurnning"
 import { useNavigation } from "@react-navigation/native"
 import { FlashList, type ListRenderItem } from "@shopify/flash-list"
 import type React from "react"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Platform, StyleSheet, type FlexAlignType, useWindowDimensions } from "react-native"
+import { useCallback, useRef } from "react"
+import { type FlexAlignType, Platform, StyleSheet, useWindowDimensions } from "react-native"
+import { type FacingPageType, type FlashListHandle, useBookViewerState } from "./useBookViewerState"
 
-type FacingPageType = { page1?: number; page2?: number }
-
-type PageStyles = Record<BookReadingStyleType, number[] | FacingPageType[]>
 export type RenderPageProps = {
   page: number
   direction: "next" | "previous"
@@ -41,80 +37,34 @@ export function BookViewer(props: BookViewerProps) {
   const viewerHook = useViewer()
   const { settingStore } = useStores()
 
-  const flashListRef = useRef<FlashList<number | FacingPageType>>(null)
+  const flashListRef = useRef<FlashListHandle>(null)
 
   const dimension = useWindowDimensions()
 
-  const [scrollIndex, setScrollToIndex] = useState(0)
-  const [pages, setPages] = useState<PageStyles>()
-  const [autoPageTurning, setAutoPageTurning] = useState(false)
-  const [autoPageTurnIntervalMs, setAutoPageTurnIntervalMs] = useState(
-    settingStore.autoPageTurnIntervalMs,
-  )
-  const initialPageAppliedRef = useRef(false)
-  const lastPageNotifiedKeyRef = useRef<string>()
   const navigation = useNavigation<ApppNavigationProp>()
   const isWeb = Platform.OS === "web"
-
-  const onAutoPageTurning = useCallback(() => {
-    if (!pages) return
-    const totalPages = pages[viewerHook.readingStyle].length
-    if (totalPages <= 1) return
-
-    setScrollToIndex((prevIndex) => {
-      const nextIndex = goToNextPage(prevIndex, totalPages, 1)
-      flashListRef.current?.scrollToIndex({ index: nextIndex })
-      return nextIndex
-    })
-  }, [pages, viewerHook.readingStyle])
-
-  useEffect(() => {
-    if (!autoPageTurning) {
-      return () => {}
-    }
-
-    const intervalId = setInterval(() => {
-      onAutoPageTurning()
-    }, autoPageTurnIntervalMs)
-
-    return () => {
-      clearInterval(intervalId)
-    }
-  }, [autoPageTurning, autoPageTurnIntervalMs, onAutoPageTurning])
-
-  useEffect(() => {
-    createData(props.totalPage)
-  }, [props.totalPage])
-
-  useEffect(() => {
-    initialPageAppliedRef.current = false
-  }, [props.initialPage])
-
-  useEffect(() => {
-    if (!pages || props.initialPage === undefined || initialPageAppliedRef.current) {
-      return
-    }
-
-    const clampedPage = Math.max(0, Math.min(props.initialPage, Math.max(props.totalPage - 1, 0)))
-
-    let initialIndex = clampedPage
-    if (
-      viewerHook.readingStyle === "facingPage" ||
-      viewerHook.readingStyle === "facingPageWithTitle"
-    ) {
-      const pageList = pages[viewerHook.readingStyle] as FacingPageType[]
-      const foundIndex = pageList.findIndex((value) => {
-        return value.page1 === clampedPage || value.page2 === clampedPage
-      })
-      initialIndex = foundIndex >= 0 ? foundIndex : 0
-    }
-
-    setScrollToIndex(initialIndex)
-    requestAnimationFrame(() => {
-      flashListRef.current?.scrollToIndex({ index: initialIndex, animated: false })
-    })
-    initialPageAppliedRef.current = true
-  }, [pages, props.initialPage, props.totalPage, viewerHook.readingStyle])
+  const {
+    pages,
+    data,
+    scrollIndex,
+    currentPage,
+    autoPageTurning,
+    setAutoPageTurning,
+    autoPageTurnIntervalMs,
+    setAutoPageTurnIntervalMs,
+    onViewableItemsChanged,
+    scrollToIndex,
+    getScrollIndexForPage,
+    getIndexForReadingStyleChange,
+  } = useBookViewerState({
+    totalPage: props.totalPage,
+    initialPage: props.initialPage,
+    readingStyle: viewerHook.readingStyle,
+    onPageChange: props.onPageChange,
+    onLastPage: props.onLastPage,
+    initialAutoPageTurnIntervalMs: settingStore.autoPageTurnIntervalMs,
+    flashListRef,
+  })
 
   const renderPage = useCallback(
     (renderProps: RenderPageProps) => {
@@ -139,8 +89,7 @@ export function BookViewer(props: BookViewerProps) {
           onPageChanging={(page) => {
             console.tron.log(`current scroll index ${scrollIndex}`)
             console.tron.log(`page pressed next page:${page}`)
-            setScrollToIndex(page)
-            flashListRef.current?.scrollToIndex({ index: page })
+            scrollToIndex(page)
           }}
           totalPages={pages[viewerHook.readingStyle].length}
           transitionPages={1}
@@ -150,7 +99,7 @@ export function BookViewer(props: BookViewerProps) {
         </PagePressable>
       )
     },
-    [pages, props.renderPage, scrollIndex, viewerHook],
+    [pages, props.renderPage, scrollIndex, scrollToIndex, viewerHook],
   )
 
   const renderItem: ListRenderItem<number | FacingPageType> = useCallback(
@@ -194,71 +143,8 @@ export function BookViewer(props: BookViewerProps) {
     [dimension.height, dimension.width, renderPage, viewerHook.pageDirection],
   )
 
-  const data = useMemo(() => {
-    if (!pages) return []
-    return pages[viewerHook.readingStyle]
-  }, [pages, viewerHook.readingStyle])
-
   const estimatedItemSize =
     viewerHook.readingStyle === "verticalScroll" ? dimension.height : dimension.width
-
-  const onViewableItemsChanged = useRef(
-    (info: { viewableItems: { index?: number | null; isViewable?: boolean }[] }) => {
-      const nextIndex = info.viewableItems
-        .filter((item) => item.isViewable && item.index !== undefined && item.index !== null)
-        .map((item) => item.index as number)
-        .sort((a, b) => a - b)
-        .pop()
-
-      if (nextIndex === undefined || nextIndex === null) return
-      setScrollToIndex((prev) => (prev === nextIndex ? prev : nextIndex))
-    },
-  ).current
-
-  const currentPage = useMemo(() => {
-    if (!pages) return 0
-
-    if (scrollIndex !== 0) {
-      if (
-        viewerHook.readingStyle === "singlePage" ||
-        viewerHook.readingStyle === "verticalScroll"
-      ) {
-        return scrollIndex
-      }
-      if (
-        viewerHook.readingStyle === "facingPage" ||
-        viewerHook.readingStyle === "facingPageWithTitle"
-      ) {
-        return (pages[viewerHook.readingStyle][scrollIndex] as FacingPageType).page1 ?? 0
-      }
-    }
-
-    return 0
-  }, [pages, scrollIndex, viewerHook.readingStyle])
-
-  useEffect(() => {
-    props.onPageChange?.(currentPage)
-  }, [currentPage, props.onPageChange])
-
-  useEffect(() => {
-    if (!pages) return
-
-    const totalPageCount = pages[viewerHook.readingStyle].length
-    if (totalPageCount <= 0) return
-
-    if (scrollIndex >= totalPageCount - 1) {
-      const lastPageKey = `${viewerHook.readingStyle}:${scrollIndex}:${totalPageCount}`
-      if (lastPageNotifiedKeyRef.current === lastPageKey) {
-        return
-      }
-
-      lastPageNotifiedKeyRef.current = lastPageKey
-      props.onLastPage?.()
-      return
-    }
-
-    lastPageNotifiedKeyRef.current = undefined
-  }, [pages, props.onLastPage, scrollIndex, viewerHook.readingStyle])
 
   return (
     <GradientBackground
@@ -286,43 +172,9 @@ export function BookViewer(props: BookViewerProps) {
         pageDirection={viewerHook.pageDirection}
         readingStyle={viewerHook.readingStyle}
         onSelectReadingStyle={(newReadingStyle) => {
-          if (
-            viewerHook.readingStyle === "facingPage" ||
-            viewerHook.readingStyle === "facingPageWithTitle"
-          ) {
-            if (newReadingStyle === "singlePage" || newReadingStyle === "verticalScroll") {
-              const index = (pages[viewerHook.readingStyle][scrollIndex] as FacingPageType).page1
-              setScrollToIndex(index)
-              flashListRef.current?.scrollToIndex({ index })
-            } else if (
-              viewerHook.readingStyle === "facingPage" &&
-              newReadingStyle === "facingPageWithTitle"
-            ) {
-              const index = (pages[viewerHook.readingStyle][scrollIndex] as FacingPageType).page1
-
-              const newIndex = (pages[newReadingStyle] as FacingPageType[]).findIndex((value) => {
-                return value.page1 === index || value.page2 === index
-              })
-              setScrollToIndex(newIndex)
-              flashListRef.current?.scrollToIndex({ index: newIndex })
-            } else if (
-              viewerHook.readingStyle === "facingPageWithTitle" &&
-              newReadingStyle === "facingPage"
-            ) {
-              const index = (pages[viewerHook.readingStyle][scrollIndex] as FacingPageType).page1
-
-              const newIndex = (pages[newReadingStyle] as FacingPageType[]).findIndex((value) => {
-                return value.page1 === index || value.page2 === index
-              })
-              setScrollToIndex(newIndex)
-              flashListRef.current?.scrollToIndex({ index: newIndex })
-            }
-          } else {
-            const newIndex = (pages[newReadingStyle] as FacingPageType[]).findIndex((value) => {
-              return value.page1 === scrollIndex || value.page2 === scrollIndex
-            })
-            setScrollToIndex(newIndex)
-            flashListRef.current?.scrollToIndex({ index: newIndex })
+          const nextIndex = getIndexForReadingStyleChange(newReadingStyle)
+          if (nextIndex !== undefined) {
+            scrollToIndex(nextIndex)
           }
           viewerHook.onSetBookReadingStyle(newReadingStyle)
         }}
@@ -371,19 +223,8 @@ export function BookViewer(props: BookViewerProps) {
         }
         totalPage={props.totalPage}
         onPageChange={(page) => {
-          let index = page
-
-          if (
-            (viewerHook.readingStyle === "facingPage" ||
-              viewerHook.readingStyle === "facingPageWithTitle") &&
-            page !== 0
-          ) {
-            index = pages[viewerHook.readingStyle].findIndex((value: FacingPageType) => {
-              return value.page1 === page || value.page2 === page
-            })
-          }
-          setScrollToIndex(index)
-          flashListRef.current?.scrollToIndex({ index })
+          const index = getScrollIndexForPage(page)
+          scrollToIndex(index)
         }}
         reverse={
           viewerHook.pageDirection === "left" && viewerHook.readingStyle !== "verticalScroll"
@@ -392,45 +233,6 @@ export function BookViewer(props: BookViewerProps) {
       />
     </GradientBackground>
   )
-
-  function createData(totalPage: number) {
-    const singlePage: number[] = []
-    const facingPage: FacingPageType[] = []
-    const facingPageWithTitle: FacingPageType[] = []
-    for (let index = 0; index < totalPage; index++) {
-      singlePage.push(index)
-
-      if (index === 0) {
-        facingPageWithTitle.push({ page1: index })
-        facingPage.push({ page1: index, page2: index + 1 })
-      } else if (index % 2 === 0) {
-        if (index < totalPage) {
-          facingPage.push({
-            page1: index,
-            page2: index + 1 < totalPage ? index + 1 : undefined,
-          })
-        }
-      } else {
-        if (index < totalPage) {
-          facingPageWithTitle.push({
-            page1: index,
-            page2: index + 1 < totalPage ? index + 1 : undefined,
-          })
-        }
-      }
-    }
-
-    const pageStyle: PageStyles = {
-      singlePage,
-      facingPage,
-      facingPageWithTitle,
-      verticalScroll: singlePage,
-    }
-
-    console.tron.log(pageStyle)
-
-    setPages(pageStyle)
-  }
 }
 
 const styles = StyleSheet.create({
