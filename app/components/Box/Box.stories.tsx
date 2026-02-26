@@ -12,7 +12,7 @@ export default {
     backgroundColor: "red",
   },
   parameters: {
-    notes: `Standard container`,
+    notes: "Standard container",
   },
   decorators: [
     (Story) => (

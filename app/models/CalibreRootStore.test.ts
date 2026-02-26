@@ -26,6 +26,9 @@ describe("CalibreRootStore test", () => {
 
       expect(model.numPerPage).toBe(50)
       expect(model.defaultLibraryId).toBe("calibre")
+
+      expect(model.readingHistories).toHaveLength(2)
+
       expect(model.readingHistories[0].libraryId).toBe("test1")
       expect(model.readingHistories[0].bookId).toBe(35)
       expect(model.readingHistories[0].format).toBe("CBZ")

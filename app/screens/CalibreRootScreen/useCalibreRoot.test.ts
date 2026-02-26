@@ -46,38 +46,33 @@ describe("useCalibreRoot", () => {
     ;(values as jest.Mock).mockReturnValue(mockLibraryMap.values())
   })
 
+  const renderUseCalibreRoot = () => renderHook(() => useCalibreRoot())
+
   test("returns library array from store", () => {
-    const { result } = renderHook(() => useCalibreRoot())
+    const { result } = renderUseCalibreRoot()
 
     expect(result.current.library).toBeDefined()
     expect(Array.isArray(result.current.library)).toBe(true)
   })
 
   test("returns onLibraryPress function", () => {
-    const { result } = renderHook(() => useCalibreRoot())
+    const { result } = renderUseCalibreRoot()
 
     expect(result.current.onLibraryPress).toBeDefined()
     expect(typeof result.current.onLibraryPress).toBe("function")
   })
 
-  test("onLibraryPress calls setLibrary with correct id", () => {
-    const { result } = renderHook(() => useCalibreRoot())
+  test.each(["library1", "library2"])("onLibraryPress handles %s", (libraryId) => {
+    const { result } = renderUseCalibreRoot()
 
-    result.current.onLibraryPress("library1")
+    result.current.onLibraryPress(libraryId)
 
-    expect(mockSetLibrary).toHaveBeenCalledWith("library1")
-  })
-
-  test("onLibraryPress navigates to Library screen", () => {
-    const { result } = renderHook(() => useCalibreRoot())
-
-    result.current.onLibraryPress("library1")
-
+    expect(mockSetLibrary).toHaveBeenCalledWith(libraryId)
     expect(mockNavigate).toHaveBeenCalledWith("Library")
   })
 
   test("onLibraryPress calls setLibrary before navigating", () => {
-    const { result } = renderHook(() => useCalibreRoot())
+    const { result } = renderUseCalibreRoot()
     const callOrder: string[] = []
 
     mockSetLibrary.mockImplementation(() => {
@@ -92,17 +87,8 @@ describe("useCalibreRoot", () => {
     expect(callOrder).toEqual(["setLibrary", "navigate"])
   })
 
-  test("handles different library ids", () => {
-    const { result } = renderHook(() => useCalibreRoot())
-
-    result.current.onLibraryPress("library2")
-
-    expect(mockSetLibrary).toHaveBeenCalledWith("library2")
-    expect(mockNavigate).toHaveBeenCalledWith("Library")
-  })
-
   test("onLibraryPress can be called multiple times", () => {
-    const { result } = renderHook(() => useCalibreRoot())
+    const { result } = renderUseCalibreRoot()
 
     result.current.onLibraryPress("library1")
     result.current.onLibraryPress("library2")
@@ -111,35 +97,26 @@ describe("useCalibreRoot", () => {
     expect(mockNavigate).toHaveBeenCalledTimes(2)
   })
 
-  test("library contains expected library entries", () => {
-    ;(values as jest.Mock).mockReturnValue([
-      { id: "lib1", books: new Map() },
-      { id: "lib2", books: new Map() },
-    ])
+  test.each([
+    [
+      [
+        { id: "lib1", books: new Map() },
+        { id: "lib2", books: new Map() },
+      ],
+      ["lib1", "lib2"],
+    ],
+    [[], []],
+  ])("library list mapping %#", (inputLibraries: any[], expectedIds: string[]) => {
+    ;(values as jest.Mock).mockReturnValue(inputLibraries)
 
-    const { result } = renderHook(() => useCalibreRoot())
+    const { result } = renderUseCalibreRoot()
 
-    expect(result.current.library).toHaveLength(2)
-    expect(result.current.library[0].id).toBe("lib1")
-    expect(result.current.library[1].id).toBe("lib2")
-  })
-
-  test("library returns empty array when libraryMap is empty", () => {
-    ;(useStores as jest.Mock).mockReturnValue({
-      calibreRootStore: {
-        libraryMap: new Map(),
-        setLibrary: mockSetLibrary,
-      },
-    })
-    ;(values as jest.Mock).mockReturnValue([])
-
-    const { result } = renderHook(() => useCalibreRoot())
-
-    expect(result.current.library).toEqual([])
+    expect(result.current.library).toHaveLength(expectedIds.length)
+    expect(result.current.library.map((library) => library.id)).toEqual(expectedIds)
   })
 
   test("getLibraryMap is called from calibreRootStore", () => {
-    renderHook(() => useCalibreRoot())
+    renderUseCalibreRoot()
 
     expect(useStores).toHaveBeenCalled()
     const stores = (useStores as jest.Mock).mock.results[0].value
