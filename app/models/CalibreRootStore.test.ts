@@ -1,8 +1,16 @@
 import { ApiCalibreInterfaceType, api } from "@/services/api"
-import { CalibreRootStore } from "./CalibreRootStore"
 import initializeData from "@/services/api/mock/interfacedata-update.json"
 import { getSnapshot } from "mobx-state-tree"
+import { CalibreRootStore } from "./CalibreRootStore"
 describe("CalibreRootStore test", () => {
+  beforeAll(() => {
+    jest.useRealTimers()
+  })
+
+  afterAll(() => {
+    jest.useFakeTimers()
+  })
+
   test("Successful execution of Initialize", () => {
     const resp = {
       kind: "ok",
