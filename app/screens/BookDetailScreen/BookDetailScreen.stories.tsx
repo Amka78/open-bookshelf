@@ -7,6 +7,7 @@ import BookImageItemStories from "@/components/BookImageItem/BookImageItem.stori
 
 export default {
   component: BookDetailScreen,
+  title: "Screens/BookDetailScreen",
   args: {
     selectedBook: BookDetailFieldListStories.args.book,
     imageUrl: BookImageItemStories.args.source as string,

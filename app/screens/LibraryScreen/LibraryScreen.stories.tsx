@@ -1,6 +1,6 @@
-import { LibraryScreen } from "./LibraryScreen"
 import type { Meta, StoryObj } from "@storybook/react"
 import React from "react"
+import { LibraryScreen } from "./LibraryScreen"
 
 import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
 
@@ -13,6 +13,7 @@ export default {
       </ScreenContainer>
     ),
   ],
+  title: "Screens/LibraryScreen",
 } as Meta<typeof LibraryScreen>
 
 type LibraryStory = StoryObj<typeof LibraryScreen>

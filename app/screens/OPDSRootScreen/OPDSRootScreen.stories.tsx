@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/react-native"
-import { ScreenContainer } from "@storybook/react-native/addons/storybook.requires"
+import type { Meta, StoryObj } from "@storybook/react"
+import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
 import { OPDSRootScreen } from "./OPDSRootScreen"
 
 const meta: Meta<typeof OPDSRootScreen> = {

@@ -13,6 +13,7 @@ export default {
       </ScreenContainer>
     ),
   ],
+  title: "Screens/CalibreRootScreen",
 } as Meta<typeof CalibreRootScreen>
 type CalibreRootStory = StoryObj<typeof CalibreRootScreen>
 export const Basic: CalibreRootStory = {

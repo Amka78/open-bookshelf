@@ -13,6 +13,7 @@ export default {
       </ScreenContainer>
     ),
   ],
+  title: "Screens/ConnectScreen",
 } as Meta<typeof ConnectScreen>
 type ConnectScreenStory = StoryObj<typeof ConnectScreen>
 export const Basic: ConnectScreenStory = {

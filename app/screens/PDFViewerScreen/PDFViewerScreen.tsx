@@ -1,10 +1,10 @@
 import { BookViewer, type RenderPageProps } from "@/components"
-import { useViewer } from "@/hooks/useViewer"
-import { usePDFViewer } from "@/screens/PDFViewerScreen/usePDFViewer"
 import { PDF } from "@/library/PDF/Pdf"
+import { usePDFViewer } from "@/screens/PDFViewerScreen/usePDFViewer"
 import { observer } from "mobx-react-lite"
 import React, { useState } from "react"
 import { StyleSheet } from "react-native"
+import { useViewer } from "../ViewerScreen/useViewer"
 
 export const PDFViewerScreen = observer(() => {
   const pdfHook = usePDFViewer()

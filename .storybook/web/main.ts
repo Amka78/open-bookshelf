@@ -1,6 +1,8 @@
-const path = require("path");
-const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
-module.exports = {
+import type { StorybookConfig } from "@storybook/react-webpack5"
+const path = require("path")
+const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin")
+
+const config: StorybookConfig = {
   typescript: { reactDocgen: "none" },
   stories: [
     "../../app/components/**/*.stories.?(ts|tsx|js|jsx)",
@@ -13,19 +15,10 @@ module.exports = {
     "@storybook/addon-react-native-web",
     "storybook-dark-mode",
   ],
-  core: {
-    builder: "webpack5",
-  },
   webpackFinal(config) {
-    config.resolve.modules = [
-      ...(config.resolve.modules || []),
-      path.resolve(__dirname, "../src"),
-    ];
+    config.resolve.modules = [...(config.resolve.modules || []), path.resolve(__dirname, "../src")]
 
-    config.resolve.plugins = [
-      ...(config.resolve.plugins || []),
-      new TsconfigPathsPlugin(),
-    ];
+    config.resolve.plugins = [...(config.resolve.plugins || []), new TsconfigPathsPlugin()]
 
     config.module.rules.push({
       test: /\.[jt]sx?$/,
@@ -39,15 +32,17 @@ module.exports = {
           presets: [require.resolve("babel-preset-expo")],
         },
       },
-    });
+    })
 
-    return config;
+    return config
   },
   framework: {
     name: "@storybook/react-webpack5",
-    options: { fastRefresh: false },
+    options: {},
   },
   docs: {
     autodocs: true,
   },
-};
+}
+
+export default config

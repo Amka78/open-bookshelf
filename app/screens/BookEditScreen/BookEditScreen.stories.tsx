@@ -1,8 +1,9 @@
-import { BookEditScreen } from "@/screens/BookDetailScreen/template/BookDetailScreen"
+import { BookEditScreen } from "@/screens/BookEditScreen/BookEditScreen"
 import type { Meta, StoryObj } from "@storybook/react"
 
-import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
 import { Base as BookDetailFieldListStories } from "@/components/BookDetailFieldList/BookDetailFieldList.stories"
+import BookImageItemStories from "@/components/BookImageItem/BookImageItem.stories"
+import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
 
 export default {
   component: BookEditScreen,
@@ -21,6 +22,7 @@ export default {
       </ScreenContainer>
     ),
   ],
+  title: "Screens/BookEditScreen",
 } as Meta<typeof BookEditScreen>
 type Story = StoryObj<typeof BookEditScreen>
 export const Basic: Story = {}

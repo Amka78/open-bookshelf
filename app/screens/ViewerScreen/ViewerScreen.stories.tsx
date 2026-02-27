@@ -1,9 +1,9 @@
 import { RootStoreModel, RootStoreProvider } from "@/models"
 import type { AppStackParamList } from "@/navigators"
 import { ViewerScreen } from "@/screens/ViewerScreen/ViewerScreen"
-import type { Meta, StoryObj } from "@storybook/react"
 import { NavigationContainer } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
+import type { Meta, StoryObj } from "@storybook/react"
 import React from "react"
 import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
 
@@ -83,7 +83,7 @@ const rootStore = RootStoreModel.create({
 
 export default {
   component: ViewerScreen,
-  title: "screens/ViewerScreen",
+  title: "Screens/ViewerScreen",
   decorators: [
     (Story) => (
       <ScreenContainer>

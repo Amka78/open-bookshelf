@@ -1,11 +1,11 @@
+import { HStack, VStack } from "@/components"
 import type { Meta, StoryObj } from "@storybook/react"
 import { useState } from "react"
 import { AutoPageTurningIconButton } from "./AutoPageTurningIconButton"
-import { VStack, HStack } from "@/components"
 
 const meta: Meta<typeof AutoPageTurningIconButton> = {
   component: AutoPageTurningIconButton,
-  title: "Components/AutoPageTurningIconButton",
+  title: "AutoPageTurningIconButton",
   tags: ["autodocs"],
 }
 
@@ -31,10 +31,7 @@ export const Interactive: Story = {
   render: () => {
     const [isActive, setIsActive] = useState(false)
     return (
-      <AutoPageTurningIconButton
-        isActive={isActive}
-        onPress={() => setIsActive((prev) => !prev)}
-      />
+      <AutoPageTurningIconButton isActive={isActive} onPress={() => setIsActive((prev) => !prev)} />
     )
   },
 }
