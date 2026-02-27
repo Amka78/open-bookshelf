@@ -6,7 +6,9 @@ import { act, renderHook } from "@testing-library/react"
 import { useLibrary } from "./useLibrary"
 
 jest.mock("@/models")
-jest.mock("@/hooks/useConvergence")
+jest.mock("@/hooks/useConvergence", () => ({
+  useConvergence: jest.fn(),
+}))
 jest.mock("@react-navigation/native")
 jest.mock("@/services/api")
 jest.mock("@/utils/logger", () => ({
@@ -14,12 +16,6 @@ jest.mock("@/utils/logger", () => ({
     debug: jest.fn(),
   },
 }))
-
-// Mock for React hooks
-const mockSetSearching = jest.fn()
-const mockSetMobileViewStyle = jest.fn()
-const mockSetDesktopViewStyle = jest.fn()
-const mockSetHeaderSearchText = jest.fn()
 
 describe("useLibrary", () => {
   const mockSearchLibrary = jest.fn().mockResolvedValue(undefined)
@@ -72,7 +68,16 @@ describe("useLibrary", () => {
     ;(useNavigation as jest.Mock).mockReturnValue({})
   })
 
-  test("completeSearchParameter returns text unchanged if not ending with colon", () => {
+  const renderUseLibrary = async () => {
+    const hook = renderHook(() => useLibrary())
+    await act(async () => {
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+    return hook
+  }
+
+  test("completeSearchParameter returns text unchanged if not ending with colon", async () => {
     const mockSelectedLibrary = {
       id: "test-library",
       books: {},
@@ -94,42 +99,42 @@ describe("useLibrary", () => {
       },
     })
 
-    const { result } = renderHook(() => useLibrary())
+    const { result } = await renderUseLibrary()
     const completed = result.current.completeSearchParameter("test text")
 
     expect(completed).toBe("test text")
   })
 
-  test("completeSearchParameter completes search parameter", () => {
-    const { result } = renderHook(() => useLibrary())
+  test("completeSearchParameter completes search parameter", async () => {
+    const { result } = await renderUseLibrary()
     const completed = result.current.completeSearchParameter("aut:")
 
     expect(completed).toBe("aut:")
   })
 
-  test("completeSearchParameter returns text unchanged if no match", () => {
-    const { result } = renderHook(() => useLibrary())
+  test("completeSearchParameter returns text unchanged if no match", async () => {
+    const { result } = await renderUseLibrary()
     const completed = result.current.completeSearchParameter("xyz:")
 
     expect(completed).toBe("xyz:")
   })
 
-  test("completeSearchParameter handles multiple matches", () => {
-    const { result } = renderHook(() => useLibrary())
+  test("completeSearchParameter handles multiple matches", async () => {
+    const { result } = await renderUseLibrary()
     const completed = result.current.completeSearchParameter("t:")
 
     expect(completed).toBe("t:")
   })
 
-  test("completeSearchParameter works with prefix text", () => {
-    const { result } = renderHook(() => useLibrary())
+  test("completeSearchParameter works with prefix text", async () => {
+    const { result } = await renderUseLibrary()
     const completed = result.current.completeSearchParameter("query aut:")
 
     expect(completed).toBe("query aut:")
   })
 
-  test("searchParameterCandidates returns unique search terms", () => {
-    const { result } = renderHook(() => useLibrary())
+  test("searchParameterCandidates returns unique search terms", async () => {
+    const { result } = await renderUseLibrary()
 
     expect(result.current.searchParameterCandidates).toContain("author1")
     expect(result.current.searchParameterCandidates).toContain("author2")
@@ -137,7 +142,7 @@ describe("useLibrary", () => {
     expect(result.current.searchParameterCandidates).toContain("tag2")
   })
 
-  test("searchParameterCandidates returns empty array if no library", () => {
+  test("searchParameterCandidates returns empty array if no library", async () => {
     ;(useStores as jest.Mock).mockReturnValue({
       calibreRootStore: {
         ...mockCallibreRootStore,
@@ -145,13 +150,13 @@ describe("useLibrary", () => {
       },
     })
 
-    const { result } = renderHook(() => useLibrary())
+    const { result } = await renderUseLibrary()
 
     expect(result.current.searchParameterCandidates).toEqual([])
   })
 
   test("onSearch calls searchLibrary", async () => {
-    const { result } = renderHook(() => useLibrary())
+    const { result } = await renderUseLibrary()
 
     await act(async () => {
       await result.current.onSearch("test query")
@@ -162,7 +167,7 @@ describe("useLibrary", () => {
   })
 
   test("onSort updates sort and sortOrder", async () => {
-    const { result } = renderHook(() => useLibrary())
+    const { result } = await renderUseLibrary()
 
     await act(async () => {
       await result.current.onSort("authors")
@@ -174,7 +179,7 @@ describe("useLibrary", () => {
   })
 
   test("onSort toggles sortOrder when same sort key is selected", async () => {
-    const { result } = renderHook(() => useLibrary())
+    const { result } = await renderUseLibrary()
 
     await act(async () => {
       await result.current.onSort("title")
@@ -183,8 +188,8 @@ describe("useLibrary", () => {
     expect(mockSetProp).toHaveBeenCalledWith("sortOrder", "desc")
   })
 
-  test("onChangeListStyle changes list style", () => {
-    const { result } = renderHook(() => useLibrary())
+  test("onChangeListStyle changes list style", async () => {
+    const { result } = await renderUseLibrary()
     expect(result.current.currentListStyle).toBe("viewList")
 
     act(() => {
@@ -198,7 +203,7 @@ describe("useLibrary", () => {
     const mockUploadFile = jest.fn().mockResolvedValue(undefined)
     ;(api.uploadFile as jest.Mock) = mockUploadFile
 
-    const { result } = renderHook(() => useLibrary())
+    const { result } = await renderUseLibrary()
 
     const mockAssets = [
       {
@@ -216,22 +221,22 @@ describe("useLibrary", () => {
     expect(mockUploadFile).toHaveBeenCalledWith("test.epub", "test-library", mockAssets[0].file)
   })
 
-  test("current list style is viewList on mobile by default", () => {
+  test("current list style is viewList on mobile by default", async () => {
     ;(useConvergence as jest.Mock).mockReturnValue({
       isLarge: false,
     })
 
-    const { result } = renderHook(() => useLibrary())
+    const { result } = await renderUseLibrary()
 
     expect(result.current.currentListStyle).toBe("viewList")
   })
 
-  test("current list style is gridView on desktop by default", () => {
+  test("current list style is gridView on desktop by default", async () => {
     ;(useConvergence as jest.Mock).mockReturnValue({
       isLarge: true,
     })
 
-    const { result } = renderHook(() => useLibrary())
+    const { result } = await renderUseLibrary()
 
     expect(result.current.currentListStyle).toBe("gridView")
   })
