@@ -8,7 +8,6 @@
 import Config from "@/config";
 import { logger } from "@/utils/logger";
 import { type ApiResponse, type ApisauceInstance, create } from "apisauce";
-
 import { Platform } from "react-native";
 import * as FileSystem from "expo-file-system";
 import { type GeneralApiProblem, getGeneralApiProblem } from "./apiProblem";
@@ -50,7 +49,7 @@ export class Api {
   constructor(config: ApiConfig = DEFAULT_API_CONFIG) {
     this.config = config;
     this.apisauce = create({
-      baseURL: Config.PROXY,
+      baseURL: this.config.url,
       timeout: this.config.timeout,
       headers: {
         Accept: "application/atom+xml",
@@ -221,11 +220,12 @@ export class Api {
     searchText: string,
     sort: string,
     sortOrder: string,
+    vl?: string | null,
   ): Promise<{ kind: "ok"; data: ApiBookInfo } | GeneralApiProblem> {
     const response: ApiResponse<ApiBookInfo> = await this.apisauce.get(
       `interface-data/books-init?library_id=${library}${
         searchText ? `&search=${searchText}` : ""
-      }&sort=${sort}.${sortOrder}&${Date.now()}`,
+      }${vl ? `&vl=${encodeURIComponent(vl)}` : ""}&sort=${sort}.${sortOrder}&${Date.now()}`,
     );
 
     if (!response.ok) {

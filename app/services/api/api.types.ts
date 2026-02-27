@@ -336,7 +336,7 @@ export type ApiBookInfo = {
   book_display_fields: CommonFieldName[]
   bools_are_tristate: boolean
   field_metadata: Map<CommonFieldName, FieldMetadata>
-  virtual_libraries: unknown
+  virtual_libraries: string[]
   fts_enabled: boolean
   library_id: string
 } & ApiBookInfoCore

@@ -137,6 +137,7 @@ export const CalibreRootStore = types
         root.selectedLibrary.searchSetting ? root.selectedLibrary.searchSetting.query : "",
         root.selectedLibrary.searchSetting ? root.selectedLibrary.searchSetting.sort : "timestamp",
         root.selectedLibrary.searchSetting ? root.selectedLibrary.searchSetting.sortOrder : "desc",
+        root.selectedLibrary.searchSetting?.vl,
       )
 
       if (response.kind === "ok") {
@@ -156,7 +157,7 @@ export const CalibreRootStore = types
         query: selectedLibrary.searchSetting.query ? selectedLibrary.searchSetting.query : "",
         sort: selectedLibrary.searchSetting.sort,
         sort_order: selectedLibrary.searchSetting.sortOrder,
-        vl: "",
+        vl: selectedLibrary.searchSetting.vl ?? "",
       })
 
       if (response.kind === "ok") {
@@ -194,6 +195,7 @@ function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap)
     totalNum: data.search_result.total_num
       ? data.search_result.total_num
       : selectedLibrary.searchSetting.totalNum,
+    vl: selectedLibrary.searchSetting?.vl ?? null,
   })
   data.search_result.book_ids.forEach((bookId: number) => {
     const metadata = data.metadata[bookId]
@@ -240,6 +242,11 @@ function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap)
 function convertLibraryInformation(bookInfo: ApiBookInfo, libraryInfo: LibraryMap) {
   libraryInfo.bookDisplayFields.clear()
   libraryInfo.fieldMetadataList.clear()
+
+  if (Array.isArray(bookInfo.virtual_libraries)) {
+    libraryInfo.virtualLibraries.replace(bookInfo.virtual_libraries)
+  }
+
   bookInfo.book_display_fields.forEach((value) => {
     libraryInfo.bookDisplayFields.push(value)
   })

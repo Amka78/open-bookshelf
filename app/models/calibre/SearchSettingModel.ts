@@ -8,5 +8,6 @@ export const SearchSettingModel = types
     sort: types.maybeNull(types.string),
     sortOrder: types.maybeNull(types.string),
     totalNum: types.maybeNull(types.number),
+    vl: types.maybeNull(types.string),
   })
   .actions(withSetPropAction)

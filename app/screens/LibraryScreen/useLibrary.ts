@@ -83,6 +83,11 @@ export function useLibrary() {
     calibreRootStore.getTagBrowser();
   }, []);
 
+  const onSelectVirtualLibrary = async (vl: string | null) => {
+    selectedLibrary.searchSetting.setProp("vl", vl);
+    await search();
+  };
+
   const onSearch = async (searchCondition?: string) => {
     selectedLibrary.searchSetting.setProp("query", searchCondition ?? "");
     await search();
@@ -141,6 +146,7 @@ export function useLibrary() {
     onChangeListStyle,
     onUploadFile,
     onSearch,
+    onSelectVirtualLibrary,
     onSort,
     searching,
     mobileViewStyle,

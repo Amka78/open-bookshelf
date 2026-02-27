@@ -26,6 +26,7 @@ export const LibraryMapModel = types
     bookDisplayFields: types.array(types.string),
     fieldMetadataList: types.map(FieldMetadataModel),
     selectedBook: types.safeReference(types.late(() => BookModel)),
+    virtualLibraries: types.array(types.string),
   })
   .actions(withSetPropAction)
   .actions((root) => ({

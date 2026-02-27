@@ -1,6 +1,5 @@
 import { type Instance, type SnapshotOut, types } from "mobx-state-tree";
 import { api } from "../services/api";
-import Config from "@/config";
 
 const ApiModel = types.model("ApiModel").props({
   baseUrl: types.maybe(types.string),
@@ -21,13 +20,8 @@ export const SettingStoreModel = types
         store.api.initialPath = "/opds";
         api.setUrl(store.api.baseUrl);
       } else {
-        if (Config.PROXY) {
-          store.api.baseUrl = Config.PROXY;
-          api.setUrl(Config.PROXY);
-        } else {
-          store.api.baseUrl = baseUrl;
-          api.setUrl(baseUrl);
-        }
+        store.api.baseUrl = baseUrl;
+        api.setUrl(baseUrl);
       }
     },
     setAutoPageTurnIntervalMs(intervalMs: number) {

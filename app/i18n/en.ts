@@ -49,6 +49,10 @@ const en = {
     asc: "ASC",
     desc: "DESC",
   },
+  virtualLibrary: {
+    all: "All",
+    buttonTooltip: "Virtual Library",
+  },
   bookReadingStyle: {
     title: "Book Reading Style",
     singlePage: "Single Page",
@@ -87,6 +91,9 @@ const en = {
       userIdPlaceholder: "UserID",
       passwordPlaceholder: "Password",
     },
+    bookConvertModal: {
+      title: "Convert Book",
+    },
     bookDetailModal: {
       title: "Book detail",
     },
@@ -119,6 +126,15 @@ const en = {
     convertTooltip: "Convert book",
     editTooltip: "Edit book",
     deleteTooltip: "Delete book",
+  },
+  bookConvertScreen: {
+    inputFormat: "Current formats",
+    outputFormat: "Output format",
+    convert: "Convert",
+    converting: "Converting...",
+    convertComplete: "Conversion complete!",
+    noFormats: "No formats available",
+    selectFormatPlaceholder: "Select output format",
   },
 }
 

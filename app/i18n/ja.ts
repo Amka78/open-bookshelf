@@ -52,6 +52,10 @@ const ja: Translations = {
     asc: "昇順",
     desc: "降順",
   },
+  virtualLibrary: {
+    all: "すべて",
+    buttonTooltip: "仮想ライブラリ",
+  },
   bookReadingStyle: {
     title: "読書スタイル",
     singlePage: "単ページ",

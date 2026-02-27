@@ -51,6 +51,10 @@ const ar: Translations = {
     asc: "تصاعدي",
     desc: "تنازلي",
   },
+  virtualLibrary: {
+    all: "الكل",
+    buttonTooltip: "المكتبة الافتراضية",
+  },
   bookReadingStyle: {
     title: "نمط القراءة",
     singlePage: "صفحة واحدة",

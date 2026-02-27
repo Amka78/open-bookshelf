@@ -51,6 +51,10 @@ const ko: Translations = {
     asc: "오름차순",
     desc: "내림차순",
   },
+  virtualLibrary: {
+    all: "전체",
+    buttonTooltip: "가상 라이브러리",
+  },
   bookReadingStyle: {
     title: "읽기 스타일",
     singlePage: "단일 페이지",

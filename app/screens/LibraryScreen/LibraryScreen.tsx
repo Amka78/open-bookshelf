@@ -13,6 +13,7 @@ import {
   SortMenu,
   StaggerContainer,
   Text,
+  VirtualLibraryButton,
 } from "@/components"
 import type { ModalStackParams } from "@/components/Modals/Types"
 import { useConvergence } from "@/hooks/useConvergence"
@@ -56,6 +57,13 @@ export const LibraryScreen: FC = observer(() => {
   const libraryActions = useMemo(() => {
     return (
       <>
+        <VirtualLibraryButton
+          virtualLibraries={selectedLibrary?.virtualLibraries?.slice() ?? []}
+          selectedVl={selectedLibrary?.searchSetting?.vl}
+          onSelect={(vl) => {
+            libraryHook.onSelectVirtualLibrary(vl)
+          }}
+        />
         <AuthButton
           mode={authenticationStore.isAuthenticated ? "logout" : "login"}
           onLoginPress={() => {
@@ -97,6 +105,8 @@ export const LibraryScreen: FC = observer(() => {
     modal,
     navigation,
     selectedLibrary,
+    selectedLibrary?.virtualLibraries,
+    selectedLibrary?.searchSetting?.vl,
     selectedLibrary?.searchSetting?.sort,
     selectedLibrary?.searchSetting?.sortOrder,
     selectedLibrary?.sortField,

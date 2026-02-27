@@ -46,3 +46,5 @@ export * from "./Forms/FormImageUploader";
 export * from "./BookEditFieldList/BookEditFieldList";
 export * from "./GradientBackground/GradientBackground";
 export * from "./AutoPageTurningIconButton/AutoPageTurningIconButton";
+export * from "./VirtualLibraryButton/VirtualLibraryButton";
+export * from "./BookConvertForm/BookConvertForm";
