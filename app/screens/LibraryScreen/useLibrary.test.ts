@@ -207,7 +207,7 @@ describe("useLibrary", () => {
         file: new File([], "test.epub"),
         lastModified: Date.now(),
       },
-    ] as any
+    ] as Array<{ name: string; uri: string; file: File; lastModified: number }>
 
     await act(async () => {
       await result.current.onUploadFile(mockAssets)

@@ -14,7 +14,7 @@ jest.doMock("react-native", () => {
           (
             uri: string, // eslint-disable-line @typescript-eslint/no-unused-vars
             success: (width: number, height: number) => void,
-            failure?: (_error: any) => void, // eslint-disable-line @typescript-eslint/no-unused-vars
+            failure?: (_error: Error) => void, // eslint-disable-line @typescript-eslint/no-unused-vars
           ) => success(100, 100),
         ),
       },

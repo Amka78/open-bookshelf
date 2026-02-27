@@ -21,7 +21,7 @@ describe("useBookDetail", () => {
   const mockSetOptions = jest.fn()
   const mockOnLinkPress = jest.fn()
   const mockExecute = jest.fn()
-  const mockModal = {} as any
+  const mockModal = {} as Record<string, unknown>
 
   const mockSelectedBook = {
     id: 1,

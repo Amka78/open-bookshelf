@@ -1,11 +1,12 @@
 {
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "allowJs": false,
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "jsx": "react-native",
-    "module": "es2015",
-    "moduleResolution": "node",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "noImplicitAny": false,
     "noImplicitReturns": true,
     "noImplicitThis": true,
@@ -14,11 +15,13 @@
     "target": "esnext",
     "lib": ["esnext", "dom"],
     "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["app/*"]
-    }
+    },
+    "typeRoots": ["./node_modules/@types"]
   },
   "exclude": [
     ".expo",
