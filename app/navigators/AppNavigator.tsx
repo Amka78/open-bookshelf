@@ -25,6 +25,7 @@ import {
   ViewerScreen,
   BookDetailScreen,
   BookEditScreen,
+  BookConvertScreen,
 } from "../screens"
 import { PDFViewerScreen } from "../screens/PDFViewerScreen/PDFViewerScreen"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
@@ -62,6 +63,9 @@ export type AppStackParamList = {
   BookEdit: {
     imageUrl: string
   }
+  BookConvert: {
+    imageUrl: string
+  }
 }
 
 /**
@@ -82,6 +86,7 @@ const getLinking = (): LinkingOptions<AppStackParamList> => {
         PDFViewer: "pdf-viewer",
         BookDetail: "book-detail",
         BookEdit: "book-edit",
+        BookConvert: "book-convert",
       },
     },
   }
@@ -143,6 +148,7 @@ const AppStack = observer(function AppStack() {
       />
       <Stack.Screen name="BookDetail" component={BookDetailScreen} />
       <Stack.Screen name="BookEdit" component={BookEditScreen} />
+      <Stack.Screen name="BookConvert" component={BookConvertScreen} />
     </Stack.Navigator>
   )
 })

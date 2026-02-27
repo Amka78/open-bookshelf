@@ -4,6 +4,7 @@ import type { AppStackParamList, ApppNavigationProp } from "@/navigators"
 import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { useLayoutEffect } from "react"
 import { useModal } from "react-native-modalfy"
+import { useConvergence } from "@/hooks/useConvergence"
 import { useDeleteBook } from "../../hooks/useDeleteBook"
 import { useDownloadBook } from "../../hooks/useDownloadBook"
 import { useOpenViewer } from "../../hooks/useOpenViewer"
@@ -15,6 +16,7 @@ export function useBookDetail() {
   const navigation = useNavigation<ApppNavigationProp>()
   const route = useRoute<BookDetailScreenRouteProp>()
   const modal = useModal<ModalStackParams>()
+  const convergenceHook = useConvergence()
   const openViewerHook = useOpenViewer()
   const deleteBookHook = useDeleteBook()
   const downloadBookHook = useDownloadBook()
@@ -36,7 +38,17 @@ export function useBookDetail() {
     await downloadBookHook.execute(modal)
   }
 
-  const handleConvertBook = () => {}
+  const handleConvertBook = () => {
+    if (convergenceHook.isLarge) {
+      modal.openModal("BookConvertModal", {
+        imageUrl: route.params.imageUrl,
+      })
+    } else {
+      navigation.navigate("BookConvert", {
+        imageUrl: route.params.imageUrl,
+      })
+    }
+  }
 
   const handleEditBook = () => {
     navigation.navigate("BookEdit", {

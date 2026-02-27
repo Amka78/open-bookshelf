@@ -46,6 +46,12 @@ export type ModalStackParams = {
     intervalMs: number
     onSave: (intervalMs: number) => void
   }
+  BookConvertModal: {
+    imageUrl: string
+    selectedBook?: Book
+    formats?: string[]
+    onConvertComplete?: () => void
+  }
   ViewerRatingModal: {
     initialRating: number
     onSubmit: (rating: number) => void | Promise<void>
