@@ -1,6 +1,11 @@
 import type { ConvertStatus } from "@/components/BookConvertForm/BookConvertForm"
+import {
+  type ConvertOptions,
+  DEFAULT_CONVERT_OPTIONS,
+} from "@/components/BookConvertForm/ConvertOptions"
 import { useStores } from "@/models"
 import { useState } from "react"
+import { useForm } from "react-hook-form"
 
 export function useBookConvert() {
   const { calibreRootStore } = useStores()
@@ -10,25 +15,26 @@ export function useBookConvert() {
 
   const formats: string[] = selectedBook?.metaData?.formats ?? []
 
-  const [selectedFormat, setSelectedFormat] = useState<string | null>(null)
   const [convertStatus, setConvertStatus] = useState<ConvertStatus>("idle")
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const handleFormatSelect = (format: string) => {
-    setSelectedFormat(format)
-    // 前の変換状態をリセット
-    setConvertStatus("idle")
-    setErrorMessage(null)
-  }
+  const form = useForm<ConvertOptions>({
+    defaultValues: {
+      outputFormat: "",
+      inputFormat: null,
+      ...DEFAULT_CONVERT_OPTIONS,
+    },
+  })
 
   const handleConvert = async () => {
-    if (!selectedFormat) return
+    const values = form.getValues()
+    if (!values.outputFormat) return
 
     setConvertStatus("converting")
     setErrorMessage(null)
 
     try {
-      await selectedBook.convert(selectedFormat, selectedLibrary.id, () => {})
+      await selectedBook.convert(values.outputFormat, selectedLibrary.id, () => {}, values)
       setConvertStatus("success")
     } catch (e) {
       setConvertStatus("error")
@@ -37,7 +43,11 @@ export function useBookConvert() {
   }
 
   const handleReset = () => {
-    setSelectedFormat(null)
+    form.reset({
+      outputFormat: "",
+      inputFormat: null,
+      ...DEFAULT_CONVERT_OPTIONS,
+    })
     setConvertStatus("idle")
     setErrorMessage(null)
   }
@@ -46,10 +56,9 @@ export function useBookConvert() {
     selectedBook,
     selectedLibrary,
     formats,
-    selectedFormat,
+    form,
     convertStatus,
     errorMessage,
-    handleFormatSelect,
     handleConvert,
     handleReset,
   }

@@ -1,10 +1,8 @@
-import { Heading } from "@/components"
-import { Button } from "@/components"
+import { Button, Heading } from "@/components"
 import { BookConvertForm } from "@/components/BookConvertForm/BookConvertForm"
 import { useStores } from "@/models"
 import { useBookConvert } from "@/screens/BookConvertScreen/useBookConvert"
 import { observer } from "mobx-react-lite"
-import { useModal } from "react-native-modalfy"
 import type { ModalComponentProp } from "react-native-modalfy"
 import { Body, CloseButton, Footer, Header, Root } from "./"
 import type { ModalStackParams } from "./Types"
@@ -29,18 +27,11 @@ export const BookConvertModal = observer((props: BookConvertModalProps) => {
 })
 
 export function BookConvertModalTemplate(props: BookConvertModalProps) {
-  const {
-    formats,
-    selectedFormat,
-    convertStatus,
-    errorMessage,
-    handleFormatSelect,
-    handleConvert,
-  } = useBookConvert()
+  const { formats, form, convertStatus, errorMessage, handleConvert } = useBookConvert()
 
   const bookTitle = props.modal.params.selectedBook?.metaData?.title ?? ""
 
-  const handleConvertAndClose = async () => {
+  const handleConvertAndNotify = async () => {
     await handleConvert()
     if (props.modal.params.onConvertComplete) {
       props.modal.params.onConvertComplete()
@@ -63,11 +54,11 @@ export function BookConvertModalTemplate(props: BookConvertModalProps) {
         </Heading>
         <BookConvertForm
           formats={formats}
-          selectedFormat={selectedFormat}
+          control={form.control}
+          watch={form.watch}
           convertStatus={convertStatus}
           errorMessage={errorMessage}
-          onFormatSelect={handleFormatSelect}
-          onConvert={handleConvertAndClose}
+          onConvert={handleConvertAndNotify}
         />
       </Body>
       <Footer>

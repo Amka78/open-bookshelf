@@ -291,6 +291,7 @@ export class Api {
     libraryId: string,
     bookId: number,
     bookType: string,
+    convertParams?: Record<string, string | number | boolean>,
   ): Promise<
     | {
         kind: "ok";
@@ -298,10 +299,15 @@ export class Api {
       }
     | GeneralApiProblem
   > {
+    const extraQuery = convertParams
+      ? Object.entries(convertParams)
+          .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+          .join("&")
+      : ""
     const response: ApiResponse<
       ApiBookManifestStatusType | ApiBookManifestResultType
     > = await this.apisauce.get(
-      `book-manifest/${bookId}/${bookType}?library_id=${libraryId}&${Date.now()}`,
+      `book-manifest/${bookId}/${bookType}?library_id=${libraryId}&${Date.now()}${extraQuery ? `&${extraQuery}` : ""}`,
     );
 
     if (!response.ok) {

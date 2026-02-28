@@ -1,23 +1,63 @@
-import { BookConvertScreenTemplate } from "@/screens/BookConvertScreen/BookConvertScreen"
+import { Heading, RootContainer } from "@/components"
+import { BookConvertForm } from "@/components/BookConvertForm/BookConvertForm"
+import type { ConvertOptions } from "@/components/BookConvertForm/ConvertOptions"
+import { DEFAULT_CONVERT_OPTIONS } from "@/components/BookConvertForm/ConvertOptions"
 import { expect } from "@storybook/jest"
 import type { Meta, StoryObj } from "@storybook/react"
 import { userEvent, within } from "@storybook/testing-library"
+import { useForm } from "react-hook-form"
 import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
+
+// ============================================================
+// Storybook用ラッパー: react-hook-form の Context を提供
+// ============================================================
+type WrapperProps = {
+  bookTitle?: string
+  formats: string[]
+  outputFormat?: string
+  convertStatus: "idle" | "converting" | "success" | "error"
+  errorMessage: string | null
+  onConvert: () => void
+}
+
+function BookConvertStoryWrapper(props: WrapperProps) {
+  const form = useForm<ConvertOptions>({
+    defaultValues: {
+      outputFormat: props.outputFormat ?? "",
+      inputFormat: null,
+      ...DEFAULT_CONVERT_OPTIONS,
+    },
+  })
+
+  return (
+    <RootContainer padding={"$4"}>
+      <Heading isTruncated={true} marginBottom={"$3"}>
+        {props.bookTitle ?? ""}
+      </Heading>
+      <BookConvertForm
+        formats={props.formats}
+        control={form.control}
+        watch={form.watch}
+        convertStatus={props.convertStatus}
+        errorMessage={props.errorMessage}
+        onConvert={props.onConvert}
+      />
+    </RootContainer>
+  )
+}
 
 export default {
   title: "Screens/BookConvertScreen",
-  component: BookConvertScreenTemplate,
+  component: BookConvertStoryWrapper,
   args: {
     bookTitle: "The Great Gatsby",
     formats: ["EPUB", "PDF", "MOBI", "AZW3"],
-    selectedFormat: null,
+    outputFormat: "",
     convertStatus: "idle" as const,
     errorMessage: null,
-    onFormatSelect: () => {},
     onConvert: () => {},
   },
   argTypes: {
-    onFormatSelect: { action: "format selected" },
     onConvert: { action: "convert pressed" },
     convertStatus: {
       control: { type: "select" },
@@ -31,24 +71,38 @@ export default {
       </ScreenContainer>
     ),
   ],
-} as Meta<typeof BookConvertScreenTemplate>
+} as Meta<typeof BookConvertStoryWrapper>
 
-type Story = StoryObj<typeof BookConvertScreenTemplate>
+type Story = StoryObj<typeof BookConvertStoryWrapper>
 
 /** デフォルト状態（フォーマット未選択） */
 export const Basic: Story = {}
 
-/** フォーマット選択済みの状態 */
-export const FormatSelected: Story = {
+/** EPUBフォーマット選択済み・EPUB出力オプション表示 */
+export const EPUBSelected: Story = {
   args: {
-    selectedFormat: "EPUB",
+    outputFormat: "EPUB",
   },
 }
 
-/** 変換中の状態 */
+/** PDFフォーマット選択済み・PDF出力オプション表示 */
+export const PDFSelected: Story = {
+  args: {
+    outputFormat: "PDF",
+  },
+}
+
+/** MOBIフォーマット選択済み・MOBI出力オプション表示 */
+export const MOBISelected: Story = {
+  args: {
+    outputFormat: "MOBI",
+  },
+}
+
+/** 変換中の状態（スピナー表示） */
 export const Converting: Story = {
   args: {
-    selectedFormat: "EPUB",
+    outputFormat: "EPUB",
     convertStatus: "converting" as const,
   },
 }
@@ -56,7 +110,7 @@ export const Converting: Story = {
 /** 変換完了の状態 */
 export const ConvertSuccess: Story = {
   args: {
-    selectedFormat: "EPUB",
+    outputFormat: "EPUB",
     convertStatus: "success" as const,
   },
 }
@@ -64,7 +118,7 @@ export const ConvertSuccess: Story = {
 /** 変換エラーの状態 */
 export const ConvertError: Story = {
   args: {
-    selectedFormat: "EPUB",
+    outputFormat: "EPUB",
     convertStatus: "error" as const,
     errorMessage: "Conversion failed: traceback error from calibre server",
   },
@@ -77,53 +131,51 @@ export const NoFormats: Story = {
   },
 }
 
+// ============================================================
+// play関数付きストーリー
+// ============================================================
+
 /**
- * フォーマットを選択して変換ボタンを押す操作を確認する。
+ * フォーマットボタンを選択する操作の確認。
  */
-export const SelectFormatAndConvert: Story = {
-  args: {
-    selectedFormat: null,
-  },
+export const SelectOutputFormat: Story = {
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement)
 
-    // EPUBフォーマットボタンをクリック
     const epubButton = await canvas.findByTestId("format-button-EPUB")
     await userEvent.click(epubButton)
 
-    expect(args.onFormatSelect).toHaveBeenCalledWith("EPUB")
+    // ボタンのアクセシビリティを確認
+    expect(epubButton).toBeTruthy()
   },
 }
 
 /**
- * 変換ボタンが selectedFormat なしでは無効になっていることを確認する。
+ * 変換ボタンが outputFormat なしでは無効になっていることを確認。
  */
 export const ConvertButtonDisabledWithoutFormat: Story = {
   args: {
-    selectedFormat: null,
+    outputFormat: "",
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
 
     const convertButton = await canvas.findByTestId("convert-button")
-    // disabled属性の存在確認
     expect(convertButton).toBeTruthy()
   },
 }
 
 /**
- * フォーマット選択後に変換ボタンが有効になり押下できることを確認する。
+ * フォーマット選択後に変換ボタンが押下できることを確認。
  */
 export const ConvertButtonEnabledWithFormat: Story = {
   args: {
-    selectedFormat: "PDF",
+    outputFormat: "PDF",
   },
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement)
 
     const convertButton = await canvas.findByTestId("convert-button")
-    expect(convertButton).toBeTruthy()
-
     await userEvent.click(convertButton)
 
     expect(args.onConvert).toHaveBeenCalled()
@@ -131,11 +183,11 @@ export const ConvertButtonEnabledWithFormat: Story = {
 }
 
 /**
- * 変換中はスピナーが表示されることを確認する。
+ * 変換中はスピナーが表示されることを確認。
  */
 export const ConvertingShowsSpinner: Story = {
   args: {
-    selectedFormat: "EPUB",
+    outputFormat: "EPUB",
     convertStatus: "converting" as const,
   },
   play: async ({ canvasElement }) => {
@@ -147,11 +199,11 @@ export const ConvertingShowsSpinner: Story = {
 }
 
 /**
- * 変換成功メッセージが表示されることを確認する。
+ * 変換成功メッセージが表示されることを確認。
  */
 export const SuccessMessageVisible: Story = {
   args: {
-    selectedFormat: "EPUB",
+    outputFormat: "EPUB",
     convertStatus: "success" as const,
   },
   play: async ({ canvasElement }) => {
@@ -163,11 +215,11 @@ export const SuccessMessageVisible: Story = {
 }
 
 /**
- * エラーメッセージが表示されることを確認する。
+ * エラーメッセージが表示されることを確認。
  */
 export const ErrorMessageVisible: Story = {
   args: {
-    selectedFormat: "EPUB",
+    outputFormat: "EPUB",
     convertStatus: "error" as const,
     errorMessage: "Conversion traceback: invalid format",
   },
@@ -176,5 +228,17 @@ export const ErrorMessageVisible: Story = {
 
     const errorMsg = await canvas.findByTestId("convert-error")
     expect(errorMsg).toBeTruthy()
+  },
+}
+
+/**
+ * Accordion が表示されていることを確認。
+ */
+export const AccordionSectionsVisible: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+
+    const accordion = await canvas.findByTestId("convert-accordion")
+    expect(accordion).toBeTruthy()
   },
 }

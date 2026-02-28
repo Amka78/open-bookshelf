@@ -1,24 +1,20 @@
 import { Heading, RootContainer } from "@/components"
 import { BookConvertForm } from "@/components/BookConvertForm/BookConvertForm"
+import type { ConvertStatus } from "@/components/BookConvertForm/BookConvertForm"
+import type { ConvertOptions } from "@/components/BookConvertForm/ConvertOptions"
 import { translate } from "@/i18n"
 import type { ApppNavigationProp } from "@/navigators"
 import { useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import type { FC } from "react"
 import { useLayoutEffect } from "react"
+import type { Control, UseFormWatch } from "react-hook-form"
 import { useBookConvert } from "./useBookConvert"
 
 export const BookConvertScreen: FC = observer(() => {
   const navigation = useNavigation<ApppNavigationProp>()
-  const {
-    selectedBook,
-    formats,
-    selectedFormat,
-    convertStatus,
-    errorMessage,
-    handleFormatSelect,
-    handleConvert,
-  } = useBookConvert()
+  const { selectedBook, formats, form, convertStatus, errorMessage, handleConvert } =
+    useBookConvert()
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -33,10 +29,10 @@ export const BookConvertScreen: FC = observer(() => {
       </Heading>
       <BookConvertForm
         formats={formats}
-        selectedFormat={selectedFormat}
+        control={form.control}
+        watch={form.watch}
         convertStatus={convertStatus}
         errorMessage={errorMessage}
-        onFormatSelect={handleFormatSelect}
         onConvert={handleConvert}
       />
     </RootContainer>
@@ -44,15 +40,15 @@ export const BookConvertScreen: FC = observer(() => {
 })
 
 /**
- * Storybook用テンプレート (ストアに依存しないプレゼンテーション版)
+ * Storybook / テスト用テンプレート (ストアに依存しないプレゼンテーション版)
  */
 export type BookConvertScreenTemplateProps = {
   bookTitle?: string
   formats: string[]
-  selectedFormat: string | null
-  convertStatus: "idle" | "converting" | "success" | "error"
+  control: Control<ConvertOptions>
+  watch: UseFormWatch<ConvertOptions>
+  convertStatus: ConvertStatus
   errorMessage: string | null
-  onFormatSelect: (format: string) => void
   onConvert: () => void
 }
 
@@ -64,10 +60,10 @@ export function BookConvertScreenTemplate(props: BookConvertScreenTemplateProps)
       </Heading>
       <BookConvertForm
         formats={props.formats}
-        selectedFormat={props.selectedFormat}
+        control={props.control}
+        watch={props.watch}
         convertStatus={props.convertStatus}
         errorMessage={props.errorMessage}
-        onFormatSelect={props.onFormatSelect}
         onConvert={props.onConvert}
       />
     </RootContainer>

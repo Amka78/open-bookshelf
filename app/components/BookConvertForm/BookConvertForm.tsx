@@ -1,29 +1,54 @@
-import { Button, Heading, LabeledSpinner, ScrollView, Text, VStack } from "@/components"
+import { Button, LabeledSpinner, ScrollView, Text, VStack } from "@/components"
 import { translate } from "@/i18n"
-import { ButtonGroup } from "@gluestack-ui/themed"
-import React from "react"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionHeader,
+  AccordionItem,
+  AccordionTitleText,
+  AccordionTrigger,
+  ButtonGroup,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  Icon,
+} from "@gluestack-ui/themed"
+import { type Control, Controller, type UseFormWatch } from "react-hook-form"
+import type { ConvertOptions } from "./ConvertOptions"
+import { HeuristicsSection } from "./sections/HeuristicsSection"
+import { LookAndFeelSection } from "./sections/LookAndFeelSection"
+import { OutputSection } from "./sections/OutputSection"
+import { StructureSection } from "./sections/StructureSection"
+import { TOCSection } from "./sections/TOCSection"
 
 export type ConvertStatus = "idle" | "converting" | "success" | "error"
 
 export type BookConvertFormProps = {
+  /** 利用可能なフォーマット一覧 */
   formats: string[]
-  selectedFormat: string | null
+  /** react-hook-form control */
+  control: Control<ConvertOptions>
+  /** watch for outputFormat to show format-specific section */
+  watch: UseFormWatch<ConvertOptions>
+  /** 変換処理状態 */
   convertStatus: ConvertStatus
+  /** エラーメッセージ */
   errorMessage: string | null
-  onFormatSelect: (format: string) => void
+  /** 変換実行コールバック */
   onConvert: () => void
 }
 
 export function BookConvertForm(props: BookConvertFormProps) {
-  const { formats, selectedFormat, convertStatus, errorMessage, onFormatSelect, onConvert } = props
+  const { formats, control, watch, convertStatus, errorMessage, onConvert } = props
 
   const isConverting = convertStatus === "converting"
   const isSuccess = convertStatus === "success"
   const isError = convertStatus === "error"
 
+  const outputFormat = watch("outputFormat") ?? ""
+
   return (
-    <VStack space={"md"} flex={1}>
-      {/* 変換元フォーマット */}
+    <VStack space={"sm"} flex={1}>
+      {/* ===== 変換元フォーマット表示 ===== */}
       <VStack space={"xs"}>
         <Text fontWeight="$bold" tx={"bookConvertScreen.inputFormat"} />
         <Text>
@@ -31,33 +56,127 @@ export function BookConvertForm(props: BookConvertFormProps) {
         </Text>
       </VStack>
 
-      {/* 変換先フォーマット選択 */}
+      {/* ===== 変換先フォーマット選択 ===== */}
       <VStack space={"xs"}>
         <Text fontWeight="$bold" tx={"bookConvertScreen.outputFormat"} />
         {formats.length > 0 ? (
-          <ScrollView>
-            <ButtonGroup flexDirection="row" flexWrap="wrap">
-              {formats.map((format) => (
-                <Button
-                  key={format}
-                  testID={`format-button-${format}`}
-                  variant={selectedFormat === format ? "solid" : "outline"}
-                  onPress={() => onFormatSelect(format)}
-                  marginRight={"$1"}
-                  marginBottom={"$1"}
-                  isDisabled={isConverting}
-                >
-                  {format}
-                </Button>
-              ))}
-            </ButtonGroup>
-          </ScrollView>
+          <Controller
+            control={control}
+            name={"outputFormat"}
+            render={({ field }) => (
+              <ButtonGroup flexDirection="row" flexWrap="wrap">
+                {formats.map((format) => (
+                  <Button
+                    key={format}
+                    testID={`format-button-${format}`}
+                    variant={field.value === format ? "solid" : "outline"}
+                    onPress={() => field.onChange(format)}
+                    marginRight={"$1"}
+                    marginBottom={"$1"}
+                    isDisabled={isConverting}
+                  >
+                    {format}
+                  </Button>
+                ))}
+              </ButtonGroup>
+            )}
+          />
         ) : (
           <Text tx={"bookConvertScreen.noFormats"} />
         )}
       </VStack>
 
-      {/* 変換進行状況 */}
+      {/* ===== 詳細設定 (Accordion) ===== */}
+      <ScrollView flex={1} nestedScrollEnabled>
+        <Accordion variant="filled" type="multiple" isCollapsible testID="convert-accordion">
+          {/* --- Look & Feel --- */}
+          <AccordionItem value="lookAndFeel">
+            <AccordionHeader>
+              <AccordionTrigger>
+                {({ isExpanded }: { isExpanded: boolean }) => (
+                  <>
+                    <AccordionTitleText tx={"bookConvertScreen.sectionLookAndFeel"} />
+                    <Icon as={isExpanded ? ChevronUpIcon : ChevronDownIcon} />
+                  </>
+                )}
+              </AccordionTrigger>
+            </AccordionHeader>
+            <AccordionContent>
+              <LookAndFeelSection control={control} />
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* --- Heuristic Processing --- */}
+          <AccordionItem value="heuristics">
+            <AccordionHeader>
+              <AccordionTrigger>
+                {({ isExpanded }: { isExpanded: boolean }) => (
+                  <>
+                    <AccordionTitleText tx={"bookConvertScreen.sectionHeuristics"} />
+                    <Icon as={isExpanded ? ChevronUpIcon : ChevronDownIcon} />
+                  </>
+                )}
+              </AccordionTrigger>
+            </AccordionHeader>
+            <AccordionContent>
+              <HeuristicsSection control={control} />
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* --- Structure Detection --- */}
+          <AccordionItem value="structure">
+            <AccordionHeader>
+              <AccordionTrigger>
+                {({ isExpanded }: { isExpanded: boolean }) => (
+                  <>
+                    <AccordionTitleText tx={"bookConvertScreen.sectionStructure"} />
+                    <Icon as={isExpanded ? ChevronUpIcon : ChevronDownIcon} />
+                  </>
+                )}
+              </AccordionTrigger>
+            </AccordionHeader>
+            <AccordionContent>
+              <StructureSection control={control} />
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* --- Table of Contents --- */}
+          <AccordionItem value="toc">
+            <AccordionHeader>
+              <AccordionTrigger>
+                {({ isExpanded }: { isExpanded: boolean }) => (
+                  <>
+                    <AccordionTitleText tx={"bookConvertScreen.sectionTOC"} />
+                    <Icon as={isExpanded ? ChevronUpIcon : ChevronDownIcon} />
+                  </>
+                )}
+              </AccordionTrigger>
+            </AccordionHeader>
+            <AccordionContent>
+              <TOCSection control={control} />
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* --- Output Format Specific --- */}
+          <AccordionItem value="output">
+            <AccordionHeader>
+              <AccordionTrigger>
+                {({ isExpanded }: { isExpanded: boolean }) => (
+                  <>
+                    <AccordionTitleText tx={"bookConvertScreen.sectionOutput"} />
+                    <Icon as={isExpanded ? ChevronUpIcon : ChevronDownIcon} />
+                  </>
+                )}
+              </AccordionTrigger>
+            </AccordionHeader>
+            <AccordionContent>
+              <OutputSection control={control} outputFormat={outputFormat} />
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </ScrollView>
+
+      {/* ===== 変換進行状況 / 結果 ===== */}
       {isConverting && (
         <LabeledSpinner
           testID="convert-spinner"
@@ -65,25 +184,21 @@ export function BookConvertForm(props: BookConvertFormProps) {
           labelTx={"bookConvertScreen.converting"}
         />
       )}
-
-      {/* 変換完了メッセージ */}
       {isSuccess && (
         <Text testID="convert-success" color="$green600" tx={"bookConvertScreen.convertComplete"} />
       )}
-
-      {/* エラーメッセージ */}
       {isError && errorMessage && (
         <Text testID="convert-error" color="$red600">
           {errorMessage}
         </Text>
       )}
 
-      {/* 変換実行ボタン */}
+      {/* ===== 変換実行ボタン ===== */}
       <Button
         testID="convert-button"
         tx={"bookConvertScreen.convert"}
         onPress={onConvert}
-        isDisabled={!selectedFormat || isConverting}
+        isDisabled={!outputFormat || isConverting}
       />
     </VStack>
   )

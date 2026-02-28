@@ -8,6 +8,8 @@ import {
 } from "mobx-state-tree"
 
 import { camelCaseToLowerCase, lowerCaseToCamelCase } from "@/utils/convert"
+import type { ConvertOptions } from "@/components/BookConvertForm/ConvertOptions"
+import { convertOptionsToParams } from "@/utils/convertOptionsToParams"
 import { delay } from "@/utils/delay"
 import { type ApiBookManifestResultType, type CommonFieldName, api } from "../../services/api"
 import { type Metadata, MetadataModel, type ReadingHistory } from "../calibre"
@@ -48,10 +50,12 @@ export const BookModel = types
       format: string,
       libraryId: string,
       onPostConvert: () => void | Promise<void>,
+      convertOptions?: ConvertOptions,
     ) {
+      const convertParams = convertOptions ? convertOptionsToParams(convertOptions) : undefined
       let response
       while (response?.data?.files === undefined) {
-        response = yield api.CheckBookConverting(libraryId, root.id, format)
+        response = yield api.CheckBookConverting(libraryId, root.id, format, convertParams)
 
         if (response.kind !== "ok") {
           if (response.kind === "not-found") {
