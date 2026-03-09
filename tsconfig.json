@@ -21,7 +21,7 @@
     "paths": {
       "@/*": ["app/*"]
     },
-    "typeRoots": ["./node_modules/@types"]
+    "types": ["jest", "node"]
   },
   "exclude": [
     ".expo",
@@ -45,6 +45,5 @@
     ".storybook/stories/*",
     ".storybook/stories/screens/*",
     "plugins"
-  ],
-  "extends": "expo/tsconfig.base"
+  ]
 }
