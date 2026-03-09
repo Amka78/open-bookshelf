@@ -3,6 +3,37 @@ import { useStores } from "@/models"
 import { useNavigation } from "@react-navigation/native"
 import { cacheBookImages } from "@/utils/bookImageCache"
 import { ReadingHistoryModel } from "@/models/calibre"
+import type { ModalStackParams } from "@/components/Modals/Types"
+import type { UsableModalProp } from "react-native-modalfy"
+
+type TestModal = UsableModalProp<ModalStackParams>
+
+const createModal = (overrides: Partial<TestModal> = {}): TestModal => ({
+  currentModal: null,
+  openModal: jest.fn() as TestModal["openModal"],
+  closeModal: jest.fn() as TestModal["closeModal"],
+  closeModals: jest.fn() as TestModal["closeModals"],
+  closeAllModals: jest.fn() as TestModal["closeAllModals"],
+  ...overrides,
+})
+
+type MockSelectedBook = {
+  id: number
+  hash: number
+  path: string[]
+  convert: jest.Mock
+  metaData: {
+    formats: string[]
+    size: number
+    setProp: jest.Mock
+  }
+}
+
+type ReadingHistoryEntry = {
+  libraryId: string
+  bookId: number
+  format: string
+}
 
 jest.mock("@/models", () => ({
   useStores: jest.fn(),
@@ -23,7 +54,7 @@ jest.mock("@/models/calibre", () => ({
 }))
 
 describe("useOpenViewer", () => {
-  const createSelectedBook = (overrides?: Partial<any>) => {
+  const createSelectedBook = (overrides: Partial<MockSelectedBook> = {}): MockSelectedBook => {
     return {
       id: 1,
       hash: 7,
@@ -43,8 +74,8 @@ describe("useOpenViewer", () => {
     readingHistories = [],
     addReadingHistory = jest.fn(),
   }: {
-    selectedBook: any
-    readingHistories?: any[]
+    selectedBook: MockSelectedBook
+    readingHistories?: ReadingHistoryEntry[]
     addReadingHistory?: jest.Mock
   }) => {
     ;(useStores as jest.Mock).mockReturnValue({
@@ -82,7 +113,7 @@ describe("useOpenViewer", () => {
     const onComplete = jest.fn()
     const { execute } = useOpenViewer()
 
-    await execute({ openModal: jest.fn() } as any, { onComplete })
+    await execute(createModal(), { onComplete })
 
     expect(selectedBook.metaData.setProp).toHaveBeenCalledWith("selectedFormat", "PDF")
     expect(navigate).toHaveBeenCalledWith("PDFViewer")
@@ -114,7 +145,7 @@ describe("useOpenViewer", () => {
     })
 
     const { execute } = useOpenViewer()
-    await execute({ openModal: jest.fn() } as any)
+    await execute(createModal())
 
     expect(navigate).toHaveBeenCalledWith("Viewer")
     expect(selectedBook.convert).not.toHaveBeenCalled()
@@ -144,7 +175,7 @@ describe("useOpenViewer", () => {
     setupStore({ selectedBook, addReadingHistory })
 
     const { execute } = useOpenViewer()
-    await execute({ openModal: jest.fn() } as any)
+    await execute(createModal())
 
     expect(selectedBook.convert).toHaveBeenCalled()
     expect(cacheBookImages).toHaveBeenCalledWith(
@@ -187,7 +218,7 @@ describe("useOpenViewer", () => {
     setupStore({ selectedBook })
 
     const { execute } = useOpenViewer()
-    await execute({ openModal } as any)
+    await execute(createModal({ openModal: openModal as TestModal["openModal"] }))
 
     expect(openModal).toHaveBeenCalledWith(
       "ErrorModal",

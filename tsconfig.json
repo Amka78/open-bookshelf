@@ -18,10 +18,10 @@
     "skipDefaultLibCheck": true,
     "resolveJsonModule": true,
     "baseUrl": ".",
+    "types": ["jest", "node"],
     "paths": {
       "@/*": ["app/*"]
-    },
-    "types": ["jest", "node"]
+    }
   },
   "exclude": [
     ".expo",

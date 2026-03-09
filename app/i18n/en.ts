@@ -32,6 +32,8 @@ const en = {
     timeout: "Connection with Calibre timed out.",
     timeoutDescription:
       "The connection with Calibre is taking too long. Please wait a few moments before connecting or restart the server.",
+    notFound: "Cannot connect to server.",
+    notFoundDescription: "Cannot connect to server. Would you like to specify the connection destination again?",
   },
   connectScreen: {
     welcome: "Welcome!!",

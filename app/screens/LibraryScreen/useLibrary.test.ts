@@ -68,6 +68,14 @@ describe("useLibrary", () => {
     ;(useNavigation as jest.Mock).mockReturnValue({})
   })
 
+  beforeAll(() => {
+    jest.useRealTimers()
+  })
+
+  afterAll(() => {
+    jest.useFakeTimers()
+  })
+
   const renderUseLibrary = async () => {
     const hook = renderHook(() => useLibrary())
     await act(async () => {

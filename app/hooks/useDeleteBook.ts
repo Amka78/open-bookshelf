@@ -8,7 +8,7 @@ export function useDeleteBook() {
 
   const selectedLibrary = calibreRootStore.selectedLibrary
   const selectedBook = selectedLibrary.selectedBook
-  const execute = (modal: UsableModalProp<ModalStackParam>) => {
+  const execute = (modal: UsableModalProp<ModalStackParams>) => {
     modal.openModal("ConfirmModal", {
       titleTx: "modal.deleteConfirmModal.title",
       message: translate({

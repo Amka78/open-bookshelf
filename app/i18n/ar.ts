@@ -34,6 +34,8 @@ const ar: Translations = {
     timeout: "انتهت مهلة الاتصال مع Calibre.",
     timeoutDescription:
       "استغرق الاتصال بـ Calibre وقتًا طويلًا. يرجى الانتظار قليلًا قبل إعادة المحاولة أو إعادة تشغيل الخادم.",
+    notFound: "تعذر الاتصال بالخادم.",
+    notFoundDescription: "تعذر الاتصال بالخادم. هل تريد تحديد وجهة الاتصال مرة أخرى؟",
   },
   connectScreen: {
     welcome: "مرحبًا!!",

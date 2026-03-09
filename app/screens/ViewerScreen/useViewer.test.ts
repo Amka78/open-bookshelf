@@ -74,6 +74,14 @@ describe("useViewer", () => {
     })
   })
 
+  beforeAll(() => {
+    jest.useRealTimers()
+  })
+
+  afterAll(() => {
+    jest.useFakeTimers()
+  })
+
   test("initializes with default values", () => {
     const { result } = renderHook(() => useViewer())
 

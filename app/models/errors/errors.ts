@@ -1,5 +1,6 @@
 import type { ModalStackParams } from "@/components/Modals/Types"
 import type { MessageKey } from "@/i18n"
+import { navigate, navigationRef } from "@/navigators/navigationUtilities"
 import type { GeneralApiProblem } from "@/services/api/apiProblem"
 import { modalfy } from "react-native-modalfy"
 
@@ -57,6 +58,20 @@ export function handleCommonApiError(apiProblem: GeneralApiProblem) {
         messageTx: "errors.timeoutDescription",
       })
       break
+    case "not-found": {
+      const currentRoute = navigationRef.isReady() ? navigationRef.getCurrentRoute()?.name : undefined
+      if (currentRoute === "Connect") break
+      modal.openModal("ConfirmModal", {
+        titleTx: "errors.notFound",
+        messageTx: "errors.notFoundDescription",
+        okTx: "common.yes",
+        cancelTx: "common.no",
+        onOKPress: () => {
+          navigate("Connect")
+        },
+      })
+      break
+    }
     default:
       break
   }

@@ -34,6 +34,8 @@ const ko: Translations = {
     timeout: "Calibre와의 연결 시간이 초과되었습니다.",
     timeoutDescription:
       "Calibre 연결이 너무 오래 걸리고 있습니다. 잠시 후 다시 시도하거나 서버를 재시작해 주세요.",
+    notFound: "서버에 연결할 수 없습니다.",
+    notFoundDescription: "서버에 연결할 수 없습니다. 다시 연결 대상을 지정하시겠습니까?",
   },
   connectScreen: {
     welcome: "환영합니다!!",

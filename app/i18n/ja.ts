@@ -34,6 +34,8 @@ const ja: Translations = {
     timeout: "Calibre との接続がタイムアウトしました。",
     timeoutDescription:
       "Calibre との接続に時間がかかっています。少し待ってから再接続するか、サーバーを再起動してください。",
+    notFound: "サーバーに接続できません。",
+    notFoundDescription: "サーバーに接続できません。再度接続先を指定しますか？",
   },
   connectScreen: {
     welcome: "ようこそ!!",

@@ -1,6 +1,19 @@
 import { useDeleteBook } from "./useDeleteBook"
 import { useStores } from "@/models"
 import { translate } from "@/i18n"
+import type { ModalStackParams } from "@/components/Modals/Types"
+import type { UsableModalProp } from "react-native-modalfy"
+
+type TestModal = UsableModalProp<ModalStackParams>
+
+const createModal = (overrides: Partial<TestModal> = {}): TestModal => ({
+  currentModal: null,
+  openModal: jest.fn() as TestModal["openModal"],
+  closeModal: jest.fn() as TestModal["closeModal"],
+  closeModals: jest.fn() as TestModal["closeModals"],
+  closeAllModals: jest.fn() as TestModal["closeAllModals"],
+  ...overrides,
+})
 
 jest.mock("@/models", () => ({
   useStores: jest.fn(),
@@ -37,7 +50,12 @@ describe("useDeleteBook", () => {
 
     const { execute } = useDeleteBook()
 
-    execute({ openModal, closeModal } as any)
+    execute(
+      createModal({
+        openModal: openModal as TestModal["openModal"],
+        closeModal: closeModal as TestModal["closeModal"],
+      }),
+    )
 
     expect(openModal).toHaveBeenCalledWith(
       "ConfirmModal",

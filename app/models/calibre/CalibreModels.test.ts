@@ -114,7 +114,7 @@ describe("Calibre models", () => {
       languages: ["en"],
       langNames: { en: "English" },
       formatSizes: { EPUB: 100 },
-      cover: null,
+      cover: undefined,
     })
     metadata.setProp("selectedFormat", "EPUB")
 
@@ -168,7 +168,7 @@ describe("Calibre models", () => {
 
   test("LibraryMap setBook and deleteBook actions", async () => {
     const deleteBook = jest.spyOn(api, "deleteBook")
-    deleteBook.mockResolvedValue({ kind: "ok" } as any)
+    deleteBook.mockResolvedValue({ kind: "ok" })
 
     const library = LibraryMapModel.create({
       id: "main",

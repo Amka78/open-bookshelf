@@ -3,6 +3,10 @@ import { useStores } from "@/models"
 import * as FileSystem from "expo-file-system"
 import * as Sharing from "expo-sharing"
 import { api } from "@/services/api"
+import type { ModalStackParams } from "@/components/Modals/Types"
+import type { UsableModalProp } from "react-native-modalfy"
+
+type TestModal = UsableModalProp<ModalStackParams>
 
 jest.mock("@/models", () => ({
   useStores: jest.fn(),
@@ -41,8 +45,13 @@ describe("useDownloadBook", () => {
     }
   }
 
-  const createModal = () => ({
-    openModal: jest.fn(),
+  const createModal = (overrides: Partial<TestModal> = {}): TestModal => ({
+    currentModal: null,
+    openModal: jest.fn() as TestModal["openModal"],
+    closeModal: jest.fn() as TestModal["closeModal"],
+    closeModals: jest.fn() as TestModal["closeModals"],
+    closeAllModals: jest.fn() as TestModal["closeAllModals"],
+    ...overrides,
   })
 
   afterEach(() => {
@@ -66,7 +75,7 @@ describe("useDownloadBook", () => {
     const { execute } = useDownloadBook()
     const modal = createModal()
 
-    await execute(modal as any)
+    await execute(modal)
 
     expect(api.getBookDownloadUrl).toHaveBeenCalledWith("EPUB", 10, "main")
     expect(FileSystem.downloadAsync).toHaveBeenCalledWith(
@@ -93,7 +102,7 @@ describe("useDownloadBook", () => {
     })
 
     const { execute } = useDownloadBook()
-    await execute({ openModal } as any)
+    await execute(createModal({ openModal: openModal as TestModal["openModal"] }))
 
     expect(openModal).toHaveBeenCalledWith(
       "FormatSelectModal",
@@ -124,7 +133,7 @@ describe("useDownloadBook", () => {
 
     const { execute } = useDownloadBook()
 
-    await execute({ openModal } as any)
+    await execute(createModal({ openModal: openModal as TestModal["openModal"] }))
 
     expect(openModal).toHaveBeenCalledWith(
       "ErrorModal",

@@ -11,6 +11,8 @@ jest.mock("@react-navigation/native")
 jest.mock("mobx")
 
 describe("useCalibreRoot", () => {
+  type TestLibrary = { id: string; books: Map<string, unknown> }
+
   const mockSetLibrary = jest.fn()
   const mockNavigate = jest.fn()
   const mockLibraryMap = new Map([
@@ -106,7 +108,7 @@ describe("useCalibreRoot", () => {
       ["lib1", "lib2"],
     ],
     [[], []],
-  ])("library list mapping %#", (inputLibraries: any[], expectedIds: string[]) => {
+  ])("library list mapping %#", (inputLibraries: TestLibrary[], expectedIds: string[]) => {
     ;(values as jest.Mock).mockReturnValue(inputLibraries)
 
     const { result } = renderUseCalibreRoot()
