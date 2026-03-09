@@ -1,25 +1,28 @@
 import { MaterialCommunityIcon } from "@/components/MaterialCommunityIcon/MaterialCommunityIcon"
 import { translate } from "@/i18n"
+import type { VirtualLibrary, VirtualLibraryModel } from "@/models/calibre/VirtualLibraryModel"
 import { Menu, MenuItem, MenuItemLabel, Pressable } from "@gluestack-ui/themed"
 import type { ComponentProps } from "react"
 
 export type VirtualLibraryButtonProps = {
-  virtualLibraries: string[]
+  virtualLibraries: VirtualLibrary[]
   selectedVl?: string | null
   onSelect: (vl: string | null) => void
+  isLargeScreen?: boolean
 } & Omit<ComponentProps<typeof Menu>, "trigger" | "children">
 
 export function VirtualLibraryButton({
   virtualLibraries,
   selectedVl,
   onSelect,
+  isLargeScreen,
   ...menuProps
 }: VirtualLibraryButtonProps) {
   if (!virtualLibraries?.length) return null
 
   return (
     <Menu
-      placement="left bottom"
+      placement={isLargeScreen ? "bottom" : "left bottom"}
       closeOnSelect={true}
       {...menuProps}
       trigger={(triggerProps) => (
@@ -29,7 +32,7 @@ export function VirtualLibraryButton({
           testID="virtual-library-button"
         >
           <MaterialCommunityIcon
-            name={selectedVl ? "book-filter" : "book-filter-outline"}
+            name={selectedVl ? "library" : "library-outline"}
             iconSize="md-"
             variant="staggerChild"
           />
@@ -46,12 +49,12 @@ export function VirtualLibraryButton({
       </MenuItem>
       {virtualLibraries.map((vl) => (
         <MenuItem
-          key={vl}
-          textValue={vl}
-          testID={`vl-item-${vl}`}
-          onPress={() => onSelect(vl)}
+          key={vl.name}
+          textValue={vl.name}
+          testID={`vl-item-${vl.name}`}
+          onPress={() => onSelect(vl.name)}
         >
-          <MenuItemLabel>{vl}</MenuItemLabel>
+          <MenuItemLabel>{vl.name}</MenuItemLabel>
         </MenuItem>
       ))}
     </Menu>

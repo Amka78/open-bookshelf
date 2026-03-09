@@ -1,29 +1,29 @@
 import { type Instance, type SnapshotIn, type SnapshotOut, flow, types } from "mobx-state-tree"
 
+import { lowerCaseToCamelCase } from "@/utils/convert"
 import {
   type ApiBookInfo,
   type ApiBookInfoCore,
+  type ApiCalibreInterfaceType,
   api,
-  ApiCalibreInterfaceType,
 } from "../services/api"
 import {
   CategoryModel,
   DateFormatModel,
   FieldMetadataModel,
   IsMultipleModel,
+  type LibraryMap,
+  LibraryMapModel,
   MetadataModel,
   NodeModel,
+  type ReadingHistory,
+  ReadingHistoryModel,
   SearchSettingModel,
   SortFieldModel,
   SubCategoryModel,
-  LibraryMapModel,
-  type LibraryMap,
-  ReadingHistoryModel,
-  ReadingHistory,
 } from "./calibre"
 import { handleCommonApiError } from "./errors/errors"
 import { withSetPropAction } from "./helpers/withSetPropAction"
-import { lowerCaseToCamelCase } from "@/utils/convert"
 
 /**
  * Calibre Root Information
@@ -242,10 +242,11 @@ function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap)
 function convertLibraryInformation(bookInfo: ApiBookInfo, libraryInfo: LibraryMap) {
   libraryInfo.bookDisplayFields.clear()
   libraryInfo.fieldMetadataList.clear()
+  libraryInfo.virtualLibraries.clear()
 
-  if (Array.isArray(bookInfo.virtual_libraries)) {
-    libraryInfo.virtualLibraries.replace(bookInfo.virtual_libraries)
-  }
+  Object.keys(bookInfo.virtual_libraries).forEach((key) => {
+    libraryInfo.virtualLibraries.push({ name: key, path: bookInfo.virtual_libraries[key] })
+  })
 
   bookInfo.book_display_fields.forEach((value) => {
     libraryInfo.bookDisplayFields.push(value)
@@ -288,4 +289,4 @@ function convertLibraryInformation(bookInfo: ApiBookInfo, libraryInfo: LibraryMa
   })
 }
 
-export { LibraryMap }
+export type { LibraryMap }

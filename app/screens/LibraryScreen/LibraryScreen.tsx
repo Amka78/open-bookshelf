@@ -15,6 +15,7 @@ import {
   Text,
   VirtualLibraryButton,
 } from "@/components"
+import { InputField } from "@/components/InputField/InputField"
 import type { ModalStackParams } from "@/components/Modals/Types"
 import { useConvergence } from "@/hooks/useConvergence"
 import { useDeleteBook } from "@/hooks/useDeleteBook"
@@ -34,7 +35,6 @@ import { Platform, useWindowDimensions } from "react-native"
 import { useModal } from "react-native-modalfy"
 import type { SearchBarCommands } from "react-native-screens"
 import { useLibrary } from "./useLibrary"
-import { InputField } from "@/components/InputField/InputField"
 
 export const LibraryScreen: FC = observer(() => {
   const { authenticationStore, calibreRootStore } = useStores()
@@ -57,13 +57,6 @@ export const LibraryScreen: FC = observer(() => {
   const libraryActions = useMemo(() => {
     return (
       <>
-        <VirtualLibraryButton
-          virtualLibraries={selectedLibrary?.virtualLibraries?.slice() ?? []}
-          selectedVl={selectedLibrary?.searchSetting?.vl}
-          onSelect={(vl) => {
-            libraryHook.onSelectVirtualLibrary(vl)
-          }}
-        />
         <AuthButton
           mode={authenticationStore.isAuthenticated ? "logout" : "login"}
           onLoginPress={() => {
@@ -77,6 +70,14 @@ export const LibraryScreen: FC = observer(() => {
             authenticationStore.logout()
             navigation.navigate("Connect")
           }}
+        />
+        <VirtualLibraryButton
+          virtualLibraries={selectedLibrary?.virtualLibraries?.slice() ?? []}
+          selectedVl={selectedLibrary?.searchSetting?.vl}
+          onSelect={(name) => {
+            libraryHook.onSelectVirtualLibrary(name)
+          }}
+          isLargeScreen={convergenceHook.isLarge}
         />
         <AddFileButton
           onDocumentSelect={async (documents) => {

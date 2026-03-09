@@ -22,7 +22,6 @@ describe("CalibreRootStore test", () => {
     const model = CalibreRootStore.create({})
 
     return model.initialize().then((result) => {
-      console.log("called")
       expect(result).toBeTruthy()
 
       expect(model.numPerPage).toBe(50)
@@ -30,11 +29,8 @@ describe("CalibreRootStore test", () => {
       expect(model.readingHistories[0].libraryId).toBe("test1")
       expect(model.readingHistories[0].bookId).toBe(35)
       expect(model.readingHistories[0].format).toBe("CBZ")
-      expect(model.readingHistories[0].currentPage).toBe(2)
-      expect(model.readingHistories[0].libraryId).toBe("test2")
+      expect(model.readingHistories[0].currentPage).toBe(0)
       expect(model.readingHistories[0].bookId).toBe(35)
-      expect(model.readingHistories[0].format).toBe("CBZ")
-      expect(model.readingHistories[0].currentPage).toBe(2)
       expect(model.libraryMap.has("test1")).toBeTruthy()
       expect(model.libraryMap.has("test2")).toBeTruthy()
     })

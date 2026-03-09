@@ -1,18 +1,15 @@
 import { type Instance, type SnapshotIn, type SnapshotOut, flow, types } from "mobx-state-tree"
 
 import { api } from "@/services/api"
-import {
-  BookModel,
-  CategoryModel,
-  ClientSettingModel,
-  FieldMetadataModel,
-  type ReadingHistory,
-  ReadingHistoryModel,
-  SearchSettingModel,
-  SortFieldModel,
-} from "./"
 import { handleCommonApiError } from "../errors/errors"
 import { withSetPropAction } from "../helpers/withSetPropAction"
+import { BookModel } from "./BookModel"
+import { CategoryModel } from "./CategoryModel"
+import { ClientSettingModel } from "./ClientSettingModel"
+import { FieldMetadataModel } from "./FieldMetadataModel"
+import { SearchSettingModel } from "./SearchSettingModel"
+import { SortFieldModel } from "./SortFieldModel"
+import { VirtualLibraryModel } from "./VirtualLibraryModel"
 
 export const LibraryMapModel = types
   .model("LibrayMapModel")
@@ -26,7 +23,7 @@ export const LibraryMapModel = types
     bookDisplayFields: types.array(types.string),
     fieldMetadataList: types.map(FieldMetadataModel),
     selectedBook: types.safeReference(types.late(() => BookModel)),
-    virtualLibraries: types.array(types.string),
+    virtualLibraries: types.array(VirtualLibraryModel),
   })
   .actions(withSetPropAction)
   .actions((root) => ({
