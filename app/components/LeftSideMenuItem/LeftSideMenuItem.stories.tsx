@@ -7,7 +7,7 @@ export default {
   title: "LeftSideMenuItem",
   component: LeftSideMenuItem,
   parameters: {
-    notes: `Draw each item on the left menu.`,
+    notes: "Draw each item on the left menu.",
   },
   args: {
     count: 10,

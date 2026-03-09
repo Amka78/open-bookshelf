@@ -1,4 +1,4 @@
-import { Instance, types } from "mobx-state-tree"
+import { type Instance, types } from "mobx-state-tree"
 
 import { AuthorModel } from "./AuthorModel"
 import { CategoryModel } from "./CategoryModel"

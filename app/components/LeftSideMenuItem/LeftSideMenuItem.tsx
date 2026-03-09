@@ -1,7 +1,8 @@
 import { Box, HStack, MaterialCommunityIcon, Text } from "@/components"
 import { logger } from "@/utils/logger"
 import { Pressable } from "@gluestack-ui/themed"
-import { useState } from "react"
+import { memo, useMemo, useState } from "react"
+import type React from "react"
 
 export type LeftSideMenuItemProps = {
   name: string
@@ -11,35 +12,51 @@ export type LeftSideMenuItemProps = {
   onLastNodePress?: () => void
   selected?: boolean
 }
-export function LeftSideMenuItem({ mode = "category", ...restProps }: LeftSideMenuItemProps) {
+export const LeftSideMenuItem = memo(function LeftSideMenuItem({
+  mode = "category",
+  ...restProps
+}: LeftSideMenuItemProps) {
   const props = { mode, ...restProps }
   const [isOpen, setIsOpen] = useState(false)
 
-  const isParentNode = (props.children?.length > 0 && mode === "subCategory") || mode === "category"
-  const icon = isParentNode
-    ? isOpen
-      ? "menu-down"
-      : "menu-right"
-    : props.selected
-      ? "check"
-      : "bookshelf"
+  const isParentNode = useMemo(
+    () => (props.children?.length > 0 && mode === "subCategory") || mode === "category",
+    [props.children?.length, mode],
+  )
+
+  const icon = useMemo(() => {
+    if (isParentNode) {
+      return isOpen ? "menu-down" : "menu-right"
+    }
+    return props.selected ? "check" : "bookshelf"
+  }, [isParentNode, isOpen, props.selected])
+
+  const handlePress = useMemo(
+    () => () => {
+      if (isParentNode) {
+        setIsOpen(!isOpen)
+      } else {
+        logger.debug("LeftSideMenuItem leaf pressed", { name: props.name })
+        props.onLastNodePress?.()
+      }
+    },
+    [isParentNode, isOpen, props.name, props.onLastNodePress],
+  )
+
+  const paddingLeft = useMemo(() => {
+    if (mode === "subCategory") return "$0.5"
+    if (mode === "node") return "$3"
+    return undefined
+  }, [mode])
+
   return (
     <>
-      <Pressable
-        onPress={() => {
-          if (isParentNode) {
-            setIsOpen(!isOpen)
-          } else {
-            logger.debug("LeftSideMenuItem leaf pressed", { name: props.name })
-            props.onLastNodePress()
-          }
-        }}
-      >
+      <Pressable onPress={handlePress}>
         <HStack
           alignItems={"center"}
           marginHorizontal={"$0.5"}
           marginTop={"$0.5"}
-          paddingLeft={mode === "subCategory" ? "$0.5" : mode === "node" ? "$3" : undefined}
+          paddingLeft={paddingLeft}
         >
           <MaterialCommunityIcon name={icon} iconSize={"sm"} />
           <Text fontSize={"$md"}>{props.name}</Text>
@@ -47,7 +64,7 @@ export function LeftSideMenuItem({ mode = "category", ...restProps }: LeftSideMe
           <Text fontSize={"$md"}>{props.count}</Text>
         </HStack>
       </Pressable>
-      {isOpen ? props.children : null}
+      {isOpen && props.children}
     </>
   )
-}
+})

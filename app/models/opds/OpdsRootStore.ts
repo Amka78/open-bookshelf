@@ -1,4 +1,4 @@
-import { flow, Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
+import { flow, type Instance, type SnapshotIn, type SnapshotOut, types } from "mobx-state-tree"
 import * as xmldom from "xmldom"
 
 import { api } from "@/services/api"
