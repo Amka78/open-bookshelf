@@ -1,14 +1,15 @@
 import { Box, HStack, MaterialCommunityIcon, Text } from "@/components"
 import { logger } from "@/utils/logger"
 import { Pressable } from "@gluestack-ui/themed"
-import { memo, useMemo, useState } from "react"
-import type React from "react"
+import { Children, memo, useMemo, useState } from "react"
+import type { ReactNode } from "react"
 
 export type LeftSideMenuItemProps = {
   name: string
   count: number
-  children?: React.ReactNode[]
+  children?: ReactNode
   mode?: "category" | "subCategory" | "node"
+  depth?: number
   onLastNodePress?: () => void
   selected?: boolean
 }
@@ -18,10 +19,11 @@ export const LeftSideMenuItem = memo(function LeftSideMenuItem({
 }: LeftSideMenuItemProps) {
   const props = { mode, ...restProps }
   const [isOpen, setIsOpen] = useState(false)
+  const childCount = useMemo(() => Children.count(props.children), [props.children])
 
   const isParentNode = useMemo(
-    () => (props.children?.length > 0 && mode === "subCategory") || mode === "category",
-    [props.children?.length, mode],
+    () => (childCount > 0 && mode === "subCategory") || mode === "category",
+    [childCount, mode],
   )
 
   const icon = useMemo(() => {
@@ -44,10 +46,10 @@ export const LeftSideMenuItem = memo(function LeftSideMenuItem({
   )
 
   const paddingLeft = useMemo(() => {
-    if (mode === "subCategory") return "$0.5"
-    if (mode === "node") return "$3"
-    return undefined
-  }, [mode])
+    const depthValue = props.depth ?? 0
+    if (depthValue === 0) return "$0"
+    return `$${depthValue * 3}` as "$0" | "$3" | "$6" | "$9"
+  }, [props.depth])
 
   return (
     <>

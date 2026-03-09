@@ -187,9 +187,11 @@ export type CalibreRootSnapshotOut = SnapshotOut<typeof CalibreRootStore>
 export type CalibreRootSnapshotIn = SnapshotIn<typeof CalibreRootStore>
 
 function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap) {
+  const previousQuery = selectedLibrary.searchSetting?.query ?? ""
+
   selectedLibrary.searchSetting = SearchSettingModel.create({
     offset: data.search_result.num + data.search_result.offset,
-    query: data.search_result.query ? data.search_result.query : "",
+    query: data.search_result.query ? data.search_result.query : previousQuery,
     sort: data.search_result.sort,
     sortOrder: data.search_result.sort_order,
     totalNum: data.search_result.total_num

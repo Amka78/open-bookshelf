@@ -138,7 +138,6 @@ export const LibraryScreen: FC = observer(() => {
         ? () => {
             return (
               <HStack alignItems="center">
-                <Text>{headerTitleText}</Text>
                 <Box w={260} ml={8}>
                   <Input size="sm">
                     <InputField
@@ -424,7 +423,8 @@ export const LibraryScreen: FC = observer(() => {
       <Box flex={0.1}>
         <LeftSideMenu
           onNodePress={async (name) => {
-            libraryHook.onSearch(name)
+            libraryHook.setHeaderSearchText(name)
+            await libraryHook.onSearch(name)
           }}
           tagBrowser={selectedLibrary?.tagBrowser}
           selectedName={selectedLibrary?.searchSetting?.query}
