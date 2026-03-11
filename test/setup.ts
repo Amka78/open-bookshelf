@@ -1,4 +1,4 @@
-import { jest, mock } from "bun:test"
+import { afterEach, jest, mock } from "bun:test"
 // Test setup for Bun test runner
 import { JSDOM } from "jsdom"
 import mockFile from "./mockFile"
@@ -22,6 +22,19 @@ mock.module("@/models", () => ({
 mock.module("@react-navigation/native", () => ({
   useNavigation: jest.fn(),
   useRoute: jest.fn(),
+  useIsFocused: jest.fn(() => true),
+  useFocusEffect: jest.fn(),
+  DefaultTheme: {},
+  NavigationContainer: ({ children }: { children: unknown }) => children,
+  createNavigationContainerRef: jest.fn(() => ({
+    isReady: jest.fn(() => true),
+    getRootState: jest.fn(() => ({ routes: [], index: 0 })),
+    canGoBack: jest.fn(() => false),
+    goBack: jest.fn(),
+    navigate: jest.fn(),
+    resetRoot: jest.fn(),
+    dispatch: jest.fn(),
+  })),
 }))
 
 mock.module("@/theme", () => ({
@@ -35,6 +48,23 @@ mock.module("react-native-modalfy", () => ({
   createModalStack: jest.fn(),
 }))
 
+mock.module("expo-screen-orientation", () => ({
+  Orientation: {
+    UNKNOWN: 0,
+    PORTRAIT_UP: 1,
+    PORTRAIT_DOWN: 2,
+    LANDSCAPE_LEFT: 3,
+    LANDSCAPE_RIGHT: 4,
+  },
+  addOrientationChangeListener: jest.fn(),
+  getOrientationAsync: jest.fn(),
+  removeOrientationChangeListener: jest.fn(),
+}))
+
+mock.module("expo-sharing", () => ({
+  shareAsync: jest.fn(),
+}))
+
 // Set global variables
 global.__DEV__ = true
 global.__TEST__ = true
@@ -43,7 +73,10 @@ global.__TEST__ = true
 process.env.EXPO_OS = "web"
 process.env.NODE_ENV = "test"
 
-installTestNameI18n()
+afterEach(() => {
+  jest.restoreAllMocks()
+  jest.clearAllMocks()
+})
 
 // Mock Expo globals
 if (!globalThis.expo) {
@@ -73,8 +106,8 @@ if (!globalThis.expo) {
   } as any
 }
 
-// Mock react-native using Jest-compatible API (Bun supports this)
-jest.mock("react-native", () => ({
+// Mock react-native at preload time
+mock.module("react-native", () => ({
   Image: {
     resolveAssetSource: jest.fn((_source) => mockFile),
     getSize: jest.fn(
@@ -179,7 +212,7 @@ jest.mock("react-native", () => ({
 }))
 
 // Mock Expo modules
-jest.mock("expo-file-system", () => ({
+mock.module("expo-file-system", () => ({
   getInfoAsync: jest.fn(),
   readAsStringAsync: jest.fn(),
   writeAsStringAsync: jest.fn(),
@@ -195,7 +228,7 @@ jest.mock("expo-file-system", () => ({
   cacheDirectory: "/mock/cache/",
 }))
 
-jest.mock("expo-constants", () => ({
+mock.module("expo-constants", () => ({
   default: {
     expoConfig: {},
     manifest: {},
@@ -203,7 +236,7 @@ jest.mock("expo-constants", () => ({
   },
 }))
 
-jest.mock("@react-native-async-storage/async-storage", () => {
+mock.module("@react-native-async-storage/async-storage", () => {
   const mockAsyncStorage = {
     getItem: jest.fn(() => Promise.resolve(null)),
     setItem: jest.fn(() => Promise.resolve()),
@@ -221,7 +254,7 @@ jest.mock("@react-native-async-storage/async-storage", () => {
   }
 })
 
-jest.mock("i18n-js", () => {
+mock.module("i18n-js", () => {
   const mockI18n = {
     currentLocale: jest.fn(() => "en"),
     t: jest.fn((key: string, params?: Record<string, string>) => {
@@ -237,7 +270,7 @@ jest.mock("i18n-js", () => {
   }
 })
 
-jest.mock("reactotron-react-native", () => ({}))
+mock.module("reactotron-react-native", () => ({}))
 
 declare const tron // eslint-disable-line @typescript-eslint/no-unused-vars
 declare global {

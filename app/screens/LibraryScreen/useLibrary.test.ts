@@ -1,4 +1,5 @@
 import {
+  afterAll,
   describe as baseDescribe,
   test as baseTest,
   beforeAll,
@@ -22,22 +23,13 @@ mock.module("@/hooks/useConvergence", () => ({
   useConvergence: mockUseConvergence,
 }))
 
-jest.mock("@/models")
-jest.mock("@/hooks/useConvergence", () => ({
-  useConvergence: jest.fn(),
-}))
-jest.mock("@react-navigation/native")
-jest.mock("@/services/api")
 jest.mock("@/utils/logger", () => ({
   logger: {
     debug: jest.fn(),
   },
 }))
-jest.mock("@/services/api", () => ({
-  api: {
-    uploadFile: jest.fn(),
-  },
-}))
+
+let useLibrary: typeof import("./useLibrary").useLibrary
 
 describe("useLibrary", () => {
   const mockSearchLibrary = jest.fn().mockResolvedValue(undefined)
@@ -80,6 +72,7 @@ describe("useLibrary", () => {
   }
 
   beforeEach(() => {
+    jest.restoreAllMocks()
     jest.clearAllMocks()
     ;(useStores as jest.Mock).mockReturnValue({
       calibreRootStore: mockCallibreRootStore,
@@ -90,7 +83,8 @@ describe("useLibrary", () => {
     ;(useNavigation as jest.Mock).mockReturnValue({})
   })
 
-  beforeAll(() => {
+  beforeAll(async () => {
+    ;({ useLibrary } = await import("./useLibrary"))
     jest.useRealTimers()
   })
 
@@ -230,8 +224,7 @@ describe("useLibrary", () => {
   })
 
   test("onUploadFile uploads file and searches", async () => {
-    const mockUploadFile = jest.fn().mockResolvedValue(undefined)
-    ;(api.uploadFile as jest.Mock) = mockUploadFile
+    const mockUploadFile = jest.spyOn(api, "uploadFile").mockResolvedValue(undefined)
 
     const { result } = await renderUseLibrary()
 
@@ -252,7 +245,7 @@ describe("useLibrary", () => {
   })
 
   test("current list style is viewList on mobile by default", async () => {
-    ;(useConvergence as jest.Mock).mockReturnValue({
+    mockUseConvergence.mockReturnValue({
       isLarge: false,
     })
 
@@ -262,7 +255,7 @@ describe("useLibrary", () => {
   })
 
   test("current list style is gridView on desktop by default", async () => {
-    ;(useConvergence as jest.Mock).mockReturnValue({
+    mockUseConvergence.mockReturnValue({
       isLarge: true,
     })
 

@@ -1,10 +1,10 @@
-import { useOpenViewer } from "./useOpenViewer"
-import { useStores } from "@/models"
-import { useNavigation } from "@react-navigation/native"
-import { cacheBookImages } from "@/utils/bookImageCache"
-import { ReadingHistoryModel } from "@/models/calibre"
 import type { ModalStackParams } from "@/components/Modals/Types"
+import { useStores } from "@/models"
+import { ReadingHistoryModel } from "@/models/calibre"
+import * as bookImageCache from "@/utils/bookImageCache"
+import { useNavigation } from "@react-navigation/native"
 import type { UsableModalProp } from "react-native-modalfy"
+import { useOpenViewer } from "./useOpenViewer"
 
 type TestModal = UsableModalProp<ModalStackParams>
 
@@ -34,24 +34,6 @@ type ReadingHistoryEntry = {
   bookId: number
   format: string
 }
-
-jest.mock("@/models", () => ({
-  useStores: jest.fn(),
-}))
-
-jest.mock("@react-navigation/native", () => ({
-  useNavigation: jest.fn(),
-}))
-
-jest.mock("@/utils/bookImageCache", () => ({
-  cacheBookImages: jest.fn(),
-}))
-
-jest.mock("@/models/calibre", () => ({
-  ReadingHistoryModel: {
-    create: jest.fn(),
-  },
-}))
 
 describe("useOpenViewer", () => {
   const createSelectedBook = (overrides: Partial<MockSelectedBook> = {}): MockSelectedBook => {
@@ -94,6 +76,7 @@ describe("useOpenViewer", () => {
   }
 
   afterEach(() => {
+    jest.restoreAllMocks()
     jest.clearAllMocks()
   })
 
@@ -169,8 +152,8 @@ describe("useOpenViewer", () => {
       },
     })
     const addReadingHistory = jest.fn()
-    ;(cacheBookImages as jest.Mock).mockResolvedValue(["cache/a.png", "cache/b.png"])
-    ;(ReadingHistoryModel.create as jest.Mock).mockReturnValue({ history: true })
+    jest.spyOn(bookImageCache, "cacheBookImages").mockResolvedValue(["cache/a.png", "cache/b.png"])
+    jest.spyOn(ReadingHistoryModel, "create").mockReturnValue({ history: true } as never)
 
     setupStore({ selectedBook, addReadingHistory })
 
@@ -178,7 +161,7 @@ describe("useOpenViewer", () => {
     await execute(createModal())
 
     expect(selectedBook.convert).toHaveBeenCalled()
-    expect(cacheBookImages).toHaveBeenCalledWith(
+    expect(bookImageCache.cacheBookImages).toHaveBeenCalledWith(
       expect.objectContaining({
         bookId: 3,
         format: "EPUB",

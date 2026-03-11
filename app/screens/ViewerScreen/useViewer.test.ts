@@ -4,12 +4,9 @@ import { useModal } from "react-native-modalfy"
 import { useConvergence } from "../../hooks/useConvergence"
 import { useViewer } from "./useViewer"
 
-jest.mock("@/models")
 jest.mock("../../hooks/useConvergence", () => ({
   useConvergence: jest.fn(),
 }))
-jest.mock("react-native-modalfy")
-jest.mock("@react-navigation/native")
 
 describe("useViewer", () => {
   const mockSetProp = jest.fn()

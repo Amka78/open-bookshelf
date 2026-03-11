@@ -1,8 +1,8 @@
-import { useDeleteBook } from "./useDeleteBook"
-import { useStores } from "@/models"
-import { translate } from "@/i18n"
 import type { ModalStackParams } from "@/components/Modals/Types"
+import { translate } from "@/i18n"
+import { useStores } from "@/models"
 import type { UsableModalProp } from "react-native-modalfy"
+import { useDeleteBook } from "./useDeleteBook"
 
 type TestModal = UsableModalProp<ModalStackParams>
 
@@ -14,10 +14,6 @@ const createModal = (overrides: Partial<TestModal> = {}): TestModal => ({
   closeAllModals: jest.fn() as TestModal["closeAllModals"],
   ...overrides,
 })
-
-jest.mock("@/models", () => ({
-  useStores: jest.fn(),
-}))
 
 jest.mock("@/i18n", () => ({
   translate: jest.fn(),

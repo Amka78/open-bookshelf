@@ -1,31 +1,12 @@
-import { useDownloadBook } from "./useDownloadBook"
+import type { ModalStackParams } from "@/components/Modals/Types"
 import { useStores } from "@/models"
+import { api } from "@/services/api"
 import * as FileSystem from "expo-file-system"
 import * as Sharing from "expo-sharing"
-import { api } from "@/services/api"
-import type { ModalStackParams } from "@/components/Modals/Types"
 import type { UsableModalProp } from "react-native-modalfy"
+import { useDownloadBook } from "./useDownloadBook"
 
 type TestModal = UsableModalProp<ModalStackParams>
-
-jest.mock("@/models", () => ({
-  useStores: jest.fn(),
-}))
-
-jest.mock("expo-file-system", () => ({
-  downloadAsync: jest.fn(),
-  documentDirectory: "file:///documents/",
-}))
-
-jest.mock("expo-sharing", () => ({
-  shareAsync: jest.fn(),
-}))
-
-jest.mock("@/services/api", () => ({
-  api: {
-    getBookDownloadUrl: jest.fn(),
-  },
-}))
 
 describe("useDownloadBook", () => {
   const createStore = (selectedBook: {
@@ -55,6 +36,7 @@ describe("useDownloadBook", () => {
   })
 
   afterEach(() => {
+    jest.restoreAllMocks()
     jest.clearAllMocks()
   })
 
@@ -67,7 +49,7 @@ describe("useDownloadBook", () => {
       },
     }
     ;(useStores as jest.Mock).mockReturnValue(createStore(selectedBook))
-    ;(api.getBookDownloadUrl as jest.Mock).mockReturnValue("https://example/book")
+    jest.spyOn(api, "getBookDownloadUrl").mockReturnValue("https://example/book")
     ;(FileSystem.downloadAsync as jest.Mock).mockResolvedValue({
       uri: "file:///documents/book.epub",
     })
@@ -80,7 +62,7 @@ describe("useDownloadBook", () => {
     expect(api.getBookDownloadUrl).toHaveBeenCalledWith("EPUB", 10, "main")
     expect(FileSystem.downloadAsync).toHaveBeenCalledWith(
       "https://example/book",
-      "file:///documents/Single Format Book.EPUB",
+      `${FileSystem.documentDirectory}Single Format Book.EPUB`,
       { headers: { Authorization: "Basic token" } },
     )
     expect(Sharing.shareAsync).toHaveBeenCalledWith("file:///documents/book.epub")
@@ -96,7 +78,7 @@ describe("useDownloadBook", () => {
       },
     }
     ;(useStores as jest.Mock).mockReturnValue(createStore(selectedBook))
-    ;(api.getBookDownloadUrl as jest.Mock).mockReturnValue("https://example/book-pdf")
+    jest.spyOn(api, "getBookDownloadUrl").mockReturnValue("https://example/book-pdf")
     ;(FileSystem.downloadAsync as jest.Mock).mockResolvedValue({
       uri: "file:///documents/book.pdf",
     })
@@ -128,7 +110,7 @@ describe("useDownloadBook", () => {
       },
     }
     ;(useStores as jest.Mock).mockReturnValue(createStore(selectedBook))
-    ;(api.getBookDownloadUrl as jest.Mock).mockReturnValue("https://example/broken")
+    jest.spyOn(api, "getBookDownloadUrl").mockReturnValue("https://example/broken")
     ;(FileSystem.downloadAsync as jest.Mock).mockRejectedValue(new Error("network failed"))
 
     const { execute } = useDownloadBook()
