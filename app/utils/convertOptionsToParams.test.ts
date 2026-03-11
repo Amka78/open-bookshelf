@@ -13,7 +13,7 @@ const baseOptions = (): ConvertOptions => ({
 describe("convertOptionsToParams", () => {
   // -------- Look & Feel --------
   describe("Look & Feel", () => {
-    test("デフォルトのマージン値 (5.0) がパラメータに含まれること", () => {
+    test("default margin value (5.0) is included in parameters", () => {
       const params = convertOptionsToParams(baseOptions())
       expect(params.margin_top).toBe(5.0)
       expect(params.margin_bottom).toBe(5.0)
@@ -21,56 +21,56 @@ describe("convertOptionsToParams", () => {
       expect(params.margin_right).toBe(5.0)
     })
 
-    test("マージンが 0 の場合はパラメータに含まれないこと", () => {
+    test("margin is not included when value is 0", () => {
       const options = baseOptions()
       options.lookAndFeel.marginTop = 0
       const params = convertOptionsToParams(options)
       expect(params).not.toHaveProperty("margin_top")
     })
 
-    test("textJustification が null の場合はパラメータに含まれないこと", () => {
+    test("textJustification is not included when null", () => {
       const options = baseOptions()
       options.lookAndFeel.textJustification = null
       const params = convertOptionsToParams(options)
       expect(params).not.toHaveProperty("text_justification")
     })
 
-    test("textJustification が設定されている場合はパラメータに含まれること", () => {
+    test("textJustification is included when set", () => {
       const options = baseOptions()
       options.lookAndFeel.textJustification = "justify"
       const params = convertOptionsToParams(options)
       expect(params.text_justification).toBe("justify")
     })
 
-    test("baseFontSize が 0 の場合はパラメータに含まれないこと", () => {
+    test("baseFontSize is not included when value is 0", () => {
       const options = baseOptions()
       options.lookAndFeel.baseFontSize = 0
       const params = convertOptionsToParams(options)
       expect(params).not.toHaveProperty("base_font_size")
     })
 
-    test("baseFontSize が設定されている場合はパラメータに含まれること", () => {
+    test("baseFontSize is included when set", () => {
       const options = baseOptions()
       options.lookAndFeel.baseFontSize = 12
       const params = convertOptionsToParams(options)
       expect(params.base_font_size).toBe(12)
     })
 
-    test("disableFontRescaling が true の場合はパラメータに含まれること", () => {
+    test("disableFontRescaling is included when true", () => {
       const options = baseOptions()
       options.lookAndFeel.disableFontRescaling = true
       const params = convertOptionsToParams(options)
       expect(params.disable_font_rescaling).toBe(true)
     })
 
-    test("disableFontRescaling が false の場合はパラメータに含まれないこと", () => {
+    test("disableFontRescaling is not included when false", () => {
       const options = baseOptions()
       options.lookAndFeel.disableFontRescaling = false
       const params = convertOptionsToParams(options)
       expect(params).not.toHaveProperty("disable_font_rescaling")
     })
 
-    test("inputEncoding がパラメータに含まれること", () => {
+    test("inputEncoding is included in parameters", () => {
       const params = convertOptionsToParams(baseOptions())
       expect(params.input_encoding).toBe("utf-8")
     })
@@ -78,7 +78,7 @@ describe("convertOptionsToParams", () => {
 
   // -------- Heuristics --------
   describe("Heuristics", () => {
-    test("heuristics.enabled が false の場合はヒューリスティックパラメータが含まれないこと", () => {
+    test("heuristic parameters are not included when heuristics.enabled is false", () => {
       const options = baseOptions()
       options.heuristics.enabled = false
       const params = convertOptionsToParams(options)
@@ -86,14 +86,14 @@ describe("convertOptionsToParams", () => {
       expect(params).not.toHaveProperty("unwrap_lines")
     })
 
-    test("heuristics.enabled が true の場合は enable_heuristics が含まれること", () => {
+    test("enable_heuristics is included when heuristics.enabled is true", () => {
       const options = baseOptions()
       options.heuristics.enabled = true
       const params = convertOptionsToParams(options)
       expect(params.enable_heuristics).toBe(true)
     })
 
-    test("heuristics.enabled が true かつ unwrapLines が true の場合は unwrap_lines が含まれること", () => {
+    test("unwrap_lines is included when heuristics.enabled and unwrapLines are true", () => {
       const options = baseOptions()
       options.heuristics.enabled = true
       options.heuristics.unwrapLines = true
@@ -101,7 +101,7 @@ describe("convertOptionsToParams", () => {
       expect(params.unwrap_lines).toBe(true)
     })
 
-    test("heuristics.detectItalics が true の場合は italicize_common_cases が含まれること", () => {
+    test("italicize_common_cases is included when heuristics.detectItalics is true", () => {
       const options = baseOptions()
       options.heuristics.enabled = true
       options.heuristics.detectItalics = true
@@ -112,19 +112,19 @@ describe("convertOptionsToParams", () => {
 
   // -------- Structure Detection --------
   describe("Structure Detection", () => {
-    test("chapter_mark が常に含まれること", () => {
+    test("chapter_mark is always included", () => {
       const params = convertOptionsToParams(baseOptions())
       expect(params.chapter_mark).toBe("pagebreak")
     })
 
-    test("insertMetadata が true の場合は insert_metadata が含まれること", () => {
+    test("insert_metadata is included when insertMetadata is true", () => {
       const options = baseOptions()
       options.structureDetection.insertMetadata = true
       const params = convertOptionsToParams(options)
       expect(params.insert_metadata).toBe(true)
     })
 
-    test("removeTableOfContents が true の場合は remove_table_of_contents が含まれること", () => {
+    test("remove_table_of_contents is included when removeTableOfContents is true", () => {
       const options = baseOptions()
       options.structureDetection.removeTableOfContents = true
       const params = convertOptionsToParams(options)
@@ -134,21 +134,21 @@ describe("convertOptionsToParams", () => {
 
   // -------- TOC --------
   describe("Table of Contents", () => {
-    test("forceUseAutoTOC が true の場合は toc_force_auto_generation が含まれること", () => {
+    test("toc_force_auto_generation is included when forceUseAutoTOC is true", () => {
       const options = baseOptions()
       options.toc.forceUseAutoTOC = true
       const params = convertOptionsToParams(options)
       expect(params.toc_force_auto_generation).toBe(true)
     })
 
-    test("maxTOCLinks がデフォルト (50) の場合はパラメータに含まれないこと", () => {
+    test("maxTOCLinks is not included when using the default value (50)", () => {
       const options = baseOptions()
       options.toc.maxTOCLinks = 50
       const params = convertOptionsToParams(options)
       expect(params).not.toHaveProperty("max_toc_links")
     })
 
-    test("maxTOCLinks がデフォルト以外の場合はパラメータに含まれること", () => {
+    test("maxTOCLinks is included when using a non-default value", () => {
       const options = baseOptions()
       options.toc.maxTOCLinks = 100
       const params = convertOptionsToParams(options)
@@ -158,21 +158,21 @@ describe("convertOptionsToParams", () => {
 
   // -------- Output EPUB --------
   describe("Output EPUB", () => {
-    test("outputFormat が EPUB の場合は epub_version が含まれること", () => {
+    test("epub_version is included when outputFormat is EPUB", () => {
       const options = baseOptions()
       options.outputFormat = "EPUB"
       const params = convertOptionsToParams(options)
       expect(params.epub_version).toBe("3")
     })
 
-    test("outputFormat が EPUB 以外の場合は epub_version が含まれないこと", () => {
+    test("epub_version is not included when outputFormat is not EPUB", () => {
       const options = baseOptions()
       options.outputFormat = "MOBI"
       const params = convertOptionsToParams(options)
       expect(params).not.toHaveProperty("epub_version")
     })
 
-    test("preserveCoverAspectRatio が true の場合は preserve_cover_aspect_ratio が含まれること", () => {
+    test("preserve_cover_aspect_ratio is included when preserveCoverAspectRatio is true", () => {
       const options = baseOptions()
       options.outputFormat = "EPUB"
       options.outputEPUB.preserveCoverAspectRatio = true
@@ -180,7 +180,7 @@ describe("convertOptionsToParams", () => {
       expect(params.preserve_cover_aspect_ratio).toBe(true)
     })
 
-    test("epubVersion が 2 の場合は epub_version が '2' であること", () => {
+    test("epub_version is '2' when epubVersion is 2", () => {
       const options = baseOptions()
       options.outputFormat = "EPUB"
       options.outputEPUB.epubVersion = "2"
@@ -191,14 +191,14 @@ describe("convertOptionsToParams", () => {
 
   // -------- Output MOBI --------
   describe("Output MOBI", () => {
-    test("outputFormat が MOBI の場合は mobi_file_type が含まれること", () => {
+    test("mobi_file_type is included when outputFormat is MOBI", () => {
       const options = baseOptions()
       options.outputFormat = "MOBI"
       const params = convertOptionsToParams(options)
       expect(params.mobi_file_type).toBe("new")
     })
 
-    test("outputFormat が AZW3 の場合は mobi_file_type が含まれること", () => {
+    test("mobi_file_type is included when outputFormat is AZW3", () => {
       const options = baseOptions()
       options.outputFormat = "AZW3"
       const params = convertOptionsToParams(options)
@@ -208,7 +208,7 @@ describe("convertOptionsToParams", () => {
 
   // -------- Output PDF --------
   describe("Output PDF", () => {
-    test("outputFormat が PDF の場合は paper_size, orientation, unit が含まれること", () => {
+    test("paper_size, orientation, and unit are included when outputFormat is PDF", () => {
       const options = baseOptions()
       options.outputFormat = "PDF"
       const params = convertOptionsToParams(options)
@@ -217,7 +217,7 @@ describe("convertOptionsToParams", () => {
       expect(params.unit).toBe("pt")
     })
 
-    test("outputFormat が PDF 以外の場合は paper_size が含まれないこと", () => {
+    test("paper_size is not included when outputFormat is not PDF", () => {
       const options = baseOptions()
       options.outputFormat = "EPUB"
       const params = convertOptionsToParams(options)

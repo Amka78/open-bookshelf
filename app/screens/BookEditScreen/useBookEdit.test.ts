@@ -1,11 +1,7 @@
-import { useBookEdit } from "./useBookEdit"
 import { useStores } from "@/models"
 import { useNavigation } from "@react-navigation/native"
-import { useForm } from "react-hook-form"
-
-jest.mock("@/models")
-jest.mock("@react-navigation/native")
-jest.mock("react-hook-form")
+import * as reactHookForm from "react-hook-form"
+import { useBookEdit } from "./useBookEdit"
 
 describe("useBookEdit", () => {
   const mockUpdate = jest.fn()
@@ -42,7 +38,7 @@ describe("useBookEdit", () => {
     ;(useNavigation as jest.Mock).mockReturnValue({
       goBack: mockGoBack,
     })
-    ;(useForm as jest.Mock).mockReturnValue(mockForm)
+    jest.spyOn(reactHookForm, "useForm").mockReturnValue(mockForm as any)
     mockHandleSubmit.mockImplementation((fn) => {
       return () => {
         fn({
@@ -51,6 +47,10 @@ describe("useBookEdit", () => {
         })
       }
     })
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
   })
 
   test("returns form object", () => {
@@ -106,16 +106,20 @@ describe("useBookEdit", () => {
 
     result.onSubmit()
 
-    expect(mockUpdate).toHaveBeenCalledWith("lib1", expect.objectContaining({
-      title: "Test Book",
-      authors: ["Author 1"],
-    }), expect.any(Array))
+    expect(mockUpdate).toHaveBeenCalledWith(
+      "lib1",
+      expect.objectContaining({
+        title: "Test Book",
+        authors: ["Author 1"],
+      }),
+      expect.any(Array),
+    )
   })
 
   test("useForm is called with correct type parameters", () => {
     useBookEdit()
 
-    expect(useForm).toHaveBeenCalled()
+    expect(reactHookForm.useForm).toHaveBeenCalled()
   })
 
   test("selectedLibrary has required properties", () => {

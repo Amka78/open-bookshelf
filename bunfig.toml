@@ -1,0 +1,8 @@
+[test]
+# Setup file to run before tests (equivalent to Jest setupFiles)
+preload = ["./test/setup.ts"]
+dom = true
+# Exclude non-unit test directories
+# Test environment (jsdom for React components)
+# Note: Bun has built-in jsdom support
+# root = "."

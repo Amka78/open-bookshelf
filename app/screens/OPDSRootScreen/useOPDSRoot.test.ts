@@ -4,12 +4,6 @@ import { useNavigation } from "@react-navigation/native"
 import { act, renderHook } from "@testing-library/react"
 import { useODSRoot } from "./useOPDSRoot"
 
-jest.mock("@/models", () => ({
-  useStores: jest.fn(),
-}))
-jest.mock("@/theme")
-jest.mock("@react-navigation/native")
-
 describe("useODSRoot", () => {
   const mockLoad = jest.fn().mockResolvedValue(undefined)
   const mockSetOptions = jest.fn()

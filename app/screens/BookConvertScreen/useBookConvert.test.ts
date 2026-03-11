@@ -11,8 +11,6 @@ import { useStores } from "@/models"
 import { act, renderHook } from "@testing-library/react"
 import { useBookConvert } from "./useBookConvert"
 
-jest.mock("@/models")
-
 describe("useBookConvert", () => {
   const mockConvert = jest.fn()
 
@@ -44,23 +42,23 @@ describe("useBookConvert", () => {
   // ============================================================
   // 初期状態
   // ============================================================
-  describe("初期状態", () => {
-    test("初期状態では convertStatus が idle であること", () => {
+  describe("Initial state", () => {
+    test("convertStatus is idle in the initial state", () => {
       const { result } = renderHook(() => useBookConvert())
       expect(result.current.convertStatus).toBe("idle")
     })
 
-    test("初期状態では errorMessage が null であること", () => {
+    test("errorMessage is null in the initial state", () => {
       const { result } = renderHook(() => useBookConvert())
       expect(result.current.errorMessage).toBeNull()
     })
 
-    test("bookの formats が正しく返されること", () => {
+    test("book formats are returned correctly", () => {
       const { result } = renderHook(() => useBookConvert())
       expect(result.current.formats).toEqual(["EPUB", "PDF", "MOBI"])
     })
 
-    test("formatsが存在しない場合は空配列を返すこと", () => {
+    test("returns an empty array when formats do not exist", () => {
       ;(useStores as jest.Mock).mockReturnValue({
         calibreRootStore: {
           selectedLibrary: {
@@ -77,7 +75,7 @@ describe("useBookConvert", () => {
       expect(result.current.formats).toEqual([])
     })
 
-    test("react-hook-form が初期化されていること", () => {
+    test("react-hook-form is initialized", () => {
       const { result } = renderHook(() => useBookConvert())
       expect(result.current.form).toBeDefined()
       expect(result.current.form.control).toBeDefined()
@@ -88,50 +86,50 @@ describe("useBookConvert", () => {
   // ============================================================
   // デフォルト値
   // ============================================================
-  describe("デフォルト値", () => {
-    test("Look & Feel のデフォルト値が正しいこと", () => {
+  describe("Default values", () => {
+    test("Look & Feel default values are correct", () => {
       const { result } = renderHook(() => useBookConvert())
       const values = result.current.form.getValues()
       expect(values.lookAndFeel).toEqual(DEFAULT_CONVERT_LOOK_AND_FEEL)
     })
 
-    test("Heuristics のデフォルト値が正しいこと", () => {
+    test("Heuristics default values are correct", () => {
       const { result } = renderHook(() => useBookConvert())
       const values = result.current.form.getValues()
       expect(values.heuristics).toEqual(DEFAULT_CONVERT_HEURISTICS)
     })
 
-    test("Structure Detection のデフォルト値が正しいこと", () => {
+    test("Structure Detection default values are correct", () => {
       const { result } = renderHook(() => useBookConvert())
       const values = result.current.form.getValues()
       expect(values.structureDetection).toEqual(DEFAULT_CONVERT_STRUCTURE)
     })
 
-    test("TOC のデフォルト値が正しいこと", () => {
+    test("TOC default values are correct", () => {
       const { result } = renderHook(() => useBookConvert())
       const values = result.current.form.getValues()
       expect(values.toc).toEqual(DEFAULT_CONVERT_TOC)
     })
 
-    test("Output EPUB のデフォルト値が正しいこと", () => {
+    test("Output EPUB default values are correct", () => {
       const { result } = renderHook(() => useBookConvert())
       const values = result.current.form.getValues()
       expect(values.outputEPUB).toEqual(DEFAULT_CONVERT_OUTPUT_EPUB)
     })
 
-    test("Output MOBI のデフォルト値が正しいこと", () => {
+    test("Output MOBI default values are correct", () => {
       const { result } = renderHook(() => useBookConvert())
       const values = result.current.form.getValues()
       expect(values.outputMOBI).toEqual(DEFAULT_CONVERT_OUTPUT_MOBI)
     })
 
-    test("Output PDF のデフォルト値が正しいこと", () => {
+    test("Output PDF default values are correct", () => {
       const { result } = renderHook(() => useBookConvert())
       const values = result.current.form.getValues()
       expect(values.outputPDF).toEqual(DEFAULT_CONVERT_OUTPUT_PDF)
     })
 
-    test("outputFormat の初期値は空文字であること", () => {
+    test("initial outputFormat is an empty string", () => {
       const { result } = renderHook(() => useBookConvert())
       const values = result.current.form.getValues()
       expect(values.outputFormat).toBe("")
@@ -142,7 +140,7 @@ describe("useBookConvert", () => {
   // handleConvert
   // ============================================================
   describe("handleConvert", () => {
-    test("outputFormat が空の場合は convert が呼ばれないこと", async () => {
+    test("convert is not called when outputFormat is empty", async () => {
       const { result } = renderHook(() => useBookConvert())
 
       await act(async () => {
@@ -152,7 +150,7 @@ describe("useBookConvert", () => {
       expect(mockConvert).not.toHaveBeenCalled()
     })
 
-    test("変換成功時に convertStatus が success になること", async () => {
+    test("convertStatus becomes success on successful conversion", async () => {
       mockConvert.mockResolvedValue(undefined)
 
       const { result } = renderHook(() => useBookConvert())
@@ -175,7 +173,7 @@ describe("useBookConvert", () => {
       expect(result.current.errorMessage).toBeNull()
     })
 
-    test("変換中は convertStatus が converting になること", async () => {
+    test("convertStatus becomes converting during conversion", async () => {
       let resolveConvert: () => void
       mockConvert.mockReturnValue(
         new Promise<void>((resolve) => {
@@ -200,7 +198,7 @@ describe("useBookConvert", () => {
       })
     })
 
-    test("変換失敗時に convertStatus が error になること", async () => {
+    test("convertStatus becomes error on conversion failure", async () => {
       const errorMessage = "Conversion failed: unsupported format"
       mockConvert.mockRejectedValue(new Error(errorMessage))
 
@@ -218,7 +216,7 @@ describe("useBookConvert", () => {
       expect(result.current.errorMessage).toBe(errorMessage)
     })
 
-    test("非Errorオブジェクトの例外でも errorMessage が設定されること", async () => {
+    test("errorMessage is set even when a non-Error object is thrown", async () => {
       mockConvert.mockRejectedValue("string error")
 
       const { result } = renderHook(() => useBookConvert())
@@ -240,7 +238,7 @@ describe("useBookConvert", () => {
   // handleReset
   // ============================================================
   describe("handleReset", () => {
-    test("handleReset で全状態がリセットされること", async () => {
+    test("handleReset resets all states", async () => {
       mockConvert.mockResolvedValue(undefined)
       const { result } = renderHook(() => useBookConvert())
 
@@ -263,7 +261,7 @@ describe("useBookConvert", () => {
       expect(result.current.errorMessage).toBeNull()
     })
 
-    test("handleReset で全オプションがデフォルト値に戻ること", async () => {
+    test("handleReset restores all options to default values", async () => {
       const { result } = renderHook(() => useBookConvert())
 
       act(() => {
@@ -286,8 +284,8 @@ describe("useBookConvert", () => {
   // ============================================================
   // オプション設定テスト
   // ============================================================
-  describe("変換オプション設定", () => {
-    test("Look & Feel - マージン設定を変更できること", () => {
+  describe("Conversion option settings", () => {
+    test("Look & Feel - margin settings can be changed", () => {
       const { result } = renderHook(() => useBookConvert())
 
       act(() => {
@@ -300,7 +298,7 @@ describe("useBookConvert", () => {
       expect(values.lookAndFeel.marginBottom).toBe(10)
     })
 
-    test("Look & Feel - テキスト揃えを設定できること", () => {
+    test("Look & Feel - text alignment can be set", () => {
       const { result } = renderHook(() => useBookConvert())
 
       act(() => {
@@ -310,7 +308,7 @@ describe("useBookConvert", () => {
       expect(result.current.form.getValues().lookAndFeel.textJustification).toBe("justify")
     })
 
-    test("Heuristics - 有効化フラグを切り替えられること", () => {
+    test("Heuristics - enabled flag can be toggled", () => {
       const { result } = renderHook(() => useBookConvert())
 
       act(() => {
@@ -320,7 +318,7 @@ describe("useBookConvert", () => {
       expect(result.current.form.getValues().heuristics.enabled).toBe(true)
     })
 
-    test("Structure - 章区切りマークを設定できること", () => {
+    test("Structure - chapter mark can be configured", () => {
       const { result } = renderHook(() => useBookConvert())
 
       act(() => {
@@ -330,7 +328,7 @@ describe("useBookConvert", () => {
       expect(result.current.form.getValues().structureDetection.chapterMark).toBe("rule")
     })
 
-    test("TOC - 最大リンク数を設定できること", () => {
+    test("TOC - max link count can be configured", () => {
       const { result } = renderHook(() => useBookConvert())
 
       act(() => {
@@ -340,7 +338,7 @@ describe("useBookConvert", () => {
       expect(result.current.form.getValues().toc.maxTOCLinks).toBe(100)
     })
 
-    test("Output EPUB - バージョンを設定できること", () => {
+    test("Output EPUB - version can be configured", () => {
       const { result } = renderHook(() => useBookConvert())
 
       act(() => {
@@ -350,7 +348,7 @@ describe("useBookConvert", () => {
       expect(result.current.form.getValues().outputEPUB.epubVersion).toBe("2")
     })
 
-    test("Output PDF - 用紙サイズを設定できること", () => {
+    test("Output PDF - paper size can be configured", () => {
       const { result } = renderHook(() => useBookConvert())
 
       act(() => {
@@ -360,7 +358,7 @@ describe("useBookConvert", () => {
       expect(result.current.form.getValues().outputPDF.paperSize).toBe("letter")
     })
 
-    test("Output MOBI - ファイルタイプを設定できること", () => {
+    test("Output MOBI - file type can be configured", () => {
       const { result } = renderHook(() => useBookConvert())
 
       act(() => {
@@ -374,8 +372,8 @@ describe("useBookConvert", () => {
   // ============================================================
   // ストアデータアクセス
   // ============================================================
-  describe("store データアクセス", () => {
-    test("selectedBook と selectedLibrary が返されること", () => {
+  describe("Store data access", () => {
+    test("selectedBook and selectedLibrary are returned", () => {
       const { result } = renderHook(() => useBookConvert())
 
       expect(result.current.selectedBook).toBe(mockSelectedBook)

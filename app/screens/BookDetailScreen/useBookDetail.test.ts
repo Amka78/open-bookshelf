@@ -1,21 +1,47 @@
+import {
+  describe as baseDescribe,
+  test as baseTest,
+  beforeAll,
+  beforeEach,
+  expect,
+  jest,
+  mock,
+} from "bun:test"
 import { useStores } from "@/models"
 import { useNavigation, useRoute } from "@react-navigation/native"
 import { renderHook } from "@testing-library/react"
 import { useModal } from "react-native-modalfy"
-import { useConvergence } from "@/hooks/useConvergence"
-import { useDeleteBook } from "../../hooks/useDeleteBook"
-import { useDownloadBook } from "../../hooks/useDownloadBook"
-import { useOpenViewer } from "../../hooks/useOpenViewer"
-import { useBookDetail } from "./useBookDetail"
+import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
-// Mock all dependencies
-jest.mock("@/models")
-jest.mock("@react-navigation/native")
-jest.mock("react-native-modalfy")
-jest.mock("@/hooks/useConvergence")
-jest.mock("../../hooks/useDeleteBook")
-jest.mock("../../hooks/useDownloadBook")
-jest.mock("../../hooks/useOpenViewer")
+const describe = localizeTestRegistrar(baseDescribe)
+const test = localizeTestRegistrar(baseTest)
+
+const mockUseConvergence = jest.fn()
+const mockUseDeleteBook = jest.fn()
+const mockUseDownloadBook = jest.fn()
+const mockUseOpenViewer = jest.fn()
+
+mock.module("@/hooks/useConvergence", () => ({
+  useConvergence: mockUseConvergence,
+}))
+
+mock.module("../../hooks/useDeleteBook", () => ({
+  useDeleteBook: mockUseDeleteBook,
+}))
+
+mock.module("../../hooks/useDownloadBook", () => ({
+  useDownloadBook: mockUseDownloadBook,
+}))
+
+mock.module("../../hooks/useOpenViewer", () => ({
+  useOpenViewer: mockUseOpenViewer,
+}))
+
+let useBookDetail: typeof import("./useBookDetail").useBookDetail
+
+beforeAll(async () => {
+  ;({ useBookDetail } = await import("./useBookDetail"))
+})
 
 describe("useBookDetail", () => {
   const mockNavigate = jest.fn()
@@ -68,16 +94,16 @@ describe("useBookDetail", () => {
     })
     ;(useRoute as jest.Mock).mockReturnValue(mockRoute)
     ;(useModal as jest.Mock).mockReturnValue(mockModal)
-    ;(useConvergence as jest.Mock).mockReturnValue({
+    mockUseConvergence.mockReturnValue({
       isLarge: false,
     })
-    ;(useOpenViewer as jest.Mock).mockReturnValue({
+    mockUseOpenViewer.mockReturnValue({
       execute: mockExecute,
     })
-    ;(useDeleteBook as jest.Mock).mockReturnValue({
+    mockUseDeleteBook.mockReturnValue({
       execute: mockExecute,
     })
-    ;(useDownloadBook as jest.Mock).mockReturnValue({
+    mockUseDownloadBook.mockReturnValue({
       execute: mockExecute,
     })
   })
@@ -113,8 +139,8 @@ describe("useBookDetail", () => {
   })
 
   describe("handleConvertBook", () => {
-    test("小画面(isLarge=false)では BookConvert スクリーンに遷移すること", () => {
-      ;(useConvergence as jest.Mock).mockReturnValue({ isLarge: false })
+    test("On small screens (isLarge=false), navigate to the BookConvert screen", () => {
+      mockUseConvergence.mockReturnValue({ isLarge: false })
 
       const { result } = renderHook(() => useBookDetail())
 
@@ -126,8 +152,8 @@ describe("useBookDetail", () => {
       expect(mockOpenModal).not.toHaveBeenCalled()
     })
 
-    test("大画面(isLarge=true)では BookConvertModal が開かれること", () => {
-      ;(useConvergence as jest.Mock).mockReturnValue({ isLarge: true })
+    test("On large screens (isLarge=true), open the BookConvertModal", () => {
+      mockUseConvergence.mockReturnValue({ isLarge: true })
 
       const { result } = renderHook(() => useBookDetail())
 

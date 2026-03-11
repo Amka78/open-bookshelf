@@ -4,11 +4,9 @@ import { renderHook } from "@testing-library/react"
 import { values } from "mobx"
 import { useCalibreRoot } from "./useCalibreRoot"
 
-jest.mock("@/models", () => ({
-  useStores: jest.fn(),
+jest.mock("mobx", () => ({
+  values: jest.fn(),
 }))
-jest.mock("@react-navigation/native")
-jest.mock("mobx")
 
 describe("useCalibreRoot", () => {
   type TestLibrary = { id: string; books: Map<string, unknown> }

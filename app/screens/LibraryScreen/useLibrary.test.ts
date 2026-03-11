@@ -1,9 +1,26 @@
-import { useConvergence } from "@/hooks/useConvergence"
+import {
+  describe as baseDescribe,
+  test as baseTest,
+  beforeAll,
+  beforeEach,
+  expect,
+  jest,
+  mock,
+} from "bun:test"
 import { useStores } from "@/models"
 import { api } from "@/services/api"
 import { useNavigation } from "@react-navigation/native"
 import { act, renderHook } from "@testing-library/react"
-import { useLibrary } from "./useLibrary"
+import { localizeTestRegistrar } from "../../../test/test-name-i18n"
+
+const describe = localizeTestRegistrar(baseDescribe)
+const test = localizeTestRegistrar(baseTest)
+
+const mockUseConvergence = jest.fn()
+
+mock.module("@/hooks/useConvergence", () => ({
+  useConvergence: mockUseConvergence,
+}))
 
 jest.mock("@/models")
 jest.mock("@/hooks/useConvergence", () => ({
@@ -14,6 +31,11 @@ jest.mock("@/services/api")
 jest.mock("@/utils/logger", () => ({
   logger: {
     debug: jest.fn(),
+  },
+}))
+jest.mock("@/services/api", () => ({
+  api: {
+    uploadFile: jest.fn(),
   },
 }))
 
@@ -62,7 +84,7 @@ describe("useLibrary", () => {
     ;(useStores as jest.Mock).mockReturnValue({
       calibreRootStore: mockCallibreRootStore,
     })
-    ;(useConvergence as jest.Mock).mockReturnValue({
+    mockUseConvergence.mockReturnValue({
       isLarge: false,
     })
     ;(useNavigation as jest.Mock).mockReturnValue({})
