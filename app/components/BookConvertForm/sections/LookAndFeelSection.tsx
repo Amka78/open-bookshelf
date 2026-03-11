@@ -1,5 +1,4 @@
-import { FormCheckbox, HStack, Text, VStack } from "@/components"
-import { FormInputField } from "@/components"
+import { FormInputField, HStack, Input, Text, VStack } from "@/components"
 import { Switch } from "@gluestack-ui/themed"
 import type { Control } from "react-hook-form"
 import { Controller } from "react-hook-form"
@@ -25,39 +24,47 @@ export function LookAndFeelSection({ control }: Props) {
       <HStack space={"sm"} flexWrap="wrap">
         <VStack flex={1} minWidth={"$24"}>
           <Text fontSize={"$xs"} tx={"bookConvertScreen.marginTop"} />
-          <FormInputField
-            control={control}
-            name={"lookAndFeel.marginTop"}
-            keyboardType="numeric"
-            width={"$full"}
-          />
+          <Input width={"$full"}>
+            <FormInputField
+              control={control}
+              name={"lookAndFeel.marginTop"}
+              keyboardType="numeric"
+              width={"$full"}
+            />
+          </Input>
         </VStack>
         <VStack flex={1} minWidth={"$24"}>
           <Text fontSize={"$xs"} tx={"bookConvertScreen.marginBottom"} />
-          <FormInputField
-            control={control}
-            name={"lookAndFeel.marginBottom"}
-            keyboardType="numeric"
-            width={"$full"}
-          />
+          <Input width={"$full"}>
+            <FormInputField
+              control={control}
+              name={"lookAndFeel.marginBottom"}
+              keyboardType="numeric"
+              width={"$full"}
+            />
+          </Input>
         </VStack>
         <VStack flex={1} minWidth={"$24"}>
           <Text fontSize={"$xs"} tx={"bookConvertScreen.marginLeft"} />
-          <FormInputField
-            control={control}
-            name={"lookAndFeel.marginLeft"}
-            keyboardType="numeric"
-            width={"$full"}
-          />
+          <Input width={"$full"}>
+            <FormInputField
+              control={control}
+              name={"lookAndFeel.marginLeft"}
+              keyboardType="numeric"
+              width={"$full"}
+            />
+          </Input>
         </VStack>
         <VStack flex={1} minWidth={"$24"}>
           <Text fontSize={"$xs"} tx={"bookConvertScreen.marginRight"} />
-          <FormInputField
-            control={control}
-            name={"lookAndFeel.marginRight"}
-            keyboardType="numeric"
-            width={"$full"}
-          />
+          <Input width={"$full"}>
+            <FormInputField
+              control={control}
+              name={"lookAndFeel.marginRight"}
+              keyboardType="numeric"
+              width={"$full"}
+            />
+          </Input>
         </VStack>
       </HStack>
 
@@ -76,33 +83,39 @@ export function LookAndFeelSection({ control }: Props) {
       <HStack space={"sm"} flexWrap="wrap">
         <VStack flex={1} minWidth={"$24"}>
           <Text fontSize={"$xs"} tx={"bookConvertScreen.baseFontSize"} />
-          <FormInputField
-            control={control}
-            name={"lookAndFeel.baseFontSize"}
-            keyboardType="numeric"
-            width={"$full"}
-          />
+          <Input width={"$full"}>
+            <FormInputField
+              control={control}
+              name={"lookAndFeel.baseFontSize"}
+              keyboardType="numeric"
+              width={"$full"}
+            />
+          </Input>
         </VStack>
         <VStack flex={1} minWidth={"$24"}>
           <Text fontSize={"$xs"} tx={"bookConvertScreen.lineHeight"} />
-          <FormInputField
-            control={control}
-            name={"lookAndFeel.lineHeight"}
-            keyboardType="numeric"
-            width={"$full"}
-          />
+          <Input width={"$full"}>
+            <FormInputField
+              control={control}
+              name={"lookAndFeel.lineHeight"}
+              keyboardType="numeric"
+              width={"$full"}
+            />
+          </Input>
         </VStack>
       </HStack>
 
       {/* Encoding */}
       <VStack>
         <Text fontSize={"$xs"} tx={"bookConvertScreen.inputEncoding"} />
-        <FormInputField
-          control={control}
-          name={"lookAndFeel.inputEncoding"}
-          placeholder={"utf-8"}
-          width={"$full"}
-        />
+        <Input width={"$full"}>
+          <FormInputField
+            control={control}
+            name={"lookAndFeel.inputEncoding"}
+            placeholder={"utf-8"}
+            width={"$full"}
+          />
+        </Input>
       </VStack>
 
       {/* Boolean options */}

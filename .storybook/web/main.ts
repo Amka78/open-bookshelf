@@ -1,5 +1,6 @@
 import type { StorybookConfig } from "@storybook/react-webpack5"
 const path = require("path")
+const webpack = require("webpack")
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin")
 
 const config: StorybookConfig = {
@@ -19,6 +20,12 @@ const config: StorybookConfig = {
     config.resolve.modules = [...(config.resolve.modules || []), path.resolve(__dirname, "../src")]
 
     config.resolve.plugins = [...(config.resolve.plugins || []), new TsconfigPathsPlugin()]
+
+    config.plugins = [
+      ...(config.plugins || []),
+      new webpack.IgnorePlugin({ resourceRegExp: /\.test(?:\.[jt]sx?)?$/ }),
+      new webpack.IgnorePlugin({ resourceRegExp: /\.spec(?:\.[jt]sx?)?$/ }),
+    ]
 
     config.module.rules.push({
       test: /\.[jt]sx?$/,

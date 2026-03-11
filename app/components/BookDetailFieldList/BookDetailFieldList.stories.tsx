@@ -1,10 +1,9 @@
 import { BookDetailFieldList } from "@/components"
 import type { Meta, StoryObj } from "@storybook/react"
 
-import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
-import { FieldMetadataModel } from "@/models/calibre"
-import { BookModel } from "@/models/CalibreRootStore"
+import { BookModel, FieldMetadataModel } from "@/models/calibre"
 import { types } from "mobx-state-tree"
+import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
 const CommonField = {
   isCategory: false,

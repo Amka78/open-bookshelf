@@ -6,6 +6,7 @@ const preview: Preview = {
     disabled: true,
   },
   parameters: {
+    layout: "fullscreen",
     darkMode: {
       // Override the default dark theme
       dark: { ...themes.dark, appBg: "black", appPreviewBg: "black" },

@@ -1,4 +1,4 @@
-import { FormInputField, HStack, Text, VStack } from "@/components"
+import { FormInputField, HStack, Input, Text, VStack } from "@/components"
 import { Switch } from "@gluestack-ui/themed"
 import type { Control } from "react-hook-form"
 import { Controller } from "react-hook-form"
@@ -38,21 +38,25 @@ export function TOCSection({ control }: Props) {
       <HStack space={"sm"}>
         <VStack flex={1}>
           <Text fontSize={"$xs"} tx={"bookConvertScreen.tocMaxLinks"} />
-          <FormInputField
-            control={control}
-            name={"toc.maxTOCLinks"}
-            keyboardType="numeric"
-            width={"$full"}
-          />
+          <Input width={"$full"}>
+            <FormInputField
+              control={control}
+              name={"toc.maxTOCLinks"}
+              keyboardType="numeric"
+              width={"$full"}
+            />
+          </Input>
         </VStack>
         <VStack flex={1}>
           <Text fontSize={"$xs"} tx={"bookConvertScreen.tocNumberOfHeadings"} />
-          <FormInputField
-            control={control}
-            name={"toc.numberOfHeadingsForAutoTOC"}
-            keyboardType="numeric"
-            width={"$full"}
-          />
+          <Input width={"$full"}>
+            <FormInputField
+              control={control}
+              name={"toc.numberOfHeadingsForAutoTOC"}
+              keyboardType="numeric"
+              width={"$full"}
+            />
+          </Input>
         </VStack>
       </HStack>
     </VStack>

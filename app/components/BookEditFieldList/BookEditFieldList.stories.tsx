@@ -1,7 +1,6 @@
 import { BookEditFieldList } from "@/components"
 import type { Meta, StoryObj } from "@storybook/react"
 
-import { BookModel } from "@/models/CalibreRootStore"
 import { FieldMetadataModel } from "@/models/calibre"
 import { types } from "mobx-state-tree"
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
