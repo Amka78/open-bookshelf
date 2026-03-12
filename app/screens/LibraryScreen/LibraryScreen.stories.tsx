@@ -1,6 +1,4 @@
-import { RootStoreModel, RootStoreProvider } from "@/models"
 import type { Meta, StoryObj } from "@storybook/react"
-import type React from "react"
 import { LibraryScreen } from "./LibraryScreen"
 
 import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
@@ -8,11 +6,7 @@ import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenConta
 export default {
   component: LibraryScreen,
   decorators: [
-    (Story) => (
-      <ScreenContainer>
-        <Story />
-      </ScreenContainer>
-    ),
+    (Story) => <ScreenContainer stackScreen={{ name: "Library", story: () => <Story /> }} />,
   ],
   title: "Screens/LibraryScreen",
 } as Meta<typeof LibraryScreen>

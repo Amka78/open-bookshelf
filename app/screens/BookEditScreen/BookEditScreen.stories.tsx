@@ -1,28 +1,81 @@
+import { BookEditModal } from "@/components/Modals/BookEditModal"
+import { useConvergence } from "@/hooks/useConvergence"
+import type { ApppNavigationProp } from "@/navigators"
 import { BookEditScreen } from "@/screens/BookEditScreen/BookEditScreen"
+import { useNavigation } from "@react-navigation/native"
 import type { Meta, StoryObj } from "@storybook/react"
+import { type ReactElement, useLayoutEffect, useMemo } from "react"
 
-import { Base as BookDetailFieldListStories } from "@/components/BookDetailFieldList/BookDetailFieldList.stories"
 import BookImageItemStories from "@/components/BookImageItem/BookImageItem.stories"
 import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
+import { createBookScreenRootStore } from "../../../.storybook/stories/screens/bookScreenStoryData"
+
+const defaultImageUrl = BookImageItemStories.args.source as string
+
+const BookEditModalStoryComponent = BookEditModal as unknown as (props: {
+  modal: unknown
+}) => ReactElement
+
+function createBookEditModalProps(imageUrl: string) {
+  return {
+    params: {
+      imageUrl,
+    },
+    closeAllModals: () => {},
+    closeModal: () => {},
+    openModal: () => {},
+  }
+}
+
+function ResponsiveBookEditStory({ imageUrl }: { imageUrl: string }) {
+  const { isLarge } = useConvergence()
+  const navigation = useNavigation<ApppNavigationProp>()
+  const modalProp = useMemo(() => createBookEditModalProps(imageUrl), [imageUrl])
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerShown: !isLarge,
+    })
+  }, [isLarge, navigation])
+
+  return isLarge ? <BookEditModalStoryComponent modal={modalProp} /> : <BookEditScreen />
+}
 
 export default {
   component: BookEditScreen,
-  args: {
-    selectedBook: BookDetailFieldListStories.args.book,
-    imageUrl: BookImageItemStories.args.source as string,
-    fieldMetadataList: BookDetailFieldListStories.args.fieldMetadataList,
-  },
   argTypes: {
     onSubmitPress: { action: null },
   },
   decorators: [
-    (Story) => (
-      <ScreenContainer>
-        <Story />
-      </ScreenContainer>
-    ),
+    (_Story, context) => {
+      const imageUrl = (context.args as { imageUrl?: string }).imageUrl ?? defaultImageUrl
+
+      return (
+        <ScreenContainer
+          rootStore={createBookScreenRootStore()}
+          stackScreen={{
+            name: "BookEdit",
+            initialParams: {
+              imageUrl,
+            },
+            options: {
+              headerShown: true,
+            },
+            story: () => <ResponsiveBookEditStory imageUrl={imageUrl} />,
+          }}
+        />
+      )
+    },
   ],
   title: "Screens/BookEditScreen",
 } as Meta<typeof BookEditScreen>
 type Story = StoryObj<typeof BookEditScreen>
 export const Basic: Story = {}
+
+export const SmallMobile: Story = {
+  parameters: {
+    viewport: {
+      defaultViewport: "mobile1",
+    },
+  },
+}

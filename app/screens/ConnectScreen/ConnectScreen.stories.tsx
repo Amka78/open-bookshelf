@@ -7,11 +7,7 @@ import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenConta
 export default {
   component: ConnectScreen,
   decorators: [
-    (Story) => (
-      <ScreenContainer>
-        <Story />
-      </ScreenContainer>
-    ),
+    (Story) => <ScreenContainer stackScreen={{ name: "Connect", story: () => <Story /> }} />,
   ],
   title: "Screens/ConnectScreen",
 } as Meta<typeof ConnectScreen>

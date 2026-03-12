@@ -7,11 +7,7 @@ import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenConta
 export default {
   component: CalibreRootScreen,
   decorators: [
-    (Story) => (
-      <ScreenContainer>
-        <Story />
-      </ScreenContainer>
-    ),
+    (Story) => <ScreenContainer stackScreen={{ name: "CalibreRoot", story: () => <Story /> }} />,
   ],
   title: "Screens/CalibreRootScreen",
 } as Meta<typeof CalibreRootScreen>

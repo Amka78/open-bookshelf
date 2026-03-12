@@ -1,19 +1,50 @@
+import { BookDetailModal } from "@/components/Modals/BookDetailModal"
+import { useConvergence } from "@/hooks/useConvergence"
+import type { ApppNavigationProp } from "@/navigators"
 import { BookDetailScreen } from "@/screens"
+import { useNavigation } from "@react-navigation/native"
 import type { Meta, StoryObj } from "@storybook/react"
+import { type ReactElement, useLayoutEffect, useMemo } from "react"
 
-import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
-import { Base as BookDetailFieldListStories } from "@/components/BookDetailFieldList/BookDetailFieldList.stories"
 import BookImageItemStories from "@/components/BookImageItem/BookImageItem.stories"
+import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
+import { createBookScreenRootStore } from "../../../.storybook/stories/screens/bookScreenStoryData"
+
+const defaultImageUrl = BookImageItemStories.args.source as string
+
+const BookDetailModalStoryComponent = BookDetailModal as unknown as (props: {
+  modal: unknown
+}) => ReactElement
+
+function createBookDetailModalProps(imageUrl: string) {
+  return {
+    params: {
+      imageUrl,
+      onLinkPress: () => {},
+    },
+    closeAllModals: () => {},
+    closeModal: () => {},
+    openModal: () => {},
+  }
+}
+
+function ResponsiveBookDetailStory({ imageUrl }: { imageUrl: string }) {
+  const { isLarge } = useConvergence()
+  const navigation = useNavigation<ApppNavigationProp>()
+  const modalProp = useMemo(() => createBookDetailModalProps(imageUrl), [imageUrl])
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerShown: !isLarge,
+    })
+  }, [isLarge, navigation])
+
+  return isLarge ? <BookDetailModalStoryComponent modal={modalProp} /> : <BookDetailScreen />
+}
 
 export default {
   component: BookDetailScreen,
   title: "Screens/BookDetailScreen",
-  args: {
-    selectedBook: BookDetailFieldListStories.args.book,
-    imageUrl: BookImageItemStories.args.source as string,
-    fieldNameList: BookDetailFieldListStories.args.fieldNameList,
-    fieldMetadataList: BookDetailFieldListStories.args.fieldMetadataList,
-  },
   argTypes: {
     onConvertBook: { action: null },
     onDeleteBook: { action: null },
@@ -21,12 +52,35 @@ export default {
     onOpenBook: { action: null },
   },
   decorators: [
-    (Story) => (
-      <ScreenContainer>
-        <Story />
-      </ScreenContainer>
-    ),
+    (_Story, context) => {
+      const imageUrl = (context.args as { imageUrl?: string }).imageUrl ?? defaultImageUrl
+
+      return (
+        <ScreenContainer
+          rootStore={createBookScreenRootStore()}
+          stackScreen={{
+            name: "BookDetail",
+            initialParams: {
+              imageUrl,
+              onLinkPress: () => {},
+            },
+            options: {
+              headerShown: true,
+            },
+            story: () => <ResponsiveBookDetailStory imageUrl={imageUrl} />,
+          }}
+        />
+      )
+    },
   ],
 } as Meta<typeof BookDetailScreen>
 type Story = StoryObj<typeof BookDetailScreen>
 export const Basic: Story = {}
+
+export const SmallMobile: Story = {
+  parameters: {
+    viewport: {
+      defaultViewport: "mobile1",
+    },
+  },
+}

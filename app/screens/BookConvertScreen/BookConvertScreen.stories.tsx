@@ -65,11 +65,7 @@ export default {
     },
   },
   decorators: [
-    (Story) => (
-      <ScreenContainer>
-        <Story />
-      </ScreenContainer>
-    ),
+    (Story) => <ScreenContainer stackScreen={{ name: "BookConvert", story: () => <Story /> }} />,
   ],
 } as Meta<typeof BookConvertStoryWrapper>
 

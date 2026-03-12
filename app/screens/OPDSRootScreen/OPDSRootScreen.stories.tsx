@@ -6,11 +6,7 @@ const meta: Meta<typeof OPDSRootScreen> = {
   title: "Screens/OPDSRootScreen",
   component: OPDSRootScreen,
   decorators: [
-    (Story) => (
-      <ScreenContainer>
-        <Story />
-      </ScreenContainer>
-    ),
+    (Story) => <ScreenContainer stackScreen={{ name: "OPDSRoot", story: () => <Story /> }} />,
   ],
   parameters: {
     layout: "fullscreen",
