@@ -2,20 +2,23 @@ import { ViewerHeader } from "@/components"
 import type { Meta, StoryObj } from "@storybook/react"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
-import { Basic as ViewerMenuBasic } from "../ViewerMenu/ViewerMenu.stories"
+import {
+  viewerMenuStoryArgTypes,
+  viewerMenuStoryArgs,
+} from "../../../.storybook/stories/data/viewerMenuStoryData"
 
 export default {
   title: "ViewerHeader",
   component: ViewerHeader,
   args: {
-    ...ViewerMenuBasic.args,
+    ...viewerMenuStoryArgs,
     title: "HeaderTitle",
     visible: true,
     autoPageTurning: false,
     autoPageTurnIntervalMs: 3000,
   },
   argTypes: {
-    ...ViewerMenuBasic.argTypes,
+    ...viewerMenuStoryArgTypes,
     onLeftArrowPress: { action: "Pressed Left Arrow." },
     onToggleAutoPageTurning: { action: "Toggle auto page turning." },
     onAutoPageTurnIntervalChange: { action: "Change auto page interval." },

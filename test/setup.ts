@@ -66,8 +66,9 @@ mock.module("expo-sharing", () => ({
 }))
 
 // Set global variables
-global.__DEV__ = true
-global.__TEST__ = true
+const testGlobal = globalThis as typeof globalThis & { __DEV__: boolean; __TEST__: boolean }
+testGlobal.__DEV__ = true
+testGlobal.__TEST__ = true
 
 // Set process environment variables
 process.env.EXPO_OS = "web"
@@ -273,7 +274,3 @@ mock.module("i18n-js", () => {
 mock.module("reactotron-react-native", () => ({}))
 
 declare const tron // eslint-disable-line @typescript-eslint/no-unused-vars
-declare global {
-  let __DEV__: boolean
-  let __TEST__: boolean
-}

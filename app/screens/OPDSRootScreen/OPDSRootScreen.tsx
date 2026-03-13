@@ -1,7 +1,7 @@
 import { Box, FlatList, ListItem, RootContainer, Text } from "@/components"
-import { useODSRoot as useOpdsRoot } from "@/screens/OPDSRootScreen/useOPDSRoot"
 import type { Entry } from "@/models/opds"
-import type { ApppNavigationProp } from "@/navigators"
+import type { ApppNavigationProp } from "@/navigators/types"
+import { useODSRoot as useOpdsRoot } from "@/screens/OPDSRootScreen/useOPDSRoot"
 import { usePalette } from "@/theme"
 import { useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
@@ -9,7 +9,6 @@ import React, { type FC } from "react"
 import { View } from "react-native"
 
 export const OPDSRootScreen: FC = observer(() => {
-  
   const { entries, navigation } = useOpdsRoot()
   const palette = usePalette()
 

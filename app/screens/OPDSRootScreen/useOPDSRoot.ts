@@ -1,9 +1,9 @@
+import { Box, Image, Text } from "@/components"
 import { useStores } from "@/models"
+import type { ApppNavigationProp } from "@/navigators/types"
 import { usePalette } from "@/theme"
-import type { ApppNavigationProp } from "@/navigators"
 import { useNavigation } from "@react-navigation/native"
 import { useEffect } from "react"
-import { Box, Image, Text } from "@/components"
 import React from "react"
 
 export function useODSRoot() {

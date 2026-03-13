@@ -1,16 +1,16 @@
 import { BookDetailModal } from "@/components/Modals/BookDetailModal"
 import { useConvergence } from "@/hooks/useConvergence"
-import type { ApppNavigationProp } from "@/navigators"
-import { BookDetailScreen } from "@/screens"
+import type { ApppNavigationProp } from "@/navigators/types"
+import { BookDetailScreen } from "@/screens/BookDetailScreen/BookDetailScreen"
 import { useNavigation } from "@react-navigation/native"
 import type { Meta, StoryObj } from "@storybook/react"
 import { type ReactElement, useLayoutEffect, useMemo } from "react"
 
-import BookImageItemStories from "@/components/BookImageItem/BookImageItem.stories"
+import { defaultBookImageUrl } from "../../../.storybook/stories/defaultBookImageUrl"
 import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
 import { createBookScreenRootStore } from "../../../.storybook/stories/screens/bookScreenStoryData"
 
-const defaultImageUrl = BookImageItemStories.args.source as string
+const defaultImageUrl = defaultBookImageUrl
 
 const BookDetailModalStoryComponent = BookDetailModal as unknown as (props: {
   modal: unknown
@@ -75,12 +75,27 @@ export default {
   ],
 } as Meta<typeof BookDetailScreen>
 type Story = StoryObj<typeof BookDetailScreen>
-export const Basic: Story = {}
 
 export const SmallMobile: Story = {
   parameters: {
     viewport: {
       defaultViewport: "mobile1",
+    },
+  },
+}
+
+export const LargeMobile: Story = {
+  parameters: {
+    viewport: {
+      defaultViewport: "mobile2",
+    },
+  },
+}
+
+export const Tablet: Story = {
+  parameters: {
+    viewport: {
+      defaultViewport: "tablet",
     },
   },
 }

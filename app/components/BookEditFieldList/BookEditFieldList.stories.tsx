@@ -1,10 +1,8 @@
 import { BookEditFieldList } from "@/components"
 import type { Meta, StoryObj } from "@storybook/react"
 
-import { FieldMetadataModel } from "@/models/calibre"
-import { types } from "mobx-state-tree"
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
-import { Base as TestSource } from "../BookDetailFieldList/BookDetailFieldList.stories"
+import { bookDetailFieldListStoryArgs } from "../../../.storybook/stories/data/bookDetailFieldListStoryData"
 import { FormBookEditFieldList } from "./FormBookEditFieldList"
 
 export default {
@@ -18,8 +16,8 @@ export default {
     ),
   ],
   args: {
-    fieldMetadataList: TestSource.args.fieldMetadataList,
-    book: TestSource.args.book,
+    fieldMetadataList: bookDetailFieldListStoryArgs.fieldMetadataList,
+    book: bookDetailFieldListStoryArgs.book,
   },
   argTypes: {
     onSubmit: { action: "submit." },

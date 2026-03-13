@@ -2,6 +2,10 @@ import { ViewerMenu } from "@/components"
 import type { Meta, StoryObj } from "@storybook/react"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
+import {
+  viewerMenuStoryArgTypes,
+  viewerMenuStoryArgs,
+} from "../../../.storybook/stories/data/viewerMenuStoryData"
 
 export default {
   title: "ViewerMenu",
@@ -14,19 +18,13 @@ export default {
     ),
   ],
   parameters: {
-    notes: `Viewer display settings.`,
+    notes: "Viewer display settings.",
   },
 } as Meta<typeof ViewerMenu>
 
 type StoryProps = StoryObj<typeof ViewerMenu>
 
 export const Basic: StoryProps = {
-  args: {
-    pageDirection: "left",
-    readingStyle: "singlePage",
-  },
-  argTypes: {
-    onSelectPageDirection: { action: "Change page direction." },
-    onSelectReadingStyle: { action: "Change reading style." },
-  },
+  args: viewerMenuStoryArgs,
+  argTypes: viewerMenuStoryArgTypes,
 }

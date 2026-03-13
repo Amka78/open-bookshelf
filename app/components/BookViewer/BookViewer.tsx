@@ -7,7 +7,7 @@ import {
   ViewerHeader,
 } from "@/components"
 import { useStores } from "@/models"
-import type { ApppNavigationProp } from "@/navigators"
+import type { ApppNavigationProp } from "@/navigators/types"
 import { useViewer } from "@/screens/ViewerScreen/useViewer"
 import { usePalette } from "@/theme"
 import { useNavigation } from "@react-navigation/native"

@@ -1,13 +1,13 @@
 import { BookPage, BookViewer, type RenderPageProps } from "@/components"
+import type { ModalStackParams } from "@/components/Modals/Types"
 import useOrientation from "@/hooks/useOrientation"
-import { useViewer } from "@/screens/ViewerScreen/useViewer"
 import { useStores } from "@/models"
-import type { ApppNavigationProp } from "@/navigators"
+import type { ApppNavigationProp } from "@/navigators/types"
+import { useViewer } from "@/screens/ViewerScreen/useViewer"
 import { isRemoteBookImagePath } from "@/utils/bookImageCache"
 import { useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import React, { type FC, useLayoutEffect } from "react"
-import type { ModalStackParams } from "@/components/Modals/Types"
 
 export const ViewerScreen: FC = observer(() => {
   const { authenticationStore } = useStores()

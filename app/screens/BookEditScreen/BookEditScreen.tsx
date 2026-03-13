@@ -8,7 +8,7 @@ import {
 } from "@/components"
 import type { ModalStackParams } from "@/components/Modals/Types"
 import { useConvergence } from "@/hooks/useConvergence"
-import type { AppStackParamList } from "@/navigators"
+import type { AppStackParamList } from "@/navigators/types"
 import { type RouteProp, useRoute } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import type { FC } from "react"

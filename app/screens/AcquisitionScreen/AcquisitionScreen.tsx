@@ -10,7 +10,7 @@ import {
 import { useStores } from "@/models"
 import type { Entry } from "@/models/opds"
 import { OpdsChildrenModel, OpdsModel, type OpdsRoot } from "@/models/opds/OpdsRootStore"
-import type { AppStackParamList, ApppNavigationProp } from "@/navigators"
+import type { AppStackParamList, ApppNavigationProp } from "@/navigators/types"
 import { usePalette } from "@/theme"
 import { logger } from "@/utils/logger"
 import { MaterialCommunityIcons } from "@expo/vector-icons"

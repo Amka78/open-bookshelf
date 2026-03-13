@@ -1,6 +1,6 @@
-import React, { Component, type ErrorInfo, type ReactNode } from "react"
 import { resetRoot } from "@/navigators"
 import * as storage from "@/utils/storage"
+import React, { Component, type ErrorInfo, type ReactNode } from "react"
 
 const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
 

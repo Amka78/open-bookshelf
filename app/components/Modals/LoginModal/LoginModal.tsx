@@ -3,7 +3,7 @@ import React from "react"
 import type { ModalComponentProp } from "react-native-modalfy"
 
 import { useStores } from "@/models"
-import type { ApppNavigationProp } from "@/navigators"
+import type { ApppNavigationProp } from "@/navigators/types"
 import { useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import { useForm } from "react-hook-form"

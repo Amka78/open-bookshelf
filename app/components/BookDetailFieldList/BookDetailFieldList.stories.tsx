@@ -1,101 +1,8 @@
 import { BookDetailFieldList } from "@/components"
 import type { Meta, StoryObj } from "@storybook/react"
 
-import { BookModel, FieldMetadataModel } from "@/models/calibre"
-import { types } from "mobx-state-tree"
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
-
-const CommonField = {
-  isCategory: false,
-  isCustom: false,
-  isEditable: true,
-  isCsp: false,
-  kind: "test",
-}
-const lastModifiedTestField = FieldMetadataModel.create({
-  name: "Last ModifiedXXXXX",
-  datatype: "datetime",
-  display: {
-    dateFormat: "yyyy MM dd",
-  },
-  ...CommonField,
-  label: "lastModified",
-})
-
-const formatsTestField = FieldMetadataModel.create({
-  name: "Formats",
-  datatype: "text",
-  isMultiple: {
-    listToUi: ",",
-    cacheToList: ",",
-    uiToList: ",",
-  },
-  ...CommonField,
-  label: "formats",
-})
-
-const ratingTestField = FieldMetadataModel.create({
-  name: "Rating",
-  datatype: "rating",
-  ...CommonField,
-  label: "rating",
-})
-
-const sizeTestField = FieldMetadataModel.create({
-  name: "Size",
-  datatype: "float",
-  ...CommonField,
-  label: "size",
-})
-
-const titleTestField = FieldMetadataModel.create({
-  name: "Title",
-  datatype: "text",
-  ...CommonField,
-  label: "title",
-})
-
-const authorTestField = FieldMetadataModel.create({
-  name: "Author",
-  datatype: "text",
-  ...CommonField,
-  isMultiple: {
-    listToUi: "&",
-    cacheToList: "&",
-    uiToList: "&",
-  },
-  label: "authors",
-})
-const book = BookModel.create({
-  id: 12345,
-  metaData: {
-    lastModified: "2023-12-18T18:25:04+00:00",
-    formats: ["CBZ", "EPUB", "PDF"],
-    rating: 8,
-    title: "Book Title",
-    size: 100000,
-    authorSort: null,
-    authors: ["bookAuthor 1", "bookAuthor 2"],
-  },
-})
-
-const bookFieldList = [
-  "lastModified",
-  "formats",
-  "rating",
-  "title",
-  "size",
-  "authors",
-  "authorSort",
-]
-
-const fieldMetadataList = types.map(FieldMetadataModel).create({
-  lastModified: lastModifiedTestField,
-  formats: formatsTestField,
-  rating: ratingTestField,
-  title: titleTestField,
-  authors: authorTestField,
-})
+import { bookDetailFieldListStoryArgs } from "../../../.storybook/stories/data/bookDetailFieldListStoryData"
 
 export default {
   title: "BookDetailFieldList",
@@ -117,13 +24,7 @@ export default {
 type StoryProps = StoryObj<typeof BookDetailFieldList>
 
 export const Base: StoryProps = {
-  args: {
-    fieldNameList: bookFieldList,
-    fieldMetadataList: fieldMetadataList,
-    book: book,
-    borderColor: "$white",
-    borderWidth: "$4",
-  },
+  args: bookDetailFieldListStoryArgs,
   argTypes: {
     onLinkPress: { action: "Pressed Link." },
   },

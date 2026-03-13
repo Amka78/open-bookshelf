@@ -1,8 +1,8 @@
-import { useForm } from "react-hook-form"
 import type { LoginType } from "@/components/Modals/LoginModal"
 import { useStores } from "@/models"
-import type { ApppNavigationProp } from "@/navigators"
+import type { ApppNavigationProp } from "@/navigators/types"
 import { useNavigation } from "@react-navigation/native"
+import { useForm } from "react-hook-form"
 import type { ConnectType } from "./ConnectType"
 
 export function useConnect() {

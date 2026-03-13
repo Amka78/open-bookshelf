@@ -1,6 +1,6 @@
 import { useStores } from "@/models"
 import type { LibraryMap } from "@/models/calibre"
-import type { ApppNavigationProp } from "@/navigators"
+import type { ApppNavigationProp } from "@/navigators/types"
 import { useNavigation } from "@react-navigation/native"
 import { values } from "mobx"
 

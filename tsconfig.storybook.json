@@ -1,13 +1,17 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "outDir": "./.tsbuild/storybook",
+    "tsBuildInfoFile": "./.tsbuild/storybook.tsbuildinfo",
     "types": ["node"]
   },
-  "references": [{ "path": "./tsconfig.storybook.json" }, { "path": "./test/test-tsconfig.json" }],
+  "include": ["app/**/*.stories.tsx", ".storybook/**/*.ts", ".storybook/**/*.tsx"],
   "exclude": [
     ".expo",
-    ".storybook",
-    ".tsbuild",
     "android",
     "assets",
     "bin",
@@ -18,10 +22,8 @@
     "node_modules",
     "bun.lockb",
     ".git",
-    "app/**/*.stories.tsx",
     "app/**/*.test.ts",
     "app/**/*.test.tsx",
     "test"
-  ],
-  "include": ["App.tsx", "app.config.ts", "app", "plugins"]
+  ]
 }

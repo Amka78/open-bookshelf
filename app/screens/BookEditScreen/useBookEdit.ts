@@ -1,6 +1,6 @@
 import { useStores } from "@/models"
 import type { Metadata } from "@/models/calibre"
-import type { ApppNavigationProp } from "@/navigators"
+import type { ApppNavigationProp } from "@/navigators/types"
 import { useNavigation } from "@react-navigation/native"
 import { getSnapshot } from "mobx-state-tree"
 import { useForm } from "react-hook-form"
@@ -18,7 +18,7 @@ function toLanguageCodesForDisplay(value: Metadata, langNames: Record<string, st
   const languages = value.languages
     .map((entry) => String(entry ?? "").trim())
     .filter(Boolean)
-    .map((entry) => (codeSet.has(entry) ? entry : (nameToCodeMap.get(entry) ?? entry)))
+    .map((entry) => (codeSet.has(entry) ? entry : nameToCodeMap.get(entry) ?? entry))
 
   return {
     ...value,

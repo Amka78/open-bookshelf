@@ -1,10 +1,10 @@
+import type { ModalStackParams } from "@/components/Modals/Types"
 import { useStores } from "@/models"
 import type { LibraryMap } from "@/models/CalibreRootStore"
 import { type ClientSetting, ClientSettingModel } from "@/models/calibre"
 import type { Metadata } from "@/models/calibre"
-import type { AppStackParamList } from "@/navigators"
+import type { AppStackParamList } from "@/navigators/types"
 import type { BookReadingStyleType } from "@/type/types"
-import type { ModalStackParams } from "@/components/Modals/Types"
 import { type RouteProp, useRoute } from "@react-navigation/native"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useModal } from "react-native-modalfy"
@@ -54,9 +54,7 @@ export function useViewer() {
 
   // Calculate cached path and total page
   const cachedPathList = history?.cachedPath
-  const totalPage = selectedBook
-    ? cachedPathList?.length ?? selectedBook.path.length
-    : 0
+  const totalPage = selectedBook ? cachedPathList?.length ?? selectedBook.path.length : 0
 
   // Create prompt key for resume reading logic
   const promptKey = useMemo(() => {

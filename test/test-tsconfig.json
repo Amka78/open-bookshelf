@@ -1,21 +1,17 @@
 {
-  "extends": "../tsconfig.json",
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "allowJs": false,
-    "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
-    "jsx": "react-native",
-    "module": "es2015",
+    "composite": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "module": "esnext",
     "moduleResolution": "node",
-    "noImplicitAny": false,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "noUnusedLocals": false,
-    "sourceMap": true,
-    "target": "esnext",
-    "lib": ["esnext", "dom"],
-    "skipLibCheck": true,
-    "resolveJsonModule": true
+    "noEmit": false,
+    "outDir": "../.tsbuild/test",
+    "rootDir": "..",
+    "tsBuildInfoFile": "../.tsbuild/test.tsbuildinfo",
+    "types": ["jest", "node"]
   },
-  "include": ["**/*.test.ts", "**/*.test.tsx"]
+  "include": ["../app/**/*.ts", "../app/**/*.tsx", "./**/*.ts", "./**/*.tsx"],
+  "exclude": ["../app/**/*.stories.tsx"]
 }

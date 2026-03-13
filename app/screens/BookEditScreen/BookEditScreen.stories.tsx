@@ -1,16 +1,16 @@
 import { BookEditModal } from "@/components/Modals/BookEditModal"
 import { useConvergence } from "@/hooks/useConvergence"
-import type { ApppNavigationProp } from "@/navigators"
+import type { ApppNavigationProp } from "@/navigators/types"
 import { BookEditScreen } from "@/screens/BookEditScreen/BookEditScreen"
 import { useNavigation } from "@react-navigation/native"
 import type { Meta, StoryObj } from "@storybook/react"
 import { type ReactElement, useLayoutEffect, useMemo } from "react"
 
-import BookImageItemStories from "@/components/BookImageItem/BookImageItem.stories"
+import { defaultBookImageUrl } from "../../../.storybook/stories/defaultBookImageUrl"
 import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
 import { createBookScreenRootStore } from "../../../.storybook/stories/screens/bookScreenStoryData"
 
-const defaultImageUrl = BookImageItemStories.args.source as string
+const defaultImageUrl = defaultBookImageUrl
 
 const BookEditModalStoryComponent = BookEditModal as unknown as (props: {
   modal: unknown

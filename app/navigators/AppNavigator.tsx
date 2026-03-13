@@ -1,36 +1,32 @@
-import { DefaultTheme, NavigationContainer, type LinkingOptions } from "@react-navigation/native"
-import {
-  createNativeStackNavigator,
-  type NativeStackNavigationProp,
-  type NativeStackScreenProps,
-} from "@react-navigation/native-stack"
+import { getPalette } from "@/theme"
+import { DefaultTheme, type LinkingOptions, NavigationContainer } from "@react-navigation/native"
+import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { observer } from "mobx-react-lite"
 import type React from "react"
 import { useEffect, useRef, useState } from "react"
 import { Platform, useColorScheme } from "react-native"
-import { getPalette } from "@/theme"
+import type { AppStackParamList } from "./types"
 
+import { modalConfig } from "@/components/Modals/ModalConfig"
+import { cacheBookImages } from "@/utils/bookImageCache"
+import { ModalProvider, createModalStack } from "react-native-modalfy"
 import Config from "../config"
 import { useStores } from "../models"
 import { ReadingHistoryModel } from "../models/calibre"
-import { cacheBookImages } from "@/utils/bookImageCache"
-import { api } from "../services/api"
-import type { Link } from "../models/opds"
 import {
   AcquisitionScreen,
+  BookConvertScreen,
+  BookDetailScreen,
+  BookEditScreen,
   CalibreRootScreen,
   ConnectScreen,
   LibraryScreen,
   OPDSRootScreen,
   ViewerScreen,
-  BookDetailScreen,
-  BookEditScreen,
-  BookConvertScreen,
 } from "../screens"
 import { PDFViewerScreen } from "../screens/PDFViewerScreen/PDFViewerScreen"
+import { api } from "../services/api"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
-import { ModalProvider, createModalStack } from "react-native-modalfy"
-import { modalConfig } from "@/components/Modals/ModalConfig"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -45,28 +41,6 @@ import { modalConfig } from "@/components/Modals/ModalConfig"
  *   https://reactnavigation.org/docs/typescript#type-checking-the-navigator
  *   https://reactnavigation.org/docs/typescript/#organizing-types
  */
-export type AppStackParamList = {
-  Welcome: undefined
-  Connect: undefined
-  OPDSRoot: undefined
-  CalibreRoot: undefined
-  Library: undefined
-  Acquisition: {
-    link: Link
-  }
-  Viewer: undefined
-  PDFViewer: undefined
-  BookDetail: {
-    imageUrl: string
-    onLinkPress: (query) => void
-  }
-  BookEdit: {
-    imageUrl: string
-  }
-  BookConvert: {
-    imageUrl: string
-  }
-}
 
 /**
  * Linking configuration for web routing.
@@ -98,14 +72,8 @@ const getLinking = (): LinkingOptions<AppStackParamList> => {
  */
 const exitRoutes = Config.exitRoutes
 
-export type AppStackScreenProps<T extends keyof AppStackParamList> = NativeStackScreenProps<
-  AppStackParamList,
-  T
->
-
 // Documentation: https://reactnavigation.org/docs/stack-navigator/
 const Stack = createNativeStackNavigator<AppStackParamList>()
-export type ApppNavigationProp = NativeStackNavigationProp<AppStackParamList>
 const AppStack = observer(function AppStack() {
   const { authenticationStore, settingStore } = useStores()
   const colorScheme = useColorScheme()
