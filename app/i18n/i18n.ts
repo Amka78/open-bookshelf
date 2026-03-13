@@ -9,6 +9,9 @@ import ja from "./ja"
 import ko from "./ko"
 
 i18n.fallbacks = true
+
+const [deviceLocale] = Localization.getLocales()
+const locale = deviceLocale?.languageTag ?? "en"
 /**
  * we need always include "*-US" for some valid language codes because when you change the system language,
  * the language code is the suffixed with "-US". i.e. if a device is set to English ("en"),
@@ -16,10 +19,10 @@ i18n.fallbacks = true
  */
 i18n.translations = { ar, en, "en-US": en, ja, "ja-JP": ja, ko }
 
-i18n.locale = Localization.locale
+i18n.locale = locale
 
 // handle RTL languages
-export const isRTL = Localization.isRTL
+export const isRTL = deviceLocale?.textDirection === "rtl"
 I18nManager.allowRTL(isRTL)
 I18nManager.forceRTL(isRTL)
 
