@@ -5,15 +5,15 @@ import {
   MenuItem,
   MenuItemLabel as MenuItemLabelOrigin,
   Pressable,
-  Text,
   VStack as VStackOrigin,
 } from "@gluestack-ui/themed"
 import type { ComponentProps } from "react"
 
-import { HStack, IconButton, MaterialCommunityIcon, TooltipIconButton } from "@/components"
+import { HStack, IconButton, MaterialCommunityIcon, Text, TooltipIconButton } from "@/components"
 import { AutoPageTurningIconButton } from "@/components/AutoPageTurningIconButton"
 import type { ModalStackParams } from "@/components/Modals/Types"
 import { useConvergence } from "@/hooks/useConvergence"
+import { usePalette } from "@/theme"
 import { useModal } from "react-native-modalfy"
 import { useViewerMenuState } from "./useViewerMenuState"
 
@@ -33,12 +33,13 @@ type MenuItemLabelProps = ComponentProps<typeof MenuItemLabelOrigin> & {
   descriptionTx?: MessageKey
 }
 function MenuItemLabel(props: MenuItemLabelProps) {
+  const palette = usePalette()
   const { descriptionTx, ...restProps } = props
   return (
     <VStackOrigin {...restProps}>
       <MenuItemLabelOrigin>{props.tx ? translate(props.tx) : props.children}</MenuItemLabelOrigin>
       {descriptionTx ? (
-        <Text fontSize={"$xs"} color="$textSecondary">
+        <Text fontSize={"$xs"} color={palette.textSecondary}>
           {translate(descriptionTx)}
         </Text>
       ) : null}

@@ -14,7 +14,7 @@ import "./utils/ignoreWarnings"
 
 import { useFonts } from "expo-font"
 import React from "react"
-import { View } from "react-native"
+import { View, useColorScheme } from "react-native"
 import { initialWindowMetrics, SafeAreaProvider } from "react-native-safe-area-context"
 
 import Config from "./config"
@@ -56,6 +56,7 @@ interface AppProps {
  */
 function App(props: AppProps) {
   const { hideSplashScreen } = props
+  const colorScheme = useColorScheme()
   const {
     initialNavigationState,
     onNavigationStateChange,
@@ -110,7 +111,10 @@ function App(props: AppProps) {
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <GluestackUIProvider config={config}>
+        <GluestackUIProvider
+          config={config}
+          colorMode={colorScheme === "dark" ? "dark" : "light"}
+        >
           <ErrorBoundary catchErrors={Config.catchErrors}>
             <AppNavigator
               initialState={initialNavigationState}
