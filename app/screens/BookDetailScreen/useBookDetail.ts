@@ -31,10 +31,20 @@ export function useBookDetail() {
   }, [navigation, selectedBook.metaData.title])
 
   const handleOpenBook = async () => {
+    if (route.params.onOpenBookAction) {
+      await route.params.onOpenBookAction()
+      return
+    }
+
     await openViewerHook.execute(modal)
   }
 
   const handleDownloadBook = async () => {
+    if (route.params.onDownloadBookAction) {
+      await route.params.onDownloadBookAction()
+      return
+    }
+
     await downloadBookHook.execute(modal)
   }
 
@@ -44,6 +54,13 @@ export function useBookDetail() {
         imageUrl: route.params.imageUrl,
       })
     } else {
+      if (route.params.onNavigateToBookConvert) {
+        route.params.onNavigateToBookConvert({
+          imageUrl: route.params.imageUrl,
+        })
+        return
+      }
+
       navigation.navigate("BookConvert", {
         imageUrl: route.params.imageUrl,
       })
@@ -51,12 +68,24 @@ export function useBookDetail() {
   }
 
   const handleEditBook = () => {
+    if (route.params.onNavigateToBookEdit) {
+      route.params.onNavigateToBookEdit({
+        imageUrl: route.params.imageUrl,
+      })
+      return
+    }
+
     navigation.navigate("BookEdit", {
       imageUrl: route.params.imageUrl,
     })
   }
 
   const handleDeleteBook = async () => {
+    if (route.params.onDeleteBookAction) {
+      await route.params.onDeleteBookAction()
+      return
+    }
+
     await deleteBookHook.execute(modal)
   }
 

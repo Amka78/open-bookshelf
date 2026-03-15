@@ -9,7 +9,13 @@
     "tsBuildInfoFile": "./.tsbuild/storybook.tsbuildinfo",
     "types": ["node"]
   },
-  "include": ["app/**/*.stories.tsx", ".storybook/**/*.ts", ".storybook/**/*.tsx"],
+  "include": [
+    "app/**/*.stories.tsx",
+    "app/**/*StoryPlay.ts",
+    "app/**/*storyPlay.ts",
+    ".storybook/**/*.ts",
+    ".storybook/**/*.tsx"
+  ],
   "exclude": [
     ".expo",
     "android",

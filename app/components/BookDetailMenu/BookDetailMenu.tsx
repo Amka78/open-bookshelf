@@ -1,5 +1,6 @@
 import { HStack, IconButton, TooltipIconButton } from "@/components"
 import type { HStackProps, IconButtonProps } from "@/components"
+import { StyleSheet } from "react-native"
 
 export type BookDetailMenuProps = {
   onOpenBook: () => Promise<void>
@@ -12,11 +13,25 @@ export type BookDetailMenuProps = {
   iconButtonProps?: Partial<IconButtonProps>
 }
 export function BookDetailMenu(props: BookDetailMenuProps) {
-  const iconButtonStyle =
-    typeof props.iconOpacity === "number" ? { opacity: props.iconOpacity } : undefined
+  const baseIconStyle = props.iconButtonProps?.style
+  const iconButtonStyle = (() => {
+    if (typeof props.iconOpacity !== "number") {
+      return baseIconStyle
+    }
+
+    if (!baseIconStyle) {
+      return { opacity: props.iconOpacity }
+    }
+
+    if (typeof baseIconStyle === "function") {
+      return baseIconStyle
+    }
+
+    return StyleSheet.compose(baseIconStyle, { opacity: props.iconOpacity })
+  })()
   const sharedIconButtonProps = {
     ...props.iconButtonProps,
-    style: [props.iconButtonProps?.style, iconButtonStyle],
+    style: iconButtonStyle,
   }
   return (
     <HStack bgColor="transparent" {...props.containerProps}>
@@ -25,6 +40,7 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
         name={"book-open"}
         iconSize="md-"
         onPress={props.onOpenBook}
+        testID="book-detail-open-button"
         tooltipTx="bookDetailMenu.openBookTooltip"
       />
       <TooltipIconButton
@@ -32,6 +48,7 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
         name={"download"}
         iconSize="md-"
         onPress={props.onDownloadBook}
+        testID="book-detail-download-button"
         tooltipTx="bookDetailMenu.downloadTooltip"
       />
       <TooltipIconButton
@@ -39,6 +56,7 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
         name={"sync-circle"}
         iconSize="md-"
         onPress={props.onConvertBook}
+        testID="book-detail-convert-button"
         tooltipTx="bookDetailMenu.convertTooltip"
       />
       <TooltipIconButton
@@ -46,6 +64,7 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
         name={"book-edit"}
         iconSize="md-"
         onPress={props.onEditBook}
+        testID="book-detail-edit-button"
         tooltipTx="bookDetailMenu.editTooltip"
       />
       <TooltipIconButton
@@ -53,6 +72,7 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
         name={"trash-can"}
         iconSize="md-"
         onPress={props.onDeleteBook}
+        testID="book-detail-delete-button"
         tooltipTx="bookDetailMenu.deleteTooltip"
       />
     </HStack>

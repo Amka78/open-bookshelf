@@ -19,6 +19,11 @@ export type AppStackParamList = {
   BookDetail: {
     imageUrl: string
     onLinkPress: (query: string) => void
+    onOpenBookAction?: () => void | Promise<void>
+    onDownloadBookAction?: () => void | Promise<void>
+    onDeleteBookAction?: () => void | Promise<void>
+    onNavigateToBookConvert?: (params: { imageUrl: string }) => void
+    onNavigateToBookEdit?: (params: { imageUrl: string }) => void
   }
   BookEdit: {
     imageUrl: string

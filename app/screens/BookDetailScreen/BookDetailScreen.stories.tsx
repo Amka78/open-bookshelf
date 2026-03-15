@@ -3,8 +3,16 @@ import { useConvergence } from "@/hooks/useConvergence"
 import type { ApppNavigationProp } from "@/navigators/types"
 import { BookDetailScreen } from "@/screens/BookDetailScreen/BookDetailScreen"
 import { useNavigation } from "@react-navigation/native"
+import { action } from "@storybook/addon-actions"
 import type { Meta, StoryObj } from "@storybook/react"
 import { type ReactElement, useLayoutEffect, useMemo } from "react"
+import {
+  playBookDetailConvertNavigation,
+  playBookDetailDeleteAction,
+  playBookDetailDownloadAction,
+  playBookDetailEditNavigation,
+  playBookDetailOpenAction,
+} from "./bookDetailScreenStoryPlay"
 
 import { defaultBookImageUrl } from "../../../.storybook/stories/defaultBookImageUrl"
 import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
@@ -45,15 +53,36 @@ function ResponsiveBookDetailStory({ imageUrl }: { imageUrl: string }) {
 export default {
   component: BookDetailScreen,
   title: "Screens/BookDetailScreen",
+  args: {
+    onOpenBookAction: action("action:bookDetail.open"),
+    onDownloadBookAction: action("action:bookDetail.download"),
+    onNavigateToBookConvert: action("navigate:BookConvert"),
+    onNavigateToBookEdit: action("navigate:BookEdit"),
+    onDeleteBookAction: action("action:bookDetail.delete"),
+  },
   argTypes: {
-    onConvertBook: { action: null },
-    onDeleteBook: { action: null },
-    onDownloadBook: { action: null },
-    onOpenBook: { action: null },
+    onOpenBookAction: { action: "action:bookDetail.open" },
+    onDownloadBookAction: { action: "action:bookDetail.download" },
+    onNavigateToBookConvert: { action: "navigate:BookConvert" },
+    onNavigateToBookEdit: { action: "navigate:BookEdit" },
+    onDeleteBookAction: { action: "action:bookDetail.delete" },
   },
   decorators: [
     (_Story, context) => {
-      const imageUrl = (context.args as { imageUrl?: string }).imageUrl ?? defaultImageUrl
+      const args = context.args as {
+        imageUrl?: string
+        onOpenBookAction?: () => void | Promise<void>
+        onDownloadBookAction?: () => void | Promise<void>
+        onNavigateToBookConvert?: (params: { imageUrl: string }) => void
+        onNavigateToBookEdit?: (params: { imageUrl: string }) => void
+        onDeleteBookAction?: () => void | Promise<void>
+      }
+      const imageUrl = args.imageUrl ?? defaultImageUrl
+      const onOpenBookAction = args.onOpenBookAction ?? action("action:bookDetail.open")
+      const onDownloadBookAction = args.onDownloadBookAction ?? action("action:bookDetail.download")
+      const onNavigateToBookConvert = args.onNavigateToBookConvert ?? action("navigate:BookConvert")
+      const onNavigateToBookEdit = args.onNavigateToBookEdit ?? action("navigate:BookEdit")
+      const onDeleteBookAction = args.onDeleteBookAction ?? action("action:bookDetail.delete")
 
       return (
         <ScreenContainer
@@ -63,6 +92,11 @@ export default {
             initialParams: {
               imageUrl,
               onLinkPress: () => {},
+              onOpenBookAction,
+              onDownloadBookAction,
+              onNavigateToBookConvert,
+              onNavigateToBookEdit,
+              onDeleteBookAction,
             },
             options: {
               headerShown: true,
@@ -82,6 +116,51 @@ export const SmallMobile: Story = {
       defaultViewport: "mobile1",
     },
   },
+}
+
+export const ConvertNavigatesOnSmallScreen: Story = {
+  parameters: {
+    viewport: {
+      defaultViewport: "mobile1",
+    },
+  },
+  play: playBookDetailConvertNavigation,
+}
+
+export const OpenRunsActionOnSmallScreen: Story = {
+  parameters: {
+    viewport: {
+      defaultViewport: "mobile1",
+    },
+  },
+  play: playBookDetailOpenAction,
+}
+
+export const DownloadRunsActionOnSmallScreen: Story = {
+  parameters: {
+    viewport: {
+      defaultViewport: "mobile1",
+    },
+  },
+  play: playBookDetailDownloadAction,
+}
+
+export const EditRunsActionOnSmallScreen: Story = {
+  parameters: {
+    viewport: {
+      defaultViewport: "mobile1",
+    },
+  },
+  play: playBookDetailEditNavigation,
+}
+
+export const DeleteRunsActionOnSmallScreen: Story = {
+  parameters: {
+    viewport: {
+      defaultViewport: "mobile1",
+    },
+  },
+  play: playBookDetailDeleteAction,
 }
 
 export const LargeMobile: Story = {

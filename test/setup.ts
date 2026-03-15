@@ -69,6 +69,7 @@ mock.module("expo-sharing", () => ({
 const testGlobal = globalThis as typeof globalThis & { __DEV__: boolean; __TEST__: boolean }
 testGlobal.__DEV__ = true
 testGlobal.__TEST__ = true
+;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
 
 // Set process environment variables
 process.env.EXPO_OS = "web"
