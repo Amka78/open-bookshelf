@@ -14,7 +14,14 @@ import { useNavigation } from "@react-navigation/native"
 import { FlashList, type ListRenderItem } from "@shopify/flash-list"
 import type React from "react"
 import { useCallback, useEffect, useRef } from "react"
-import { type FlexAlignType, Platform, StyleSheet, useWindowDimensions } from "react-native"
+import {
+  type FlexAlignType,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+  Platform,
+  StyleSheet,
+  useWindowDimensions,
+} from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { type FacingPageType, type FlashListHandle, useBookViewerState } from "./useBookViewerState"
 
@@ -43,7 +50,7 @@ export type RenderPageProps = {
   pageType: "singlePage" | "leftPage" | "rightPage"
   scrollIndex: number
   availableWidth: number
-  availableHeight: number
+  availableHeight?: number
 }
 export type BookViewerProps = {
   totalPage: number
@@ -52,6 +59,7 @@ export type BookViewerProps = {
   onPageChange?: (page: number) => void
   onLastPage?: () => void
   initialPage?: number
+  performanceMode?: "default" | "android-pdf"
 }
 
 export function BookViewer(props: BookViewerProps) {
@@ -67,6 +75,9 @@ export function BookViewer(props: BookViewerProps) {
 
   const navigation = useNavigation<ApppNavigationProp>()
   const isWeb = Platform.OS === "web"
+  const isAndroidPdfMode = props.performanceMode === "android-pdf" && Platform.OS === "android"
+  const isHorizontalReading = viewerHook.readingStyle !== "verticalScroll"
+  const flashListAxisKey = isHorizontalReading ? "horizontal" : "vertical"
   const isInverted =
     viewerHook.pageDirection === "left" && viewerHook.readingStyle !== "verticalScroll"
   // Android: FlashList の inverted が動作しないため scaleX: -1 で代替する
@@ -81,6 +92,7 @@ export function BookViewer(props: BookViewerProps) {
     autoPageTurnIntervalMs,
     setAutoPageTurnIntervalMs,
     onViewableItemsChanged,
+    syncScrollIndex,
     scrollToIndex,
     getScrollIndexForPage,
     getIndexForReadingStyleChange,
@@ -117,17 +129,21 @@ export function BookViewer(props: BookViewerProps) {
           onPageChanging={(page) => {
             console.tron.log(`current scroll index ${scrollIndex}`)
             console.tron.log(`page pressed next page:${page}`)
-            scrollToIndex(page)
+            scrollToIndex(page, true, isHorizontalReading ? undefined : 0.5)
           }}
           totalPages={pages[viewerHook.readingStyle].length}
           transitionPages={1}
-          style={{ ...styles.pageRoot, alignItems, width: renderProps.availableWidth }}
+          style={{
+            ...(isHorizontalReading ? styles.pageRoot : styles.verticalPageRoot),
+            alignItems,
+            width: renderProps.availableWidth,
+          }}
         >
           {props.renderPage(renderProps)}
         </PagePressable>
       )
     },
-    [pages, props.renderPage, scrollIndex, scrollToIndex, viewerHook],
+    [isHorizontalReading, pages, props.renderPage, scrollIndex, scrollToIndex, viewerHook],
   )
 
   const renderItem: ListRenderItem<number | FacingPageType> = useCallback(
@@ -138,7 +154,7 @@ export function BookViewer(props: BookViewerProps) {
         renderComp = (
           <Box
             width={listViewportWidth}
-            height={dimension.height}
+            height={isHorizontalReading ? dimension.height : undefined}
             style={useTransformInvert ? styles.scaleXInverted : undefined}
           >
             {renderPage({
@@ -147,7 +163,7 @@ export function BookViewer(props: BookViewerProps) {
               pageType: "singlePage",
               scrollIndex: index,
               availableWidth: listViewportWidth,
-              availableHeight: dimension.height,
+              availableHeight: isHorizontalReading ? dimension.height : undefined,
             })}
           </Box>
         )
@@ -182,7 +198,14 @@ export function BookViewer(props: BookViewerProps) {
 
       return renderComp
     },
-    [dimension.height, listViewportWidth, renderPage, useTransformInvert, viewerHook.pageDirection],
+    [
+      dimension.height,
+      isHorizontalReading,
+      listViewportWidth,
+      renderPage,
+      useTransformInvert,
+      viewerHook.pageDirection,
+    ],
   )
 
   const estimatedItemSize =
@@ -190,6 +213,10 @@ export function BookViewer(props: BookViewerProps) {
   const flashListLayoutKey = `${viewerHook.readingStyle}:${viewerHook.pageDirection}:${listViewportWidth}x${dimension.height}`
   const currentHorizontalLayoutKey =
     viewerHook.readingStyle === "verticalScroll" ? undefined : flashListLayoutKey
+  const useFixedItemLayout = isHorizontalReading && !isWeb
+  const windowSize = isAndroidPdfMode ? 2 : isWeb ? 5 : 3
+  const maxToRenderPerBatch = isAndroidPdfMode ? 1 : 2
+  const drawDistance = isAndroidPdfMode ? estimatedItemSize : undefined
   const scheduleHorizontalRecenter = useCallback((index: number) => {
     let secondFrame: number | undefined
     const firstFrame = runOnNextFrame(() => {
@@ -210,6 +237,38 @@ export function BookViewer(props: BookViewerProps) {
     () =>
       !pages || !currentHorizontalLayoutKey ? undefined : scheduleHorizontalRecenter(scrollIndex),
     [currentHorizontalLayoutKey, pages, scheduleHorizontalRecenter, scrollIndex],
+  )
+
+  const onListScrollSettled = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      if (!data.length) {
+        return
+      }
+
+      const pageSize = isHorizontalReading ? listViewportWidth : dimension.height
+      if (pageSize <= 0) {
+        return
+      }
+
+      const offset = isHorizontalReading
+        ? event.nativeEvent.contentOffset.x
+        : event.nativeEvent.contentOffset.y
+      const rawIndex = Math.round(offset / pageSize)
+      const clampedRawIndex = Math.max(0, Math.min(rawIndex, data.length - 1))
+      const resolvedIndex =
+        isInverted && !useTransformInvert ? data.length - 1 - clampedRawIndex : clampedRawIndex
+
+      syncScrollIndex(resolvedIndex)
+    },
+    [
+      data.length,
+      dimension.height,
+      isInverted,
+      isHorizontalReading,
+      listViewportWidth,
+      syncScrollIndex,
+      useTransformInvert,
+    ],
   )
 
   return (
@@ -240,7 +299,7 @@ export function BookViewer(props: BookViewerProps) {
         onSelectReadingStyle={(newReadingStyle) => {
           const nextIndex = getIndexForReadingStyleChange(newReadingStyle)
           if (nextIndex !== undefined) {
-            scrollToIndex(nextIndex)
+            scrollToIndex(nextIndex, true, newReadingStyle === "verticalScroll" ? 0.5 : undefined)
           }
           viewerHook.onSetBookReadingStyle(newReadingStyle)
         }}
@@ -251,33 +310,39 @@ export function BookViewer(props: BookViewerProps) {
       {pages ? (
         <Box style={styles.viewerRoot} alignSelf="center" width={listViewportWidth}>
           <FlashList<number | FacingPageType>
+            key={flashListAxisKey}
             data={data}
             extraData={flashListLayoutKey}
             renderItem={renderItem}
-            horizontal={viewerHook?.readingStyle !== "verticalScroll"}
-            pagingEnabled={true}
+            horizontal={isHorizontalReading}
+            pagingEnabled={isHorizontalReading}
             inverted={isInverted && !useTransformInvert}
             style={useTransformInvert ? styles.scaleXInverted : undefined}
             ref={flashListRef}
             keyExtractor={(_, index) => `${index}`}
-            onViewableItemsChanged={onViewableItemsChanged}
+            onViewableItemsChanged={isHorizontalReading ? undefined : onViewableItemsChanged}
+            onMomentumScrollEnd={isHorizontalReading ? onListScrollSettled : undefined}
+            onScrollEndDrag={
+              isHorizontalReading && !isAndroidPdfMode ? onListScrollSettled : undefined
+            }
             viewabilityConfig={{
               itemVisiblePercentThreshold: isWeb ? 95 : 100,
             }}
             estimatedItemSize={estimatedItemSize}
             estimatedListSize={{ width: listViewportWidth, height: dimension.height }}
+            drawDistance={drawDistance}
             overrideItemLayout={
-              isWeb
+              !useFixedItemLayout
                 ? undefined
                 : (layout, _, index) => {
                     layout.size = estimatedItemSize
                     layout.offset = estimatedItemSize * index
                   }
             }
-            removeClippedSubviews={!isWeb}
-            windowSize={isWeb ? 5 : 3}
+            removeClippedSubviews={useFixedItemLayout}
+            windowSize={windowSize}
             initialNumToRender={1}
-            maxToRenderPerBatch={2}
+            maxToRenderPerBatch={maxToRenderPerBatch}
           />
         </Box>
       ) : null}
@@ -290,7 +355,7 @@ export function BookViewer(props: BookViewerProps) {
         totalPage={props.totalPage}
         onPageChange={(page) => {
           const index = getScrollIndexForPage(page)
-          scrollToIndex(index)
+          scrollToIndex(index, true, isHorizontalReading ? undefined : 0.5)
         }}
         reverse={
           viewerHook.pageDirection === "left" && viewerHook.readingStyle !== "verticalScroll"
@@ -308,6 +373,9 @@ const styles = StyleSheet.create({
   pageRoot: {
     flex: 1,
     justifyContent: "center",
+    zIndex: 0,
+  },
+  verticalPageRoot: {
     zIndex: 0,
   },
   viewerRoot: {

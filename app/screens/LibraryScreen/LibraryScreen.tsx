@@ -373,6 +373,8 @@ export const LibraryScreen: FC = observer(() => {
       listItem = (
         <BookDescriptionItem
           source={{ uri: imageUrl, headers: authenticationStore.getHeader() }}
+          showCachedIcon={hasReadingHistory}
+          onCachedIconPress={onClearBookCache}
           onPress={onPress}
           onLongPress={onLongPress}
           authors={item.metaData.authors}

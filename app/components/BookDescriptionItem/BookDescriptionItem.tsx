@@ -1,3 +1,4 @@
+import { Pressable } from "@gluestack-ui/themed"
 import { useState } from "react"
 import { StyleSheet } from "react-native"
 
@@ -9,6 +10,7 @@ import {
   LinkButton,
   type LinkInfo,
   ListItem,
+  MaterialCommunityIcon,
   Text,
 } from "@/components"
 
@@ -20,6 +22,8 @@ export type BookDescriptionItemProps = Pick<ImageProps, "source"> & {
   onLongPress: () => void
   onLinkPress: (link: string) => void
   loading?: boolean
+  showCachedIcon?: boolean
+  onCachedIconPress?: () => void
 }
 
 export function BookDescriptionItem({ loading = false, ...restProps }: BookDescriptionItemProps) {
@@ -43,7 +47,19 @@ export function BookDescriptionItem({ loading = false, ...restProps }: BookDescr
           LeftComponent={
             <Box flexDirection={"row"} width={"$full"}>
               <Box flexDirection={"row"} width={"$5/6"} marginLeft={2}>
-                <Image source={props.source} style={styles.coverImage} resizeMode={"contain"} />
+                <Box style={styles.coverImageContainer}>
+                  <Image source={props.source} style={styles.coverImage} resizeMode={"contain"} />
+                  {props.showCachedIcon ? (
+                    <Pressable
+                      onPress={() => {
+                        props.onCachedIconPress?.()
+                      }}
+                      style={styles.cachedIconBadge}
+                    >
+                      <MaterialCommunityIcon name="cloud-check" iconSize="tiny" />
+                    </Pressable>
+                  ) : null}
+                </Box>
                 <Box marginLeft={"$1.5"}>
                   <Text fontSize={"$lg"} lineBreakMode="tail" numberOfLines={1}>
                     {props.title}
@@ -73,5 +89,15 @@ export function BookDescriptionItem({ loading = false, ...restProps }: BookDescr
 
 const styles = StyleSheet.create({
   coverImage: { height: 50, width: 30 },
+  coverImageContainer: {
+    height: 50,
+    width: 30,
+    position: "relative",
+  },
+  cachedIconBadge: {
+    position: "absolute",
+    top: -2,
+    left: -2,
+  },
   spinnerSize: { height: 56, width: "100%" },
 })

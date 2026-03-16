@@ -5,7 +5,7 @@ import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } fro
 export type FacingPageType = { page1?: number; page2?: number }
 export type PageStyles = Record<BookReadingStyleType, number[] | FacingPageType[]>
 export type FlashListHandle = {
-  scrollToIndex: (params: { index: number; animated?: boolean }) => void
+  scrollToIndex: (params: { index: number; animated?: boolean; viewPosition?: number }) => void
 }
 
 type UseBookViewerStateParams = {
@@ -30,7 +30,8 @@ type UseBookViewerStateResult = {
   onViewableItemsChanged: (info: {
     viewableItems: { index?: number | null; isViewable?: boolean }[]
   }) => void
-  scrollToIndex: (index: number, animated?: boolean) => void
+  syncScrollIndex: (index: number) => void
+  scrollToIndex: (index: number, animated?: boolean, viewPosition?: number) => void
   getScrollIndexForPage: (page: number) => number
   getIndexForReadingStyleChange: (newReadingStyle: BookReadingStyleType) => number | undefined
 }
@@ -105,12 +106,18 @@ export function useBookViewerState({
   const scrollIndexRef = useRef(0)
 
   const scrollToIndex = useCallback(
-    (index: number, animated = true) => {
+    (index: number, animated = true, viewPosition?: number) => {
       setScrollIndex(index)
-      flashListRef.current?.scrollToIndex({ index, animated })
+      flashListRef.current?.scrollToIndex({ index, animated, viewPosition })
     },
     [flashListRef],
   )
+
+  const syncScrollIndex = useCallback((index: number) => {
+    setScrollIndex((prev) => {
+      return prev === index ? prev : index
+    })
+  }, [])
 
   const onAutoPageTurning = useCallback(() => {
     if (!pages) return
@@ -326,6 +333,7 @@ export function useBookViewerState({
     autoPageTurnIntervalMs,
     setAutoPageTurnIntervalMs,
     onViewableItemsChanged,
+    syncScrollIndex,
     scrollToIndex,
     getScrollIndexForPage,
     getIndexForReadingStyleChange,

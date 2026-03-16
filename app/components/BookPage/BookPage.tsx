@@ -36,7 +36,10 @@ export function BookPage(props: BookImageProps) {
   const viewportHeight = props.availableHeight ?? windowHeight
   const dimension = useMemo(() => {
     if (!sourceDimension) {
-      return undefined
+      return {
+        width: viewportWidth,
+        height: viewportHeight,
+      }
     }
 
     return getContainedDimension(sourceDimension, {
@@ -48,7 +51,7 @@ export function BookPage(props: BookImageProps) {
   return (
     <Image
       source={props.source}
-      style={[{ width: "100%", height: "100%" }, dimension]}
+      style={dimension}
       contentFit={"contain"}
       onLoad={(e) => {
         if (!e?.source?.height || !e?.source?.width) {
