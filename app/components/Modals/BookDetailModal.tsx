@@ -1,11 +1,9 @@
-import {
-  BookDetailFieldList,
-  BookDetailMenu,
-  BookImageItem,
-  HStack,
-  Heading,
-  VStack,
-} from "@/components"
+import { BookDetailFieldList } from "@/components/BookDetailFieldList/BookDetailFieldList"
+import { BookDetailMenu } from "@/components/BookDetailMenu/BookDetailMenu"
+import { BookImageItem } from "@/components/BookImageItem/BookImageItem"
+import { HStack } from "@/components/HStack/HStack"
+import { Heading } from "@/components/Heading/Heading"
+import { VStack } from "@/components/VStack/VStack"
 import type { ModalComponentProp } from "react-native-modalfy"
 
 import { useDeleteBook } from "@/hooks/useDeleteBook"
@@ -14,7 +12,10 @@ import { useOpenViewer } from "@/hooks/useOpenViewer"
 import { useStores } from "@/models"
 import { logger } from "@/utils/logger"
 import { observer } from "mobx-react-lite"
-import { Body, CloseButton, Header, Root } from "./"
+import { Body } from "./Body"
+import { CloseButton } from "./CloseButton"
+import { Header } from "./Header"
+import { Root } from "./Root"
 import type { ModalStackParams } from "./Types"
 
 export type BookDetailModalProps = ModalComponentProp<ModalStackParams, void, "BookDetailModal">

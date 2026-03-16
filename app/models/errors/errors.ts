@@ -4,6 +4,33 @@ import { navigate, navigationRef } from "@/navigators/navigationUtilities"
 import type { GeneralApiProblem } from "@/services/api/apiProblem"
 import { modalfy } from "react-native-modalfy"
 
+const runOnNextFrame = (callback: () => void) => {
+  if (typeof requestAnimationFrame === "function") {
+    return requestAnimationFrame(() => {
+      callback()
+    })
+  }
+
+  return setTimeout(callback, 0)
+}
+
+const openModalDeferred = (
+  modal: ReturnType<typeof modalfy<ModalStackParams>>,
+  modalName: keyof ModalStackParams,
+  params?: ModalStackParams[keyof ModalStackParams],
+) => {
+  runOnNextFrame(() => {
+    runOnNextFrame(() => {
+      if (params) {
+        modal.openModal(modalName as never, params as never)
+        return
+      }
+
+      modal.openModal(modalName as never)
+    })
+  })
+}
+
 type ApiErrorConstructoArgs = {
   error?: string
   errorTx?: MessageKey
@@ -44,24 +71,26 @@ export function handleCommonApiError(apiProblem: GeneralApiProblem) {
   const modal = modalfy<ModalStackParams>()
   switch (apiProblem.kind) {
     case "unauthorized":
-      modal.openModal("LoginModal")
+      openModalDeferred(modal, "LoginModal")
       break
     case "cannot-connect":
-      modal.openModal("ErrorModal", {
+      openModalDeferred(modal, "ErrorModal", {
         titleTx: "errors.canNotConnect",
         messageTx: "errors.canNotConnectDescription",
       })
       break
     case "timeout":
-      modal.openModal("ErrorModal", {
+      openModalDeferred(modal, "ErrorModal", {
         titleTx: "errors.timeout",
         messageTx: "errors.timeoutDescription",
       })
       break
     case "not-found": {
-      const currentRoute = navigationRef.isReady() ? navigationRef.getCurrentRoute()?.name : undefined
+      const currentRoute = navigationRef.isReady()
+        ? navigationRef.getCurrentRoute()?.name
+        : undefined
       if (currentRoute === "Connect") break
-      modal.openModal("ConfirmModal", {
+      openModalDeferred(modal, "ConfirmModal", {
         titleTx: "errors.notFound",
         messageTx: "errors.notFoundDescription",
         okTx: "common.yes",

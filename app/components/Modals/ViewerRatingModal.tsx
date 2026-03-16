@@ -1,8 +1,15 @@
-import { Button, FormRatingGroup, Heading, Text } from "@/components"
+import { Button } from "@/components/Button/Button"
+import { FormRatingGroup } from "@/components/Forms/FormRatingGroup"
+import { Heading } from "@/components/Heading/Heading"
+import { Text } from "@/components/Text/Text"
 import { VStack } from "@gluestack-ui/themed"
 import { useForm } from "react-hook-form"
 import type { ModalComponentProp } from "react-native-modalfy"
-import { Body, CloseButton, Footer, Header, Root } from "."
+import { Body } from "./Body"
+import { CloseButton } from "./CloseButton"
+import { Header } from "./Header"
+import { Footer } from "./ModalFooter"
+import { Root } from "./Root"
 import type { ModalStackParams } from "./Types"
 
 type FormValues = {

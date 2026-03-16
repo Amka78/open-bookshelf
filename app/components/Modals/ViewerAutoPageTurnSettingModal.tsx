@@ -1,8 +1,15 @@
-import { Button, Heading, Input, Text } from "@/components"
+import { Button } from "@/components/Button/Button"
+import { Heading } from "@/components/Heading/Heading"
+import { Input } from "@/components/Input/Input"
+import { Text } from "@/components/Text/Text"
 import { InputField, VStack } from "@gluestack-ui/themed"
 import { useState } from "react"
 import type { ModalComponentProp } from "react-native-modalfy"
-import { Body, CloseButton, Footer, Header, Root } from "./"
+import { Body } from "./Body"
+import { CloseButton } from "./CloseButton"
+import { Header } from "./Header"
+import { Footer } from "./ModalFooter"
+import { Root } from "./Root"
 import type { ModalStackParams } from "./Types"
 
 export type ViewerAutoPageTurnSettingModalProps = ModalComponentProp<

@@ -1,10 +1,15 @@
-import { Button, Heading } from "@/components"
 import { BookConvertForm } from "@/components/BookConvertForm/BookConvertForm"
+import { Button } from "@/components/Button/Button"
+import { Heading } from "@/components/Heading/Heading"
 import { useStores } from "@/models"
 import { useBookConvert } from "@/screens/BookConvertScreen/useBookConvert"
 import { observer } from "mobx-react-lite"
 import type { ModalComponentProp } from "react-native-modalfy"
-import { Body, CloseButton, Footer, Header, Root } from "./"
+import { Body } from "./Body"
+import { CloseButton } from "./CloseButton"
+import { Header } from "./Header"
+import { Footer } from "./ModalFooter"
+import { Root } from "./Root"
 import type { ModalStackParams } from "./Types"
 
 export type BookConvertModalProps = ModalComponentProp<ModalStackParams, void, "BookConvertModal">

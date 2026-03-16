@@ -100,6 +100,9 @@ export function useBookViewerState({
   )
   const initialPageAppliedRef = useRef(false)
   const lastPageNotifiedKeyRef = useRef<string | undefined>(undefined)
+  const prevReadingStyleRef = useRef(readingStyle)
+  // readingStyle 変化前の scrollIndex を stale closure なしで参照するための ref
+  const scrollIndexRef = useRef(0)
 
   const scrollToIndex = useCallback(
     (index: number, animated = true) => {
@@ -138,6 +141,44 @@ export function useBookViewerState({
   useEffect(() => {
     setPages(createPageStyles(totalPage))
   }, [totalPage])
+
+  // scrollIndex の最新値を ref に同期する（readingStyle 変化 effect でのステール参照回避）
+  useEffect(() => {
+    scrollIndexRef.current = scrollIndex
+  }, [scrollIndex])
+
+  // readingStyle が変化したとき（主に向き変更）、現在ページを新スタイルの正しい
+  // インデックスに変換してスクロールし直す
+  useEffect(() => {
+    const prevStyle = prevReadingStyleRef.current
+    prevReadingStyleRef.current = readingStyle
+
+    if (prevStyle === readingStyle || !pages) return
+
+    const prevIndex = scrollIndexRef.current
+
+    // 旧スタイルでのページ番号を取得
+    let pageNum = prevIndex
+    if (isFacingPageStyle(prevStyle)) {
+      const item = pages[prevStyle][prevIndex] as FacingPageType | undefined
+      pageNum = item?.page1 ?? 0
+    }
+
+    // 新スタイルでの対応インデックスを計算
+    let nextIndex = pageNum
+    if (isFacingPageStyle(readingStyle)) {
+      const idx = (pages[readingStyle] as FacingPageType[]).findIndex((v) => {
+        return v.page1 === pageNum || v.page2 === pageNum
+      })
+      nextIndex = idx >= 0 ? idx : 0
+    }
+
+    // FlashList のデータ更新後に scrollToIndex を呼ぶため RAF を挟む
+    const raf = getSafeRaf()
+    raf(() => {
+      scrollToIndex(nextIndex, false)
+    })
+  }, [readingStyle, pages, scrollToIndex])
 
   useEffect(() => {
     if (initialPage !== undefined) {
