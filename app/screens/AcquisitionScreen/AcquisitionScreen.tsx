@@ -13,7 +13,6 @@ import { OpdsChildrenModel, OpdsModel, type OpdsRoot } from "@/models/opds/OpdsR
 import type { AppStackParamList, ApppNavigationProp } from "@/navigators/types"
 import { usePalette } from "@/theme"
 import { logger } from "@/utils/logger"
-import { MaterialCommunityIcons } from "@expo/vector-icons"
 import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { Image } from "expo-image"
 import { observer } from "mobx-react-lite"

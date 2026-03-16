@@ -1,4 +1,3 @@
-import { setReactotronRootStore } from "@/services/reactotron"
 import { createContext, useContext, useEffect, useState } from "react"
 
 import { type RootStore, RootStoreModel } from "../RootStore"
@@ -62,7 +61,10 @@ export const useInitialRootStore = (callback: () => void | Promise<void>) => {
       _unsubscribe = unsubscribe
 
       // reactotron integration with the MST root store (DEV only)
-      setReactotronRootStore(rootStore, restoredState)
+      if (__DEV__) {
+        const { setReactotronRootStore } = require("@/services/reactotron")
+        setReactotronRootStore(rootStore, restoredState)
+      }
 
       // let the app know we've finished rehydrating
       setRehydrated(true)

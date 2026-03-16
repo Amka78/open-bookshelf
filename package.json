@@ -38,7 +38,7 @@
     "reactotron": "bun run adb && reactotron-app",
     "storybook-generate": "sb-rn-get-stories",
     "storybook-watch": "sb-rn-watcher",
-    "storybook-native": "sb-rn-get-stories --config-path .storybook/native && STORYBOOK_ENABLED='true' && bunx expo start --dev-client",
+    "storybook-native": "sb-rn-get-stories --config-path .storybook/native && EXPO_PUBLIC_STORYBOOK_ENABLED=true bunx expo start --dev-client",
     "storybook:web": "sb dev --config-dir .storybook/web -p 6006",
     "build-storybook": "build-storybook",
     "build:web": "bunx expo export --platform web --output-dir dist",

@@ -1,5 +1,5 @@
 import { usePalette } from "@/theme"
-import { MaterialCommunityIcons } from "@expo/vector-icons"
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons"
 import { styled } from "@gluestack-ui/themed"
 import type { ComponentProps } from "react"
 

@@ -15,35 +15,38 @@ import "./utils/ignoreWarnings"
 import { useFonts } from "expo-font"
 import React from "react"
 import { View, useColorScheme } from "react-native"
-import { initialWindowMetrics, SafeAreaProvider } from "react-native-safe-area-context"
+import { SafeAreaProvider, initialWindowMetrics } from "react-native-safe-area-context"
 
+import { config } from "@gluestack-ui/config"
+import { GluestackUIProvider } from "@gluestack-ui/themed"
+import { GestureHandlerRootView } from "react-native-gesture-handler"
 import Config from "./config"
 import { useInitialRootStore } from "./models"
 import { AppNavigator, useNavigationPersistence } from "./navigators"
 import { ErrorBoundary } from "./screens/ErrorScreen/ErrorBoundary"
-import { setupReactotron } from "./services/reactotron"
 import { customFontsToLoad } from "./theme"
-import * as storage from "./utils/storage"
 import { logger } from "./utils/logger"
-import { GestureHandlerRootView } from "react-native-gesture-handler"
-import { GluestackUIProvider } from "@gluestack-ui/themed"
-import { config } from "@gluestack-ui/config"
-import * as Application from "expo-application"
+import * as storage from "./utils/storage"
+
+const IS_STORYBOOK_ENABLED = process.env.EXPO_PUBLIC_STORYBOOK_ENABLED === "true"
 
 // Set up Reactotron, which is a free desktop app for inspecting and debugging
 // React Native apps. Learn more here: https://github.com/infinitered/reactotron
-setupReactotron({
-  // clear the Reactotron window when the app loads/reloads
-  clearOnLoad: true,
-  // generally going to be localhost
-  host: "localhost",
-  // Reactotron can monitor AsyncStorage for you
-  useAsyncStorage: true,
-  // log the initial restored state from AsyncStorage
-  logInitialState: true,
-  // log out any snapshots as they happen (this is useful for debugging but slow)
-  logSnapshots: false,
-})
+if (__DEV__) {
+  const { setupReactotron } = require("./services/reactotron")
+  setupReactotron({
+    // clear the Reactotron window when the app loads/reloads
+    clearOnLoad: true,
+    // generally going to be localhost
+    host: "localhost",
+    // Reactotron can monitor AsyncStorage for you
+    useAsyncStorage: true,
+    // log the initial restored state from AsyncStorage
+    logInitialState: true,
+    // log out any snapshots as they happen (this is useful for debugging but slow)
+    logSnapshots: false,
+  })
+}
 
 export const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
 
@@ -99,7 +102,7 @@ function App(props: AppProps) {
   // You can replace with your own loading component if you wish.
   if (!rehydrated || !isNavigationStateRestored || !areFontsLoaded) return null
 
-  if (Application.applicationName?.includes("Sb")) {
+  if (IS_STORYBOOK_ENABLED) {
     const StorybookUI = require("../.storybook/native").default
     return (
       <View style={{ flex: 1 }}>
@@ -111,10 +114,7 @@ function App(props: AppProps) {
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <GluestackUIProvider
-          config={config}
-          colorMode={colorScheme === "dark" ? "dark" : "light"}
-        >
+        <GluestackUIProvider config={config} colorMode={colorScheme === "dark" ? "dark" : "light"}>
           <ErrorBoundary catchErrors={Config.catchErrors}>
             <AppNavigator
               initialState={initialNavigationState}

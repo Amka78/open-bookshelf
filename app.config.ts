@@ -21,6 +21,8 @@ switch (process.env.APP_VARIANT) {
     break
 }
 
+const isPreviewVariant = process.env.APP_VARIANT === "preview"
+
 export default {
   name: "OpenBookShelf",
   displayName: "OpenBookShelf",
@@ -83,6 +85,14 @@ export default {
         {
           android: {
             usesCleartextTraffic: true,
+            enableMinifyInReleaseBuilds: true,
+            enableShrinkResourcesInReleaseBuilds: true,
+            enableBundleCompression: true,
+            ...(isPreviewVariant
+              ? {
+                  buildArchs: ["arm64-v8a"],
+                }
+              : {}),
           },
         },
       ],

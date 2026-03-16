@@ -1,32 +1,24 @@
 // TODO: write documentation about fonts and typography along with guides on how to add custom fonts in own
 // markdown file and add links from here
 
-import { Platform } from "react-native";
-import {
-  NotoSerifJP_400Regular as notoSerifRegular,
-  NotoSerifJP_500Medium as notoSerifMedium,
-  NotoSerifJP_600SemiBold as notoSerifSemiBold,
-  NotoSerifJP_700Bold as notoSerifBold,
-} from "@expo-google-fonts/noto-serif-jp";
-import {
-  SpaceGrotesk_300Light as spaceGroteskLight,
-  SpaceGrotesk_400Regular as spaceGroteskRegular,
-  SpaceGrotesk_500Medium as spaceGroteskMedium,
-  SpaceGrotesk_600SemiBold as spaceGroteskSemiBold,
-  SpaceGrotesk_700Bold as spaceGroteskBold,
-} from "@expo-google-fonts/space-grotesk";
+import { Platform } from "react-native"
+
+const notoSerifRegular = require("@expo-google-fonts/noto-serif-jp/NotoSerifJP_400Regular.ttf")
+const notoSerifBold = require("@expo-google-fonts/noto-serif-jp/NotoSerifJP_700Bold.ttf")
+const spaceGroteskRegular = require("@expo-google-fonts/space-grotesk/SpaceGrotesk_400Regular.ttf")
+const spaceGroteskBold = require("@expo-google-fonts/space-grotesk/SpaceGrotesk_700Bold.ttf")
 
 export const customFontsToLoad = {
   notoSerifRegular,
-  notoSerifMedium,
-  notoSerifSemiBold,
+  notoSerifMedium: notoSerifRegular,
+  notoSerifSemiBold: notoSerifBold,
   notoSerifBold,
-  spaceGroteskLight,
+  spaceGroteskLight: spaceGroteskRegular,
   spaceGroteskRegular,
-  spaceGroteskMedium,
-  spaceGroteskSemiBold,
+  spaceGroteskMedium: spaceGroteskRegular,
+  spaceGroteskSemiBold: spaceGroteskBold,
   spaceGroteskBold,
-};
+}
 
 const fonts = {
   notoSerifJP: {
@@ -66,7 +58,7 @@ const fonts = {
     // Android only font.
     normal: "monospace",
   },
-};
+}
 
 export const typography = {
   /**
@@ -85,4 +77,4 @@ export const typography = {
    * Lets get fancy with a monospace font!
    */
   code: Platform.select({ ios: fonts.courier, android: fonts.monospace }),
-};
+}
