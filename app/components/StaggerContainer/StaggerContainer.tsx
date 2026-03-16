@@ -2,6 +2,7 @@ import { IconButton, VStack } from "@/components"
 import { useConvergence } from "@/hooks/useConvergence"
 import type React from "react"
 import { type ComponentProps, useState } from "react"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 export type StaggerContainerProps = {
   menus: React.ReactNode
   menusHeight: number
@@ -13,10 +14,12 @@ export function StaggerContainer({
   ...restProps
 }: StaggerContainerProps) {
   const convergenceHook = useConvergence()
+  const insets = useSafeAreaInsets()
   const [isOpen, setIsOpen] = useState(false)
 
-  const bottom = restProps.bottom ? restProps.bottom : convergenceHook.isLarge ? 10 : 5
-  const right = restProps.right ? restProps.right : convergenceHook.isLarge ? 10 : 5
+  const defaultBottom = (convergenceHook.isLarge ? 10 : 5) + insets.bottom
+  const bottom = restProps.bottom ?? defaultBottom
+  const right = restProps.right ?? (convergenceHook.isLarge ? 10 : 5)
 
   const props = { position, alignItems, justifyContent, bottom, right, ...restProps }
   return (

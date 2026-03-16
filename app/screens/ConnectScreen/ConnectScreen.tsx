@@ -1,5 +1,6 @@
 import { observer } from "mobx-react-lite"
 import React, { type FC } from "react"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 import {
   Button,
@@ -15,10 +16,12 @@ import { useConnect } from "./useConnect"
 
 export const ConnectScreen: FC = observer(() => {
   const { form, baseUrl, onConnectPress } = useConnect()
+  const insets = useSafeAreaInsets()
+  const bottomInset = Math.max(insets.bottom, 8)
 
   return (
     <RootContainer>
-      <VStack justifyContent={"space-between"} flex={1}>
+      <VStack justifyContent={"space-between"} flex={1} paddingBottom={bottomInset}>
         <Heading testID="connect-heading" tx="connectScreen.welcome" />
         <Text tx="connectScreen.detail" marginTop={"$5"} />
         <VStack marginTop={7}>
