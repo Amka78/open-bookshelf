@@ -1,14 +1,20 @@
 import { RootStoreModel } from "@/models"
 import { ViewerScreen } from "@/screens/ViewerScreen/ViewerScreen"
 import type { Meta, StoryObj } from "@storybook/react"
+import { useMemo, type ReactNode } from "react"
+import { useWindowDimensions } from "react-native"
 import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
 
-const sampleImage =
-  "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='1200'><rect width='100%25' height='100%25' fill='%23f0f0f0'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='48' fill='%23555'>Sample Page</text></svg>"
+function createSampleImage(width: number, height: number) {
+  return `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='${width}' height='${height}' viewBox='0 0 ${width} ${height}'><rect width='100%25' height='100%25' fill='%23f0f0f0'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='48' fill='%23555'>Sample Page</text></svg>`
+}
 
-const cachedPath = [sampleImage, sampleImage, sampleImage, sampleImage, sampleImage, sampleImage]
+function createCachedPath(width: number, height: number) {
+  const sampleImage = createSampleImage(width, height)
+  return [sampleImage, sampleImage, sampleImage, sampleImage, sampleImage, sampleImage]
+}
 
-function createViewerRootStore() {
+function createViewerRootStore(cachedPath: string[]) {
   return RootStoreModel.create({
     authenticationStore: {
       token: "dXNlcjpwYXNz",
@@ -76,20 +82,30 @@ function createViewerRootStore() {
   })
 }
 
+function ViewerStoryContainer({ children }: { children: ReactNode }) {
+  const { width, height } = useWindowDimensions()
+  const safeWidth = Math.max(1, Math.round(width))
+  const safeHeight = Math.max(1, Math.round(height))
+
+  const rootStore = useMemo(() => {
+    return createViewerRootStore(createCachedPath(safeWidth, safeHeight))
+  }, [safeWidth, safeHeight])
+
+  return (
+    <ScreenContainer
+      rootStore={rootStore}
+      stackScreen={{
+        name: "Viewer",
+        story: () => <>{children}</>,
+      }}
+    />
+  )
+}
+
 export default {
   component: ViewerScreen,
   title: "Screens/ViewerScreen",
-  decorators: [
-    (Story) => (
-      <ScreenContainer
-        rootStore={createViewerRootStore()}
-        stackScreen={{
-          name: "Viewer",
-          story: () => <Story />,
-        }}
-      />
-    ),
-  ],
+  decorators: [(Story) => <ViewerStoryContainer>{<Story />}</ViewerStoryContainer>],
 } as Meta<typeof ViewerScreen>
 
 type Story = StoryObj<typeof ViewerScreen>
