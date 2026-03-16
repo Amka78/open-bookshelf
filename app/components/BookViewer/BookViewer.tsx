@@ -43,6 +43,10 @@ export function BookViewer(props: BookViewerProps) {
 
   const navigation = useNavigation<ApppNavigationProp>()
   const isWeb = Platform.OS === "web"
+  const isInverted =
+    viewerHook.pageDirection === "left" && viewerHook.readingStyle !== "verticalScroll"
+  // Android: FlashList の inverted が動作しないため scaleX: -1 で代替する
+  const useTransformInvert = isInverted && Platform.OS === "android"
   const {
     pages,
     data,
@@ -108,7 +112,11 @@ export function BookViewer(props: BookViewerProps) {
       if (typeof item === "number" || (item as FacingPageType).page2 === undefined) {
         const num = typeof item === "number" ? item : (item as FacingPageType).page1
         renderComp = (
-          <Box width={dimension.width} height={dimension.height}>
+          <Box
+            width={dimension.width}
+            height={dimension.height}
+            style={useTransformInvert ? styles.scaleXInverted : undefined}
+          >
             {renderPage({
               page: num,
               direction: "next",
@@ -131,7 +139,11 @@ export function BookViewer(props: BookViewerProps) {
           scrollIndex: index,
         })
         renderComp = (
-          <HStack width={dimension.width} height={dimension.height}>
+          <HStack
+            width={dimension.width}
+            height={dimension.height}
+            style={useTransformInvert ? styles.scaleXInverted : undefined}
+          >
             {leftPage}
             {rightPage}
           </HStack>
@@ -140,7 +152,7 @@ export function BookViewer(props: BookViewerProps) {
 
       return renderComp
     },
-    [dimension.height, dimension.width, renderPage, viewerHook.pageDirection],
+    [dimension.height, dimension.width, renderPage, useTransformInvert, viewerHook.pageDirection],
   )
 
   const estimatedItemSize =
@@ -189,9 +201,8 @@ export function BookViewer(props: BookViewerProps) {
             renderItem={renderItem}
             horizontal={viewerHook?.readingStyle !== "verticalScroll"}
             pagingEnabled={true}
-            inverted={
-              viewerHook.pageDirection === "left" && viewerHook.readingStyle !== "verticalScroll"
-            }
+            inverted={isInverted && !useTransformInvert}
+            style={useTransformInvert ? styles.scaleXInverted : undefined}
             ref={flashListRef}
             keyExtractor={(_, index) => `${index}`}
             onViewableItemsChanged={onViewableItemsChanged}
@@ -245,5 +256,8 @@ const styles = StyleSheet.create({
   },
   viewerRoot: {
     flex: 1,
+  },
+  scaleXInverted: {
+    transform: [{ scaleX: -1 }],
   },
 })
