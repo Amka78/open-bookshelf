@@ -3,51 +3,51 @@ import { PDF } from "@/library/PDF/Pdf"
 import { usePDFViewer } from "@/screens/PDFViewerScreen/usePDFViewer"
 import { observer } from "mobx-react-lite"
 import React, { useState } from "react"
-import { StyleSheet } from "react-native"
-import { useViewer } from "../ViewerScreen/useViewer"
+import { type FlexAlignType, StyleSheet, type ViewStyle } from "react-native"
 
 export const PDFViewerScreen = observer(() => {
   const pdfHook = usePDFViewer()
-  const viewerHook = useViewer()
-  const [imageSize, setImageSize] = useState(undefined)
+  const [sourcePageSize, setSourcePageSize] = useState<{ width: number; height: number }>()
 
-  const {
-    selectedBook,
-    totalPages,
-    setTotalPages,
-    pdfSource,
-    windowDimension,
-    calculatePageDimensions,
-  } = pdfHook
+  const { selectedBook, totalPages, setTotalPages, pdfSource, calculatePageDimensions } = pdfHook
 
   if (!selectedBook) {
     return undefined
   }
 
   const renderPage = (renderProps: RenderPageProps) => {
-    let alignSelf = "center"
+    let alignSelf: FlexAlignType = "center"
+    const imageSize =
+      sourcePageSize &&
+      calculatePageDimensions(
+        sourcePageSize,
+        renderProps.availableWidth,
+        renderProps.availableHeight,
+        false,
+      )
 
     if (renderProps.pageType === "leftPage") {
       alignSelf = "flex-end"
     } else if (renderProps.pageType === "rightPage") {
       alignSelf = "flex-start"
     }
+
+    const pageAlignStyle: ViewStyle = {
+      alignSelf,
+      justifyContent: "center",
+    }
+
     return (
       <PDF
         source={pdfSource}
-        style={[styles.page, { alignSelf, justifyContent: "center" }, imageSize]}
+        style={[styles.page, pageAlignStyle, imageSize]}
         onLoadComplete={(numberOfPages, path, size) => {
-          if (!imageSize) {
-            const isFacingPage =
-              viewerHook.readingStyle === "facingPage" ||
-              viewerHook.readingStyle === "facingPageWithTitle"
-            const dimensions = calculatePageDimensions(
-              size,
-              windowDimension.width,
-              windowDimension.height,
-              isFacingPage,
-            )
-            setImageSize({ height: dimensions.height, width: dimensions.width })
+          if (
+            !sourcePageSize ||
+            sourcePageSize.width !== size.width ||
+            sourcePageSize.height !== size.height
+          ) {
+            setSourcePageSize({ height: size.height, width: size.width })
           }
         }}
         trustAllCerts={false}

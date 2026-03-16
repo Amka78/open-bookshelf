@@ -44,6 +44,8 @@ export const ViewerScreen: FC = observer(() => {
     const isRemotePath = isRemoteBookImagePath(pagePath)
     return (
       <BookPage
+        availableWidth={props.availableWidth}
+        availableHeight={props.availableHeight}
         source={{
           uri: pagePath,
           headers: isRemotePath ? authenticationStore.getHeader() : undefined,

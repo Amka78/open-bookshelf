@@ -13,15 +13,37 @@ import { usePalette } from "@/theme"
 import { useNavigation } from "@react-navigation/native"
 import { FlashList, type ListRenderItem } from "@shopify/flash-list"
 import type React from "react"
-import { useCallback, useRef } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import { type FlexAlignType, Platform, StyleSheet, useWindowDimensions } from "react-native"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { type FacingPageType, type FlashListHandle, useBookViewerState } from "./useBookViewerState"
+
+const runOnNextFrame = (callback: () => void) => {
+  if (typeof requestAnimationFrame === "function") {
+    return requestAnimationFrame(() => {
+      callback()
+    })
+  }
+
+  return setTimeout(callback, 0) as unknown as number
+}
+
+const cancelScheduledFrame = (id: number) => {
+  if (typeof cancelAnimationFrame === "function") {
+    cancelAnimationFrame(id)
+    return
+  }
+
+  clearTimeout(id)
+}
 
 export type RenderPageProps = {
   page: number
   direction: "next" | "previous"
   pageType: "singlePage" | "leftPage" | "rightPage"
   scrollIndex: number
+  availableWidth: number
+  availableHeight: number
 }
 export type BookViewerProps = {
   totalPage: number
@@ -40,6 +62,8 @@ export function BookViewer(props: BookViewerProps) {
   const flashListRef = useRef<FlashListHandle>(null)
 
   const dimension = useWindowDimensions()
+  const insets = useSafeAreaInsets()
+  const listViewportWidth = Math.max(1, dimension.width - insets.left - insets.right)
 
   const navigation = useNavigation<ApppNavigationProp>()
   const isWeb = Platform.OS === "web"
@@ -97,7 +121,7 @@ export function BookViewer(props: BookViewerProps) {
           }}
           totalPages={pages[viewerHook.readingStyle].length}
           transitionPages={1}
-          style={{ ...styles.pageRoot, alignItems }}
+          style={{ ...styles.pageRoot, alignItems, width: renderProps.availableWidth }}
         >
           {props.renderPage(renderProps)}
         </PagePressable>
@@ -113,7 +137,7 @@ export function BookViewer(props: BookViewerProps) {
         const num = typeof item === "number" ? item : (item as FacingPageType).page1
         renderComp = (
           <Box
-            width={dimension.width}
+            width={listViewportWidth}
             height={dimension.height}
             style={useTransformInvert ? styles.scaleXInverted : undefined}
           >
@@ -122,6 +146,8 @@ export function BookViewer(props: BookViewerProps) {
               direction: "next",
               pageType: "singlePage",
               scrollIndex: index,
+              availableWidth: listViewportWidth,
+              availableHeight: dimension.height,
             })}
           </Box>
         )
@@ -131,16 +157,20 @@ export function BookViewer(props: BookViewerProps) {
           direction: viewerHook.pageDirection === "left" ? "next" : "previous",
           pageType: "leftPage",
           scrollIndex: index,
+          availableWidth: listViewportWidth / 2,
+          availableHeight: dimension.height,
         })
         const rightPage = renderPage({
           page: viewerHook.pageDirection === "left" ? item.page1 : item.page2,
           direction: viewerHook.pageDirection === "left" ? "previous" : "next",
           pageType: "rightPage",
           scrollIndex: index,
+          availableWidth: listViewportWidth / 2,
+          availableHeight: dimension.height,
         })
         renderComp = (
           <HStack
-            width={dimension.width}
+            width={listViewportWidth}
             height={dimension.height}
             style={useTransformInvert ? styles.scaleXInverted : undefined}
           >
@@ -152,11 +182,35 @@ export function BookViewer(props: BookViewerProps) {
 
       return renderComp
     },
-    [dimension.height, dimension.width, renderPage, useTransformInvert, viewerHook.pageDirection],
+    [dimension.height, listViewportWidth, renderPage, useTransformInvert, viewerHook.pageDirection],
   )
 
   const estimatedItemSize =
-    viewerHook.readingStyle === "verticalScroll" ? dimension.height : dimension.width
+    viewerHook.readingStyle === "verticalScroll" ? dimension.height : listViewportWidth
+  const flashListLayoutKey = `${viewerHook.readingStyle}:${viewerHook.pageDirection}:${listViewportWidth}x${dimension.height}`
+  const currentHorizontalLayoutKey =
+    viewerHook.readingStyle === "verticalScroll" ? undefined : flashListLayoutKey
+  const scheduleHorizontalRecenter = useCallback((index: number) => {
+    let secondFrame: number | undefined
+    const firstFrame = runOnNextFrame(() => {
+      secondFrame = runOnNextFrame(() => {
+        flashListRef.current?.scrollToIndex({ index, animated: false })
+      })
+    })
+
+    return () => {
+      cancelScheduledFrame(firstFrame)
+      if (secondFrame !== undefined) {
+        cancelScheduledFrame(secondFrame)
+      }
+    }
+  }, [])
+
+  useEffect(
+    () =>
+      !pages || !currentHorizontalLayoutKey ? undefined : scheduleHorizontalRecenter(scrollIndex),
+    [currentHorizontalLayoutKey, pages, scheduleHorizontalRecenter, scrollIndex],
+  )
 
   return (
     <GradientBackground
@@ -195,9 +249,10 @@ export function BookViewer(props: BookViewerProps) {
         }}
       />
       {pages ? (
-        <Box style={styles.viewerRoot}>
+        <Box style={styles.viewerRoot} alignSelf="center" width={listViewportWidth}>
           <FlashList<number | FacingPageType>
             data={data}
+            extraData={flashListLayoutKey}
             renderItem={renderItem}
             horizontal={viewerHook?.readingStyle !== "verticalScroll"}
             pagingEnabled={true}
@@ -210,7 +265,7 @@ export function BookViewer(props: BookViewerProps) {
               itemVisiblePercentThreshold: isWeb ? 95 : 100,
             }}
             estimatedItemSize={estimatedItemSize}
-            estimatedListSize={{ width: dimension.width, height: dimension.height }}
+            estimatedListSize={{ width: listViewportWidth, height: dimension.height }}
             overrideItemLayout={
               isWeb
                 ? undefined
@@ -252,6 +307,7 @@ const styles = StyleSheet.create({
   },
   pageRoot: {
     flex: 1,
+    justifyContent: "center",
     zIndex: 0,
   },
   viewerRoot: {

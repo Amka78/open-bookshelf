@@ -3,15 +3,29 @@ import { useStores } from "@/models"
 import type { LibraryMap } from "@/models/CalibreRootStore"
 import { type ClientSetting, ClientSettingModel } from "@/models/calibre"
 import type { Metadata } from "@/models/calibre"
-import type { AppStackParamList } from "@/navigators/types"
 import type { BookReadingStyleType } from "@/type/types"
-import { type RouteProp, useRoute } from "@react-navigation/native"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useModal } from "react-native-modalfy"
 import { useConvergence } from "../../hooks/useConvergence"
 
-type OrientationType = "vertical" | "horizontal"
-type ViewerScreenRouteProp = RouteProp<AppStackParamList, "Viewer">
+const runOnNextFrame = (callback: () => void) => {
+  if (typeof requestAnimationFrame === "function") {
+    return requestAnimationFrame(() => {
+      callback()
+    })
+  }
+
+  return setTimeout(callback, 0) as unknown as number
+}
+
+const cancelScheduledFrame = (id: number) => {
+  if (typeof cancelAnimationFrame === "function") {
+    cancelAnimationFrame(id)
+    return
+  }
+
+  clearTimeout(id)
+}
 
 export function useViewer() {
   const { calibreRootStore } = useStores()
@@ -20,22 +34,24 @@ export function useViewer() {
   const [showMenu, setShowMenu] = useState(false)
   const [initialPage, setInitialPage] = useState(0)
   const [viewerReady, setViewerReady] = useState(false)
-  const handledPromptKeyRef = useRef<string | undefined>()
-  const handledRatingPromptKeyRef = useRef<string | undefined>()
+  const handledPromptKeyRef = useRef<string | undefined>(undefined)
+  const handledRatingPromptKeyRef = useRef<string | undefined>(undefined)
 
   const convergenceHook = useConvergence()
 
   const orientation = convergenceHook.orientation
   const selectedLibrary = calibreRootStore.selectedLibrary
+  const selectedLibraryId = selectedLibrary?.id
   const selectedBook = selectedLibrary?.selectedBook
 
   // Reading history and format management
   const selectedFormat = selectedBook?.metaData.selectedFormat
-  const histories = selectedBook
-    ? calibreRootStore.readingHistories.filter((value) => {
-        return value.bookId === selectedBook.id && value.libraryId === selectedLibrary!.id
-      })
-    : []
+  const histories =
+    selectedBook && selectedLibraryId
+      ? calibreRootStore.readingHistories.filter((value) => {
+          return value.bookId === selectedBook.id && value.libraryId === selectedLibraryId
+        })
+      : []
 
   const history = selectedBook
     ? histories.find((value) => {
@@ -57,49 +73,56 @@ export function useViewer() {
   const totalPage = selectedBook ? cachedPathList?.length ?? selectedBook.path.length : 0
 
   // Create prompt key for resume reading logic
-  const promptKey = useMemo(() => {
-    if (!selectedBook || !selectedLibrary) {
-      return ""
-    }
-    return `${selectedLibrary.id}:${selectedBook.id}:${history?.format ?? ""}`
-  }, [history?.format, selectedBook?.id, selectedLibrary?.id])
+  const promptKey =
+    selectedBook && selectedLibrary
+      ? `${selectedLibrary.id}:${selectedBook.id}:${history?.format ?? ""}`
+      : ""
 
   // Handle resume reading prompt
   useEffect(() => {
-    if (!selectedBook || !selectedLibrary) {
-      return
-    }
+    let cleanup = () => {}
 
-    if (!history || history.currentPage <= 0) {
+    if (!selectedBook || !selectedLibrary) {
+    } else if (!history || history.currentPage <= 0) {
       handledPromptKeyRef.current = promptKey
       setInitialPage(0)
       setViewerReady(true)
-      return
-    }
-
-    if (handledPromptKeyRef.current === promptKey) {
+    } else if (handledPromptKeyRef.current === promptKey) {
       setViewerReady(true)
-      return
+    } else {
+      handledPromptKeyRef.current = promptKey
+      setViewerReady(false)
+
+      const resumePage = Math.max(0, Math.min(history.currentPage, Math.max(totalPage - 1, 0)))
+
+      let secondFrame: number | undefined
+      const firstFrame = runOnNextFrame(() => {
+        secondFrame = runOnNextFrame(() => {
+          modal.openModal("ConfirmModal", {
+            titleTx: "modal.resumeReadingConfirmModal.title",
+            messageTx: "modal.resumeReadingConfirmModal.message",
+            okTx: "common.yes",
+            cancelTx: "common.no",
+            onOKPress: () => {
+              setInitialPage(resumePage)
+              setViewerReady(true)
+            },
+            onCancelPress: () => {
+              setInitialPage(0)
+              setViewerReady(true)
+            },
+          })
+        })
+      })
+      cleanup = () => {
+        cancelScheduledFrame(firstFrame)
+        if (secondFrame !== undefined) {
+          cancelScheduledFrame(secondFrame)
+        }
+      }
     }
 
-    handledPromptKeyRef.current = promptKey
-    setViewerReady(false)
-
-    const resumePage = Math.max(0, Math.min(history.currentPage, Math.max(totalPage - 1, 0)))
-    modal.openModal("ConfirmModal", {
-      titleTx: "modal.resumeReadingConfirmModal.title",
-      messageTx: "modal.resumeReadingConfirmModal.message",
-      okTx: "common.yes",
-      cancelTx: "common.no",
-      onOKPress: () => {
-        setInitialPage(resumePage)
-        setViewerReady(true)
-      },
-      onCancelPress: () => {
-        setInitialPage(0)
-        setViewerReady(true)
-      },
-    })
+    return cleanup
   }, [history, modal, promptKey, totalPage, selectedBook, selectedLibrary])
 
   // Client setting management
