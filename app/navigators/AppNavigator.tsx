@@ -10,6 +10,8 @@ import type { AppStackParamList } from "./types"
 import { modalConfig } from "@/components/Modals/ModalConfig"
 import { cacheBookImages } from "@/utils/bookImageCache"
 import { ModalProvider, createModalStack } from "react-native-modalfy"
+
+const modalStack = createModalStack(modalConfig, {})
 import Config from "../config"
 import { useStores } from "../models"
 import { ReadingHistoryModel } from "../models/calibre"
@@ -241,8 +243,6 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
 
   useBackButtonHandler((routeName) => exitRoutes.includes(routeName))
 
-  const stack = createModalStack(modalConfig, {})
-
   useEffect(() => {
     if (!pendingViewerInfo || handlingViewerInfoRef.current) {
       return
@@ -414,7 +414,7 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
         }
       }}
     >
-      <ModalProvider stack={stack}>
+      <ModalProvider stack={modalStack}>
         <AppStack />
       </ModalProvider>
     </NavigationContainer>
