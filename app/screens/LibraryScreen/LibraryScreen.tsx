@@ -285,28 +285,7 @@ export const LibraryScreen: FC = observer(() => {
       if (!book?.metaData?.formats?.length) {
         return
       }
-
-      const runConvert = async (format: string) => {
-        try {
-          await book.convert(format, selectedLibrary.id, () => {})
-        } catch (e) {
-          modal.openModal("ErrorModal", {
-            message: e instanceof Error ? e.message : String(e),
-            titleTx: "errors.failedConvert",
-          })
-        }
-      }
-
-      if (book.metaData.formats.length > 1) {
-        modal.openModal("FormatSelectModal", {
-          formats: book.metaData.formats,
-          onSelectFormat: async (format) => {
-            await runConvert(format)
-          },
-        })
-      } else {
-        await runConvert(book.metaData.formats[0])
-      }
+      modal.openModal("BookConvertModal", {})
     }
 
     const onEditBook = () => {
