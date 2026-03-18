@@ -13,6 +13,7 @@ export const PDFViewerScreen = observer(() => {
   const {
     selectedBook,
     totalPages,
+    setTotalPages,
     documentFile,
     windowDimension,
     calculatePageWidth,
@@ -28,34 +29,34 @@ export const PDFViewerScreen = observer(() => {
 
     return (
       <View style={styles.page}>
-        <Document
-          file={documentFile}
+        <Page
+          pageNumber={renderProps.page + 1}
+          width={pageWidth}
+          renderAnnotationLayer={false}
+          renderTextLayer={false}
           loading={null}
-          error={null}
-          onLoadSuccess={({ numPages }) => {
-            if (!totalPages) {
-              pdfHook.setTotalPages(numPages)
-            }
-          }}
-        >
-          <Page
-            pageNumber={renderProps.page + 1}
-            width={pageWidth}
-            renderAnnotationLayer={false}
-            renderTextLayer={false}
-            loading={null}
-          />
-        </Document>
+        />
       </View>
     )
   }
 
   return (
-    <BookViewer
-      bookTitle={selectedBook.metaData.title}
-      renderPage={renderPage}
-      totalPage={totalPages ?? 1}
-    />
+    <Document
+      file={documentFile}
+      loading={null}
+      error={null}
+      onLoadSuccess={({ numPages }) => {
+        setTotalPages((prev) => {
+          return prev === numPages ? prev : numPages
+        })
+      }}
+    >
+      <BookViewer
+        bookTitle={selectedBook.metaData.title}
+        renderPage={renderPage}
+        totalPage={totalPages ?? 1}
+      />
+    </Document>
   )
 })
 

@@ -217,11 +217,20 @@ export function BookViewer(props: BookViewerProps) {
   const windowSize = isAndroidPdfMode ? 2 : isWeb ? 5 : 3
   const maxToRenderPerBatch = isAndroidPdfMode ? 1 : 2
   const drawDistance = isAndroidPdfMode ? estimatedItemSize : undefined
-  const scheduleHorizontalRecenter = useCallback((index: number) => {
+  const latestHorizontalIndexRef = useRef(scrollIndex)
+
+  useEffect(() => {
+    latestHorizontalIndexRef.current = scrollIndex
+  }, [scrollIndex])
+
+  const scheduleHorizontalRecenter = useCallback(() => {
     let secondFrame: number | undefined
     const firstFrame = runOnNextFrame(() => {
       secondFrame = runOnNextFrame(() => {
-        flashListRef.current?.scrollToIndex({ index, animated: false })
+        flashListRef.current?.scrollToIndex({
+          index: latestHorizontalIndexRef.current,
+          animated: false,
+        })
       })
     })
 
@@ -233,11 +242,13 @@ export function BookViewer(props: BookViewerProps) {
     }
   }, [])
 
-  useEffect(
-    () =>
-      !pages || !currentHorizontalLayoutKey ? undefined : scheduleHorizontalRecenter(scrollIndex),
-    [currentHorizontalLayoutKey, pages, scheduleHorizontalRecenter, scrollIndex],
-  )
+  useEffect(() => {
+    if (!pages || !currentHorizontalLayoutKey) {
+      return undefined
+    }
+
+    return scheduleHorizontalRecenter()
+  }, [currentHorizontalLayoutKey, pages, scheduleHorizontalRecenter])
 
   const onListScrollSettled = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -323,7 +334,7 @@ export function BookViewer(props: BookViewerProps) {
             onViewableItemsChanged={isHorizontalReading ? undefined : onViewableItemsChanged}
             onMomentumScrollEnd={isHorizontalReading ? onListScrollSettled : undefined}
             onScrollEndDrag={
-              isHorizontalReading && !isAndroidPdfMode ? onListScrollSettled : undefined
+              isHorizontalReading && !isAndroidPdfMode && !isWeb ? onListScrollSettled : undefined
             }
             viewabilityConfig={{
               itemVisiblePercentThreshold: isWeb ? 95 : 100,

@@ -24,7 +24,15 @@ export const PDFViewerScreen = observer(() => {
   }
 
   const onPageLoadComplete = useCallback(
-    (_numberOfPages: number, _path: string, size: { width: number; height: number }) => {
+    (numberOfPages: number, _path: string, size: { width: number; height: number }) => {
+      setTotalPages((prev) => {
+        if (prev === numberOfPages) {
+          return prev
+        }
+
+        return numberOfPages
+      })
+
       setSourcePageSize((prev) => {
         if (prev && prev.width === size.width && prev.height === size.height) {
           return prev
@@ -33,7 +41,7 @@ export const PDFViewerScreen = observer(() => {
         return { height: size.height, width: size.width }
       })
     },
-    [],
+    [setTotalPages],
   )
 
   const renderPage = useCallback(
@@ -80,22 +88,12 @@ export const PDFViewerScreen = observer(() => {
     ],
   )
 
-  return totalPages !== undefined ? (
+  return (
     <BookViewer
       bookTitle={selectedBook.metaData.title}
       renderPage={renderPage}
-      totalPage={totalPages}
+      totalPage={totalPages ?? 1}
       performanceMode={isAndroid ? "android-pdf" : "default"}
-    />
-  ) : (
-    <PDF
-      source={pdfSource}
-      style={styles.page}
-      onLoadComplete={(numberOfPages) => {
-        setTotalPages(numberOfPages)
-      }}
-      trustAllCerts={false}
-      enablePaging={true}
     />
   )
 })
