@@ -93,19 +93,12 @@ describe("useOpenViewer", () => {
     })
     setupStore({ selectedBook })
 
-    const onComplete = jest.fn()
     const { execute } = useOpenViewer()
 
-    await execute(createModal(), { onComplete })
+    await execute(createModal())
 
     expect(selectedBook.metaData.setProp).toHaveBeenCalledWith("selectedFormat", "PDF")
     expect(navigate).toHaveBeenCalledWith("PDFViewer")
-    expect(onComplete).toHaveBeenCalledWith({
-      route: "PDFViewer",
-      format: "PDF",
-      bookId: 1,
-      libraryId: "lib1",
-    })
   })
 
   test("navigates to Viewer when reading history exists", async () => {

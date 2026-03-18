@@ -217,38 +217,10 @@ export const LibraryScreen: FC = observer(() => {
 
     const imageUrl = encodeURI(api.getBookThumbnailUrl(item.id, selectedLibrary.id))
 
-    const openViewerInNewTab = (info: {
-      route: "Viewer" | "PDFViewer"
-      format: string
-      bookId: number
-      libraryId: string
-    }) => {
-      if (Platform.OS !== "web" || typeof globalThis === "undefined") {
-        return
-      }
-
-      const location = (globalThis as { location?: Location }).location
-      if (!location?.href) {
-        return
-      }
-
-      const url = new URL(location.href)
-      url.searchParams.set("viewerTab", info.route)
-      url.searchParams.set("viewerBookId", String(info.bookId))
-      url.searchParams.set("viewerLibraryId", info.libraryId)
-      url.searchParams.set("viewerFormat", info.format)
-      globalThis.open?.(url.toString(), "_blank", "noopener,noreferrer")
-    }
-
     const onLongPress = async () => {
       selectedLibrary.setBook(item.id)
       if (Platform.OS === "web") {
-        await openViewerHook.execute(modal, {
-          navigate: false,
-          onComplete: (info) => {
-            openViewerInNewTab(info)
-          },
-        })
+        await openViewerHook.execute(modal)
         return
       }
 

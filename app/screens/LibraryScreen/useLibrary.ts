@@ -1,15 +1,12 @@
 import { useConvergence } from "@/hooks/useConvergence"
 import { useStores } from "@/models"
-import type { ApppNavigationProp } from "@/navigators/types"
 import { api } from "@/services/api"
 import { logger } from "@/utils/logger"
-import { useNavigation } from "@react-navigation/native"
 import type { DocumentPickerAsset } from "expo-document-picker"
 import { useCallback, useEffect, useMemo, useState } from "react"
 export type LibraryViewStyle = "gridView" | "viewList"
 export function useLibrary() {
   const { calibreRootStore } = useStores()
-  const navigation = useNavigation<ApppNavigationProp>()
   const selectedLibrary = calibreRootStore.selectedLibrary
 
   const [searching, setSearching] = useState(false)
@@ -20,8 +17,6 @@ export function useLibrary() {
   )
 
   const convergenceHook = useConvergence()
-
-  const books = undefined
 
   const searchParameterCandidates = useMemo(() => {
     if (!selectedLibrary) {
