@@ -85,7 +85,7 @@ describe("OpdsRootStore test", () => {
   })
 
   afterAll(() => {
-    jest.useFakeTimers()
+    jest.useRealTimers()
   })
 
   test("initialize OPDS", async () => {

@@ -8,7 +8,7 @@ describe("CalibreRootStore test", () => {
   })
 
   afterAll(() => {
-    jest.useFakeTimers()
+    jest.useRealTimers()
   })
 
   test("Successful execution of Initialize", () => {

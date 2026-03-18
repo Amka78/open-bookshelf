@@ -89,7 +89,7 @@ describe("useLibrary", () => {
   })
 
   afterAll(() => {
-    jest.useFakeTimers()
+    jest.useRealTimers()
   })
 
   const renderUseLibrary = async () => {

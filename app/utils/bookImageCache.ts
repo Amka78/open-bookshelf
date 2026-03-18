@@ -1,5 +1,5 @@
-import * as FileSystem from "expo-file-system"
 import { api } from "@/services/api"
+import * as FileSystem from "expo-file-system"
 
 type CacheBookImagesInput = {
   bookId: number
@@ -9,6 +9,14 @@ type CacheBookImagesInput = {
   size: number
   hash: number
   pathList: string[]
+  headers?: Record<string, string>
+}
+
+type CacheBookFileInput = {
+  bookId: number
+  format: string
+  libraryId: string
+  baseUrl: string
   headers?: Record<string, string>
 }
 
@@ -24,6 +32,11 @@ const getBookImageCacheDir = (bookId: number, format: string) => {
   return `${CACHE_ROOT}book-images/${bookId}/${format}/`
 }
 
+const getBookFileCacheDir = (bookId: number, format: string) => {
+  if (!CACHE_ROOT) return null
+  return `${CACHE_ROOT}book-files/${bookId}/${format}/`
+}
+
 export const buildBookImageUrl = (
   baseUrl: string,
   bookId: number,
@@ -34,6 +47,15 @@ export const buildBookImageUrl = (
   libraryId: string,
 ) => {
   return api.getBookFileUrl(bookId, format, size, hash, path, libraryId, baseUrl)
+}
+
+export const buildBookDownloadUrl = (
+  baseUrl: string,
+  format: string,
+  bookId: number,
+  libraryId: string,
+) => {
+  return `${baseUrl}/get/${encodeURIComponent(format)}/${bookId}/${libraryId}`
 }
 
 export const isRemoteBookImagePath = (path?: string) => {
@@ -89,6 +111,32 @@ export async function cacheBookImages(input: CacheBookImagesInput): Promise<stri
   )
 
   return cachedList
+}
+
+export async function cacheBookFile(input: CacheBookFileInput): Promise<string> {
+  const downloadUrl = buildBookDownloadUrl(
+    input.baseUrl,
+    input.format,
+    input.bookId,
+    input.libraryId,
+  )
+
+  const cacheDir = getBookFileCacheDir(input.bookId, input.format)
+  if (!cacheDir) {
+    return downloadUrl
+  }
+
+  await FileSystem.makeDirectoryAsync(cacheDir, { intermediates: true })
+
+  const targetPath = `${cacheDir}${input.bookId}.${input.format.toLowerCase()}`
+  const info = await FileSystem.getInfoAsync(targetPath)
+  if (!info.exists) {
+    await FileSystem.downloadAsync(downloadUrl, targetPath, {
+      headers: input.headers,
+    })
+  }
+
+  return targetPath
 }
 
 export async function deleteCachedBookImages(pathList: string[]): Promise<void> {

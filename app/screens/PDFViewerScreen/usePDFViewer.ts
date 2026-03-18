@@ -1,14 +1,26 @@
 import { useStores } from "@/models"
 import { api } from "@/services/api"
 import { useMemo, useState } from "react"
-import { useWindowDimensions } from "react-native"
+import { Platform, useWindowDimensions } from "react-native"
 
 export function usePDFViewer() {
   const { authenticationStore, calibreRootStore } = useStores()
   const [totalPages, setTotalPages] = useState<number | undefined>(undefined)
 
-  const selectedBook = calibreRootStore.selectedLibrary?.selectedBook
+  const selectedLibrary = calibreRootStore.selectedLibrary
+  const selectedBook = selectedLibrary?.selectedBook
   const windowDimension = useWindowDimensions()
+
+  const cachedPdfPath = selectedLibrary
+    ? calibreRootStore.readingHistories.find((history) => {
+        return (
+          history.libraryId === selectedLibrary.id &&
+          history.bookId === selectedBook?.id &&
+          history.format === "PDF" &&
+          history.cachedPath.length > 0
+        )
+      })?.cachedPath[0]
+    : undefined
 
   // Create authentication header
   const header: Record<string, string> | undefined = useMemo(() => {
@@ -20,9 +32,14 @@ export function usePDFViewer() {
 
   // Get PDF source URL
   const sourceUri = useMemo(() => {
-    if (!selectedBook) return ""
-    return api.getInlineBookUrl("PDF", selectedBook.id)
-  }, [selectedBook])
+    if (!selectedBook || !selectedLibrary) return ""
+
+    if (Platform.OS !== "web" && cachedPdfPath) {
+      return cachedPdfPath
+    }
+
+    return api.getInlineBookUrl("PDF", selectedBook.id, selectedLibrary.id)
+  }, [cachedPdfPath, selectedBook, selectedLibrary])
 
   // Create document file object for react-pdf (web)
   const documentFile = useMemo(

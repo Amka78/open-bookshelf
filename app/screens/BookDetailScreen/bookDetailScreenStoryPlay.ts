@@ -1,10 +1,9 @@
-import { userEvent, within } from "@storybook/testing-library"
-
 async function clickByTestId(canvasElement: HTMLElement, testId: string) {
-  const canvas = within(canvasElement)
-  const button = await canvas.findByTestId(testId)
-
-  await userEvent.click(button)
+  const button = canvasElement.querySelector(`[data-testid="${testId}"]`)
+  if (!button || typeof (button as { click?: unknown }).click !== "function") {
+    throw new Error(`Element with data-testid='${testId}' was not found.`)
+  }
+  ;(button as { click: () => void }).click()
 }
 
 export async function playBookDetailOpenAction({

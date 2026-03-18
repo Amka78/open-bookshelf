@@ -33,6 +33,8 @@ type ReadingHistoryEntry = {
   libraryId: string
   bookId: number
   format: string
+  cachedPath?: string[]
+  setCachePath?: jest.Mock
 }
 
 describe("useOpenViewer", () => {
@@ -91,13 +93,72 @@ describe("useOpenViewer", () => {
         setProp: jest.fn(),
       },
     })
-    setupStore({ selectedBook })
+    const addReadingHistory = jest.fn()
+    setupStore({ selectedBook, addReadingHistory })
+
+    jest.spyOn(bookImageCache, "cacheBookFile").mockResolvedValue("cache/book.pdf")
+    jest.spyOn(ReadingHistoryModel, "create").mockReturnValue({ history: true } as never)
 
     const { execute } = useOpenViewer()
 
     await execute(createModal())
 
     expect(selectedBook.metaData.setProp).toHaveBeenCalledWith("selectedFormat", "PDF")
+    expect(bookImageCache.cacheBookFile).toHaveBeenCalledWith(
+      expect.objectContaining({
+        bookId: 1,
+        format: "PDF",
+        libraryId: "lib1",
+      }),
+    )
+    expect(ReadingHistoryModel.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        bookId: 1,
+        libraryId: "lib1",
+        format: "PDF",
+        currentPage: 0,
+        cachedPath: ["cache/book.pdf"],
+      }),
+    )
+    expect(addReadingHistory).toHaveBeenCalledWith({ history: true })
+    expect(navigate).toHaveBeenCalledWith("PDFViewer")
+  })
+
+  test("updates cached path when PDF history already exists", async () => {
+    const navigate = jest.fn()
+    ;(useNavigation as jest.Mock).mockReturnValue({ navigate })
+
+    const selectedBook = createSelectedBook({
+      metaData: {
+        formats: ["PDF"],
+        size: 100,
+        setProp: jest.fn(),
+      },
+    })
+
+    const setCachePath = jest.fn()
+    setupStore({
+      selectedBook,
+      readingHistories: [
+        {
+          libraryId: "lib1",
+          bookId: 1,
+          format: "PDF",
+          cachedPath: [],
+          setCachePath,
+        },
+      ],
+    })
+
+    jest.spyOn(bookImageCache, "cacheBookFile").mockResolvedValue("cache/book.pdf")
+
+    const createSpy = jest.spyOn(ReadingHistoryModel, "create")
+    const { execute } = useOpenViewer()
+
+    await execute(createModal())
+
+    expect(setCachePath).toHaveBeenCalledWith(["cache/book.pdf"])
+    expect(createSpy).not.toHaveBeenCalled()
     expect(navigate).toHaveBeenCalledWith("PDFViewer")
   })
 

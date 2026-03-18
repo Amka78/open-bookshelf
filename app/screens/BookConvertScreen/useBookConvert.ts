@@ -34,7 +34,7 @@ export function useBookConvert() {
     setErrorMessage(null)
 
     try {
-      await selectedBook.convert(values.outputFormat, selectedLibrary.id, () => {}, values)
+      await selectedBook.convert(values.outputFormat, selectedLibrary.id, async () => {}, values)
       setConvertStatus("success")
     } catch (e) {
       setConvertStatus("error")

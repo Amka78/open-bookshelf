@@ -76,7 +76,7 @@ describe("useViewer", () => {
   })
 
   afterAll(() => {
-    jest.useFakeTimers()
+    jest.useRealTimers()
   })
 
   test("initializes with default values", () => {

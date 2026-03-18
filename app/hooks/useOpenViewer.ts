@@ -2,7 +2,7 @@ import type { ModalStackParams } from "@/components/Modals/Types"
 import { useStores } from "@/models"
 import { type Book, ReadingHistoryModel } from "@/models/calibre"
 import type { ApppNavigationProp } from "@/navigators/types"
-import { cacheBookImages } from "@/utils/bookImageCache"
+import { cacheBookFile, cacheBookImages } from "@/utils/bookImageCache"
 import { useNavigation } from "@react-navigation/native"
 import type { UsableModalProp } from "react-native-modalfy"
 
@@ -17,53 +17,78 @@ export function useOpenViewer() {
     modal: UsableModalProp<ModalStackParams>,
   ) => {
     book.metaData.setProp("selectedFormat", format)
-    if (format === "PDF") {
-      navigation.navigate("PDFViewer")
-    } else {
-      try {
-        const history = calibreRootStore.readingHistories.find((value) => {
-          return (
-            value.libraryId === selectedLibraryId &&
-            value.bookId === book.id &&
-            value.format === format
-          )
+    try {
+      const history = calibreRootStore.readingHistories.find((value) => {
+        return (
+          value.libraryId === selectedLibraryId &&
+          value.bookId === book.id &&
+          value.format === format
+        )
+      })
+
+      if (format === "PDF") {
+        const cachedPdfPath = await cacheBookFile({
+          bookId: book.id,
+          format,
+          libraryId: selectedLibraryId,
+          baseUrl: settingStore.api.baseUrl,
+          headers: authenticationStore.getHeader(),
         })
-        console.log("history", history)
 
         if (history) {
-          navigation.navigate("Viewer")
+          if (history.cachedPath.length !== 1 || history.cachedPath[0] !== cachedPdfPath) {
+            history.setCachePath([cachedPdfPath])
+          }
         } else {
-          await book.convert(format, selectedLibraryId, async () => {
-            const size = book.metaData?.size ?? 0
-            const hash = book.hash ?? 0
-            const bookImageList = await cacheBookImages({
-              bookId: book.id,
-              format,
-              libraryId: calibreRootStore.selectedLibrary.id,
-              baseUrl: settingStore.api.baseUrl,
-              size,
-              hash,
-              pathList: book.path.slice(),
-              headers: authenticationStore.getHeader(),
-            })
-
-            const historyModel = ReadingHistoryModel.create({
-              bookId: book.id,
-              currentPage: 0,
-              libraryId: selectedLibraryId,
-              cachedPath: bookImageList,
-              format: format,
-            })
-            calibreRootStore.addReadingHistory(historyModel)
-            navigation.navigate("Viewer")
+          const historyModel = ReadingHistoryModel.create({
+            bookId: book.id,
+            currentPage: 0,
+            libraryId: selectedLibraryId,
+            cachedPath: [cachedPdfPath],
+            format: format,
           })
+          calibreRootStore.addReadingHistory(historyModel)
         }
-      } catch (e) {
-        modal.openModal("ErrorModal", {
-          message: e.message,
-          titleTx: "errors.failedConvert",
+
+        navigation.navigate("PDFViewer")
+        return
+      }
+
+      console.log("history", history)
+
+      if (history) {
+        navigation.navigate("Viewer")
+      } else {
+        await book.convert(format, selectedLibraryId, async () => {
+          const size = book.metaData?.size ?? 0
+          const hash = book.hash ?? 0
+          const bookImageList = await cacheBookImages({
+            bookId: book.id,
+            format,
+            libraryId: calibreRootStore.selectedLibrary.id,
+            baseUrl: settingStore.api.baseUrl,
+            size,
+            hash,
+            pathList: book.path.slice(),
+            headers: authenticationStore.getHeader(),
+          })
+
+          const historyModel = ReadingHistoryModel.create({
+            bookId: book.id,
+            currentPage: 0,
+            libraryId: selectedLibraryId,
+            cachedPath: bookImageList,
+            format: format,
+          })
+          calibreRootStore.addReadingHistory(historyModel)
+          navigation.navigate("Viewer")
         })
       }
+    } catch (e) {
+      modal.openModal("ErrorModal", {
+        message: e.message,
+        titleTx: "errors.failedConvert",
+      })
     }
   }
   const execute = async (modal: UsableModalProp<ModalStackParams>) => {

@@ -42,7 +42,7 @@ describe("useODSRoot", () => {
   })
 
   afterAll(() => {
-    jest.useFakeTimers()
+    jest.useRealTimers()
   })
 
   beforeEach(() => {

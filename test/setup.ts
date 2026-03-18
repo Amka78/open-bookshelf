@@ -185,12 +185,20 @@ mock.module("react-native", () => ({
     removeEventListener: jest.fn(),
     exitApp: jest.fn(),
   },
+  StatusBar: {
+    currentHeight: 24,
+    setBarStyle: jest.fn(),
+    setHidden: jest.fn(),
+    setBackgroundColor: jest.fn(),
+    setTranslucent: jest.fn(),
+  },
   NativeModules: {},
   NativeEventEmitter: jest.fn().mockImplementation(() => ({
     addListener: jest.fn(),
     removeListener: jest.fn(),
     removeAllListeners: jest.fn(),
   })),
+  findNodeHandle: jest.fn(() => null),
   TurboModuleRegistry: {
     get: jest.fn(() => null),
     getEnforcing: jest.fn(() => ({})),
@@ -236,6 +244,15 @@ mock.module("expo-constants", () => ({
     manifest: {},
     platform: {},
   },
+}))
+
+mock.module("react-native-webview", () => ({
+  WebView: "WebView",
+}))
+
+mock.module("react-native/Libraries/Utilities/codegenNativeComponent", () => ({
+  __esModule: true,
+  default: () => "MockNativeComponent",
 }))
 
 mock.module("@react-native-async-storage/async-storage", () => {

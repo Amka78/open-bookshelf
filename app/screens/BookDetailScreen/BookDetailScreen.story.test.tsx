@@ -1,11 +1,11 @@
 import {
+  describe as baseDescribe,
+  test as baseTest,
   beforeAll,
   beforeEach,
-  describe as baseDescribe,
   expect,
   jest,
   mock,
-  test as baseTest,
 } from "bun:test"
 import { useStores } from "@/models"
 import { useNavigation, useRoute } from "@react-navigation/native"
@@ -85,6 +85,7 @@ mock.module("@/components", () => ({
 let BookDetailScreen: typeof import("./BookDetailScreen").BookDetailScreen
 
 beforeAll(async () => {
+  jest.useRealTimers()
   ;({ BookDetailScreen } = await import("./BookDetailScreen"))
 })
 
@@ -103,6 +104,7 @@ describe("BookDetailScreen story play", () => {
   const mockDeleteBookExecute = jest.fn()
 
   beforeEach(() => {
+    jest.useRealTimers()
     jest.clearAllMocks()
     ;(useStores as jest.Mock).mockReturnValue({
       calibreRootStore: {
