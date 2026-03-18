@@ -1,6 +1,6 @@
 import { HStack, IconButton, Text, VStack } from "@/components"
-import { goToNextPage, goToPreviousPage } from "@/utils/pageTurnning"
 import { usePalette } from "@/theme"
+import { goToNextPage, goToPreviousPage } from "@/utils/pageTurnning"
 import { Slider, SliderFilledTrack, SliderThumb, SliderTrack, styled } from "@gluestack-ui/themed"
 
 export type PageManagerProps = {
@@ -115,6 +115,7 @@ export const PageManager = styled(PageManagerCore, {
         right: 0,
         bottom: 0,
         width: "$full",
+        zIndex: 1,
       },
       free: {
         width: "$full",

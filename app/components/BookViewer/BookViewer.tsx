@@ -217,6 +217,10 @@ export function BookViewer(props: BookViewerProps) {
   const windowSize = isAndroidPdfMode ? 2 : isWeb ? 5 : 3
   const maxToRenderPerBatch = isAndroidPdfMode ? 1 : 2
   const drawDistance = isAndroidPdfMode ? estimatedItemSize : undefined
+  const webViewportStyle = isWeb
+    ? ({ height: dimension.height, maxHeight: dimension.height } as const)
+    : undefined
+  const listContainerStyle = useTransformInvert ? styles.listInverted : styles.list
   const latestHorizontalIndexRef = useRef(scrollIndex)
 
   useEffect(() => {
@@ -287,7 +291,7 @@ export function BookViewer(props: BookViewerProps) {
       colors={palette.gradient}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
-      style={styles.viewerGradient}
+      style={[styles.viewerGradient, webViewportStyle]}
     >
       <ViewerHeader
         title={props.bookTitle}
@@ -319,42 +323,47 @@ export function BookViewer(props: BookViewerProps) {
         }}
       />
       {pages ? (
-        <Box style={styles.viewerRoot} alignSelf="center" width={listViewportWidth}>
-          <FlashList<number | FacingPageType>
-            key={flashListAxisKey}
-            data={data}
-            extraData={flashListLayoutKey}
-            renderItem={renderItem}
-            horizontal={isHorizontalReading}
-            pagingEnabled={isHorizontalReading}
-            inverted={isInverted && !useTransformInvert}
-            style={useTransformInvert ? styles.scaleXInverted : undefined}
-            ref={flashListRef}
-            keyExtractor={(_, index) => `${index}`}
-            onViewableItemsChanged={isHorizontalReading ? undefined : onViewableItemsChanged}
-            onMomentumScrollEnd={isHorizontalReading ? onListScrollSettled : undefined}
-            onScrollEndDrag={
-              isHorizontalReading && !isAndroidPdfMode && !isWeb ? onListScrollSettled : undefined
-            }
-            viewabilityConfig={{
-              itemVisiblePercentThreshold: isWeb ? 95 : 100,
-            }}
-            estimatedItemSize={estimatedItemSize}
-            estimatedListSize={{ width: listViewportWidth, height: dimension.height }}
-            drawDistance={drawDistance}
-            overrideItemLayout={
-              !useFixedItemLayout
-                ? undefined
-                : (layout, _, index) => {
-                    layout.size = estimatedItemSize
-                    layout.offset = estimatedItemSize * index
-                  }
-            }
-            removeClippedSubviews={useFixedItemLayout}
-            windowSize={windowSize}
-            initialNumToRender={1}
-            maxToRenderPerBatch={maxToRenderPerBatch}
-          />
+        <Box
+          style={[styles.viewerRoot, webViewportStyle]}
+          alignSelf="center"
+          width={listViewportWidth}
+        >
+          <Box style={listContainerStyle}>
+            <FlashList<number | FacingPageType>
+              key={flashListAxisKey}
+              data={data}
+              extraData={flashListLayoutKey}
+              renderItem={renderItem}
+              horizontal={isHorizontalReading}
+              pagingEnabled={isHorizontalReading}
+              inverted={isInverted && !useTransformInvert}
+              ref={flashListRef}
+              keyExtractor={(_, index) => `${index}`}
+              onViewableItemsChanged={isHorizontalReading ? undefined : onViewableItemsChanged}
+              onMomentumScrollEnd={isHorizontalReading ? onListScrollSettled : undefined}
+              onScrollEndDrag={
+                isHorizontalReading && !isAndroidPdfMode && !isWeb ? onListScrollSettled : undefined
+              }
+              viewabilityConfig={{
+                itemVisiblePercentThreshold: isWeb ? 95 : 100,
+              }}
+              estimatedItemSize={estimatedItemSize}
+              estimatedListSize={{ width: listViewportWidth, height: dimension.height }}
+              drawDistance={drawDistance}
+              overrideItemLayout={
+                !useFixedItemLayout
+                  ? undefined
+                  : (layout, _, index) => {
+                      layout.size = estimatedItemSize
+                      layout.offset = estimatedItemSize * index
+                    }
+              }
+              removeClippedSubviews={useFixedItemLayout}
+              windowSize={windowSize}
+              initialNumToRender={1}
+              maxToRenderPerBatch={maxToRenderPerBatch}
+            />
+          </Box>
         </Box>
       ) : null}
       <PageManager
@@ -391,6 +400,13 @@ const styles = StyleSheet.create({
   },
   viewerRoot: {
     flex: 1,
+  },
+  list: {
+    flex: 1,
+  },
+  listInverted: {
+    flex: 1,
+    transform: [{ scaleX: -1 }],
   },
   scaleXInverted: {
     transform: [{ scaleX: -1 }],
