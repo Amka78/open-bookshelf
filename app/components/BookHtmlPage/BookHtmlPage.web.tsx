@@ -1,9 +1,12 @@
 import { Text } from "@/components"
+import { usePalette } from "@/theme"
 import { logger } from "@/utils/logger"
 import React, { useEffect, useMemo, useState, type CSSProperties } from "react"
-import { ActivityIndicator } from "react-native"
+import { ActivityIndicator, useColorScheme } from "react-native"
 import {
   type BookHtmlPageProps,
+  calibreHtmlPageInteractionMessageType,
+  calibreHtmlPageLongPressAction,
   calibreHtmlPageSizeMessageType,
   useCalibreHtmlDocument,
 } from "./shared"
@@ -11,8 +14,17 @@ import {
 const FALLBACK_AUTO_HEIGHT = 320
 
 export function BookHtmlPage(props: BookHtmlPageProps) {
-  const { autoHeight, documentKey, error, html, loading } = useCalibreHtmlDocument(props)
+  const palette = usePalette()
+  const colorScheme = useColorScheme()
+  const { autoHeight, documentKey, error, html, loading } = useCalibreHtmlDocument({
+    ...props,
+    themeMode: colorScheme === "dark" ? "dark" : "light",
+    themeTextColor: palette.textPrimary,
+    themeLinkColor: palette.textPrimary,
+    themeFallbackBackgroundColor: palette.bg0,
+  })
   const [contentHeight, setContentHeight] = useState(FALLBACK_AUTO_HEIGHT)
+  const { onLongPress } = props
 
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
@@ -28,6 +40,15 @@ export function BookHtmlPage(props: BookHtmlPageProps) {
           typeof payload?.height === "number"
         ) {
           setContentHeight(Math.max(1, Math.ceil(payload.height)))
+          return
+        }
+
+        if (
+          payload?.type === calibreHtmlPageInteractionMessageType &&
+          payload?.key === documentKey &&
+          payload?.action === calibreHtmlPageLongPressAction
+        ) {
+          onLongPress?.()
         }
       } catch {
         // Ignore unrelated messages.
@@ -38,7 +59,7 @@ export function BookHtmlPage(props: BookHtmlPageProps) {
     return () => {
       window.removeEventListener("message", onMessage)
     }
-  }, [documentKey])
+  }, [documentKey, onLongPress])
 
   const height = autoHeight ? Math.max(contentHeight, 1) : props.availableHeight ?? 1
 

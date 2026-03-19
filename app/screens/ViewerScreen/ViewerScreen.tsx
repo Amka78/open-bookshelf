@@ -46,12 +46,6 @@ export const ViewerScreen: FC = observer(() => {
     const sourcePagePath = selectedBook.path[props.page]
 
     if (isCalibreSerializedHtmlPath(sourcePagePath)) {
-      logger.debug("BookHtmlPage Rendering", {
-        page: props.page,
-        initialPage,
-        totalPage,
-        cachedPathList,
-      })
       return (
         <BookHtmlPage
           availableWidth={props.availableWidth}
@@ -61,6 +55,7 @@ export const ViewerScreen: FC = observer(() => {
           hash={selectedBook.hash ?? 0}
           headers={authenticationStore.getHeader()}
           libraryId={selectedLibrary.id}
+          onLongPress={props.onLongPress}
           pagePath={sourcePagePath}
           size={selectedBook.metaData.formatSizes.get(selectedBook.metaData.selectedFormat) ?? 0}
         />

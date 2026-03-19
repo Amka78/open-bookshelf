@@ -1,9 +1,12 @@
 import { Text } from "@/components"
+import { usePalette } from "@/theme"
 import React, { useMemo, useState } from "react"
-import { ActivityIndicator, StyleSheet, View, type ViewStyle } from "react-native"
+import { ActivityIndicator, StyleSheet, View, type ViewStyle, useColorScheme } from "react-native"
 import { WebView } from "react-native-webview"
 import {
   type BookHtmlPageProps,
+  calibreHtmlPageInteractionMessageType,
+  calibreHtmlPageLongPressAction,
   calibreHtmlPageSizeMessageType,
   useCalibreHtmlDocument,
 } from "./shared"
@@ -11,7 +14,15 @@ import {
 const FALLBACK_AUTO_HEIGHT = 320
 
 export function BookHtmlPage(props: BookHtmlPageProps) {
-  const { autoHeight, documentKey, error, html, loading } = useCalibreHtmlDocument(props)
+  const palette = usePalette()
+  const colorScheme = useColorScheme()
+  const { autoHeight, documentKey, error, html, loading } = useCalibreHtmlDocument({
+    ...props,
+    themeMode: colorScheme === "dark" ? "dark" : "light",
+    themeTextColor: palette.textPrimary,
+    themeLinkColor: palette.textPrimary,
+    themeFallbackBackgroundColor: palette.bg0,
+  })
   const [contentHeight, setContentHeight] = useState(FALLBACK_AUTO_HEIGHT)
 
   const height = autoHeight ? Math.max(contentHeight, 1) : props.availableHeight ?? 1
@@ -63,6 +74,15 @@ export function BookHtmlPage(props: BookHtmlPageProps) {
               typeof data?.height === "number"
             ) {
               setContentHeight(Math.max(1, Math.ceil(data.height)))
+              return
+            }
+
+            if (
+              data?.type === calibreHtmlPageInteractionMessageType &&
+              data?.key === documentKey &&
+              data?.action === calibreHtmlPageLongPressAction
+            ) {
+              props.onLongPress?.()
             }
           } catch {
             // Ignore non-size messages.

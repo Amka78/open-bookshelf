@@ -51,6 +51,7 @@ export type RenderPageProps = {
   scrollIndex: number
   availableWidth: number
   availableHeight?: number
+  onLongPress?: () => void
 }
 export type BookViewerProps = {
   totalPage: number
@@ -108,6 +109,11 @@ export function BookViewer(props: BookViewerProps) {
 
   const renderPage = useCallback(
     (renderProps: RenderPageProps) => {
+      const pageProps = {
+        ...renderProps,
+        onLongPress: viewerHook.onManageMenu,
+      }
+
       let alignItems: FlexAlignType = "center"
 
       switch (renderProps.pageType) {
@@ -122,14 +128,6 @@ export function BookViewer(props: BookViewerProps) {
           break
       }
 
-      console.log("Rendering page", {
-        page: renderProps.page,
-        direction: renderProps.direction,
-        pageType: renderProps.pageType,
-        scrollIndex: renderProps.scrollIndex,
-        availableWidth: renderProps.availableWidth,
-        availableHeight: renderProps.availableHeight,
-      })
       return (
         <PagePressable
           currentPage={renderProps.scrollIndex}
@@ -148,7 +146,7 @@ export function BookViewer(props: BookViewerProps) {
             width: renderProps.availableWidth,
           }}
         >
-          {props.renderPage(renderProps)}
+          {props.renderPage(pageProps)}
         </PagePressable>
       )
     },
