@@ -3,6 +3,7 @@ import { useStores } from "@/models"
 import { type Book, ReadingHistoryModel } from "@/models/calibre"
 import type { ApppNavigationProp } from "@/navigators/types"
 import { cacheBookFile, cacheBookImages } from "@/utils/bookImageCache"
+import { isCalibreHtmlViewerFormat } from "@/utils/calibreHtmlViewer"
 import { useNavigation } from "@react-navigation/native"
 import type { UsableModalProp } from "react-native-modalfy"
 
@@ -60,18 +61,20 @@ export function useOpenViewer() {
         navigation.navigate("Viewer")
       } else {
         await book.convert(format, selectedLibraryId, async () => {
-          const size = book.metaData?.size ?? 0
+          const size = book.metaData?.formatSizes.get(format) ?? 0
           const hash = book.hash ?? 0
-          const bookImageList = await cacheBookImages({
-            bookId: book.id,
-            format,
-            libraryId: calibreRootStore.selectedLibrary.id,
-            baseUrl: settingStore.api.baseUrl,
-            size,
-            hash,
-            pathList: book.path.slice(),
-            headers: authenticationStore.getHeader(),
-          })
+          const bookImageList = isCalibreHtmlViewerFormat(format)
+            ? book.path.slice()
+            : await cacheBookImages({
+                bookId: book.id,
+                format,
+                libraryId: calibreRootStore.selectedLibrary.id,
+                baseUrl: settingStore.api.baseUrl,
+                size,
+                hash,
+                pathList: book.path.slice(),
+                headers: authenticationStore.getHeader(),
+              })
 
           const historyModel = ReadingHistoryModel.create({
             bookId: book.id,

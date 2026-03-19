@@ -1,0 +1,26 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "exclude": [
+    ".expo",
+    ".storybook",
+    ".tsbuild",
+    "android",
+    "assets",
+    "bin",
+    "detox",
+    "dist",
+    "ignite",
+    "ios",
+    "node_modules",
+    "bun.lockb",
+    ".git",
+    "app/**/*.stories.tsx",
+    "app/**/*.test.ts",
+    "app/**/*.test.tsx",
+    "test"
+  ],
+  "include": ["App.tsx", "app.config.ts", "app", "plugins"]
+}

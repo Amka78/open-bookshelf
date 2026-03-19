@@ -7,14 +7,17 @@ import {
   types,
 } from "mobx-state-tree"
 
-import { camelCaseToLowerCase, lowerCaseToCamelCase } from "@/utils/convert"
 import type { ConvertOptions } from "@/components/BookConvertForm/ConvertOptions"
+import { isCalibreHtmlViewerFormat } from "@/utils/calibreHtmlViewer"
+import { camelCaseToLowerCase, lowerCaseToCamelCase } from "@/utils/convert"
 import { convertOptionsToParams } from "@/utils/convertOptionsToParams"
 import { delay } from "@/utils/delay"
 import { type ApiBookManifestResultType, type CommonFieldName, api } from "../../services/api"
 import { type Metadata, MetadataModel, type ReadingHistory } from "../calibre"
 import { handleCommonApiError } from "../errors/errors"
 import { withSetPropAction } from "../helpers/withSetPropAction"
+
+type BookConvertResponse = Awaited<ReturnType<typeof api.CheckBookConverting>>
 
 function normalizeUpdateFieldValue(field: string, value: unknown) {
   if (field === "seriesIndex") {
@@ -31,6 +34,24 @@ function normalizeUpdateFieldValue(field: string, value: unknown) {
   }
 
   return value
+}
+
+function shouldUseHtmlViewer(requestedFormat: string, manifest: ApiBookManifestResultType) {
+  return (
+    isCalibreHtmlViewerFormat(requestedFormat) || isCalibreHtmlViewerFormat(manifest.book_format)
+  )
+}
+
+function isConvertManifestResponse(
+  response: BookConvertResponse,
+): response is { kind: "ok"; data: ApiBookManifestResultType } {
+  return response.kind === "ok" && "files" in response.data
+}
+
+function isConvertJobStatusResponse(
+  response: BookConvertResponse,
+): response is { kind: "ok"; data: { job_status: "waiting" | "finished"; traceback?: string } } {
+  return response.kind === "ok" && "job_status" in response.data
 }
 
 export const BookModel = types
@@ -53,8 +74,8 @@ export const BookModel = types
       convertOptions?: ConvertOptions,
     ) {
       const convertParams = convertOptions ? convertOptionsToParams(convertOptions) : undefined
-      let response
-      while (response?.data?.files === undefined) {
+      let response: BookConvertResponse | undefined
+      while (!response || !isConvertManifestResponse(response)) {
         response = yield api.CheckBookConverting(libraryId, root.id, format, convertParams)
 
         if (response.kind !== "ok") {
@@ -62,7 +83,7 @@ export const BookModel = types
             throw new Error(response.message)
           }
           handleCommonApiError(response)
-        } else if ("job_status" in response.data) {
+        } else if (isConvertJobStatusResponse(response)) {
           if (response.data.job_status === "finished") {
             if (response.data.traceback) {
               throw new Error(response.data.traceback)
@@ -77,12 +98,14 @@ export const BookModel = types
 
       const result: ApiBookManifestResultType = response.data
 
-      if (result.book_format !== "KF8") {
+      if (shouldUseHtmlViewer(format, result)) {
+        pathList.push(...result.spine)
+      } else if (result.book_format !== "KF8") {
         const spineResponse = yield api.getLibraryInformation(
           libraryId,
           root.id,
           result.book_format,
-          root.metaData.size,
+          root.metaData?.size ?? 0,
           result.book_hash.mtime,
           result.spine[0],
         )
@@ -97,8 +120,8 @@ export const BookModel = types
           })
         }
 
-        if (response.data.book_format === "EPUB") {
-          Object.values(response.data.spine).forEach((value: string, index) => {
+        if (result.book_format === "EPUB") {
+          Object.values(result.spine).forEach((value: string, index) => {
             if (index !== 0) {
               const pagePath = value
                 .replace(".xhtml", ".jpg")
@@ -107,13 +130,13 @@ export const BookModel = types
 
               const prefixImagePath = pagePath.replace("p", "i")
 
-              if (response.data.files[prefixImagePath]) {
+              if (result.files[prefixImagePath]) {
                 pathList.push(prefixImagePath)
                 return
               }
 
               const numberOnlyPath = pagePath.replace("p-", "")
-              if (response.data.files[numberOnlyPath]) {
+              if (result.files[numberOnlyPath]) {
                 pathList.push(numberOnlyPath)
                 return
               }
@@ -122,18 +145,22 @@ export const BookModel = types
           })
         }
       } else {
-        for (const value of Object.values(response.data.spine)) {
+        for (const value of Object.values(result.spine)) {
           pathList.push(value)
         }
       }
 
       root.setProp("path", pathList)
-      root.setProp("hash", response.data.book_hash.mtime)
+      root.setProp("hash", result.book_hash.mtime)
 
-      if (response.data.page_progression_direction) {
-        root.setProp("pageProgressionDirection", response.data.page_progression_direction)
+      if (result.page_progression_direction) {
+        root.setProp("pageProgressionDirection", result.page_progression_direction)
       }
-      yield onPostConvert()
+
+      const postConvertResult = onPostConvert()
+      if (postConvertResult) {
+        yield postConvertResult
+      }
     }),
     update: flow(function* (libraryId: string, updateInfo: Metadata, updateField: string[]) {
       const changes: Partial<Record<CommonFieldName, unknown>> = {}

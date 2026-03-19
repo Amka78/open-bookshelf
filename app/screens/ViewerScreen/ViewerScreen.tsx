@@ -1,10 +1,13 @@
 import { BookPage, BookViewer, type RenderPageProps } from "@/components"
+import { BookHtmlPage } from "@/components/BookHtmlPage"
 import type { ModalStackParams } from "@/components/Modals/Types"
 import useOrientation from "@/hooks/useOrientation"
 import { useStores } from "@/models"
 import type { ApppNavigationProp } from "@/navigators/types"
 import { useViewer } from "@/screens/ViewerScreen/useViewer"
 import { isRemoteBookImagePath } from "@/utils/bookImageCache"
+import { isCalibreSerializedHtmlPath } from "@/utils/calibreHtmlViewer"
+import { logger } from "@/utils/logger"
 import { useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import React, { type FC, useLayoutEffect } from "react"
@@ -40,7 +43,31 @@ export const ViewerScreen: FC = observer(() => {
   }
 
   const renderPage = (props: RenderPageProps) => {
-    const pagePath = cachedPathList?.[props.page] ?? selectedBook.path[props.page]
+    const sourcePagePath = selectedBook.path[props.page]
+
+    if (isCalibreSerializedHtmlPath(sourcePagePath)) {
+      logger.debug("BookHtmlPage Rendering", {
+        page: props.page,
+        initialPage,
+        totalPage,
+        cachedPathList,
+      })
+      return (
+        <BookHtmlPage
+          availableWidth={props.availableWidth}
+          availableHeight={props.availableHeight}
+          bookId={selectedBook.id}
+          format={selectedBook.metaData.selectedFormat ?? "AZW3"}
+          hash={selectedBook.hash ?? 0}
+          headers={authenticationStore.getHeader()}
+          libraryId={selectedLibrary.id}
+          pagePath={sourcePagePath}
+          size={selectedBook.metaData.formatSizes.get(selectedBook.metaData.selectedFormat) ?? 0}
+        />
+      )
+    }
+
+    const pagePath = cachedPathList?.[props.page] ?? sourcePagePath
     const isRemotePath = isRemoteBookImagePath(pagePath)
     return (
       <BookPage

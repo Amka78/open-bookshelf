@@ -121,6 +121,15 @@ export function BookViewer(props: BookViewerProps) {
           alignItems = "flex-start"
           break
       }
+
+      console.log("Rendering page", {
+        page: renderProps.page,
+        direction: renderProps.direction,
+        pageType: renderProps.pageType,
+        scrollIndex: renderProps.scrollIndex,
+        availableWidth: renderProps.availableWidth,
+        availableHeight: renderProps.availableHeight,
+      })
       return (
         <PagePressable
           currentPage={renderProps.scrollIndex}
