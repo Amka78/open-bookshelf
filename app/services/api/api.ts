@@ -55,27 +55,6 @@ export class Api {
         Accept: "application/atom+xml",
       },
     })
-
-    this.apisauce.addRequestTransform((request) => {
-      logger.debug("[Api] request", {
-        method: request.method,
-        url: request.url,
-        params: request.params,
-        data: request.data,
-      })
-    })
-
-    this.apisauce.addMonitor((response) => {
-      logger.debug("[Api] response", {
-        ok: response.ok,
-        status: response.status,
-        duration: response.duration,
-        problem: response.problem,
-        url: response.config?.url,
-        method: response.config?.method,
-        data: response.data,
-      })
-    })
   }
 
   setUrl(baseUrl: string) {
