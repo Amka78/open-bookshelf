@@ -86,18 +86,20 @@ export const ViewerScreen: FC = observer(() => {
     return undefined
   }
 
+  const totalPages = cachedPathList?.length ?? selectedBook.path.length
+
   logger.debug("ViewerScreen: Rendering viewer with", {
     bookId: selectedBook.id,
     format: selectedBook.metaData.selectedFormat,
     initialPage,
-    totalPages: cachedPathList?.length,
+    totalPages,
   })
 
   return (
     <BookViewer
       bookTitle={selectedBook.metaData.title}
       renderPage={renderPage}
-      totalPage={cachedPathList.length}
+      totalPage={totalPages}
       initialPage={initialPage}
       onPageChange={onPageChange}
       onLastPage={onLastPage}

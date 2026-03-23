@@ -386,23 +386,52 @@ const shouldInlineResourceAttribute = (
   return true
 }
 
+const decodeTextResourcePath = (path: string) => {
+  if (!path) {
+    return path
+  }
+
+  const [pathWithoutHash, hash] = path.split("#", 2)
+  const [pathname, query] = pathWithoutHash.split("?", 2)
+  const textPrefixMatch = pathname.match(/^(.*?\btext\/)(.+)$/i)
+
+  if (!textPrefixMatch) {
+    return path
+  }
+
+  const prefix = textPrefixMatch[1]
+  const encodedRemainder = textPrefixMatch[2]
+
+  let decodedRemainder = encodedRemainder
+  try {
+    decodedRemainder = decodeURIComponent(encodedRemainder)
+  } catch {
+    decodedRemainder = encodedRemainder
+  }
+
+  const rebuiltPath = `${prefix}${decodedRemainder}`
+  const withQuery = query ? `${rebuiltPath}?${query}` : rebuiltPath
+  return hash ? `${withQuery}#${hash}` : withQuery
+}
+
 const fetchBookFileResponse = async (props: BookHtmlPageProps, path: string) => {
+  const normalizedPath = decodeTextResourcePath(path)
   logger.debug("Fetching book resource", {
     path,
+    normalizedPath,
     bookId: props.bookId,
     libraryId: props.libraryId,
     format: props.format,
   })
-  const response = await fetch(buildRemoteBookFileUrl(props, path), {
+  const response = await fetch(buildRemoteBookFileUrl(props, normalizedPath), {
     headers: props.headers,
   })
 
   if (!response.ok) {
-    logger.error("Failed to fetch book resource", { path, status: response.status })
-    throw new Error(`Failed to load book resource: ${path}`)
+    logger.error("Failed to fetch book resource", { path, normalizedPath, status: response.status })
   }
 
-  logger.debug("Fetched book resource", { path, status: response.status })
+  logger.debug("Fetched book resource", { path, normalizedPath, status: response.status })
 
   return response
 }
@@ -637,24 +666,28 @@ const inlineSerializedNodeResources = async (
 
     let inlinedUrl: string
     let inlinedFragment: string | undefined
-    if (tagName === "link" && attrName === "href") {
-      const loadedResource = await loadResolvedResource(resolvedCandidates, (path) => {
-        return loadStylesheetDataUrl(props, path, new Set([currentPath]))
-      })
-      inlinedUrl = loadedResource.dataUrl
-      inlinedFragment = loadedResource.fragment
-    } else if (tagName === "script" && attrName === "src") {
-      const loadedResource = await loadResolvedResource(resolvedCandidates, (path) => {
-        return loadTextResourceDataUrl(props, path)
-      })
-      inlinedUrl = loadedResource.dataUrl
-      inlinedFragment = loadedResource.fragment
-    } else {
-      const loadedResource = await loadResolvedResource(resolvedCandidates, (path) => {
-        return loadBinaryResourceDataUrl(props, path)
-      })
-      inlinedUrl = loadedResource.dataUrl
-      inlinedFragment = loadedResource.fragment
+    try {
+      if (tagName === "link" && attrName === "href") {
+        const loadedResource = await loadResolvedResource(resolvedCandidates, (path) => {
+          return loadStylesheetDataUrl(props, path, new Set([currentPath]))
+        })
+        inlinedUrl = loadedResource.dataUrl
+        inlinedFragment = loadedResource.fragment
+      } else if (tagName === "script" && attrName === "src") {
+        const loadedResource = await loadResolvedResource(resolvedCandidates, (path) => {
+          return loadTextResourceDataUrl(props, path)
+        })
+        inlinedUrl = loadedResource.dataUrl
+        inlinedFragment = loadedResource.fragment
+      } else {
+        const loadedResource = await loadResolvedResource(resolvedCandidates, (path) => {
+          return loadBinaryResourceDataUrl(props, path)
+        })
+        inlinedUrl = loadedResource.dataUrl
+        inlinedFragment = loadedResource.fragment
+      }
+    } catch (error) {
+      logger.error("Failed to inline resource", { path: attrValue, tagName, attrName, error })
     }
 
     attribute[1] = appendFragment(inlinedUrl, inlinedFragment)

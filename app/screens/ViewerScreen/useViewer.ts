@@ -4,10 +4,10 @@ import type { LibraryMap } from "@/models/CalibreRootStore"
 import { type ClientSetting, ClientSettingModel } from "@/models/calibre"
 import type { Metadata } from "@/models/calibre"
 import type { BookReadingStyleType } from "@/type/types"
+import { logger } from "@/utils/logger"
 import { useEffect, useRef, useState } from "react"
 import { useModal } from "react-native-modalfy"
 import { useConvergence } from "../../hooks/useConvergence"
-import { logger } from "@/utils/logger"
 
 const runOnNextFrame = (callback: () => void) => {
   if (typeof requestAnimationFrame === "function") {
@@ -99,10 +99,8 @@ export function useViewer() {
       handledPromptKeyRef.current = promptKey
       setViewerReady(false)
 
-      const resumePage = Math.max(
-        0,
-        Math.min(history.currentPage, Math.max(history.cachedPath.length - 1, 0)),
-      )
+      const maxPage = Math.max((selectedBook?.path.length ?? 1) - 1, 0)
+      const resumePage = Math.max(0, Math.min(history.currentPage, maxPage))
 
       let secondFrame: number | undefined
       const firstFrame = runOnNextFrame(() => {

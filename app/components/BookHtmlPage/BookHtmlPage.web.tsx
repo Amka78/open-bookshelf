@@ -71,7 +71,17 @@ export function BookHtmlPage(props: BookHtmlPageProps) {
     }
   }, [height, props.availableWidth])
 
-  if (loading || !html) {
+  if (error) {
+    return (
+      <div style={containerStyle}>
+        <div style={placeholderStyle}>
+          <Text>{error}</Text>
+        </div>
+      </div>
+    )
+  }
+
+  if (loading) {
     return (
       <div style={containerStyle}>
         <div style={placeholderStyle}>
@@ -81,11 +91,11 @@ export function BookHtmlPage(props: BookHtmlPageProps) {
     )
   }
 
-  if (error) {
+  if (!html) {
     return (
       <div style={containerStyle}>
         <div style={placeholderStyle}>
-          <Text>{error}</Text>
+          <Text>Failed to load book page</Text>
         </div>
       </div>
     )
