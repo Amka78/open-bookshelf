@@ -221,8 +221,7 @@ mock.module("react-native", () => ({
   },
 }))
 
-// Mock Expo modules
-mock.module("expo-file-system", () => {
+const createMockExpoFileSystemModule = () => {
   class MockDirectory {
     uri: string
     exists = true
@@ -275,6 +274,10 @@ mock.module("expo-file-system", () => {
     downloadAsync: jest.fn(),
     uploadAsync: jest.fn(),
     createDownloadResumable: jest.fn(),
+    FileSystemUploadType: {
+      BINARY_CONTENT: 0,
+      MULTIPART: 1,
+    },
     documentDirectory: "/mock/documents/",
     cacheDirectory: "/mock/cache/",
     Paths: {
@@ -284,7 +287,11 @@ mock.module("expo-file-system", () => {
     Directory: MockDirectory,
     File: MockFile,
   }
-})
+}
+
+// Mock Expo modules
+mock.module("expo-file-system", createMockExpoFileSystemModule)
+mock.module("expo-file-system/legacy", createMockExpoFileSystemModule)
 
 mock.module("expo-constants", () => ({
   default: {

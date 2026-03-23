@@ -355,9 +355,9 @@ export class Api {
     logger.debug("uploadFile", fileName, libraryName, file)
     const uploadUrl = `${this.apisauce.getBaseURL()}/cdb/add-book/0/n/${fileName}/${libraryName}`
 
-    const formData = new FormData()
     if (typeof file === "string") {
       if (Platform.OS === "web") {
+        const formData = new FormData()
         logger.debug("[Api] request", { method: "GET", url: file })
         const response = await fetch(file)
         logger.debug("[Api] response", {
@@ -368,12 +368,92 @@ export class Api {
         })
         const blob = await response.blob()
         formData.append("file", blob, fileName)
-      } else {
-        formData.append("file", new FileSystemFile(file), fileName)
+
+        logger.debug("[Api] request", {
+          method: "POST",
+          url: uploadUrl,
+          data: { fileName, libraryName },
+        })
+        const uploadResponse = await fetch(uploadUrl, {
+          method: "POST",
+          headers: this.apisauce.headers,
+          body: formData,
+        })
+        logger.debug("[Api] response", {
+          ok: uploadResponse.ok,
+          status: uploadResponse.status,
+          url: uploadUrl,
+          method: "POST",
+          data: uploadResponse,
+        })
+
+        if (!uploadResponse.ok) {
+          switch (uploadResponse.status) {
+            case 401:
+              return { kind: "unauthorized" }
+            case 403:
+              return { kind: "forbidden" }
+            case 404:
+              return { kind: "not-found", message: await uploadResponse.text() }
+            default:
+              if (uploadResponse.status >= 500) {
+                return { kind: "server" }
+              }
+
+              if (uploadResponse.status >= 400) {
+                return { kind: "rejected" }
+              }
+          }
+        }
+
+        return { kind: "ok" }
       }
-    } else {
-      formData.append("file", file, fileName)
+
+      logger.debug("[Api] request", {
+        method: "POST",
+        url: uploadUrl,
+        data: { fileName, libraryName },
+      })
+      const formData = new FormData()
+      formData.append("file", new FileSystemFile(file), fileName)
+
+      const response = await fetch(uploadUrl, {
+        method: "POST",
+        headers: this.apisauce.headers,
+        body: formData,
+      })
+      logger.debug("[Api] response", {
+        ok: response.ok,
+        status: response.status,
+        url: uploadUrl,
+        method: "POST",
+        data: response,
+      })
+
+      if (!response.ok) {
+        switch (response.status) {
+          case 401:
+            return { kind: "unauthorized" }
+          case 403:
+            return { kind: "forbidden" }
+          case 404:
+            return { kind: "not-found", message: await response.text() }
+          default:
+            if (response.status >= 500) {
+              return { kind: "server" }
+            }
+
+            if (response.status >= 400) {
+              return { kind: "rejected" }
+            }
+        }
+      }
+
+      return { kind: "ok" }
     }
+
+    const formData = new FormData()
+    formData.append("file", file, fileName)
 
     logger.debug("[Api] request", {
       method: "POST",

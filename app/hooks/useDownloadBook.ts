@@ -7,6 +7,14 @@ import * as Sharing from "expo-sharing"
 import { Platform } from "react-native"
 import type { UsableModalProp } from "react-native-modalfy"
 
+const getRequiredDirectoryUri = (directory: string | null, label: string) => {
+  if (!directory) {
+    throw new Error(`${label} is unavailable`)
+  }
+
+  return directory.endsWith("/") ? directory : `${directory}/`
+}
+
 export function useDownloadBook() {
   const { authenticationStore, calibreRootStore } = useStores()
 
@@ -61,7 +69,11 @@ async function executeSharing(
     return
   }
 
-  const destination = new File(Paths.document, fileName)
+  const documentDirectory = getRequiredDirectoryUri(
+    Paths.document?.uri ?? null,
+    "Document directory",
+  )
+  const destination = new File(documentDirectory, fileName)
   const result = await File.downloadFileAsync(downloadUrl, destination, {
     headers: header,
     idempotent: true,

@@ -21,7 +21,17 @@ type CacheBookFileInput = {
   headers?: Record<string, string>
 }
 
-const CACHE_ROOT = Paths.cache
+const getRequiredDirectoryUri = (directory: string | null, label: string) => {
+  if (!directory) {
+    throw new Error(`${label} is unavailable`)
+  }
+
+  return directory.endsWith("/") ? directory : `${directory}/`
+}
+
+const getCacheRoot = () => {
+  return getRequiredDirectoryUri(Paths.cache?.uri ?? null, "Cache directory")
+}
 
 const normalizePath = (path: string) => {
   if (!path) return ""
@@ -29,11 +39,11 @@ const normalizePath = (path: string) => {
 }
 
 const getBookImageCacheDir = (bookId: number, format: string) => {
-  return new Directory(CACHE_ROOT, "book-images", `${bookId}`, format)
+  return new Directory(getCacheRoot(), "book-images", `${bookId}`, format)
 }
 
 const getBookFileCacheDir = (bookId: number, format: string) => {
-  return new Directory(CACHE_ROOT, "book-files", `${bookId}`, format)
+  return new Directory(getCacheRoot(), "book-files", `${bookId}`, format)
 }
 
 export const buildBookImageUrl = (
@@ -148,6 +158,7 @@ export async function deleteCachedBookImages(pathList: string[]): Promise<void> 
   await Promise.all(
     localPathList.map(async (path) => {
       const file = new File(path)
+
       if (file.exists) {
         file.delete()
       }

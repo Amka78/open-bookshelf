@@ -3,10 +3,18 @@ import { useStores } from "@/models"
 import { api } from "@/services/api"
 import { File, Paths } from "expo-file-system"
 import * as Sharing from "expo-sharing"
+import { Platform } from "react-native"
 import type { UsableModalProp } from "react-native-modalfy"
 import { useDownloadBook } from "./useDownloadBook"
 
 type TestModal = UsableModalProp<ModalStackParams>
+
+const setPlatformOS = (os: string) => {
+  Object.defineProperty(Platform, "OS", {
+    configurable: true,
+    value: os,
+  })
+}
 
 describe("useDownloadBook", () => {
   const createStore = (selectedBook: {
@@ -36,11 +44,14 @@ describe("useDownloadBook", () => {
   })
 
   afterEach(() => {
+    setPlatformOS("web")
     jest.restoreAllMocks()
     jest.clearAllMocks()
   })
 
   test("downloads and shares when only one format exists", async () => {
+    setPlatformOS("ios")
+
     const selectedBook = {
       id: 10,
       metaData: {
@@ -69,6 +80,8 @@ describe("useDownloadBook", () => {
   })
 
   test("opens format selector when multiple formats exist", async () => {
+    setPlatformOS("ios")
+
     const openModal = jest.fn()
     const selectedBook = {
       id: 11,
@@ -101,6 +114,8 @@ describe("useDownloadBook", () => {
   })
 
   test("opens error modal when download fails", async () => {
+    setPlatformOS("ios")
+
     const openModal = jest.fn()
     const selectedBook = {
       id: 12,
