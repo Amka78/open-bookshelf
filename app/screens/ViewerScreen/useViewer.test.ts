@@ -179,10 +179,10 @@ describe("useViewer", () => {
     expect(result.current.cachedPathList).toEqual(["cached1.png", "cached2.png", "cached3.png"])
   })
 
-  test("totalPage returns cached path length when available", () => {
+  test("totalPage returns book path length even when cache exists", () => {
     const { result } = renderHook(() => useViewer())
 
-    expect(result.current.totalPage).toBe(3)
+    expect(result.current.totalPage).toBe(5)
   })
 
   test("totalPage returns book path length when no cache", () => {
@@ -199,6 +199,24 @@ describe("useViewer", () => {
 
     const { result } = renderHook(() => useViewer())
 
+    expect(result.current.totalPage).toBe(5)
+  })
+
+  test("cachedPathList is undefined when cache is empty", () => {
+    const mockHistoryEmptyCached = {
+      ...mockHistory,
+      cachedPath: [],
+    }
+    ;(useStores as jest.Mock).mockReturnValue({
+      calibreRootStore: {
+        selectedLibrary: mockSelectedLibrary,
+        readingHistories: [mockHistoryEmptyCached],
+      },
+    })
+
+    const { result } = renderHook(() => useViewer())
+
+    expect(result.current.cachedPathList).toBeUndefined()
     expect(result.current.totalPage).toBe(5)
   })
 
@@ -270,6 +288,53 @@ describe("useViewer", () => {
 
     // When selectedFormat matches, history should be found
     expect(result.current.selectedBook?.metaData.selectedFormat).toBe("pdf")
+    expect(result.current.cachedPathList).toEqual(["cached1.png", "cached2.png", "cached3.png"])
+  })
+
+  test("matches history case-insensitively by selected format", () => {
+    ;(useStores as jest.Mock).mockReturnValue({
+      calibreRootStore: {
+        selectedLibrary: {
+          ...mockSelectedLibrary,
+          selectedBook: {
+            ...mockSelectedBook,
+            metaData: {
+              ...mockSelectedBook.metaData,
+              selectedFormat: "PDF",
+            },
+          },
+        },
+        readingHistories: [mockHistory],
+      },
+    })
+
+    const { result } = renderHook(() => useViewer())
+
+    expect(result.current.cachedPathList).toEqual(["cached1.png", "cached2.png", "cached3.png"])
+  })
+
+  test("does not fall back to a different format history", () => {
+    ;(useStores as jest.Mock).mockReturnValue({
+      calibreRootStore: {
+        selectedLibrary: {
+          ...mockSelectedLibrary,
+          selectedBook: {
+            ...mockSelectedBook,
+            metaData: {
+              ...mockSelectedBook.metaData,
+              selectedFormat: "AZW3",
+            },
+          },
+        },
+        readingHistories: [mockHistory],
+      },
+    })
+
+    const { result } = renderHook(() => useViewer())
+
+    expect(result.current.cachedPathList).toBeUndefined()
+    expect(result.current.totalPage).toBe(5)
+    expect(result.current.initialPage).toBe(0)
   })
 
   test("returns initial page 0 when no history exists", () => {

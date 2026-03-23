@@ -91,7 +91,7 @@ export function BookHtmlPage(props: BookHtmlPageProps) {
     )
   }
 
-  logger.debug("Rendering HTML content", { documentKey, height })
+  logger.debug("Rendering HTML content", { documentKey, height, html })
 
   return (
     <div style={containerStyle}>

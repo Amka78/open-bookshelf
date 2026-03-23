@@ -8,7 +8,7 @@
 import Config from "@/config"
 import { logger } from "@/utils/logger"
 import { type ApiResponse, type ApisauceInstance, create } from "apisauce"
-import * as FileSystem from "expo-file-system"
+import { File as FileSystemFile } from "expo-file-system"
 import { Platform } from "react-native"
 import { type GeneralApiProblem, getGeneralApiProblem } from "./apiProblem"
 
@@ -355,9 +355,9 @@ export class Api {
     logger.debug("uploadFile", fileName, libraryName, file)
     const uploadUrl = `${this.apisauce.getBaseURL()}/cdb/add-book/0/n/${fileName}/${libraryName}`
 
-    if (Platform.OS === "web") {
-      const formData = new FormData()
-      if (typeof file === "string") {
+    const formData = new FormData()
+    if (typeof file === "string") {
+      if (Platform.OS === "web") {
         logger.debug("[Api] request", { method: "GET", url: file })
         const response = await fetch(file)
         logger.debug("[Api] response", {
@@ -369,27 +369,10 @@ export class Api {
         const blob = await response.blob()
         formData.append("file", blob, fileName)
       } else {
-        formData.append("file", file, fileName)
+        formData.append("file", new FileSystemFile(file), fileName)
       }
-
-      logger.debug("[Api] request", {
-        method: "POST",
-        url: uploadUrl,
-        data: { fileName, libraryName },
-      })
-      const response = await fetch(uploadUrl, {
-        method: "POST",
-        headers: this.apisauce.headers,
-        body: formData,
-      })
-      logger.debug("[Api] response", {
-        ok: response.ok,
-        status: response.status,
-        url: uploadUrl,
-        method: "POST",
-      })
-
-      return { kind: "ok" }
+    } else {
+      formData.append("file", file, fileName)
     }
 
     logger.debug("[Api] request", {
@@ -397,17 +380,39 @@ export class Api {
       url: uploadUrl,
       data: { fileName, libraryName },
     })
-    const result = await FileSystem.uploadAsync(uploadUrl, file as string, {
+    const response = await fetch(uploadUrl, {
+      method: "POST",
       headers: this.apisauce.headers,
+      body: formData,
     })
     logger.debug("[Api] response", {
-      ok: result.status >= 200 && result.status < 300,
-      status: result.status,
+      ok: response.ok,
+      status: response.status,
       url: uploadUrl,
       method: "POST",
-      data: result,
+      data: response,
     })
-    logger.debug("uploadFile result", result)
+
+    if (!response.ok) {
+      switch (response.status) {
+        case 401:
+          return { kind: "unauthorized" }
+        case 403:
+          return { kind: "forbidden" }
+        case 404:
+          return { kind: "not-found", message: await response.text() }
+        default:
+          if (response.status >= 500) {
+            return { kind: "server" }
+          }
+
+          if (response.status >= 400) {
+            return { kind: "rejected" }
+          }
+
+          return { kind: "unknown", temporary: true }
+      }
+    }
 
     return { kind: "ok" }
   }

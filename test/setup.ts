@@ -222,21 +222,69 @@ mock.module("react-native", () => ({
 }))
 
 // Mock Expo modules
-mock.module("expo-file-system", () => ({
-  getInfoAsync: jest.fn(),
-  readAsStringAsync: jest.fn(),
-  writeAsStringAsync: jest.fn(),
-  deleteAsync: jest.fn(),
-  moveAsync: jest.fn(),
-  copyAsync: jest.fn(),
-  makeDirectoryAsync: jest.fn(),
-  readDirectoryAsync: jest.fn(),
-  downloadAsync: jest.fn(),
-  uploadAsync: jest.fn(),
-  createDownloadResumable: jest.fn(),
-  documentDirectory: "/mock/documents/",
-  cacheDirectory: "/mock/cache/",
-}))
+mock.module("expo-file-system", () => {
+  class MockDirectory {
+    uri: string
+    exists = true
+
+    constructor(...uris: Array<string | { uri: string }>) {
+      this.uri = uris
+        .map((value) => (typeof value === "string" ? value : value.uri))
+        .join("")
+        .replace(/([^/])$/u, "$1/")
+    }
+
+    get parentDirectory() {
+      const normalized = this.uri.replace(/\/$/u, "")
+      const parentUri = normalized.slice(0, normalized.lastIndexOf("/") + 1)
+      return new MockDirectory(parentUri)
+    }
+
+    create = jest.fn()
+    delete = jest.fn()
+    createDirectory = jest.fn((name: string) => new MockDirectory(this, `${name}/`))
+  }
+
+  class MockFile {
+    static downloadFileAsync = jest.fn()
+
+    uri: string
+    exists = false
+
+    constructor(...uris: Array<string | { uri: string }>) {
+      this.uri = uris.map((value) => (typeof value === "string" ? value : value.uri)).join("")
+    }
+
+    get parentDirectory() {
+      const parentUri = this.uri.slice(0, this.uri.lastIndexOf("/") + 1)
+      return new MockDirectory(parentUri)
+    }
+
+    delete = jest.fn()
+  }
+
+  return {
+    getInfoAsync: jest.fn(),
+    readAsStringAsync: jest.fn(),
+    writeAsStringAsync: jest.fn(),
+    deleteAsync: jest.fn(),
+    moveAsync: jest.fn(),
+    copyAsync: jest.fn(),
+    makeDirectoryAsync: jest.fn(),
+    readDirectoryAsync: jest.fn(),
+    downloadAsync: jest.fn(),
+    uploadAsync: jest.fn(),
+    createDownloadResumable: jest.fn(),
+    documentDirectory: "/mock/documents/",
+    cacheDirectory: "/mock/cache/",
+    Paths: {
+      document: { uri: "/mock/documents/" },
+      cache: { uri: "/mock/cache/" },
+    },
+    Directory: MockDirectory,
+    File: MockFile,
+  }
+})
 
 mock.module("expo-constants", () => ({
   default: {

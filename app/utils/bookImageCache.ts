@@ -1,5 +1,6 @@
 import { api } from "@/services/api"
-import * as FileSystem from "expo-file-system"
+import { Directory, File, Paths } from "expo-file-system"
+import { Platform } from "react-native"
 
 type CacheBookImagesInput = {
   bookId: number
@@ -20,7 +21,7 @@ type CacheBookFileInput = {
   headers?: Record<string, string>
 }
 
-const CACHE_ROOT = FileSystem.cacheDirectory ?? FileSystem.documentDirectory
+const CACHE_ROOT = Paths.cache
 
 const normalizePath = (path: string) => {
   if (!path) return ""
@@ -28,13 +29,11 @@ const normalizePath = (path: string) => {
 }
 
 const getBookImageCacheDir = (bookId: number, format: string) => {
-  if (!CACHE_ROOT) return null
-  return `${CACHE_ROOT}book-images/${bookId}/${format}/`
+  return new Directory(CACHE_ROOT, "book-images", `${bookId}`, format)
 }
 
 const getBookFileCacheDir = (bookId: number, format: string) => {
-  if (!CACHE_ROOT) return null
-  return `${CACHE_ROOT}book-files/${bookId}/${format}/`
+  return new Directory(CACHE_ROOT, "book-files", `${bookId}`, format)
 }
 
 export const buildBookImageUrl = (
@@ -63,10 +62,9 @@ export const isRemoteBookImagePath = (path?: string) => {
 }
 
 export async function cacheBookImages(input: CacheBookImagesInput): Promise<string[]> {
-  const cacheDir = getBookImageCacheDir(input.bookId, input.format)
-  if (!cacheDir) {
-    return input.pathList.map((value) =>
-      buildBookImageUrl(
+  if (Platform.OS === "web") {
+    return input.pathList.map((value) => {
+      return buildBookImageUrl(
         input.baseUrl,
         input.bookId,
         input.format,
@@ -74,24 +72,22 @@ export async function cacheBookImages(input: CacheBookImagesInput): Promise<stri
         input.hash,
         value,
         input.libraryId,
-      ),
-    )
+      )
+    })
   }
 
-  await FileSystem.makeDirectoryAsync(cacheDir, { intermediates: true })
+  const cacheDir = getBookImageCacheDir(input.bookId, input.format)
+
+  cacheDir.create({ idempotent: true, intermediates: true })
 
   const cachedList = await Promise.all(
     input.pathList.map(async (value) => {
       const normalizedPath = normalizePath(value)
-      const targetPath = `${cacheDir}${normalizedPath}`
-      const targetDir = targetPath.slice(0, targetPath.lastIndexOf("/") + 1)
+      const targetFile = new File(cacheDir, normalizedPath)
 
-      if (targetDir) {
-        await FileSystem.makeDirectoryAsync(targetDir, { intermediates: true })
-      }
+      targetFile.parentDirectory.create({ idempotent: true, intermediates: true })
 
-      const info = await FileSystem.getInfoAsync(targetPath)
-      if (!info.exists) {
+      if (!targetFile.exists) {
         const url = buildBookImageUrl(
           input.baseUrl,
           input.bookId,
@@ -101,12 +97,13 @@ export async function cacheBookImages(input: CacheBookImagesInput): Promise<stri
           value,
           input.libraryId,
         )
-        await FileSystem.downloadAsync(url, targetPath, {
+        await File.downloadFileAsync(url, targetFile, {
           headers: input.headers,
+          idempotent: true,
         })
       }
 
-      return targetPath
+      return targetFile.uri
     }),
   )
 
@@ -121,32 +118,39 @@ export async function cacheBookFile(input: CacheBookFileInput): Promise<string> 
     input.libraryId,
   )
 
-  const cacheDir = getBookFileCacheDir(input.bookId, input.format)
-  if (!cacheDir) {
+  if (Platform.OS === "web") {
     return downloadUrl
   }
 
-  await FileSystem.makeDirectoryAsync(cacheDir, { intermediates: true })
+  const cacheDir = getBookFileCacheDir(input.bookId, input.format)
+  cacheDir.create({ idempotent: true, intermediates: true })
 
-  const targetPath = `${cacheDir}${input.bookId}.${input.format.toLowerCase()}`
-  const info = await FileSystem.getInfoAsync(targetPath)
-  if (!info.exists) {
-    await FileSystem.downloadAsync(downloadUrl, targetPath, {
+  const targetFile = new File(cacheDir, `${input.bookId}.${input.format.toLowerCase()}`)
+  if (!targetFile.exists) {
+    await File.downloadFileAsync(downloadUrl, targetFile, {
       headers: input.headers,
+      idempotent: true,
     })
   }
 
-  return targetPath
+  return targetFile.uri
 }
 
 export async function deleteCachedBookImages(pathList: string[]): Promise<void> {
+  if (Platform.OS === "web") {
+    return
+  }
+
   const localPathList = Array.from(
     new Set(pathList.filter((path) => path && !isRemoteBookImagePath(path))),
   )
 
   await Promise.all(
     localPathList.map(async (path) => {
-      await FileSystem.deleteAsync(path, { idempotent: true })
+      const file = new File(path)
+      if (file.exists) {
+        file.delete()
+      }
     }),
   )
 }

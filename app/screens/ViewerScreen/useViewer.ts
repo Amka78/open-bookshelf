@@ -7,6 +7,7 @@ import type { BookReadingStyleType } from "@/type/types"
 import { useEffect, useRef, useState } from "react"
 import { useModal } from "react-native-modalfy"
 import { useConvergence } from "../../hooks/useConvergence"
+import { logger } from "@/utils/logger"
 
 const runOnNextFrame = (callback: () => void) => {
   if (typeof requestAnimationFrame === "function") {
@@ -46,6 +47,7 @@ export function useViewer() {
 
   // Reading history and format management
   const selectedFormat = selectedBook?.metaData.selectedFormat
+  const normalizedSelectedFormat = selectedFormat?.toUpperCase()
   const histories =
     selectedBook && selectedLibraryId
       ? calibreRootStore.readingHistories.filter((value) => {
@@ -56,9 +58,11 @@ export function useViewer() {
   const history = selectedBook
     ? histories.find((value) => {
         return (
-          selectedFormat !== null && selectedFormat !== undefined && value.format === selectedFormat
+          normalizedSelectedFormat !== null &&
+          normalizedSelectedFormat !== undefined &&
+          value.format.toUpperCase() === normalizedSelectedFormat
         )
-      }) ?? histories[histories.length - 1]
+      }) ?? (!normalizedSelectedFormat ? histories[histories.length - 1] : undefined)
     : undefined
 
   // Update selected format if needed
@@ -68,9 +72,9 @@ export function useViewer() {
     }
   }, [history?.format, selectedBook, selectedFormat])
 
-  // Calculate cached path and total page
-  const cachedPathList = history?.cachedPath
-  const totalPage = selectedBook ? cachedPathList?.length ?? selectedBook.path.length : 0
+  // The book spine/path list is the authoritative page source for the viewer.
+  // Cached paths are only optional render replacements for image-based formats.
+  const cachedPathList = history?.cachedPath.length ? history.cachedPath : undefined
 
   // Create prompt key for resume reading logic
   const promptKey =
@@ -82,18 +86,23 @@ export function useViewer() {
   useEffect(() => {
     let cleanup = () => {}
 
-    if (!selectedBook || !selectedLibrary) {
-    } else if (!history || history.currentPage <= 0) {
+    if (!history || history.currentPage <= 0) {
       handledPromptKeyRef.current = promptKey
       setInitialPage(0)
       setViewerReady(true)
+      logger.debug("No reading history or at first page, starting from the beginning", {
+        promptKey,
+      })
     } else if (handledPromptKeyRef.current === promptKey) {
       setViewerReady(true)
     } else {
       handledPromptKeyRef.current = promptKey
       setViewerReady(false)
 
-      const resumePage = Math.max(0, Math.min(history.currentPage, Math.max(totalPage - 1, 0)))
+      const resumePage = Math.max(
+        0,
+        Math.min(history.currentPage, Math.max(history.cachedPath.length - 1, 0)),
+      )
 
       let secondFrame: number | undefined
       const firstFrame = runOnNextFrame(() => {
@@ -123,7 +132,7 @@ export function useViewer() {
     }
 
     return cleanup
-  }, [history, modal, promptKey, totalPage, selectedBook, selectedLibrary])
+  }, [history, modal, promptKey, selectedBook, selectedLibrary])
 
   // Client setting management
   let tempClientSetting = selectedBook
@@ -216,7 +225,6 @@ export function useViewer() {
     initialPage,
     viewerReady,
     cachedPathList,
-    totalPage,
     selectedBook,
     selectedLibrary,
     onPageChange,

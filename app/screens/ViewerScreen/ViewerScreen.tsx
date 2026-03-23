@@ -13,6 +13,7 @@ import { observer } from "mobx-react-lite"
 import React, { type FC, useLayoutEffect } from "react"
 
 export const ViewerScreen: FC = observer(() => {
+  logger.debug("Rendering ViewerScreen")
   const { authenticationStore } = useStores()
   const navigation = useNavigation<ApppNavigationProp>()
 
@@ -23,14 +24,9 @@ export const ViewerScreen: FC = observer(() => {
     initialPage,
     viewerReady,
     cachedPathList,
-    totalPage,
     onPageChange,
     onLastPage,
   } = viewerHook
-
-  useOrientation(() => {
-    // Trigger refresh on orientation change
-  })
 
   useLayoutEffect(() => {
     if (!selectedBook) {
@@ -46,6 +42,10 @@ export const ViewerScreen: FC = observer(() => {
     const sourcePagePath = selectedBook.path[props.page]
 
     if (isCalibreSerializedHtmlPath(sourcePagePath)) {
+      logger.debug("Page is a Calibre serialized HTML, rendering with BookHtmlPage", {
+        page: props.page,
+        sourcePagePath,
+      })
       return (
         <BookHtmlPage
           availableWidth={props.availableWidth}
@@ -64,6 +64,12 @@ export const ViewerScreen: FC = observer(() => {
 
     const pagePath = cachedPathList?.[props.page] ?? sourcePagePath
     const isRemotePath = isRemoteBookImagePath(pagePath)
+    logger.debug("Page is an image, rendering with BookPage", {
+      page: props.page,
+      pagePath,
+      isRemotePath,
+    })
+
     return (
       <BookPage
         availableWidth={props.availableWidth}
@@ -80,11 +86,18 @@ export const ViewerScreen: FC = observer(() => {
     return undefined
   }
 
+  logger.debug("ViewerScreen: Rendering viewer with", {
+    bookId: selectedBook.id,
+    format: selectedBook.metaData.selectedFormat,
+    initialPage,
+    totalPages: cachedPathList?.length,
+  })
+
   return (
     <BookViewer
       bookTitle={selectedBook.metaData.title}
       renderPage={renderPage}
-      totalPage={totalPage}
+      totalPage={cachedPathList.length}
       initialPage={initialPage}
       onPageChange={onPageChange}
       onLastPage={onLastPage}

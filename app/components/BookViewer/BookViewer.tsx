@@ -330,11 +330,7 @@ export function BookViewer(props: BookViewerProps) {
         }}
       />
       {pages ? (
-        <Box
-          style={[styles.viewerRoot, webViewportStyle]}
-          alignSelf="center"
-          width={listViewportWidth}
-        >
+        <Box style={styles.viewerRoot} alignSelf="center" width={listViewportWidth}>
           <Box style={listContainerStyle}>
             <FlashList<number | FacingPageType>
               key={flashListAxisKey}
@@ -375,7 +371,7 @@ export function BookViewer(props: BookViewerProps) {
       ) : null}
       <PageManager
         currentPage={currentPage}
-        facintPage={
+        facingPage={
           viewerHook.readingStyle === "facingPage" ||
           viewerHook.readingStyle === "facingPageWithTitle"
         }
