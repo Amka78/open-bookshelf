@@ -60,7 +60,8 @@ export type BookViewerProps = {
   onPageChange?: (page: number) => void
   onLastPage?: () => void
   initialPage?: number
-  performanceMode?: "default" | "android-pdf"
+  performanceMode?: "default" | "android-pdf" | "web-pdf"
+  disableNavigation?: boolean
 }
 
 export function BookViewer(props: BookViewerProps) {
@@ -77,6 +78,7 @@ export function BookViewer(props: BookViewerProps) {
   const navigation = useNavigation<ApppNavigationProp>()
   const isWeb = Platform.OS === "web"
   const isAndroidPdfMode = props.performanceMode === "android-pdf" && Platform.OS === "android"
+  const isWebPdfMode = props.performanceMode === "web-pdf" && Platform.OS === "web"
   const isHorizontalReading = viewerHook.readingStyle !== "verticalScroll"
   const flashListAxisKey = isHorizontalReading ? "horizontal" : "vertical"
   const isInverted =
@@ -133,6 +135,7 @@ export function BookViewer(props: BookViewerProps) {
           currentPage={renderProps.scrollIndex}
           direction={renderProps.direction}
           onLongPress={viewerHook.onManageMenu}
+          disabled={props.disableNavigation}
           onPageChanging={(page) => {
             console.tron.log(`current scroll index ${scrollIndex}`)
             console.tron.log(`page pressed next page:${page}`)
@@ -150,7 +153,15 @@ export function BookViewer(props: BookViewerProps) {
         </PagePressable>
       )
     },
-    [isHorizontalReading, pages, props.renderPage, scrollIndex, scrollToIndex, viewerHook],
+    [
+      isHorizontalReading,
+      pages,
+      props.renderPage,
+      props.disableNavigation,
+      scrollIndex,
+      scrollToIndex,
+      viewerHook,
+    ],
   )
 
   const renderItem: ListRenderItem<number | FacingPageType> = useCallback(
@@ -221,8 +232,8 @@ export function BookViewer(props: BookViewerProps) {
   const currentHorizontalLayoutKey =
     viewerHook.readingStyle === "verticalScroll" ? undefined : flashListLayoutKey
   const useFixedItemLayout = isHorizontalReading && !isWeb
-  const windowSize = isAndroidPdfMode ? 2 : isWeb ? 5 : 3
-  const maxToRenderPerBatch = isAndroidPdfMode ? 1 : 2
+  const windowSize = isAndroidPdfMode ? 2 : isWebPdfMode ? 10 : isWeb ? 5 : 3
+  const maxToRenderPerBatch = isAndroidPdfMode ? 1 : isWebPdfMode ? 4 : 2
   const drawDistance = isAndroidPdfMode ? estimatedItemSize : undefined
   const webViewportStyle = isWeb
     ? ({ height: dimension.height, maxHeight: dimension.height } as const)

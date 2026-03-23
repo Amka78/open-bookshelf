@@ -12,10 +12,12 @@ export type PagePressableProps = {
   totalPages: number
   transitionPages: number
   style?: ViewStyle
+  disabled?: boolean
 }
 export function PagePressable(props: PagePressableProps) {
   return (
     <Pressable
+      disabled={props.disabled}
       onPress={(event) => {
         let currentPage = 0
         if (props.onPageChanging) {
