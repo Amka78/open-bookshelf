@@ -1,12 +1,14 @@
+import { logger } from "@/utils/logger"
 import { Image as Original, type ImageProps as OriginalProps } from "expo-image"
 import React from "react"
-import { logger } from "@/utils/logger"
 
 export type ImageProps = OriginalProps
 export function Image(props: ImageProps) {
   return (
     <Original
       {...props}
+      // Prevent iOS Smart Invert / forced dark mode from inverting image colors
+      accessibilityIgnoresInvertColors
       onLoad={(event) => {
         if (props.onLoad) {
           props.onLoad(event)

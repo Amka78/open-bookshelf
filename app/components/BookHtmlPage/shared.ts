@@ -777,6 +777,7 @@ const buildPreparedHtmlDocument = (
       }
       img, svg, video, canvas, iframe {
         max-width: 100%;
+        color-scheme: light; /* Prevent dark mode from inverting images */
       }
     </style>
   </head>
