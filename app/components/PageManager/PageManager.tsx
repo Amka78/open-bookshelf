@@ -17,11 +17,12 @@ function PageManagerCore({ reverse = false, visible = true, ...restProps }: Page
   const props = { reverse, visible, ...restProps }
   const palette = usePalette()
 
+  const lastPageIndex = Math.max(props.totalPage - 1, 0)
   const pageNum = props.currentPage ? props.currentPage + 1 : 1
 
   const onPageFastMoveButtonPress = (forward: boolean) => {
     if (forward) {
-      props.onPageChange(props.totalPage)
+      props.onPageChange(lastPageIndex)
     } else {
       props.onPageChange(0)
     }
@@ -72,7 +73,7 @@ function PageManagerCore({ reverse = false, visible = true, ...restProps }: Page
           defaultValue={props.currentPage}
           value={props.currentPage}
           minValue={0}
-          maxValue={props.totalPage}
+          maxValue={lastPageIndex}
           step={1}
           onChange={(v) => {
             props.onPageChange(v)
@@ -100,7 +101,7 @@ function PageManagerCore({ reverse = false, visible = true, ...restProps }: Page
         />
       </HStack>
       <Text textAlign="center" marginBottom={"$4"}>
-        {pageNum}/{props.totalPage + 1}
+        {pageNum}/{props.totalPage}
       </Text>
     </VStack>
   ) : undefined
