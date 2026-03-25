@@ -4,6 +4,7 @@ import type { LibraryMap } from "@/models/CalibreRootStore"
 import { type ClientSetting, ClientSettingModel } from "@/models/calibre"
 import type { MetadataSnapshotIn } from "@/models/calibre"
 import type { BookReadingStyleType } from "@/type/types"
+import { isCalibreHtmlViewerFormat } from "@/utils/calibreHtmlViewer"
 import { logger } from "@/utils/logger"
 import { useEffect, useRef, useState } from "react"
 import { useModal } from "react-native-modalfy"
@@ -47,6 +48,7 @@ export function useViewer() {
 
   // Reading history and format management
   const selectedFormat = selectedBook?.metaData.selectedFormat
+  const isHtmlViewerFormat = isCalibreHtmlViewerFormat(selectedFormat)
   const normalizedSelectedFormat = selectedFormat?.toUpperCase()
   const histories =
     selectedBook && selectedLibraryId
@@ -74,7 +76,13 @@ export function useViewer() {
 
   // The book spine/path list is the authoritative page source for the viewer.
   // Cached paths are only optional render replacements for image-based formats.
-  const cachedPathList = history?.cachedPath.length ? history.cachedPath : undefined
+  const cachedPathList = history?.cachedPath?.length ? history.cachedPath : undefined
+  const availablePathLength =
+    selectedBook?.path.length && selectedBook.path.length > 0
+      ? selectedBook.path.length
+      : isHtmlViewerFormat
+        ? 0
+        : cachedPathList?.length ?? 0
 
   // Create prompt key for resume reading logic
   const promptKey =
@@ -99,7 +107,7 @@ export function useViewer() {
       handledPromptKeyRef.current = promptKey
       setViewerReady(false)
 
-      const maxPage = Math.max((selectedBook?.path.length ?? 1) - 1, 0)
+      const maxPage = Math.max(availablePathLength - 1, 0)
       const resumePage = Math.max(0, Math.min(history.currentPage, maxPage))
 
       let secondFrame: number | undefined
@@ -130,7 +138,7 @@ export function useViewer() {
     }
 
     return cleanup
-  }, [history, modal, promptKey, selectedBook])
+  }, [availablePathLength, history, modal, promptKey])
 
   // Client setting management
   let tempClientSetting = selectedBook

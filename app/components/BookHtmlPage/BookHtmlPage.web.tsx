@@ -8,6 +8,7 @@ import {
   calibreHtmlPageInteractionMessageType,
   calibreHtmlPageLongPressAction,
   calibreHtmlPageSizeMessageType,
+  calibreHtmlPageTapAction,
   useCalibreHtmlDocument,
 } from "./shared"
 
@@ -24,7 +25,7 @@ export function BookHtmlPage(props: BookHtmlPageProps) {
     themeFallbackBackgroundColor: palette.bg0,
   })
   const [contentHeight, setContentHeight] = useState(FALLBACK_AUTO_HEIGHT)
-  const { onLongPress } = props
+  const { onLongPress, onPress } = props
 
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
@@ -46,6 +47,15 @@ export function BookHtmlPage(props: BookHtmlPageProps) {
         if (
           payload?.type === calibreHtmlPageInteractionMessageType &&
           payload?.key === documentKey &&
+          payload?.action === calibreHtmlPageTapAction
+        ) {
+          onPress?.()
+          return
+        }
+
+        if (
+          payload?.type === calibreHtmlPageInteractionMessageType &&
+          payload?.key === documentKey &&
           payload?.action === calibreHtmlPageLongPressAction
         ) {
           onLongPress?.()
@@ -59,7 +69,7 @@ export function BookHtmlPage(props: BookHtmlPageProps) {
     return () => {
       window.removeEventListener("message", onMessage)
     }
-  }, [documentKey, onLongPress])
+  }, [documentKey, onLongPress, onPress])
 
   const height = autoHeight ? Math.max(contentHeight, 1) : props.availableHeight ?? 1
 

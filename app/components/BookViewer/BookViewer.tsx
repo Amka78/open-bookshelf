@@ -23,6 +23,7 @@ import {
   useWindowDimensions,
 } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { goToNextPage, goToPreviousPage } from "@/utils/pageTurnning"
 import { type FacingPageType, useBookViewerState } from "./useBookViewerState"
 
 const runOnNextFrame = (callback: () => void) => {
@@ -51,6 +52,7 @@ export type RenderPageProps = {
   scrollIndex: number
   availableWidth: number
   availableHeight?: number
+  onPress?: () => void
   onLongPress?: () => void
 }
 export type BookViewerProps = {
@@ -148,8 +150,18 @@ export function BookViewer(props: BookViewerProps) {
 
   const renderPage = useCallback(
     (renderProps: RenderPageProps) => {
+      const handlePagePress = () => {
+        const targetIndex =
+          renderProps.direction === "previous"
+            ? goToPreviousPage(renderProps.scrollIndex, 1)
+            : goToNextPage(renderProps.scrollIndex, pages[viewerHook.readingStyle].length, 1)
+
+        scrollToIndex(targetIndex, true, isHorizontalReading ? undefined : 0.5)
+      }
+
       const pageProps = {
         ...renderProps,
+        onPress: handlePagePress,
         onLongPress: viewerHook.onManageMenu,
       }
 

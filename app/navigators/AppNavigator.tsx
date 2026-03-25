@@ -9,6 +9,7 @@ import type { AppStackParamList } from "./types"
 
 import { modalConfig } from "@/components/Modals/ModalConfig"
 import { cacheBookImages } from "@/utils/bookImageCache"
+import { isCalibreHtmlViewerFormat } from "@/utils/calibreHtmlViewer"
 import { ModalProvider, createModalStack } from "react-native-modalfy"
 
 const modalStack = createModalStack(modalConfig, {})
@@ -245,7 +246,7 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
 
   useEffect(() => {
     if (!pendingViewerInfo || handlingViewerInfoRef.current) {
-      return
+      return undefined
     }
 
     let cancelled = false
@@ -326,6 +327,7 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
         }
 
         if (format) {
+          const isHtmlViewerFormat = isCalibreHtmlViewerFormat(format)
           const history = calibreRootStore.readingHistories.find((value) => {
             return (
               value.libraryId === selectedLibrary.id &&
@@ -334,20 +336,26 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
             )
           })
 
+          if (isHtmlViewerFormat && selectedBook.path.length === 0) {
+            await selectedBook.convert(format, selectedLibrary.id, async () => {})
+          }
+
           if (!history) {
             await selectedBook.convert(format, selectedLibrary.id, async () => {
               const size = selectedBook.metaData?.size ?? 0
               const hash = selectedBook.hash ?? 0
-              const bookImageList = await cacheBookImages({
-                bookId: selectedBook.id,
-                format,
-                libraryId: selectedLibrary.id,
-                baseUrl: settingStore.api.baseUrl,
-                size,
-                hash,
-                pathList: selectedBook.path.slice(),
-                headers: authenticationStore.getHeader(),
-              })
+              const bookImageList = isHtmlViewerFormat
+                ? selectedBook.path.slice()
+                : await cacheBookImages({
+                    bookId: selectedBook.id,
+                    format,
+                    libraryId: selectedLibrary.id,
+                    baseUrl: settingStore.api.baseUrl,
+                    size,
+                    hash,
+                    pathList: selectedBook.path.slice(),
+                    headers: authenticationStore.getHeader(),
+                  })
 
               const historyModel = ReadingHistoryModel.create({
                 bookId: selectedBook.id,

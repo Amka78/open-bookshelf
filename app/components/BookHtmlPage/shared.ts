@@ -12,6 +12,7 @@ export type BookHtmlPageProps = {
   headers?: Record<string, string>
   availableWidth?: number
   availableHeight?: number
+  onPress?: () => void
   onLongPress?: () => void
   themeMode?: "light" | "dark"
   themeTextColor?: string
@@ -55,6 +56,7 @@ const CALIBRE_VIRTUAL_RESOURCE_PATTERN = /(?:^|\/)[^/|?#]+\|([^|]+)\|$/
 const CALIBRE_VIRTUAL_RESOURCE_TOKEN_PATTERN = /[^/|?#]+\|([^|]+)\|/g
 export const calibreHtmlPageSizeMessageType = "open-bookshelf:calibre-html-size"
 export const calibreHtmlPageInteractionMessageType = "open-bookshelf:calibre-html-interaction"
+export const calibreHtmlPageTapAction = "tap"
 export const calibreHtmlPageLongPressAction = "long-press"
 
 const preparedPageCache = new Map<string, Promise<SerializedHtmlDocument>>()
@@ -711,7 +713,19 @@ const prepareSerializedHtmlDocument = async (props: BookHtmlPageProps) => {
   logger.debug("Loaded page resource", { path: props.pagePath, status: response.status })
   const rawText = await response.text()
 
-  const parsed = JSON.parse(rawText) as SerializedHtmlDocument
+  let parsed: SerializedHtmlDocument
+  try {
+    parsed = JSON.parse(rawText) as SerializedHtmlDocument
+  } catch (error) {
+    logger.error("Failed to parse serialized html payload", {
+      pagePath: props.pagePath,
+      status: response.status,
+      preview: rawText.slice(0, 120),
+      error,
+    })
+    throw new Error("Invalid serialized page payload")
+  }
+
   const prepared = JSON.parse(JSON.stringify(parsed)) as SerializedHtmlDocument
   logger.debug("Fetched page content", { rawText: rawText, parsed: parsed, prepared: prepared })
 
@@ -796,6 +810,7 @@ const buildPreparedHtmlDocument = (
         const interactionMessageType = ${serializeForScriptTag(
           calibreHtmlPageInteractionMessageType,
         )}
+        const tapAction = ${serializeForScriptTag(calibreHtmlPageTapAction)}
         const longPressAction = ${serializeForScriptTag(calibreHtmlPageLongPressAction)}
         const themeMode = ${escapedThemeMode}
         const themeTextColor = ${escapedTextColor}
@@ -1096,6 +1111,7 @@ const buildPreparedHtmlDocument = (
         const installLongPressHandler = () => {
           let activePointerId = null
           let longPressTimer = 0
+          let longPressTriggered = false
           let preventContextMenuUntil = 0
           let startX = 0
           let startY = 0
@@ -1111,11 +1127,13 @@ const buildPreparedHtmlDocument = (
 
           const beginLongPress = (x, y, pointerId) => {
             clearLongPressTimer()
+            longPressTriggered = false
             startX = x
             startY = y
             activePointerId = pointerId
             longPressTimer = window.setTimeout(() => {
               longPressTimer = 0
+              longPressTriggered = true
               preventContextMenuUntil = Date.now() + 1000
               postPayload({
                 type: interactionMessageType,
@@ -1123,6 +1141,27 @@ const buildPreparedHtmlDocument = (
                 action: longPressAction,
               })
             }, longPressDelayMs)
+          }
+
+          const shouldIgnoreTapTarget = (target) => {
+            if (!(target instanceof Element)) {
+              return false
+            }
+
+            return Boolean(target.closest("a, button, input, select, textarea, summary, label"))
+          }
+
+          const emitTap = (target) => {
+            if (longPressTriggered || shouldIgnoreTapTarget(target)) {
+              longPressTriggered = false
+              return
+            }
+
+            postPayload({
+              type: interactionMessageType,
+              key: documentKey,
+              action: tapAction,
+            })
           }
 
           const updateLongPress = (x, y, pointerId) => {
@@ -1187,6 +1226,7 @@ const buildPreparedHtmlDocument = (
             document.addEventListener(
               "pointerup",
               (event) => {
+                emitTap(event.target)
                 endLongPress(typeof event.pointerId === "number" ? event.pointerId : null)
               },
               true,
@@ -1228,7 +1268,8 @@ const buildPreparedHtmlDocument = (
 
             document.addEventListener(
               "touchend",
-              () => {
+              (event) => {
+                emitTap(event.target)
                 endLongPress(null)
               },
               true,
@@ -1264,7 +1305,8 @@ const buildPreparedHtmlDocument = (
 
             document.addEventListener(
               "mouseup",
-              () => {
+              (event) => {
+                emitTap(event.target)
                 endLongPress(null)
               },
               true,

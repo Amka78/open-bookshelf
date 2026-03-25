@@ -55,7 +55,11 @@ export function useOpenViewer() {
         return
       }
 
-      console.log("history", history)
+      const isHtmlViewerFormat = isCalibreHtmlViewerFormat(format)
+
+      if (isHtmlViewerFormat && book.path.length === 0) {
+        await book.convert(format, selectedLibraryId, async () => {})
+      }
 
       if (history) {
         navigation.navigate("Viewer")
@@ -63,7 +67,7 @@ export function useOpenViewer() {
         await book.convert(format, selectedLibraryId, async () => {
           const size = book.metaData?.formatSizes.get(format) ?? 0
           const hash = book.hash ?? 0
-          const bookImageList = isCalibreHtmlViewerFormat(format)
+          const bookImageList = isHtmlViewerFormat
             ? book.path.slice()
             : await cacheBookImages({
                 bookId: book.id,

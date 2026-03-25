@@ -6,7 +6,7 @@ import { useStores } from "@/models"
 import type { ApppNavigationProp } from "@/navigators/types"
 import { useViewer } from "@/screens/ViewerScreen/useViewer"
 import { isRemoteBookImagePath } from "@/utils/bookImageCache"
-import { isCalibreSerializedHtmlPath } from "@/utils/calibreHtmlViewer"
+import { isCalibreHtmlViewerFormat, isCalibreSerializedHtmlPath } from "@/utils/calibreHtmlViewer"
 import { logger } from "@/utils/logger"
 import { useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
@@ -38,8 +38,16 @@ export const ViewerScreen: FC = observer(() => {
     return undefined
   }
 
+  const isHtmlViewerFormat = isCalibreHtmlViewerFormat(selectedBook.metaData.selectedFormat)
+  const sourcePathList =
+    selectedBook.path.length > 0
+      ? selectedBook.path
+      : isHtmlViewerFormat
+        ? selectedBook.path
+        : cachedPathList ?? selectedBook.path
+
   const renderPage = (props: RenderPageProps) => {
-    const sourcePagePath = selectedBook.path[props.page]
+    const sourcePagePath = sourcePathList[props.page]
 
     if (isCalibreSerializedHtmlPath(sourcePagePath)) {
       logger.debug("Page is a Calibre serialized HTML, rendering with BookHtmlPage", {
@@ -55,6 +63,7 @@ export const ViewerScreen: FC = observer(() => {
           hash={selectedBook.hash ?? 0}
           headers={authenticationStore.getHeader()}
           libraryId={selectedLibrary.id}
+          onPress={props.onPress}
           onLongPress={props.onLongPress}
           pagePath={sourcePagePath}
           size={selectedBook.metaData.formatSizes.get(selectedBook.metaData.selectedFormat) ?? 0}
@@ -86,7 +95,7 @@ export const ViewerScreen: FC = observer(() => {
     return undefined
   }
 
-  const totalPages = cachedPathList?.length ?? selectedBook.path.length
+  const totalPages = sourcePathList.length
 
   logger.debug("ViewerScreen: Rendering viewer with", {
     bookId: selectedBook.id,
