@@ -9,6 +9,7 @@
  *
  * @refresh reset
  */
+import { api } from "@/services/api"
 import * as storage from "@/utils/storage"
 import { type IDisposer, applySnapshot, onSnapshot } from "mobx-state-tree"
 
@@ -29,6 +30,17 @@ export async function setupRootStore(rootStore: RootStore) {
     // load the last known state from AsyncStorage
     restoredState = (await storage.load(ROOT_STATE_STORAGE_KEY)) || {}
     applySnapshot(rootStore, restoredState)
+
+    // Re-apply API settings to the singleton — applySnapshot only updates MST
+    // model data; it does not call the side-effectful setUrl / setAuthorization
+    // helpers, so the apisauce instance must be re-configured explicitly.
+    const { settingStore, authenticationStore } = rootStore
+    if (settingStore.api.baseUrl) {
+      api.setUrl(settingStore.api.baseUrl)
+    }
+    if (authenticationStore.token) {
+      api.setAuthorization(authenticationStore.token)
+    }
   } catch (e) {
     // if there's any problems loading, then inform the dev what happened
     if (__DEV__) {
