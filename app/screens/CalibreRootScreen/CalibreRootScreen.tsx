@@ -27,11 +27,7 @@ export const CalibreRootScreen: FC = observer(() => {
 
   return (
     <RootContainer>
-      <FlatList<LibraryMap>
-        data={calibreRootHook.library}
-        renderItem={renderItem}
-        estimatedItemSize={60}
-      />
+      <FlatList<LibraryMap> data={calibreRootHook.library} renderItem={renderItem} />
     </RootContainer>
   )
 })

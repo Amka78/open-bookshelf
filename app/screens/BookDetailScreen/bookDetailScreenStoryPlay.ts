@@ -3,7 +3,7 @@ async function clickByTestId(canvasElement: HTMLElement, testId: string) {
   if (!button || typeof (button as { click?: unknown }).click !== "function") {
     throw new Error(`Element with data-testid='${testId}' was not found.`)
   }
-  ;(button as { click: () => void }).click()
+  ;(button as unknown as { click: () => void }).click()
 }
 
 export async function playBookDetailOpenAction({

@@ -15,7 +15,7 @@ export function useIncrementalRender(totalItems: number, batchSize = 50, enabled
 
   useEffect(() => {
     if (!enabled || visibleCount >= totalItems) {
-      return
+      return undefined
     }
 
     const timeoutId = setTimeout(() => {

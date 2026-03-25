@@ -162,7 +162,11 @@ export const BookModel = types
         yield postConvertResult
       }
     }),
-    update: flow(function* (libraryId: string, updateInfo: Metadata, updateField: string[]) {
+    update: flow(function* (
+      libraryId: string,
+      updateInfo: Partial<SnapshotIn<typeof MetadataModel>>,
+      updateField: string[],
+    ) {
       const changes: Partial<Record<CommonFieldName, unknown>> = {}
 
       const rootParent = getParent(root) as Array<Book>

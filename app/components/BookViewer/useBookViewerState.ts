@@ -1,12 +1,11 @@
 import type { BookReadingStyleType } from "@/type/types"
 import { goToNextPage } from "@/utils/pageTurnning"
+import type { FlashListRef } from "@shopify/flash-list"
 import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 export type FacingPageType = { page1?: number; page2?: number }
 export type PageStyles = Record<BookReadingStyleType, number[] | FacingPageType[]>
-export type FlashListHandle = {
-  scrollToIndex: (params: { index: number; animated?: boolean; viewPosition?: number }) => void
-}
+export type FlashListHandle = Pick<FlashListRef<number | FacingPageType>, "scrollToIndex">
 
 type UseBookViewerStateParams = {
   totalPage: number

@@ -100,5 +100,5 @@ export const bookDetailFieldListStoryArgs = {
   fieldMetadataList,
   book,
   borderColor: "$white",
-  borderWidth: "$4",
+  borderWidth: "$4" as const,
 }

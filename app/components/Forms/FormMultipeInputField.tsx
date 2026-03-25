@@ -7,7 +7,7 @@ import {
   Pressable,
 } from "@gluestack-ui/themed"
 import { useMemo, useState } from "react"
-import { Controller, type ControllerProps } from "react-hook-form"
+import { Controller, type ControllerProps, type FieldValues } from "react-hook-form"
 import { InputField, type InputFieldProps } from "../InputField/InputField"
 
 const MAX_SUGGESTIONS = 5
@@ -18,7 +18,9 @@ export type FormMultipleInputFiledProps<T> = Omit<InputFieldProps, "onChangeText
     valueToText: string
     suggestions?: string[]
   }
-export function FormMultipleInputField<T>(props: FormMultipleInputFiledProps<T>) {
+export function FormMultipleInputField<T extends FieldValues>(
+  props: FormMultipleInputFiledProps<T>,
+) {
   const [isSuggestionOpen, setIsSuggestionOpen] = useState(false)
   const [activeRowIndex, setActiveRowIndex] = useState<number | null>(null)
 
@@ -111,7 +113,7 @@ export function FormMultipleInputField<T>(props: FormMultipleInputFiledProps<T>)
               <HStack
                 key={`${String(name)}-row-${index}`}
                 alignItems="center"
-                marginBottom={index === displayRows.length - 1 ? undefined : "$sm"}
+                marginBottom={index === displayRows.length - 1 ? undefined : "$4"}
               >
                 <Popover
                   placement="bottom left"
@@ -187,9 +189,9 @@ export function FormMultipleInputField<T>(props: FormMultipleInputFiledProps<T>)
                             <Box
                               borderWidth="$1"
                               borderRadius="$sm"
-                              paddingHorizontal="$sm"
-                              paddingVertical="$xs"
-                              marginBottom="$xs"
+                              paddingHorizontal="$4"
+                              paddingVertical="$2"
+                              marginBottom="$2"
                             >
                               <Text fontSize="$sm" isTruncated={true}>
                                 {candidate}

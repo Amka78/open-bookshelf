@@ -1,4 +1,5 @@
-import React, { type ReactElement } from "react"
+import { usePalette } from "@/theme"
+import type { ReactElement, ReactNode } from "react"
 import {
   type StyleProp,
   type TextStyle,
@@ -8,7 +9,6 @@ import {
   type ViewStyle,
 } from "react-native"
 import { Text, type TextProps } from "../components/Text/Text"
-import { usePalette } from "@/theme"
 
 export interface ListItemProps extends TouchableOpacityProps {
   /**
@@ -29,7 +29,7 @@ export interface ListItemProps extends TouchableOpacityProps {
   /**
    * Text to display if not using `tx` or nested components.
    */
-  text?: TextProps["text"]
+  text?: ReactNode
   /**
    * Text which is looked up via i18n.
    */
@@ -42,7 +42,7 @@ export interface ListItemProps extends TouchableOpacityProps {
    * Optional options to pass to i18n. Useful for interpolation
    * as well as explicitly setting locale or translation fallbacks.
    */
-  txOptions?: TextProps["txOptions"]
+  txOptions?: Record<string, unknown>
   /**
    * Optional text style override.
    */
@@ -142,8 +142,8 @@ export function ListItem(props: ListItemProps) {
           Component={LeftComponent}
         />
 
-        <Text {...TextProps} tx={tx} text={text} txOptions={txOptions} style={$textStyles}>
-          {children}
+        <Text {...TextProps} tx={tx} style={$textStyles}>
+          {text ?? children}
         </Text>
 
         <ListItemAction

@@ -105,6 +105,9 @@ const ko: Translations = {
     bookEditModal: {
       title: "책 편집",
     },
+    bookConvertModal: {
+      title: "도서 변환",
+    },
     cacheClearConfirmModal: {
       title: "캐시 삭제",
       message: "캐시를 삭제하시겠습니까?",

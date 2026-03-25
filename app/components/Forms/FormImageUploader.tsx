@@ -1,9 +1,9 @@
-import { Controller, type ControllerProps } from "react-hook-form"
+import { Controller, type ControllerProps, type FieldValues } from "react-hook-form"
 import { ImageUploader, type ImageUploaderProps } from "../ImageUploader/ImageUploader"
 
 export type FormImageUploaderProps<T> = Omit<ImageUploaderProps, "onImageUpload"> &
   Omit<ControllerProps<T>, "render">
-export function FormImageUploader<T>(props: FormImageUploaderProps<T>) {
+export function FormImageUploader<T extends FieldValues>(props: FormImageUploaderProps<T>) {
   return (
     <Controller
       {...props}

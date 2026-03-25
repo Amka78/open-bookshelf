@@ -95,7 +95,9 @@ export function BookConvertForm(props: BookConvertFormProps) {
               <AccordionTrigger>
                 {({ isExpanded }: { isExpanded: boolean }) => (
                   <>
-                    <AccordionTitleText tx={"bookConvertScreen.sectionLookAndFeel"} />
+                    <AccordionTitleText>
+                      {translate("bookConvertScreen.sectionLookAndFeel")}
+                    </AccordionTitleText>
                     <Icon as={isExpanded ? ChevronUpIcon : ChevronDownIcon} />
                   </>
                 )}
@@ -112,7 +114,9 @@ export function BookConvertForm(props: BookConvertFormProps) {
               <AccordionTrigger>
                 {({ isExpanded }: { isExpanded: boolean }) => (
                   <>
-                    <AccordionTitleText tx={"bookConvertScreen.sectionHeuristics"} />
+                    <AccordionTitleText>
+                      {translate("bookConvertScreen.sectionHeuristics")}
+                    </AccordionTitleText>
                     <Icon as={isExpanded ? ChevronUpIcon : ChevronDownIcon} />
                   </>
                 )}
@@ -129,7 +133,9 @@ export function BookConvertForm(props: BookConvertFormProps) {
               <AccordionTrigger>
                 {({ isExpanded }: { isExpanded: boolean }) => (
                   <>
-                    <AccordionTitleText tx={"bookConvertScreen.sectionStructure"} />
+                    <AccordionTitleText>
+                      {translate("bookConvertScreen.sectionStructure")}
+                    </AccordionTitleText>
                     <Icon as={isExpanded ? ChevronUpIcon : ChevronDownIcon} />
                   </>
                 )}
@@ -146,7 +152,9 @@ export function BookConvertForm(props: BookConvertFormProps) {
               <AccordionTrigger>
                 {({ isExpanded }: { isExpanded: boolean }) => (
                   <>
-                    <AccordionTitleText tx={"bookConvertScreen.sectionTOC"} />
+                    <AccordionTitleText>
+                      {translate("bookConvertScreen.sectionTOC")}
+                    </AccordionTitleText>
                     <Icon as={isExpanded ? ChevronUpIcon : ChevronDownIcon} />
                   </>
                 )}
@@ -163,7 +171,9 @@ export function BookConvertForm(props: BookConvertFormProps) {
               <AccordionTrigger>
                 {({ isExpanded }: { isExpanded: boolean }) => (
                   <>
-                    <AccordionTitleText tx={"bookConvertScreen.sectionOutput"} />
+                    <AccordionTitleText>
+                      {translate("bookConvertScreen.sectionOutput")}
+                    </AccordionTitleText>
                     <Icon as={isExpanded ? ChevronUpIcon : ChevronDownIcon} />
                   </>
                 )}
@@ -178,11 +188,7 @@ export function BookConvertForm(props: BookConvertFormProps) {
 
       {/* ===== 変換進行状況 / 結果 ===== */}
       {isConverting && (
-        <LabeledSpinner
-          testID="convert-spinner"
-          labelDirection="horizontal"
-          labelTx={"bookConvertScreen.converting"}
-        />
+        <LabeledSpinner labelDirection="horizontal" labelTx={"bookConvertScreen.converting"} />
       )}
       {isSuccess && (
         <Text testID="convert-success" color="$green600" tx={"bookConvertScreen.convertComplete"} />

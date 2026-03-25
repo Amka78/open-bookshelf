@@ -1,12 +1,4 @@
-import {
-  Box,
-  FlatList,
-  Icon,
-  ListItem,
-  MaterialCommunityIcon,
-  RootContainer,
-  Text,
-} from "@/components"
+import { Box, FlatList, ListItem, MaterialCommunityIcon, RootContainer, Text } from "@/components"
 import { useStores } from "@/models"
 import type { Entry } from "@/models/opds"
 import { OpdsChildrenModel, OpdsModel, type OpdsRoot } from "@/models/opds/OpdsRootStore"
@@ -16,7 +8,7 @@ import { logger } from "@/utils/logger"
 import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { Image } from "expo-image"
 import { observer } from "mobx-react-lite"
-import React, { type FC, useEffect, useState } from "react"
+import React, { type FC, useCallback, useEffect, useState } from "react"
 
 type AcquisitionScreenRouteProp = RouteProp<AppStackParamList, "Acquisition">
 export const AcquisitionScreen: FC = observer(() => {
@@ -29,7 +21,7 @@ export const AcquisitionScreen: FC = observer(() => {
 
   const [currentOpds, setCurrentOPDS] = useState<OpdsRoot>()
 
-  const initialize = async () => {
+  const initialize = useCallback(async () => {
     /* const childOPDS = opdsRootStore.children.find((value) => {
       return value.linkPath === route.params.link.href
     }) */
@@ -49,30 +41,30 @@ export const AcquisitionScreen: FC = observer(() => {
     })
     // opdsRootStore.add(children)
     // }
-  }
+  }, [route.params.link.href])
 
   useEffect(() => {
-    initialize()
-  }, [])
+    void initialize()
+  }, [initialize])
 
   useEffect(() => {
     navigation.setOptions({
       headerTitle(props) {
         return (
-          <Box direction="row" alignItems={"center"}>
+          <Box flexDirection="row" alignItems={"center"}>
             <Image
               source={`${settingStore.api.baseUrl}${currentOpds?.icon}`}
               style={{ height: 30, width: 30 }}
               resizeMode={"cover"}
             />
-            <Text color={palette.textPrimary} paddingLeft={"2.5"} fontSize={"2xl"}>
+            <Text color={palette.textPrimary} paddingLeft={"$2.5"} fontSize={"$2xl"}>
               {currentOpds?.title}
             </Text>
           </Box>
         )
       },
     })
-  }, [currentOpds])
+  }, [currentOpds, navigation, palette.textPrimary, settingStore.api.baseUrl])
 
   const renderItem = ({ item }: { item: Entry }) => {
     logger.debug("OPDS entry", item)
@@ -97,20 +89,20 @@ export const AcquisitionScreen: FC = observer(() => {
     return (
       <ListItem
         LeftComponent={
-          <Box flexDirection={"row"} width={"full"}>
-            <Box flexDirection={"row"} width={"5/6"}>
+          <Box flexDirection={"row"} width={"$full"}>
+            <Box flexDirection={"row"} width={"$5/6"}>
               {item.contentType !== "text" && (
-                <ExpoFastImage
+                <Image
                   source={{ uri: thumbnail && `${settingStore.api.baseUrl}${thumbnail.href}` }}
                   style={{ height: 50, width: 30 }}
                   resizeMode={"contain"}
                 />
               )}
-              <Box marginLeft={"1"}>
-                <Text fontSize={"lg"} lineBreakMode="tail" numberOfLines={1}>
+              <Box marginLeft={"$1"}>
+                <Text fontSize={"$lg"} lineBreakMode="tail" numberOfLines={1}>
                   {item.title}
                 </Text>
-                <Text fontSize={"md"} marginTop={"0.5"}>
+                <Text fontSize={"$md"} marginTop={"$0.5"}>
                   {bottomText}
                 </Text>
               </Box>
@@ -139,7 +131,6 @@ export const AcquisitionScreen: FC = observer(() => {
       <FlatList<Entry>
         data={currentOpds?.entry.slice()}
         renderItem={renderItem}
-        estimatedItemSize={currentOpds?.entry.length}
         onRefresh={async () => {
           await initialize()
         }}

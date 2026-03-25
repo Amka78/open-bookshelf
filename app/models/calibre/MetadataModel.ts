@@ -1,4 +1,4 @@
-import { type Instance, types } from "mobx-state-tree"
+import { type Instance, type SnapshotIn, type SnapshotOut, types } from "mobx-state-tree"
 import { withSetPropAction } from "../helpers/withSetPropAction"
 
 export const MetadataModel = types
@@ -27,3 +27,5 @@ export const MetadataModel = types
   .actions(withSetPropAction)
 
 export type Metadata = Instance<typeof MetadataModel>
+export type MetadataSnapshotIn = SnapshotIn<typeof MetadataModel>
+export type MetadataSnapshotOut = SnapshotOut<typeof MetadataModel>

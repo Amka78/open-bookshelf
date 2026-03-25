@@ -7,27 +7,29 @@ export type ImageUploaderProps = ImageProps & {
   onImageUpload: (url: string) => void
 }
 
-export const ImageUploader = forwardRef((props: ImageUploaderProps, ref) => {
-  const onImageSize = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    })
+export const ImageUploader = forwardRef<React.ElementRef<typeof Pressable>, ImageUploaderProps>(
+  (props, ref) => {
+    const onImageSize = async () => {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      })
 
-    if (!result.canceled) {
-      if (props.onImageUpload) {
-        props.onImageUpload(result.assets[0].uri)
+      if (!result.canceled) {
+        if (props.onImageUpload) {
+          props.onImageUpload(result.assets[0].uri)
+        }
       }
     }
-  }
-  return (
-    <Pressable onPress={onImageSize} ref={ref}>
-      <Image {...props} style={styles.imageSize as StyleProp<ImageStyle>} />
-    </Pressable>
-  )
-})
+    return (
+      <Pressable onPress={onImageSize} ref={ref}>
+        <Image {...props} style={styles.imageSize as StyleProp<ImageStyle>} />
+      </Pressable>
+    )
+  },
+)
 
 const styles = StyleSheet.create({
   imageSize: {

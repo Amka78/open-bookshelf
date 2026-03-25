@@ -7,7 +7,7 @@ import {
   Pressable,
 } from "@gluestack-ui/themed"
 import { useMemo, useState } from "react"
-import { Controller, type ControllerProps } from "react-hook-form"
+import { Controller, type ControllerProps, type FieldValues } from "react-hook-form"
 import { InputField, type InputFieldProps } from "../InputField/InputField"
 
 const MAX_SUGGESTIONS = 5
@@ -16,7 +16,7 @@ export type FormInputFiledProps<T> = Omit<InputFieldProps, "onChangeText"> &
   Omit<ControllerProps<T>, "render"> & {
     suggestions?: string[]
   }
-export function FormInputField<T>(props: FormInputFiledProps<T>) {
+export function FormInputField<T extends FieldValues>(props: FormInputFiledProps<T>) {
   const [isSuggestionOpen, setIsSuggestionOpen] = useState(false)
 
   const openSuggestion = () => {

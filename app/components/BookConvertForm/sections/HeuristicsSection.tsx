@@ -1,7 +1,7 @@
 import { HStack, Text, VStack } from "@/components"
 import { Switch } from "@gluestack-ui/themed"
 import type { Control } from "react-hook-form"
-import { Controller } from "react-hook-form"
+import { Controller, type FieldPath } from "react-hook-form"
 import type { ConvertOptions } from "../ConvertOptions"
 
 type Props = {
@@ -10,7 +10,7 @@ type Props = {
 
 type SwitchRowProps = {
   control: Control<ConvertOptions>
-  name: keyof ConvertOptions["heuristics"] & string
+  name: keyof ConvertOptions["heuristics"]
   labelTx: Parameters<typeof Text>[0]["tx"]
   testID?: string
   disabled?: boolean
@@ -22,11 +22,11 @@ function SwitchRow({ control, name, labelTx, testID, disabled }: SwitchRowProps)
       <Text fontSize={"$xs"} flex={1} tx={labelTx} />
       <Controller
         control={control}
-        name={`heuristics.${name}` as keyof ConvertOptions}
+        name={`heuristics.${name}` as FieldPath<ConvertOptions>}
         render={({ field }) => (
           <Switch
             testID={testID ?? `switch-heuristics-${name}`}
-            value={field.value as boolean}
+            value={field.value}
             onValueChange={field.onChange}
             isDisabled={disabled}
           />

@@ -1,7 +1,7 @@
 import { HStack, Text, VStack } from "@/components"
 import { Switch } from "@gluestack-ui/themed"
 import type { Control } from "react-hook-form"
-import { Controller } from "react-hook-form"
+import { Controller, type FieldPath } from "react-hook-form"
 import type {
   ConvertOptions,
   EPUBVersion,
@@ -89,11 +89,11 @@ export function OutputSection({ control, outputFormat }: Props) {
               <Text fontSize={"$xs"} flex={1} tx={tx} />
               <Controller
                 control={control}
-                name={`outputEPUB.${name}` as keyof ConvertOptions}
+                name={`outputEPUB.${name}` as FieldPath<ConvertOptions>}
                 render={({ field }) => (
                   <Switch
                     testID={`switch-epub-${name}`}
-                    value={field.value as boolean}
+                    value={field.value}
                     onValueChange={field.onChange}
                   />
                 )}
@@ -123,7 +123,7 @@ export function OutputSection({ control, outputFormat }: Props) {
               render={({ field }) => (
                 <Switch
                   testID="switch-mobi-noInlineTable"
-                  value={field.value as boolean}
+                  value={field.value}
                   onValueChange={field.onChange}
                 />
               )}

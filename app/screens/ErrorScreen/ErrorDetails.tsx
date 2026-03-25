@@ -14,12 +14,10 @@ export function ErrorDetails(props: ErrorDetailsProps) {
       <Heading tx={"errorScreen.title"} />
 
       <ScrollView>
-        <Text style={$errorContent} weight="bold" text={`${props.error}`.trim()} />
-        <Text
-          selectable
-          style={$errorBacktrace}
-          text={`${props.errorInfo.componentStack}`.trim()}
-        />
+        <Text style={[$errorContent, { fontWeight: "bold" }]}>{`${props.error}`.trim()}</Text>
+        <Text selectable style={$errorBacktrace}>
+          {`${props.errorInfo.componentStack}`.trim()}
+        </Text>
       </ScrollView>
 
       <Button onPress={props.onReset} tx="errorScreen.reset" />

@@ -2,7 +2,6 @@ import { useStores } from "@/models"
 import type { LibraryMap } from "@/models/calibre"
 import type { ApppNavigationProp } from "@/navigators/types"
 import { useNavigation } from "@react-navigation/native"
-import { values } from "mobx"
 
 export function useCalibreRoot() {
   const { calibreRootStore } = useStores()
@@ -14,7 +13,7 @@ export function useCalibreRoot() {
     navigation.navigate("Library")
   }
 
-  const library: LibraryMap[] = Array.from(values(calibreRootStore.libraryMap))
+  const library: LibraryMap[] = Array.from(calibreRootStore.libraryMap.values())
 
   return {
     library,

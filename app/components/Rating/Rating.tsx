@@ -1,10 +1,11 @@
 import { Box, HStack, MaterialCommunityIcon, Text } from "@/components"
 import { Pressable, styled } from "@gluestack-ui/themed"
+import type { ComponentProps } from "react"
 export type RatingProps = {
-  rating: number
+  rating: number | null
   ticks?: number
   onPress?: (rating: number) => void
-}
+} & ComponentProps<typeof Box>
 
 const RatingText = styled(
   Text,
@@ -18,15 +19,15 @@ function RatingCore({ ticks = 2, ...restProps }: RatingProps) {
   const props = { ticks, ...restProps }
   let ratingCore: React.ReactNode
 
-  if (props.rating >= props.ticks) {
+  if ((props.rating ?? 0) >= props.ticks) {
     const ratingList = []
-    for (let i = 0; i < props.rating; i++) {
+    for (let i = 0; i < (props.rating ?? 0); i++) {
       if (i % props.ticks === 0) {
         ratingList.push(i)
       }
     }
-    ratingCore = ratingList.map(() => {
-      return <MaterialCommunityIcon name="star" />
+    ratingCore = ratingList.map((value) => {
+      return <MaterialCommunityIcon key={`rating-${value}`} name="star" />
     })
   } else {
     ratingCore = <RatingText tx="rating.noRate" />
@@ -38,7 +39,7 @@ function RatingCore({ ticks = 2, ...restProps }: RatingProps) {
       {props.onPress ? (
         <Pressable
           onPress={() => {
-            props.onPress(props.rating)
+            props.onPress?.(props.rating ?? 0)
           }}
         >
           {rating}
@@ -127,7 +128,7 @@ export const Rating = styled(
       variant: "common",
       ratingSize: "md",
     },
-  },
+  } as never,
   {
     descendantStyle: ["_text", "_icon"],
     ancestorStyle: ["_rating"],

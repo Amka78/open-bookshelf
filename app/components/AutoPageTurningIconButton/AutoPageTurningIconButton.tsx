@@ -1,7 +1,7 @@
 import { IconButton } from "@/components"
 import type { MessageKey } from "@/i18n"
 import { translate } from "@/i18n"
-import { Tooltip, TooltipContent, TooltipText, Box } from "@gluestack-ui/themed"
+import { Box, Tooltip, TooltipContent, TooltipText } from "@gluestack-ui/themed"
 import { useEffect, useState } from "react"
 
 export type AutoPageTurningIconButtonProps = {
@@ -22,7 +22,7 @@ export function AutoPageTurningIconButton({
   useEffect(() => {
     if (!isActive) {
       setBlinking(false)
-      return
+      return () => undefined
     }
 
     const interval = setInterval(() => {
@@ -42,13 +42,12 @@ export function AutoPageTurningIconButton({
   )
 
   return tooltipTx ? (
-    <Tooltip placement="bottom" trigger={(triggerProps) => {
-      return (
-        <Box {...triggerProps}>
-          {iconButton}
-        </Box>
-      )
-    }}>
+    <Tooltip
+      placement="bottom"
+      trigger={(triggerProps) => {
+        return <Box {...triggerProps}>{iconButton}</Box>
+      }}
+    >
       <TooltipContent>
         <TooltipText>{translate(tooltipTx)}</TooltipText>
       </TooltipContent>

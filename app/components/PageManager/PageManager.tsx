@@ -2,6 +2,7 @@ import { HStack, IconButton, Text, VStack } from "@/components"
 import { usePalette } from "@/theme"
 import { goToNextPage, goToPreviousPage } from "@/utils/pageTurnning"
 import { Slider, SliderFilledTrack, SliderThumb, SliderTrack, styled } from "@gluestack-ui/themed"
+import type { ComponentProps } from "react"
 
 export type PageManagerProps = {
   currentPage: number
@@ -9,12 +10,17 @@ export type PageManagerProps = {
   onPageChange?: (page: number) => void
   reverse?: boolean
   visible?: boolean
-  variant: "fix" | "free"
+  variant?: "fix" | "free"
   facingPage: boolean
-}
+} & ComponentProps<typeof VStack>
 
-function PageManagerCore({ reverse = false, visible = true, ...restProps }: PageManagerProps) {
-  const props = { reverse, visible, ...restProps }
+function PageManagerCore({
+  reverse = false,
+  visible = true,
+  variant = "fix",
+  ...restProps
+}: PageManagerProps) {
+  const props = { reverse, visible, variant, ...restProps }
   const palette = usePalette()
 
   const lastPageIndex = Math.max(props.totalPage - 1, 0)
@@ -117,13 +123,13 @@ export const PageManager = styled(PageManagerCore, {
         bottom: 0,
         width: "$full",
         zIndex: 1,
-      },
+      } as never,
       free: {
         width: "$full",
-      },
+      } as never,
     },
   },
   defaultProps: {
     variant: "fix",
   },
-})
+} as never)

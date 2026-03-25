@@ -6,7 +6,7 @@ import { Heading } from "@/components/Heading/Heading"
 import type { ModalComponentProp } from "react-native-modalfy"
 
 import { useStores } from "@/models"
-import type { Metadata } from "@/models/calibre"
+import type { MetadataSnapshotIn } from "@/models/calibre"
 import { logger } from "@/utils/logger"
 import { observer } from "mobx-react-lite"
 import { getSnapshot } from "mobx-state-tree"
@@ -45,9 +45,9 @@ export const BookEditModal = observer((props: BookEditModalProps) => {
   )
 })
 export function BookEditModalTemplate(props: BookEditModalProps) {
-  const form = useForm<Metadata, unknown, Metadata>({
+  const form = useForm<MetadataSnapshotIn, unknown, MetadataSnapshotIn>({
     defaultValues: props.modal.params.selectedBook.metaData
-      ? (getSnapshot(props.modal.params.selectedBook.metaData) as Metadata)
+      ? (getSnapshot(props.modal.params.selectedBook.metaData) as MetadataSnapshotIn)
       : undefined,
   })
 

@@ -1,6 +1,5 @@
 import { Box, ScrollView } from "@/components"
-import type { Book } from "@/models/CalibreRootStore"
-import type { FieldMetadataMap } from "@/models/calibre"
+import type { Book, FieldMetadataMap } from "@/models/calibre"
 import type { ComponentProps } from "react"
 import { BookDetailField } from "./BookDetailField"
 
@@ -26,6 +25,7 @@ export function BookDetailFieldList(props: BookDetailFieldListProps) {
             value?.length !== 0 &&
             !ExcludeFields.includes(fieldName) ? (
             <BookDetailField
+              key={fieldName}
               value={value}
               fieldMetadata={fieldMetadata}
               onLinkPress={props.onFieldPress}

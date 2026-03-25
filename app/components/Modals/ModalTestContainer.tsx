@@ -115,8 +115,12 @@ export function ModalTestContainer(props: ModalTestContainerProp) {
             fieldMetadataList: BookDetailFieldListStories.args.fieldMetadataList,
             onConvertBook: props.onConvertBook,
             onDeleteBook: props.onDeleteBook,
-            onDownloadBook: props.onDownlaodBook,
-            onOpenBook: props.onOpenBook,
+            onDownloadBook: async () => {
+              await props.onDownloadBook()
+            },
+            onOpenBook: async () => {
+              await props.onOpenBook()
+            },
           })
         }}
       >
@@ -126,7 +130,7 @@ export function ModalTestContainer(props: ModalTestContainerProp) {
         onPress={() => {
           modal.openModal("BookEditModal", {
             selectedBook: BookDetailFieldListStories.args.book,
-            imageUrl: BookImageItemStories.args.source,
+            imageUrl: String(BookImageItemStories.args.source),
             fieldMetadataList: BookDetailFieldListStories.args.fieldMetadataList,
             onOKPress: props.onOKPress,
           })

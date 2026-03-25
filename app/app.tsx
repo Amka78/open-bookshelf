@@ -64,7 +64,15 @@ function App(props: AppProps) {
     initialNavigationState,
     onNavigationStateChange,
     isRestored: isNavigationStateRestored,
-  } = useNavigationPersistence(storage, NAVIGATION_PERSISTENCE_KEY)
+  } = useNavigationPersistence(
+    {
+      load: storage.load,
+      save: async (key, value) => {
+        await storage.save(key, value)
+      },
+    },
+    NAVIGATION_PERSISTENCE_KEY,
+  )
 
   const [areFontsLoaded] = useFonts(customFontsToLoad)
 

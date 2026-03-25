@@ -3,12 +3,12 @@ import { styled } from "@gluestack-ui/themed"
 import { type CSSProperties, createElement, forwardRef } from "react"
 
 export type DateTimePickerProps = {
-  value: string
-  onChange: (date: string) => void
+  value?: string
+  onChange: (date?: string) => void
   coreStyle?: CSSProperties
 }
 
-const DateTimePickerCore = forwardRef((props: DateTimePickerProps, ref) => {
+const DateTimePickerCore = forwardRef<HTMLInputElement, DateTimePickerProps>((props, ref) => {
   return createElement("input", {
     type: "date",
     value: props.value ? props.value.split("T")[0] : undefined,

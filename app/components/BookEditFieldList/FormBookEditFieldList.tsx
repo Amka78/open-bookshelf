@@ -1,15 +1,17 @@
 import { Button, VStack } from "@/components"
-import type { Metadata } from "@/models/calibre"
+import type { MetadataSnapshotIn } from "@/models/calibre"
 import { getSnapshot } from "mobx-state-tree"
 import { useForm } from "react-hook-form"
 import { BookEditFieldList, type BookEditFieldListProps } from "./BookEditFieldList"
 
 export type FormBookEditFieldListProps = Omit<BookEditFieldListProps, "control"> & {
-  onSubmit: (data: Metadata) => void
+  onSubmit: (data: MetadataSnapshotIn) => void
 }
 export function FormBookEditFieldList(props: FormBookEditFieldListProps) {
-  const form = useForm<Metadata, unknown, Metadata>({
-    defaultValues: props.book.metaData ? (getSnapshot(props.book.metaData) as Metadata) : undefined,
+  const form = useForm<MetadataSnapshotIn, unknown, MetadataSnapshotIn>({
+    defaultValues: props.book.metaData
+      ? (getSnapshot(props.book.metaData) as MetadataSnapshotIn)
+      : undefined,
   })
   return (
     <VStack>

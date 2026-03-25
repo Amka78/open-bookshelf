@@ -37,7 +37,7 @@ export function FormTestContainer(props: FormTestContainerProps) {
         valueToText={","}
         textToValue={","}
       />
-      <FormDateTimePicker control={form.control} name={"datetimePicker"} />
+      <FormDateTimePicker control={form.control} name={"datetimePicker"} dateFormat="yyyy/MM/dd" />
       <FormImageUploader control={form.control} name={"url"} />
       <Button
         onPress={form.handleSubmit((value: FormTest) => {

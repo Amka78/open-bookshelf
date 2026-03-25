@@ -1,7 +1,7 @@
 import { HStack, Text, VStack } from "@/components"
 import { Switch } from "@gluestack-ui/themed"
 import type { Control } from "react-hook-form"
-import { Controller } from "react-hook-form"
+import { Controller, type FieldPath } from "react-hook-form"
 import type { ChapterMark, ConvertOptions } from "../ConvertOptions"
 import { FormSelectField } from "../FormSelectField"
 
@@ -45,11 +45,11 @@ export function StructureSection({ control }: Props) {
           <Text fontSize={"$xs"} flex={1} tx={tx} />
           <Controller
             control={control}
-            name={`structureDetection.${name}` as keyof ConvertOptions}
+            name={`structureDetection.${name}` as FieldPath<ConvertOptions>}
             render={({ field }) => (
               <Switch
                 testID={`switch-structure-${name}`}
-                value={field.value as boolean}
+                value={field.value}
                 onValueChange={field.onChange}
               />
             )}

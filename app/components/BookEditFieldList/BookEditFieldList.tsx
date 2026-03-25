@@ -1,5 +1,5 @@
 import { Box, FormInputField, HStack, Input, ScrollView, Text, VStack } from "@/components"
-import type { Book, Category, FieldMetadataMap, Metadata } from "@/models/calibre"
+import type { Book, Category, FieldMetadataMap, MetadataSnapshotIn } from "@/models/calibre"
 import type { ComponentProps } from "react"
 import type { Control, Path } from "react-hook-form"
 import { BookEditField } from "./BookEditField"
@@ -8,7 +8,7 @@ import { useEditFieldSuggestions } from "./useEditFieldSuggestions"
 export type BookEditFieldListProps = {
   fieldMetadataList: FieldMetadataMap
   book: Book
-  control: Control<Metadata, unknown>
+  control: Control<MetadataSnapshotIn, unknown>
   tagBrowser?: Category[]
 } & ComponentProps<typeof Box>
 
@@ -47,7 +47,7 @@ export function BookEditFieldList(props: BookEditFieldListProps) {
 
     if (label === "series") {
       const seriesIndexName = "seriesIndex" as Path<Metadata>
-      const seriesName = value.label as Path<Metadata>
+      const seriesName = value.label as Path<MetadataSnapshotIn>
 
       return (
         <HStack key={`${value.label}-seriesIndex`} space="sm" alignItems="flex-start" width="$full">

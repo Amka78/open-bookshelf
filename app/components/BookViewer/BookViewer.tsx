@@ -11,8 +11,8 @@ import type { ApppNavigationProp } from "@/navigators/types"
 import { useViewer } from "@/screens/ViewerScreen/useViewer"
 import { usePalette } from "@/theme"
 import { useNavigation } from "@react-navigation/native"
-import { FlashList, type ListRenderItem } from "@shopify/flash-list"
-import type React from "react"
+import { FlashList, type FlashListRef, type ListRenderItem } from "@shopify/flash-list"
+import React from "react"
 import { useCallback, useEffect, useRef } from "react"
 import {
   type FlexAlignType,
@@ -23,7 +23,7 @@ import {
   useWindowDimensions,
 } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { type FacingPageType, type FlashListHandle, useBookViewerState } from "./useBookViewerState"
+import { type FacingPageType, useBookViewerState } from "./useBookViewerState"
 
 const runOnNextFrame = (callback: () => void) => {
   if (typeof requestAnimationFrame === "function") {
@@ -64,12 +64,49 @@ export type BookViewerProps = {
   disableNavigation?: boolean
 }
 
+type FlashListCompatProps = {
+  key?: string
+  data: number[] | FacingPageType[]
+  extraData?: unknown
+  renderItem: ListRenderItem<number | FacingPageType>
+  horizontal?: boolean
+  pagingEnabled?: boolean
+  inverted?: boolean
+  ref?: React.Ref<FlashListRef<number | FacingPageType>>
+  keyExtractor?: (_: number | FacingPageType, index: number) => string
+  onViewableItemsChanged?: (info: {
+    viewableItems: { index?: number | null; isViewable?: boolean }[]
+  }) => void
+  onMomentumScrollEnd?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void
+  onScrollEndDrag?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void
+  viewabilityConfig?: { itemVisiblePercentThreshold: number }
+  estimatedItemSize?: number
+  estimatedListSize?: { width: number; height: number }
+  drawDistance?: number
+  overrideItemLayout?: (
+    layout: { span?: number; size?: number; offset?: number },
+    item: number | FacingPageType,
+    index: number,
+  ) => void
+  removeClippedSubviews?: boolean
+  windowSize?: number
+  initialNumToRender?: number
+  maxToRenderPerBatch?: number
+}
+
+function FlashListCompat(props: FlashListCompatProps) {
+  return React.createElement(
+    FlashList as unknown as React.ComponentType<Record<string, unknown>>,
+    props as unknown as Record<string, unknown>,
+  )
+}
+
 export function BookViewer(props: BookViewerProps) {
   const palette = usePalette()
   const viewerHook = useViewer()
   const { settingStore } = useStores()
 
-  const flashListRef = useRef<FlashListHandle>(null)
+  const flashListRef = useRef<FlashListRef<number | FacingPageType>>(null)
 
   const dimension = useWindowDimensions()
   const insets = useSafeAreaInsets()
@@ -239,6 +276,9 @@ export function BookViewer(props: BookViewerProps) {
     ? ({ height: dimension.height, maxHeight: dimension.height } as const)
     : undefined
   const listContainerStyle = useTransformInvert ? styles.listInverted : styles.list
+  const invertedProps = {
+    inverted: isInverted && !useTransformInvert,
+  } as unknown as Record<string, boolean>
   const latestHorizontalIndexRef = useRef(scrollIndex)
 
   useEffect(() => {
@@ -343,14 +383,14 @@ export function BookViewer(props: BookViewerProps) {
       {pages ? (
         <Box style={styles.viewerRoot} alignSelf="center" width={listViewportWidth}>
           <Box style={listContainerStyle}>
-            <FlashList<number | FacingPageType>
+            <FlashListCompat
               key={flashListAxisKey}
               data={data}
               extraData={flashListLayoutKey}
               renderItem={renderItem}
               horizontal={isHorizontalReading}
               pagingEnabled={isHorizontalReading}
-              inverted={isInverted && !useTransformInvert}
+              {...invertedProps}
               ref={flashListRef}
               keyExtractor={(_, index) => `${index}`}
               onViewableItemsChanged={isHorizontalReading ? undefined : onViewableItemsChanged}
@@ -368,8 +408,13 @@ export function BookViewer(props: BookViewerProps) {
                 !useFixedItemLayout
                   ? undefined
                   : (layout, _, index) => {
-                      layout.size = estimatedItemSize
-                      layout.offset = estimatedItemSize * index
+                      const mutableLayout = layout as {
+                        span?: number
+                        size?: number
+                        offset?: number
+                      }
+                      mutableLayout.size = estimatedItemSize
+                      mutableLayout.offset = estimatedItemSize * index
                     }
               }
               removeClippedSubviews={useFixedItemLayout}
@@ -382,6 +427,7 @@ export function BookViewer(props: BookViewerProps) {
       ) : null}
       <PageManager
         currentPage={currentPage}
+        variant="fix"
         facingPage={
           viewerHook.readingStyle === "facingPage" ||
           viewerHook.readingStyle === "facingPageWithTitle"

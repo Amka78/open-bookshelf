@@ -10,14 +10,14 @@ import {
   VStack,
 } from "@/components"
 import { useRomajiText } from "@/hooks/useRomajiText"
-import type { Book, FieldMetadata, Metadata } from "@/models/calibre"
+import type { Book, FieldMetadata, MetadataSnapshotIn } from "@/models/calibre"
 import type { ComponentProps } from "react"
-import { useController, type Control, type Path } from "react-hook-form"
+import { type Control, type Path, useController } from "react-hook-form"
 
 export type BookEditFieldProps = {
   book: Book
   fieldMetadata: FieldMetadata
-  control: Control<Metadata, unknown>
+  control: Control<MetadataSnapshotIn, unknown>
   suggestions?: string[]
   containerProps?: ComponentProps<typeof VStack>
 }
@@ -47,30 +47,30 @@ export function BookEditField(props: BookEditFieldProps) {
     }
   }
 
-  const label = props.fieldMetadata.label as Path<Metadata>
+  const label = props.fieldMetadata.label as Path<MetadataSnapshotIn>
   const authorsController = useController({
     control: props.control,
-    name: "authors" as Path<Metadata>,
+    name: "authors" as Path<MetadataSnapshotIn>,
   })
   const authorSortController = useController({
     control: props.control,
-    name: "authorSort" as Path<Metadata>,
+    name: "authorSort" as Path<MetadataSnapshotIn>,
   })
   const titleController = useController({
     control: props.control,
-    name: "title" as Path<Metadata>,
+    name: "title" as Path<MetadataSnapshotIn>,
   })
   const sortController = useController({
     control: props.control,
-    name: "sort" as Path<Metadata>,
+    name: "sort" as Path<MetadataSnapshotIn>,
   })
   const seriesController = useController({
     control: props.control,
-    name: "series" as Path<Metadata>,
+    name: "series" as Path<MetadataSnapshotIn>,
   })
   const seriesIndexController = useController({
     control: props.control,
-    name: "seriesIndex" as Path<Metadata>,
+    name: "seriesIndex" as Path<MetadataSnapshotIn>,
   })
 
   switch (props.fieldMetadata.datatype) {

@@ -1,11 +1,11 @@
 import React from "react"
-import { Controller, type ControllerProps } from "react-hook-form"
+import { Controller, type ControllerProps, type FieldValues } from "react-hook-form"
 
 import { Checkbox, type ICheckboxProps } from "../Checkbox/Checkbox"
 
 export type FormCheckboxProps<T> = Omit<ICheckboxProps, "onChangeText" | "value"> &
   Omit<ControllerProps<T>, "render">
-export function FormCheckbox<T>(props: FormCheckboxProps<T>) {
+export function FormCheckbox<T extends FieldValues>(props: FormCheckboxProps<T>) {
   return (
     <Controller
       {...props}

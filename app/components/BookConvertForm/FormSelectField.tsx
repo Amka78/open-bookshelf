@@ -13,7 +13,8 @@ import {
   SelectTrigger,
 } from "@gluestack-ui/themed"
 import { ChevronDownIcon } from "@gluestack-ui/themed"
-import { Controller, type ControllerProps } from "react-hook-form"
+import type { ComponentProps } from "react"
+import { Controller, type ControllerProps, type FieldValues } from "react-hook-form"
 
 export type SelectOption<T extends string = string> = {
   value: T
@@ -28,10 +29,10 @@ export type FormSelectFieldProps<TForm, TValue extends string = string> = Omit<
   options: SelectOption<TValue>[]
   placeholderTx?: MessageKey
   placeholder?: string
-  width?: number | string
+  width?: ComponentProps<typeof SelectTrigger>["width"]
 }
 
-export function FormSelectField<TForm, TValue extends string = string>(
+export function FormSelectField<TForm extends FieldValues, TValue extends string = string>(
   props: FormSelectFieldProps<TForm, TValue>,
 ) {
   const { control, name, rules, shouldUnregister, defaultValue, disabled, options, width } = props

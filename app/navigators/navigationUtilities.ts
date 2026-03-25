@@ -9,20 +9,36 @@ import { BackHandler, Platform } from "react-native"
 import Config from "../config"
 import type { PersistNavigationConfig } from "../config/config.base"
 import { useIsMounted } from "../utils/isMounted"
+import type { AppStackParamList } from "./types"
+
+type StorageLike = {
+  load: (key: string) => Promise<NavigationStateLike | undefined>
+  save: (key: string, value: NavigationState) => void | Promise<void>
+}
 
 /* eslint-disable */
 export const RootNavigation = {
-  navigate(_name: string, _params?: any) {},
+  navigate<RouteName extends keyof AppStackParamList>(
+    _name: RouteName,
+    _params?: AppStackParamList[RouteName],
+  ) {},
   goBack() {},
   resetRoot(_state?: PartialState<NavigationState> | NavigationState) {},
   getRootState(): NavigationState {
-    return {} as any
+    return {
+      key: "root",
+      index: 0,
+      routeNames: [],
+      routes: [],
+      type: "stack",
+      stale: false,
+    }
   },
   dispatch(_action: NavigationAction) {},
 }
 /* eslint-enable */
 
-export const navigationRef = createNavigationContainerRef()
+export const navigationRef = createNavigationContainerRef<AppStackParamList>()
 
 type NavigationStateLike = NavigationState | PartialState<NavigationState>
 
@@ -93,10 +109,10 @@ export function useBackButtonHandler(canExit: (routeName: string) => boolean) {
     }
 
     // Subscribe when we come to life
-    BackHandler.addEventListener("hardwareBackPress", onBackPress)
+    const subscription = BackHandler.addEventListener("hardwareBackPress", onBackPress)
 
     // Unsubscribe when we're done
-    return () => BackHandler.removeEventListener("hardwareBackPress", onBackPress)
+    return () => subscription.remove()
   }, [])
 }
 
@@ -116,14 +132,14 @@ function navigationRestoredDefaultState(persistNavigation: PersistNavigationConf
 /**
  * Custom hook for persisting navigation state.
  */
-export function useNavigationPersistence(storage: any, persistenceKey: string) {
-  const [initialNavigationState, setInitialNavigationState] = useState()
+export function useNavigationPersistence(storage: StorageLike, persistenceKey: string) {
+  const [initialNavigationState, setInitialNavigationState] = useState<NavigationStateLike>()
   const isMounted = useIsMounted()
 
   const initNavState = navigationRestoredDefaultState(Config.persistNavigation)
   const [isRestored, setIsRestored] = useState(initNavState)
 
-  const routeNameRef = useRef<string | undefined>()
+  const routeNameRef = useRef<string | undefined>(undefined)
 
   const onNavigationStateChange = (state?: NavigationState) => {
     if (!state) {
@@ -157,8 +173,10 @@ export function useNavigationPersistence(storage: any, persistenceKey: string) {
   }
 
   useEffect(() => {
-    if (!isRestored) restoreState()
-  }, [isRestored])
+    if (!isRestored) {
+      void restoreState()
+    }
+  }, [isRestored, restoreState])
 
   return { onNavigationStateChange, restoreState, isRestored, initialNavigationState }
 }
@@ -168,9 +186,21 @@ export function useNavigationPersistence(storage: any, persistenceKey: string) {
  * prop. If you have access to the navigation prop, do not use this.
  * More info: https://reactnavigation.org/docs/navigating-without-navigation-prop/
  */
-export function navigate(name: any, params?: any) {
+export function navigate<RouteName extends keyof AppStackParamList>(name: RouteName): void
+export function navigate<RouteName extends keyof AppStackParamList>(
+  name: RouteName,
+  params: AppStackParamList[RouteName],
+): void
+export function navigate<RouteName extends keyof AppStackParamList>(
+  name: RouteName,
+  params?: AppStackParamList[RouteName],
+) {
   if (navigationRef.isReady()) {
-    navigationRef.navigate(name as never, params as never)
+    const navigateRef = navigationRef.navigate as unknown as (
+      routeName: RouteName,
+      routeParams?: AppStackParamList[RouteName],
+    ) => void
+    navigateRef(name, params)
   }
 }
 

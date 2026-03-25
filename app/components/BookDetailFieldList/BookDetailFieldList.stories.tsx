@@ -26,6 +26,6 @@ type StoryProps = StoryObj<typeof BookDetailFieldList>
 export const Base: StoryProps = {
   args: bookDetailFieldListStoryArgs,
   argTypes: {
-    onLinkPress: { action: "Pressed Link." },
+    onFieldPress: { action: "Pressed Link." },
   },
 }

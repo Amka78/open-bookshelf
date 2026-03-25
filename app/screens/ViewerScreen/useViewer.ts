@@ -2,7 +2,7 @@ import type { ModalStackParams } from "@/components/Modals/Types"
 import { useStores } from "@/models"
 import type { LibraryMap } from "@/models/CalibreRootStore"
 import { type ClientSetting, ClientSettingModel } from "@/models/calibre"
-import type { Metadata } from "@/models/calibre"
+import type { MetadataSnapshotIn } from "@/models/calibre"
 import type { BookReadingStyleType } from "@/type/types"
 import { logger } from "@/utils/logger"
 import { useEffect, useRef, useState } from "react"
@@ -130,7 +130,7 @@ export function useViewer() {
     }
 
     return cleanup
-  }, [history, modal, promptKey, selectedBook, selectedLibrary])
+  }, [history, modal, promptKey, selectedBook])
 
   // Client setting management
   let tempClientSetting = selectedBook
@@ -194,9 +194,11 @@ export function useViewer() {
     modal.openModal("ViewerRatingModal", {
       initialRating: selectedBook.metaData.rating ?? 0,
       onSubmit: async (rating: number) => {
-        const result = await selectedBook.update(selectedLibrary.id, { rating } as Metadata, [
-          "rating",
-        ])
+        const result = await selectedBook.update(
+          selectedLibrary.id,
+          { rating } as Partial<MetadataSnapshotIn>,
+          ["rating"],
+        )
 
         if (!result) {
           modal.openModal("ErrorModal", {

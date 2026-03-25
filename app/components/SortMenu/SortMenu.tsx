@@ -10,7 +10,7 @@ export type SortMenuProps = {
   selectedSortOrder?: string
   field?: SortField[]
   onSortChange?: (sortId: string) => void
-} & ComponentProps<typeof Menu>
+} & Omit<ComponentProps<typeof Menu>, "trigger">
 export function SortMenu(props: SortMenuProps) {
   const dimension = useWindowDimensions()
 

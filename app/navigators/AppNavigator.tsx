@@ -88,7 +88,7 @@ const AppStack = observer(function AppStack() {
     if (authenticationStore.isAuthenticated) {
       api.setAuthorization(authenticationStore.token)
     }
-  }, [])
+  }, [authenticationStore.isAuthenticated, authenticationStore.token, settingStore.api.baseUrl])
 
   return (
     <Stack.Navigator
@@ -251,7 +251,7 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
     let cancelled = false
     handlingViewerInfoRef.current = true
 
-    const resolveViewerInfo = async () => {
+    const resolveViewerInfo = async (): Promise<void> => {
       try {
         if (settingStore.api.baseUrl) {
           api.setUrl(settingStore.api.baseUrl)
@@ -326,7 +326,7 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
         }
 
         if (format) {
-          const history = selectedLibrary.readingHistory.find((value) => {
+          const history = calibreRootStore.readingHistories.find((value) => {
             return (
               value.libraryId === selectedLibrary.id &&
               value.bookId === selectedBook.id &&
@@ -356,7 +356,7 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
                 cachedPath: bookImageList,
                 format: format,
               })
-              selectedLibrary.addReadingHistory(historyModel)
+              calibreRootStore.addReadingHistory(historyModel)
             })
           }
         }
@@ -384,6 +384,7 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
       cancelled = true
     }
   }, [
+    authenticationStore.getHeader,
     authenticationStore.isAuthenticated,
     authenticationStore.token,
     calibreRootStore,

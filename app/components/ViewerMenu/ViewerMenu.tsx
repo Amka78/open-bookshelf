@@ -34,10 +34,10 @@ type MenuItemLabelProps = ComponentProps<typeof MenuItemLabelOrigin> & {
 }
 function MenuItemLabel(props: MenuItemLabelProps) {
   const palette = usePalette()
-  const { descriptionTx, ...restProps } = props
+  const { tx, descriptionTx, children } = props
   return (
-    <VStackOrigin {...restProps}>
-      <MenuItemLabelOrigin>{props.tx ? translate(props.tx) : props.children}</MenuItemLabelOrigin>
+    <VStackOrigin>
+      <MenuItemLabelOrigin>{tx ? translate(tx) : children}</MenuItemLabelOrigin>
       {descriptionTx ? (
         <Text fontSize={"$xs"} color={palette.textSecondary}>
           {translate(descriptionTx)}
@@ -64,7 +64,7 @@ export function ViewerMenu(props: ViewerMenuProps) {
         trigger={(triggerProps) => {
           return (
             <Pressable {...triggerProps}>
-              <MaterialCommunityIcon
+              <IconButton
                 iconSize="md-"
                 name="book-settings"
                 labelTx={
@@ -72,6 +72,7 @@ export function ViewerMenu(props: ViewerMenuProps) {
                     ? (`bookReadingStyle.${readingStyleState}` as MessageKey)
                     : undefined
                 }
+                pressable={false}
               />
             </Pressable>
           )

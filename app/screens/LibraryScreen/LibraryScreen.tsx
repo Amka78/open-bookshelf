@@ -52,7 +52,7 @@ export const LibraryScreen: FC = observer(() => {
   const downloadBookHook = useDownloadBook()
   const libraryHook = useLibrary()
 
-  const searchBar = useRef<SearchBarCommands>()
+  const searchBar = useRef<SearchBarCommands | null>(null)
 
   const libraryActions = useMemo(() => {
     return (
@@ -111,6 +111,7 @@ export const LibraryScreen: FC = observer(() => {
     selectedLibrary?.searchSetting?.sort,
     selectedLibrary?.searchSetting?.sortOrder,
     selectedLibrary?.sortField,
+    convergenceHook.isLarge,
   ])
 
   useLayoutEffect(() => {
@@ -171,21 +172,21 @@ export const LibraryScreen: FC = observer(() => {
         ref: searchBar,
         onSearchButtonPress: (e) => {
           libraryHook.onSearch(e.nativeEvent.text)
-          searchBar.current.blur()
+          searchBar.current?.blur()
         },
         onChangeText: (e) => {
           const completedText = libraryHook.completeSearchParameter(e.nativeEvent.text)
           if (completedText !== e.nativeEvent.text) {
-            searchBar.current.setText(completedText)
+            searchBar.current?.setText(completedText)
           }
         },
         onOpen: () => {
           if (selectedLibrary.searchSetting?.query) {
-            searchBar.current.setText(selectedLibrary.searchSetting.query)
+            searchBar.current?.setText(selectedLibrary.searchSetting.query)
           }
         },
         onCancelButtonPress: () => {
-          searchBar.current.toggleCancelButton(false)
+          searchBar.current?.toggleCancelButton(false)
         },
       },
     })
@@ -257,7 +258,7 @@ export const LibraryScreen: FC = observer(() => {
       if (!book?.metaData?.formats?.length) {
         return
       }
-      modal.openModal("BookConvertModal", {})
+      modal.openModal("BookConvertModal", { imageUrl })
     }
 
     const onEditBook = () => {
@@ -345,9 +346,8 @@ export const LibraryScreen: FC = observer(() => {
       {selectedLibrary ? (
         <FlatList<Book>
           key={libraryHook.currentListStyle} // to force re-render when list style change
-          data={selectedLibrary.books ? values(selectedLibrary.books).slice() : undefined}
+          data={selectedLibrary.books ? Array.from(selectedLibrary.books.values()) : undefined}
           renderItem={renderItem}
-          estimatedItemSize={214}
           numColumns={Math.floor(window.width / 242)}
           onRefresh={
             convergenceHook.isLarge
