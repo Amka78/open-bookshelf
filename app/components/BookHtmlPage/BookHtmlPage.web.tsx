@@ -74,12 +74,19 @@ export function BookHtmlPage(props: BookHtmlPageProps) {
   const height = autoHeight ? Math.max(contentHeight, 1) : props.availableHeight ?? 1
 
   const containerStyle = useMemo<CSSProperties>(() => {
+    const alignSelf =
+      props.pageType === "leftPage"
+        ? "flex-end"
+        : props.pageType === "rightPage"
+          ? "flex-start"
+          : undefined
     return {
       overflow: "hidden",
       height,
+      alignSelf,
       ...(typeof props.availableWidth === "number" ? { width: props.availableWidth } : {}),
     }
-  }, [height, props.availableWidth])
+  }, [height, props.availableWidth, props.pageType])
 
   if (error) {
     return (

@@ -12,6 +12,7 @@ export type BookHtmlPageProps = {
   headers?: Record<string, string>
   availableWidth?: number
   availableHeight?: number
+  pageType?: "singlePage" | "leftPage" | "rightPage"
   onPress?: () => void
   onLongPress?: () => void
   themeMode?: "light" | "dark"
@@ -738,6 +739,7 @@ const buildPreparedHtmlDocument = (
   documentData: SerializedHtmlDocument,
   documentKey: string,
   scrollMode: "content" | "viewport",
+  pageType: "singlePage" | "leftPage" | "rightPage",
   appearance: {
     themeMode: "light" | "dark"
     textColor: string
@@ -748,6 +750,7 @@ const buildPreparedHtmlDocument = (
   const serializedData = serializeForScriptTag(documentData)
   const escapedDocumentKey = serializeForScriptTag(documentKey)
   const escapedScrollMode = serializeForScriptTag(scrollMode)
+  const escapedPageType = serializeForScriptTag(pageType)
   const escapedThemeMode = serializeForScriptTag(appearance.themeMode)
   const escapedTextColor = serializeForScriptTag(appearance.textColor)
   const escapedLinkColor = serializeForScriptTag(appearance.linkColor)
@@ -765,16 +768,15 @@ const buildPreparedHtmlDocument = (
         --obs-link-color: ${appearance.linkColor};
       }
       html, body {
-        margin: 0;
-        padding: 0;
+        margin: 0 !important;
+        padding: 0 !important;
         width: 100%;
         background: transparent;
         color: var(--obs-text-color);
       }
       body.obs-viewport {
         height: 100vh;
-        overflow: auto;
-        -webkit-overflow-scrolling: touch;
+        overflow: hidden;
       }
       body.obs-content {
         overflow: hidden;
@@ -793,6 +795,59 @@ const buildPreparedHtmlDocument = (
         max-width: 100%;
         color-scheme: light; /* Prevent dark mode from inverting images */
       }
+      body.obs-viewport img,
+      body.obs-viewport svg,
+      body.obs-viewport video {
+        display: block;
+        max-height: 100vh;
+      }
+      /* 見開き左ページ: bodyをflex化しコンテンツを右端（綴じ側）に寄せる */
+      body.obs-left-page {
+        height: 100vh !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-end !important;
+      }
+      body.obs-left-page #obs-root {
+        flex: 0 0 auto;
+        height: 100% !important;
+        width: -webkit-fit-content !important;
+        width: fit-content !important;
+        max-width: 100% !important;
+        margin-left: auto !important;
+        margin-right: 0 !important;
+      }
+      /* 見開き右ページ: bodyをflex化しコンテンツを左端（綴じ側）に寄せる */
+      body.obs-right-page {
+        height: 100vh !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+      }
+      body.obs-right-page #obs-root {
+        flex: 0 0 auto;
+        height: 100% !important;
+        width: -webkit-fit-content !important;
+        width: fit-content !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: auto !important;
+      }
+      /* 見開きページの画像を縦幅いっぱいに表示 */
+      body.obs-left-page img,
+      body.obs-left-page svg,
+      body.obs-left-page video,
+      body.obs-right-page img,
+      body.obs-right-page svg,
+      body.obs-right-page video {
+        display: block !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        width: auto !important;
+        max-width: 100% !important;
+      }
     </style>
   </head>
   <body>
@@ -803,6 +858,7 @@ const buildPreparedHtmlDocument = (
         const serializedData = JSON.parse(document.getElementById("obs-serialized-data")?.textContent || "{}")
         const documentKey = ${escapedDocumentKey}
         const scrollMode = ${escapedScrollMode}
+        const pageType = ${escapedPageType}
         const nsMap = Array.isArray(serializedData.ns_map) ? serializedData.ns_map : []
         const root = document.getElementById("obs-root")
         const headMark = "data-obs-head"
@@ -921,8 +977,9 @@ const buildPreparedHtmlDocument = (
             return
           }
 
-          document.body.classList.remove("obs-content", "obs-viewport")
+          document.body.classList.remove("obs-content", "obs-viewport", "obs-left-page", "obs-right-page", "obs-single-page")
           document.body.classList.add(scrollMode === "viewport" ? "obs-viewport" : "obs-content")
+          document.body.classList.add(pageType === "leftPage" ? "obs-left-page" : pageType === "rightPage" ? "obs-right-page" : "obs-single-page")
           applyAttributes(htmlNode, document.documentElement)
           removeMarkedHeadNodes()
 
@@ -956,6 +1013,7 @@ const buildPreparedHtmlDocument = (
 
           renderBodyNode(bodyNode || { n: "body", c: [] })
           document.body.classList.add(scrollMode === "viewport" ? "obs-viewport" : "obs-content")
+          document.body.classList.add(pageType === "leftPage" ? "obs-left-page" : pageType === "rightPage" ? "obs-right-page" : "obs-single-page")
         }
 
         const postPayload = (payload) => {
@@ -1336,6 +1394,7 @@ const buildPreparedHtmlDocument = (
 
         render()
         applyThemeOverrides()
+
         installLongPressHandler()
         notifySize()
         window.setTimeout(() => {
@@ -1453,6 +1512,7 @@ export const useCalibreHtmlDocument = (props: BookHtmlPageProps): UseCalibreHtml
       preparedDocument,
       documentKey,
       autoHeight ? "content" : "viewport",
+      props.pageType ?? "singlePage",
       {
         themeMode: props.themeMode ?? "light",
         textColor: props.themeTextColor ?? "#111318",
@@ -1468,6 +1528,7 @@ export const useCalibreHtmlDocument = (props: BookHtmlPageProps): UseCalibreHtml
     props.themeLinkColor,
     props.themeMode,
     props.themeTextColor,
+    props.pageType,
   ])
 
   return {

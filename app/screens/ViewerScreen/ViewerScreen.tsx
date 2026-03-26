@@ -58,6 +58,7 @@ export const ViewerScreen: FC = observer(() => {
         <BookHtmlPage
           availableWidth={props.availableWidth}
           availableHeight={props.availableHeight}
+          pageType={props.pageType}
           bookId={selectedBook.id}
           format={selectedBook.metaData.selectedFormat ?? "AZW3"}
           hash={selectedBook.hash ?? 0}
