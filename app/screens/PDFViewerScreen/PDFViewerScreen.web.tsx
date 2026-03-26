@@ -1,7 +1,7 @@
 import { BookViewer, type RenderPageProps } from "@/components"
 import { usePDFViewer } from "@/screens/PDFViewerScreen/usePDFViewer"
 import { observer } from "mobx-react-lite"
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import React, { useCallback, useMemo, useState } from "react"
 import { StyleSheet, View } from "react-native"
 import { Document, Page, pdfjs } from "react-pdf"
 
@@ -14,99 +14,23 @@ export const PDFViewerScreen = observer(() => {
   const [pageAspectRatio, setPageAspectRatio] = useState<number | undefined>(undefined)
   // totalPages と pageAspectRatio が両方確定するまでページ操作を無効にする
   const [pdfReady, setPdfReady] = useState(false)
-  const [webPdfBuffer, setWebPdfBuffer] = useState<ArrayBuffer | undefined>(undefined)
-  const [webPdfFetchFailed, setWebPdfFetchFailed] = useState(false)
   const [activePage, setActivePage] = useState(0)
-  const [isPageSettling, setIsPageSettling] = useState(false)
-
-  const pageRenderCountRef = React.useRef(0)
-  const pageSettleTimerRef = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const {
     selectedBook,
     totalPages,
     setTotalPages,
-    sourceUri,
-    header,
     documentFile,
     windowDimension,
     calculatePageWidth,
   } = pdfHook
 
-  useEffect(() => {
-    let cancelled = false
-
-    const loadPdfBinary = async () => {
-      if (!sourceUri) {
-        setWebPdfBuffer(undefined)
-        return
-      }
-
-      try {
-        setPdfReady(false)
-        setWebPdfFetchFailed(false)
-        const response = await fetch(sourceUri, {
-          headers: header,
-          credentials: "omit",
-        })
-        if (!response.ok) {
-          throw new Error(`Failed to fetch PDF: ${response.status}`)
-        }
-
-        const data = await response.arrayBuffer()
-        if (!cancelled) {
-          setWebPdfBuffer(data)
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setWebPdfBuffer(undefined)
-          setWebPdfFetchFailed(true)
-          console.warn("[PDF] Binary preload failed, fallback to URL mode", error)
-        }
-      }
-    }
-
-    loadPdfBinary()
-    return () => {
-      cancelled = true
-    }
-  }, [header, sourceUri])
-
-  useEffect(() => {
-    void activePage
-    setIsPageSettling(true)
-
-    if (pageSettleTimerRef.current) {
-      clearTimeout(pageSettleTimerRef.current)
-    }
-
-    pageSettleTimerRef.current = setTimeout(() => {
-      setIsPageSettling(false)
-    }, 260)
-
-    return () => {
-      if (pageSettleTimerRef.current) {
-        clearTimeout(pageSettleTimerRef.current)
-      }
-    }
-  }, [activePage])
-
-  const documentSource = useMemo(() => {
-    if (webPdfBuffer && !webPdfFetchFailed) {
-      return { data: webPdfBuffer }
-    }
-    return documentFile
-  }, [documentFile, webPdfBuffer, webPdfFetchFailed])
-
-  const renderQuality = isPageSettling ? "fast" : "high"
-  const pdfDevicePixelRatio = renderQuality === "fast" ? 0.7 : 1
-
   const renderPage = useCallback(
     (renderProps: RenderPageProps) => {
       const renderStartTime = performance.now()
-      pageRenderCountRef.current++
 
       const availableHeight = renderProps.availableHeight ?? windowDimension.height
-      const maxWidth = calculatePageWidth(true, windowDimension.width)
+      const isFacingPage = renderProps.pageType !== "singlePage"
+      const maxWidth = calculatePageWidth(isFacingPage, windowDimension.width)
 
       let pageWidth = maxWidth
       if (pageAspectRatio !== undefined) {
@@ -124,13 +48,13 @@ export const PDFViewerScreen = observer(() => {
       return (
         <View style={[styles.page, pageContainerStyle]}>
           <Page
-            key={`${renderProps.page}-${renderQuality}`}
+            key={`${renderProps.page}`}
             pageNumber={renderProps.page + 1}
             width={Math.max(1, pageWidth)}
             renderAnnotationLayer={false}
             renderTextLayer={false}
             renderMode="canvas"
-            devicePixelRatio={pdfDevicePixelRatio}
+            devicePixelRatio={1}
             loading={null}
             onRenderSuccess={() => {
               const renderDone = performance.now()
@@ -148,14 +72,50 @@ export const PDFViewerScreen = observer(() => {
         </View>
       )
     },
-    [
-      calculatePageWidth,
-      pageAspectRatio,
-      pdfDevicePixelRatio,
-      renderQuality,
-      windowDimension.height,
-      windowDimension.width,
-    ],
+    [calculatePageWidth, pageAspectRatio, windowDimension.height, windowDimension.width],
+  )
+
+  // 前後±2ページを非表示で事前レンダリング。ページ遷移時に再描画コストをゼロにする
+  const preloadPageIndices = useMemo(() => {
+    if (!pdfReady || totalPages == null) return []
+    return [-2, -1, 1, 2]
+      .map((offset) => activePage + offset)
+      .filter((p) => p >= 0 && p < totalPages)
+  }, [activePage, pdfReady, totalPages])
+
+  // 先読みページの描画幅（単ページ幅・アスペクト比考慮）
+  const preloadPageWidth = useMemo(() => {
+    const maxWidth = calculatePageWidth(false, windowDimension.width)
+    if (pageAspectRatio !== undefined) {
+      const widthForHeight = Math.floor(windowDimension.height * pageAspectRatio)
+      return Math.max(1, Math.min(maxWidth, widthForHeight))
+    }
+    return Math.max(1, maxWidth)
+  }, [calculatePageWidth, pageAspectRatio, windowDimension.height, windowDimension.width])
+
+  const onDocumentLoadSuccess = useCallback(
+    async (pdf: {
+      numPages: number
+      getPage: (
+        n: number,
+      ) => Promise<{ getViewport: (opts: { scale: number }) => { width: number; height: number } }>
+    }) => {
+      // setTotalPages と setPageAspectRatio を await 後に同一マイクロタスクで呼ぶことで
+      // React 18 の自動バッチングにより1回のレンダリングにまとめる。
+      // これにより intermediate な状態（ページ数だけ判明してアスペクト比未定）が生じず、
+      // scheduleHorizontalRecenter によるスクロール位置リセットを防ぐ。
+      try {
+        const firstPage = await pdf.getPage(1)
+        const viewport = firstPage.getViewport({ scale: 1 })
+        setTotalPages((prev) => (prev === pdf.numPages ? prev : pdf.numPages))
+        setPageAspectRatio(viewport.width / viewport.height)
+      } catch {
+        // アスペクト比取得失敗時はページ数だけ更新してそのまま続行
+        setTotalPages((prev) => (prev === pdf.numPages ? prev : pdf.numPages))
+      }
+      setPdfReady(true)
+    },
+    [setTotalPages],
   )
 
   if (!selectedBook) {
@@ -163,27 +123,22 @@ export const PDFViewerScreen = observer(() => {
   }
 
   return (
-    <Document
-      file={documentSource}
-      loading={null}
-      error={null}
-      onLoadSuccess={async (pdf) => {
-        // setTotalPages と setPageAspectRatio を await 後に同一マイクロタスクで呼ぶことで
-        // React 18 の自動バッチングにより1回のレンダリングにまとめる。
-        // これにより intermediate な状態（ページ数だけ判明してアスペクト比未定）が生じず、
-        // scheduleHorizontalRecenter によるスクロール位置リセットを防ぐ。
-        try {
-          const firstPage = await pdf.getPage(1)
-          const viewport = firstPage.getViewport({ scale: 1 })
-          setTotalPages((prev) => (prev === pdf.numPages ? prev : pdf.numPages))
-          setPageAspectRatio(viewport.width / viewport.height)
-        } catch {
-          // アスペクト比取得失敗時はページ数だけ更新してそのまま続行
-          setTotalPages((prev) => (prev === pdf.numPages ? prev : pdf.numPages))
-        }
-        setPdfReady(true)
-      }}
-    >
+    <Document file={documentFile} loading={null} error={null} onLoadSuccess={onDocumentLoadSuccess}>
+      {/* 前後ページ先読み：画面外に保持してpdfjs側でキャンバスを事前生成させる */}
+      <View style={styles.preloadContainer} pointerEvents="none" aria-hidden={true}>
+        {preloadPageIndices.map((pageIdx) => (
+          <Page
+            key={`preload-${pageIdx}`}
+            pageNumber={pageIdx + 1}
+            width={preloadPageWidth}
+            renderAnnotationLayer={false}
+            renderTextLayer={false}
+            renderMode="canvas"
+            devicePixelRatio={1}
+            loading={null}
+          />
+        ))}
+      </View>
       <BookViewer
         bookTitle={selectedBook.metaData.title}
         renderPage={renderPage}
@@ -211,5 +166,13 @@ const styles = StyleSheet.create({
   },
   rightPage: {
     alignItems: "flex-start",
+  },
+  // 先読みページ専用コンテナ: DOM上に保持しつつ完全に非表示・クリップ
+  preloadContainer: {
+    position: "absolute",
+    width: 0,
+    height: 0,
+    overflow: "hidden",
+    opacity: 0,
   },
 })

@@ -42,11 +42,13 @@ export function usePDFViewer() {
   }, [cachedPdfPath, selectedBook, selectedLibrary])
 
   // Create document file object for react-pdf (web)
+  // rangeChunkSize を 512KB に拡大し、大きな画像ページでの Range Request 往復回数を削減する
   const documentFile = useMemo(
     () => ({
       url: sourceUri,
       httpHeaders: header,
       withCredentials: false,
+      rangeChunkSize: 524288,
     }),
     [header, sourceUri],
   )
