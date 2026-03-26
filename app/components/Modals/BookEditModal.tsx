@@ -45,10 +45,27 @@ export const BookEditModal = observer((props: BookEditModalProps) => {
   )
 })
 export function BookEditModalTemplate(props: BookEditModalProps) {
+  const rawSnapshot = props.modal.params.selectedBook.metaData
+    ? (getSnapshot(props.modal.params.selectedBook.metaData) as MetadataSnapshotIn)
+    : undefined
+  const langNames = rawSnapshot?.langNames ?? {}
+  const hasLangNames = Object.keys(langNames).length > 0
+  const defaultValues =
+    rawSnapshot && hasLangNames
+      ? {
+          ...rawSnapshot,
+          languages: rawSnapshot.languages
+            .map((entry) => String(entry ?? "").trim())
+            .filter(Boolean)
+            .map((entry) => {
+              const nameSet = new Set(Object.values(langNames as Record<string, string>))
+              if (nameSet.has(entry)) return entry
+              return (langNames as Record<string, string>)[entry] ?? entry
+            }),
+        }
+      : rawSnapshot
   const form = useForm<MetadataSnapshotIn, unknown, MetadataSnapshotIn>({
-    defaultValues: props.modal.params.selectedBook.metaData
-      ? (getSnapshot(props.modal.params.selectedBook.metaData) as MetadataSnapshotIn)
-      : undefined,
+    defaultValues,
   })
 
   return (

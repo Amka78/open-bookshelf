@@ -7,23 +7,20 @@ import { useForm } from "react-hook-form"
 
 type MetadataFormValues = MetadataSnapshotIn
 
-const LANGUAGE_LINK_COLUMNS = new Set(["lamg_code", "lang_code"])
-
-function toLanguageCodesForDisplay(
+function toLanguageNamesForDisplay(
   value: MetadataFormValues,
   langNames: Record<string, string>,
 ): MetadataFormValues {
-  const codeSet = new Set(Object.keys(langNames))
-  const nameToCodeMap = new Map<string, string>()
-
-  Object.entries(langNames).forEach(([code, name]) => {
-    nameToCodeMap.set(name, code)
-  })
+  const nameSet = new Set(Object.values(langNames))
 
   const languages = value.languages
     .map((entry) => String(entry ?? "").trim())
     .filter(Boolean)
-    .map((entry) => (codeSet.has(entry) ? entry : nameToCodeMap.get(entry) ?? entry))
+    .map((entry) => {
+      // すでに名前であればそのまま、言語コードであれば名前に変換する
+      if (nameSet.has(entry)) return entry
+      return langNames[entry] ?? entry
+    })
 
   return {
     ...value,
@@ -52,17 +49,14 @@ export function useBookEdit() {
 
   const selectedLibrary = calibreRootStore.selectedLibrary
   const selectedBook = selectedLibrary.selectedBook
-  const languageFieldMetadata =
-    typeof selectedLibrary.fieldMetadataList?.get === "function"
-      ? selectedLibrary.fieldMetadataList.get("languages")
-      : undefined
-  const isLanguageCodeDisplay = LANGUAGE_LINK_COLUMNS.has(languageFieldMetadata?.linkColumn ?? "")
   const bookMetaDataSnapshot = selectedBook.metaData
     ? (getSnapshot(selectedBook.metaData) as MetadataFormValues)
     : undefined
+  const langNames = bookMetaDataSnapshot?.langNames ?? {}
+  const hasLangNames = Object.keys(langNames).length > 0
   const normalizedDefaultValues =
-    bookMetaDataSnapshot && isLanguageCodeDisplay
-      ? toLanguageCodesForDisplay(bookMetaDataSnapshot, bookMetaDataSnapshot.langNames ?? {})
+    bookMetaDataSnapshot && hasLangNames
+      ? toLanguageNamesForDisplay(bookMetaDataSnapshot, langNames)
       : bookMetaDataSnapshot
 
   const form = useForm<MetadataFormValues, unknown, MetadataFormValues>({
@@ -71,9 +65,7 @@ export function useBookEdit() {
 
   const onSubmit = form.handleSubmit((value: MetadataFormValues) => {
     const updatedValue =
-      isLanguageCodeDisplay && bookMetaDataSnapshot
-        ? toLanguageNamesForUpdate(value, bookMetaDataSnapshot.langNames ?? {})
-        : value
+      hasLangNames && bookMetaDataSnapshot ? toLanguageNamesForUpdate(value, langNames) : value
 
     selectedBook.update(selectedLibrary.id, updatedValue, Object.keys(updatedValue))
     navigation.goBack()

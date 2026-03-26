@@ -48,7 +48,7 @@ export function FormMultipleInputField<T extends FieldValues>(
   const normalizedSuggestions = useMemo(() => {
     const suggestionSet = new Set<string>()
     ;(suggestions ?? []).forEach((suggestion) => {
-      const trimmed = suggestion?.trim()
+      const trimmed = typeof suggestion === "string" ? suggestion.trim() : ""
       if (trimmed) {
         suggestionSet.add(trimmed)
       }
@@ -103,7 +103,15 @@ export function FormMultipleInputField<T extends FieldValues>(
         const isOpen = candidateValues.length > 0 && isSuggestionOpen
 
         const commitRows = (nextRows: string[]) => {
-          const normalized = nextRows.map((entry) => (typeof entry === "string" ? entry : ""))
+          // 入力値を候補値と完全一致させる
+          const normalized = nextRows.map((entry) => {
+            if (typeof entry !== "string") return ""
+            // 候補リストに完全一致するものがあればそちらを優先
+            const match = normalizedSuggestions.find(
+              (s) => s.value.trim().toLowerCase() === entry.trim().toLowerCase(),
+            )
+            return match ? match.value : entry
+          })
           renderProps.field.onChange(normalized)
         }
 
@@ -181,6 +189,7 @@ export function FormMultipleInputField<T extends FieldValues>(
                             key={`${String(name)}-${candidate}`}
                             onPress={() => {
                               const sourceRows = values.length > 0 ? [...values] : [""]
+                              // 候補値そのものをセット
                               sourceRows[index] = candidate
                               commitRows(sourceRows)
                               closeSuggestion()

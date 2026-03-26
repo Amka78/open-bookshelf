@@ -46,7 +46,8 @@ export function useEditFieldSuggestions({
       return undefined
     }
 
-    return Array.from(langNames.keys())
+    // 言語コードではなく言語名を候補として返す
+    return Array.from(langNames.values())
   }, [metaData?.langNames])
 
   return {
