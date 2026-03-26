@@ -1,10 +1,11 @@
 import { BookViewer, type RenderPageProps } from "@/components"
 import { usePDFViewer } from "@/screens/PDFViewerScreen/usePDFViewer"
 import { observer } from "mobx-react-lite"
-import React, { useCallback, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { StyleSheet, View } from "react-native"
 import { Document, Page, pdfjs } from "react-pdf"
 
+import pdfDiagnostics from "@/services/performance/pdfDiagnostics"
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`
 
 export const PDFViewerScreen = observer(() => {
@@ -13,26 +14,102 @@ export const PDFViewerScreen = observer(() => {
   const [pageAspectRatio, setPageAspectRatio] = useState<number | undefined>(undefined)
   // totalPages と pageAspectRatio が両方確定するまでページ操作を無効にする
   const [pdfReady, setPdfReady] = useState(false)
+  const [webPdfBuffer, setWebPdfBuffer] = useState<ArrayBuffer | undefined>(undefined)
+  const [webPdfFetchFailed, setWebPdfFetchFailed] = useState(false)
+  const [activePage, setActivePage] = useState(0)
+  const [isPageSettling, setIsPageSettling] = useState(false)
 
+  const pageRenderCountRef = React.useRef(0)
+  const pageSettleTimerRef = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const {
     selectedBook,
     totalPages,
     setTotalPages,
+    sourceUri,
+    header,
     documentFile,
     windowDimension,
     calculatePageWidth,
   } = pdfHook
 
+  useEffect(() => {
+    let cancelled = false
+
+    const loadPdfBinary = async () => {
+      if (!sourceUri) {
+        setWebPdfBuffer(undefined)
+        return
+      }
+
+      try {
+        setPdfReady(false)
+        setWebPdfFetchFailed(false)
+        const response = await fetch(sourceUri, {
+          headers: header,
+          credentials: "omit",
+        })
+        if (!response.ok) {
+          throw new Error(`Failed to fetch PDF: ${response.status}`)
+        }
+
+        const data = await response.arrayBuffer()
+        if (!cancelled) {
+          setWebPdfBuffer(data)
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setWebPdfBuffer(undefined)
+          setWebPdfFetchFailed(true)
+          console.warn("[PDF] Binary preload failed, fallback to URL mode", error)
+        }
+      }
+    }
+
+    loadPdfBinary()
+    return () => {
+      cancelled = true
+    }
+  }, [header, sourceUri])
+
+  useEffect(() => {
+    void activePage
+    setIsPageSettling(true)
+
+    if (pageSettleTimerRef.current) {
+      clearTimeout(pageSettleTimerRef.current)
+    }
+
+    pageSettleTimerRef.current = setTimeout(() => {
+      setIsPageSettling(false)
+    }, 260)
+
+    return () => {
+      if (pageSettleTimerRef.current) {
+        clearTimeout(pageSettleTimerRef.current)
+      }
+    }
+  }, [activePage])
+
+  const documentSource = useMemo(() => {
+    if (webPdfBuffer && !webPdfFetchFailed) {
+      return { data: webPdfBuffer }
+    }
+    return documentFile
+  }, [documentFile, webPdfBuffer, webPdfFetchFailed])
+
+  const renderQuality = isPageSettling ? "fast" : "high"
+  const pdfDevicePixelRatio = renderQuality === "fast" ? 0.7 : 1
+
   const renderPage = useCallback(
     (renderProps: RenderPageProps) => {
+      const renderStartTime = performance.now()
+      pageRenderCountRef.current++
+
       const availableHeight = renderProps.availableHeight ?? windowDimension.height
-      // 単一ページ・見開きどちらでも常に見開き1ページ分の幅を上限とする
       const maxWidth = calculatePageWidth(true, windowDimension.width)
 
-      // アスペクト比が判明していれば height 制約も考慮した幅を計算する
       let pageWidth = maxWidth
       if (pageAspectRatio !== undefined) {
-        // availableHeight に収まる幅 = availableHeight * (w / h)
         const widthForHeight = Math.floor(availableHeight * pageAspectRatio)
         pageWidth = Math.min(maxWidth, widthForHeight)
       }
@@ -47,16 +124,38 @@ export const PDFViewerScreen = observer(() => {
       return (
         <View style={[styles.page, pageContainerStyle]}>
           <Page
+            key={`${renderProps.page}-${renderQuality}`}
             pageNumber={renderProps.page + 1}
             width={Math.max(1, pageWidth)}
             renderAnnotationLayer={false}
             renderTextLayer={false}
+            renderMode="canvas"
+            devicePixelRatio={pdfDevicePixelRatio}
             loading={null}
+            onRenderSuccess={() => {
+              const renderDone = performance.now()
+              pdfDiagnostics.logMetric({
+                pageNumber: renderProps.page + 1,
+                renderStartTime,
+                layoutCompleteTime: renderDone,
+                totalRenderTime: renderDone - renderStartTime,
+                pageType: renderProps.pageType,
+                width: pageWidth,
+                height: availableHeight,
+              })
+            }}
           />
         </View>
       )
     },
-    [pageAspectRatio, windowDimension.height, windowDimension.width, calculatePageWidth],
+    [
+      calculatePageWidth,
+      pageAspectRatio,
+      pdfDevicePixelRatio,
+      renderQuality,
+      windowDimension.height,
+      windowDimension.width,
+    ],
   )
 
   if (!selectedBook) {
@@ -65,7 +164,7 @@ export const PDFViewerScreen = observer(() => {
 
   return (
     <Document
-      file={documentFile}
+      file={documentSource}
       loading={null}
       error={null}
       onLoadSuccess={async (pdf) => {
@@ -89,6 +188,7 @@ export const PDFViewerScreen = observer(() => {
         bookTitle={selectedBook.metaData.title}
         renderPage={renderPage}
         totalPage={totalPages ?? 1}
+        onPageChange={setActivePage}
         performanceMode="web-pdf"
         disableNavigation={!pdfReady}
       />

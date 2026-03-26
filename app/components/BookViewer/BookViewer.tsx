@@ -213,8 +213,8 @@ export function BookViewer(props: BookViewerProps) {
     ],
   )
 
-  const renderItem: ListRenderItem<number | FacingPageType> = useCallback(
-    ({ item, index }) => {
+  const renderItemContent = useCallback(
+    (item: number | FacingPageType, index: number) => {
       let renderComp: React.JSX.Element
       if (typeof item === "number" || (item as FacingPageType).page2 === undefined) {
         const num = typeof item === "number" ? item : (item as FacingPageType).page1
@@ -273,6 +273,13 @@ export function BookViewer(props: BookViewerProps) {
       useTransformInvert,
       viewerHook.pageDirection,
     ],
+  )
+
+  const renderItem: ListRenderItem<number | FacingPageType> = useCallback(
+    ({ item, index }) => {
+      return renderItemContent(item, index)
+    },
+    [renderItemContent],
   )
 
   const estimatedItemSize =
@@ -392,7 +399,18 @@ export function BookViewer(props: BookViewerProps) {
           viewerHook.onSetPageDirection(pageDirection)
         }}
       />
-      {pages ? (
+      {pages && isWebPdfMode ? (
+        <Box style={styles.viewerRoot} alignSelf="center" width={listViewportWidth}>
+          <Box style={listContainerStyle}>
+            {data.length > 0
+              ? renderItemContent(
+                  data[Math.max(0, Math.min(scrollIndex, Math.max(data.length - 1, 0)))],
+                  Math.max(0, Math.min(scrollIndex, Math.max(data.length - 1, 0))),
+                )
+              : null}
+          </Box>
+        </Box>
+      ) : pages ? (
         <Box style={styles.viewerRoot} alignSelf="center" width={listViewportWidth}>
           <Box style={listContainerStyle}>
             <FlashListCompat
