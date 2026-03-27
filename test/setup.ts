@@ -117,6 +117,7 @@ mock.module("react-native", () => ({
   View: "div",
   Text: "span",
   ScrollView: "div",
+  KeyboardAvoidingView: "div",
   TextInput: "input",
   Pressable: "button",
   Modal: "div",

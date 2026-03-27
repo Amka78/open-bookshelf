@@ -12,6 +12,7 @@ export type BookEditFieldListProps = {
   tagBrowser?: Category[]
   onUploadFormat?: (params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>
   onDeleteFormat?: (format: string) => Promise<boolean>
+  onTextInputFocus?: () => void
 } & ComponentProps<typeof Box>
 
 const EditFieldSort = [
@@ -62,6 +63,7 @@ export function BookEditFieldList(props: BookEditFieldListProps) {
                 control={props.control}
                 name={seriesName}
                 suggestions={suggestions}
+                onInputFocus={props.onTextInputFocus}
                 width="$full"
               />
             </Input>
@@ -69,7 +71,12 @@ export function BookEditFieldList(props: BookEditFieldListProps) {
           <VStack alignItems="flex-start" space={"sm"} marginBottom={"$2.5"} width={"$10"}>
             <Box height="$6" />
             <Input width={"$10"}>
-              <FormInputField control={props.control} name={seriesIndexName} inputMode="numeric" />
+              <FormInputField
+                control={props.control}
+                name={seriesIndexName}
+                inputMode="numeric"
+                onInputFocus={props.onTextInputFocus}
+              />
             </Input>
           </VStack>
         </HStack>
@@ -85,6 +92,7 @@ export function BookEditFieldList(props: BookEditFieldListProps) {
         suggestions={suggestions}
         onUploadFormat={props.onUploadFormat}
         onDeleteFormat={props.onDeleteFormat}
+        onTextInputFocus={props.onTextInputFocus}
       />
     )
   })

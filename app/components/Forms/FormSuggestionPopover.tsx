@@ -7,8 +7,10 @@ import {
   PopoverContent,
 } from "@/components/Popover/Popover"
 import { Text } from "@/components/Text/Text"
+import { useKeyboardVisibility } from "@/hooks/useKeyboardVisibility"
 import { usePalette } from "@/theme"
 import type { ReactNode } from "react"
+import { resolveSuggestionPopoverPlacement } from "./formSuggestionPlacement"
 
 type FormSuggestionPopoverProps = {
   trigger: (triggerProps: Record<string, unknown>) => ReactNode
@@ -43,10 +45,13 @@ export function FormSuggestionPopover(props: FormSuggestionPopoverProps) {
     optionMarginBottom = "$1",
   } = props
   const palette = usePalette()
+  const { isKeyboardVisible } = useKeyboardVisibility()
+
+  const popoverPlacement = resolveSuggestionPopoverPlacement(isKeyboardVisible)
 
   return (
     <Popover
-      placement="bottom left"
+      placement={popoverPlacement}
       shouldFlip={false}
       isKeyboardDismissable={false}
       trigger={trigger}

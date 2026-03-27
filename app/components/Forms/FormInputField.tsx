@@ -9,6 +9,7 @@ const MAX_SUGGESTIONS = 5
 export type FormInputFiledProps<T> = Omit<InputFieldProps, "onChangeText"> &
   Omit<ControllerProps<T>, "render"> & {
     suggestions?: string[]
+    onInputFocus?: () => void
   }
 
 export function FormInputField<T extends FieldValues>(props: FormInputFiledProps<T>) {
@@ -54,6 +55,7 @@ export function FormInputField<T extends FieldValues>(props: FormInputFiledProps
     defaultValue,
     disabled,
     suggestions,
+    onInputFocus,
     ...inputProps
   } = props
 
@@ -120,6 +122,7 @@ export function FormInputField<T extends FieldValues>(props: FormInputFiledProps
                       }
                     }}
                     onFocus={() => {
+                      onInputFocus?.()
                       openSuggestion()
                     }}
                     onBlur={() => {

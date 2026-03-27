@@ -1,10 +1,7 @@
-import { resetRoot } from "@/navigators"
-import * as storage from "@/utils/storage"
 import React, { Component, type ErrorInfo, type ReactNode } from "react"
 
-const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
-
 import { ErrorDetails } from "./ErrorDetails"
+import { resetAppToConnect } from "./resetApp"
 
 interface Props {
   children: ReactNode
@@ -44,8 +41,7 @@ export class ErrorBoundary extends Component<Props, State> {
   // Reset the error back to null
   resetError = async () => {
     this.setState({ error: null, errorInfo: null })
-    await storage.remove(NAVIGATION_PERSISTENCE_KEY)
-    resetRoot({ index: 0, routes: [{ name: "Connect" }] })
+    await resetAppToConnect()
   }
 
   // To avoid unnecessary re-renders

@@ -1,6 +1,11 @@
-import { Button, Heading, RootContainer, Text } from "@/components"
+import { Box } from "@/components/Box/Box"
+import { Button } from "@/components/Button/Button"
+import { Heading } from "@/components/Heading/Heading"
+import { RootContainer } from "@/components/RootContainer/RootContainer"
+import { Text } from "@/components/Text/Text"
+import { VStack } from "@/components/VStack/VStack"
 import React, { type ErrorInfo } from "react"
-import { ScrollView, type TextStyle, View, type ViewStyle } from "react-native"
+import { ScrollView, type TextStyle, type ViewStyle } from "react-native"
 
 export interface ErrorDetailsProps {
   error: Error
@@ -10,20 +15,31 @@ export interface ErrorDetailsProps {
 
 export function ErrorDetails(props: ErrorDetailsProps) {
   return (
-    <RootContainer>
-      <Heading tx={"errorScreen.title"} />
+    <RootContainer testID="error-details-container">
+      <VStack flex={1} width="$full" testID="error-details-content">
+        <Heading tx={"errorScreen.title"} />
 
-      <ScrollView>
-        <Text style={[$errorContent, { fontWeight: "bold" }]}>{`${props.error}`.trim()}</Text>
-        <Text selectable style={$errorBacktrace}>
-          {`${props.errorInfo.componentStack}`.trim()}
-        </Text>
-      </ScrollView>
+        <Box flex={1} minHeight={0} testID="error-details-scroll-wrapper">
+          <ScrollView contentContainerStyle={$errorSectionContentContainer}>
+            <Text style={[$errorContent, { fontWeight: "bold" }]}>{`${props.error}`.trim()}</Text>
+            <Text selectable style={$errorBacktrace}>
+              {`${props.errorInfo.componentStack}`.trim()}
+            </Text>
+          </ScrollView>
+        </Box>
 
-      <Button onPress={props.onReset} tx="errorScreen.reset" />
+        <Button
+          onPress={props.onReset}
+          tx="errorScreen.reset"
+          testID="error-reset-button"
+          width="$full"
+          alignSelf="stretch"
+        />
+      </VStack>
     </RootContainer>
   )
 }
+
 
 const $topSection: ViewStyle = {
   flex: 1,
@@ -43,7 +59,7 @@ const $errorSection: ViewStyle = {
 }
 
 const $errorSectionContentContainer: ViewStyle = {
-  //padding: spacing.medium,
+  paddingBottom: 12,
 }
 
 const $errorContent: TextStyle = {

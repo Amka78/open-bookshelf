@@ -22,6 +22,7 @@ export type BookEditFieldProps = {
   suggestions?: string[]
   onUploadFormat?: (params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>
   onDeleteFormat?: (format: string) => Promise<boolean>
+  onTextInputFocus?: () => void
   containerProps?: ComponentProps<typeof VStack>
 }
 
@@ -84,7 +85,12 @@ export function BookEditField(props: BookEditFieldProps) {
     case "float":
       field = (
         <Input>
-          <FormInputField control={props.control} name={label} inputMode="numeric" />
+          <FormInputField
+            control={props.control}
+            name={label}
+            inputMode="numeric"
+            onInputFocus={props.onTextInputFocus}
+          />
         </Input>
       )
       break
@@ -116,6 +122,7 @@ export function BookEditField(props: BookEditFieldProps) {
             textToValue={props.fieldMetadata.isMultiple.uiToList}
             valueToText={props.fieldMetadata.isMultiple.listToUi}
             suggestions={props.suggestions}
+            onInputFocus={props.onTextInputFocus}
             width={"$full"}
           />
         )
@@ -126,6 +133,7 @@ export function BookEditField(props: BookEditFieldProps) {
               control={props.control}
               name={label}
               suggestions={props.suggestions}
+              onInputFocus={props.onTextInputFocus}
               width={"$full"}
             />
           </Input>

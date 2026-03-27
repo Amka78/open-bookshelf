@@ -11,6 +11,7 @@ export type FormMultipleInputFiledProps<T> = Omit<InputFieldProps, "onChangeText
     textToValue: string
     valueToText: string
     suggestions?: string[]
+    onInputFocus?: () => void
   }
 export function FormMultipleInputField<T extends FieldValues>(
   props: FormMultipleInputFiledProps<T>,
@@ -61,6 +62,7 @@ export function FormMultipleInputField<T extends FieldValues>(
     disabled,
     textToValue,
     suggestions,
+    onInputFocus,
     ...inputProps
   } = props
 
@@ -170,6 +172,7 @@ export function FormMultipleInputField<T extends FieldValues>(
                               commitRows(sourceRows)
                             }}
                             onFocus={() => {
+                              onInputFocus?.()
                               setActiveRowIndex(index)
                               openSuggestion()
                             }}
