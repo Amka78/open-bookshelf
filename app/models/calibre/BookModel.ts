@@ -17,9 +17,8 @@ import { type Metadata, MetadataModel, type ReadingHistory } from "../calibre"
 import { handleCommonApiError } from "../errors/errors"
 import { withSetPropAction } from "../helpers/withSetPropAction"
 
-type BookConvertResponse =
-  | Awaited<ReturnType<typeof api.CheckBookConverting>>
-  | Awaited<ReturnType<typeof api.startConversion>>
+type BookManifestResponse = Awaited<ReturnType<typeof api.CheckBookConverting>>
+type ConversionStatusResponse = Awaited<ReturnType<typeof api.getConversionStatus>>
 
 function normalizeUpdateFieldValue(field: string, value: unknown) {
   if (field === "seriesIndex") {
@@ -45,15 +44,28 @@ function shouldUseHtmlViewer(requestedFormat: string, manifest: ApiBookManifestR
 }
 
 function isConvertManifestResponse(
-  response: BookConvertResponse,
+  response: BookManifestResponse,
 ): response is { kind: "ok"; data: ApiBookManifestResultType } {
   return response.kind === "ok" && "files" in response.data
 }
 
 function isConvertJobStatusResponse(
-  response: BookConvertResponse,
+  response: BookManifestResponse,
 ): response is { kind: "ok"; data: { job_status: "waiting" | "finished"; traceback?: string } } {
   return response.kind === "ok" && "job_status" in response.data
+}
+
+function isConversionRunningResponse(
+  response: ConversionStatusResponse,
+): response is { kind: "ok"; data: { running: true; percent: number; msg: string } } {
+  return response.kind === "ok" && response.data.running === true
+}
+
+function isConversionFinishedResponse(response: ConversionStatusResponse): response is {
+  kind: "ok"
+  data: { running: false; ok: boolean; was_aborted: boolean; traceback: string; log: string }
+} {
+  return response.kind === "ok" && response.data.running === false
 }
 
 export const BookModel = types
@@ -76,14 +88,64 @@ export const BookModel = types
       convertOptions?: ConvertOptions,
     ) {
       const convertParams = convertOptions ? convertOptionsToParams(convertOptions) : undefined
-      let response: BookConvertResponse | undefined
-      while (!response || !isConvertManifestResponse(response)) {
-        const inputFmt = convertOptions?.inputFormat
-        if (inputFmt) {
-          response = yield api.startConversion(libraryId, root.id, inputFmt, format, convertParams)
-        } else {
-          response = yield api.CheckBookConverting(libraryId, root.id, format, convertParams)
+      const inputFmt = convertOptions?.inputFormat
+      let response: BookManifestResponse | undefined
+
+      if (inputFmt) {
+        const startResponse = yield api.startConversion(
+          libraryId,
+          root.id,
+          inputFmt,
+          format,
+          convertParams,
+        )
+
+        if (startResponse.kind !== "ok") {
+          if (startResponse.kind === "not-found") {
+            throw new Error(startResponse.message)
+          }
+          handleCommonApiError(startResponse)
+          return
         }
+
+        while (true) {
+          const statusResponse: ConversionStatusResponse = yield api.getConversionStatus(
+            libraryId,
+            startResponse.data,
+          )
+
+          if (statusResponse.kind !== "ok") {
+            if (statusResponse.kind === "not-found") {
+              throw new Error(statusResponse.message)
+            }
+            handleCommonApiError(statusResponse)
+            return
+          }
+
+          if (isConversionRunningResponse(statusResponse)) {
+            yield delay(6000)
+            continue
+          }
+
+          if (!isConversionFinishedResponse(statusResponse)) {
+            yield delay(6000)
+            continue
+          }
+
+          if (!statusResponse.data.ok) {
+            throw new Error(
+              statusResponse.data.traceback ||
+                statusResponse.data.log ||
+                (statusResponse.data.was_aborted ? "Conversion aborted" : "Conversion failed"),
+            )
+          }
+
+          break
+        }
+      }
+
+      while (!response || !isConvertManifestResponse(response)) {
+        response = yield api.CheckBookConverting(libraryId, root.id, format)
 
         if (response.kind !== "ok") {
           if (response.kind === "not-found") {
@@ -91,10 +153,8 @@ export const BookModel = types
           }
           handleCommonApiError(response)
         } else if (isConvertJobStatusResponse(response)) {
-          if (response.data.job_status === "finished") {
-            if (response.data.traceback) {
-              throw new Error(response.data.traceback)
-            }
+          if (response.data.job_status === "finished" && response.data.traceback) {
+            throw new Error(response.data.traceback)
           }
         }
 

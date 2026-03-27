@@ -17,6 +17,8 @@ import type {
   ApiBookInfo,
   ApiBookInfoCore,
   ApiConversionBookData,
+  ApiConversionStart,
+  ApiConversionStatus,
   ApiBookManifestResultType,
   ApiBookManifestStatusType,
   ApiCalibreInterfaceType,
@@ -296,25 +298,32 @@ export class Api {
     inputFmt: string,
     outputFmt: string,
     convertParams?: Record<string, string | number | boolean>,
-  ): Promise<
-    | {
-        kind: "ok"
-        data: ApiBookManifestStatusType | ApiBookManifestResultType
-      }
-    | GeneralApiProblem
-  > {
+  ): Promise<{ kind: "ok"; data: ApiConversionStart } | GeneralApiProblem> {
     const requestBody = {
       input_fmt: inputFmt,
       output_fmt: outputFmt,
       ...(convertParams ?? {}),
     }
-    const response: ApiResponse<ApiBookManifestStatusType | ApiBookManifestResultType> =
-      await this.apisauce.post(
-        `conversion/start/${bookId}?library_id=${encodeURIComponent(
-          libraryId,
-        )}&sort=timestamp.desc`,
-        requestBody,
-      )
+    const response: ApiResponse<ApiConversionStart> = await this.apisauce.post(
+      `conversion/start/${bookId}?library_id=${encodeURIComponent(libraryId)}&sort=timestamp.desc`,
+      requestBody,
+    )
+
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response)
+      if (problem) return problem
+    }
+
+    return { kind: "ok", data: response.data }
+  }
+
+  async getConversionStatus(
+    libraryId: string,
+    jobId: number,
+  ): Promise<{ kind: "ok"; data: ApiConversionStatus } | GeneralApiProblem> {
+    const response: ApiResponse<ApiConversionStatus> = await this.apisauce.get(
+      `conversion/status/${jobId}?library_id=${encodeURIComponent(libraryId)}`,
+    )
 
     if (!response.ok) {
       const problem = getGeneralApiProblem(response)

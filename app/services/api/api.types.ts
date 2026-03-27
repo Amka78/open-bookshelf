@@ -46,6 +46,26 @@ export type ApiConversionBookData = {
   book_id: number
 }
 
+export type ApiConversionStart = number
+
+export type ApiConversionStatusRunning = {
+  running: true
+  percent: number
+  msg: string
+}
+
+export type ApiConversionStatusFinished = {
+  running: false
+  ok: boolean
+  was_aborted: boolean
+  traceback: string
+  log: string
+  size?: number
+  fmt?: string
+}
+
+export type ApiConversionStatus = ApiConversionStatusRunning | ApiConversionStatusFinished
+
 type BookManifestChildren = {
   title: string
   dest: string
