@@ -10,6 +10,8 @@ export type BookEditFieldListProps = {
   book: Book
   control: Control<MetadataSnapshotIn, unknown>
   tagBrowser?: Category[]
+  onUploadFormat?: (params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>
+  onDeleteFormat?: (format: string) => Promise<boolean>
 } & ComponentProps<typeof Box>
 
 const EditFieldSort = [
@@ -81,6 +83,8 @@ export function BookEditFieldList(props: BookEditFieldListProps) {
         control={props.control}
         fieldMetadata={value}
         suggestions={suggestions}
+        onUploadFormat={props.onUploadFormat}
+        onDeleteFormat={props.onDeleteFormat}
       />
     )
   })

@@ -65,6 +65,10 @@ mock.module("expo-sharing", () => ({
   shareAsync: jest.fn(),
 }))
 
+mock.module("expo-document-picker", () => ({
+  getDocumentAsync: jest.fn().mockResolvedValue({ canceled: true, assets: [] }),
+}))
+
 // Set global variables
 const testGlobal = globalThis as typeof globalThis & { __DEV__: boolean; __TEST__: boolean }
 testGlobal.__DEV__ = true

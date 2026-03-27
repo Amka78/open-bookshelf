@@ -1,7 +1,9 @@
 import { useStores } from "@/models"
 import type { MetadataSnapshotIn } from "@/models/calibre"
 import type { ApppNavigationProp } from "@/navigators/types"
+import { api } from "@/services/api"
 import { useNavigation } from "@react-navigation/native"
+import * as DocumentPicker from "expo-document-picker"
 import { getSnapshot } from "mobx-state-tree"
 import { useForm } from "react-hook-form"
 
@@ -71,10 +73,78 @@ export function useBookEdit() {
     navigation.goBack()
   })
 
+  const pickFormatFromAssetName = (assetName: string | undefined, fallback?: string) => {
+    const normalizedFallback = String(fallback ?? "")
+      .replace(/^\./u, "")
+      .trim()
+      .toUpperCase()
+
+    const name = String(assetName ?? "").trim()
+    const extensionFromName = name.includes(".") ? name.split(".").pop() : undefined
+    const normalizedFromName = String(extensionFromName ?? "")
+      .replace(/^\./u, "")
+      .trim()
+      .toUpperCase()
+
+    return normalizedFromName || normalizedFallback || undefined
+  }
+
+  const onUploadFormat = async ({
+    targetFormat,
+  }: {
+    targetFormat?: string
+  }): Promise<{ success: boolean; format?: string }> => {
+    const result = await DocumentPicker.getDocumentAsync({
+      multiple: false,
+    })
+
+    if (result.canceled || result.assets.length === 0) {
+      return { success: false }
+    }
+
+    const pickedAsset = result.assets[0]
+    const pickedFormat = targetFormat
+      ? String(targetFormat).replace(/^\./u, "").trim().toUpperCase()
+      : pickFormatFromAssetName(pickedAsset?.name, targetFormat)
+
+    if (!pickedFormat) {
+      return { success: false }
+    }
+
+    const filePayload = pickedAsset.file ?? pickedAsset.uri
+    if (!filePayload) {
+      return { success: false }
+    }
+
+    const uploadResult = await api.uploadBookFormat(
+      selectedLibrary.id,
+      selectedBook.id,
+      pickedFormat,
+      pickedAsset.name,
+      filePayload,
+    )
+
+    if (uploadResult.kind !== "ok") {
+      return { success: false }
+    }
+
+    return {
+      success: true,
+      format: pickedFormat,
+    }
+  }
+
+  const onDeleteFormat = async (format: string): Promise<boolean> => {
+    const deleteResult = await api.deleteBookFormat(selectedLibrary.id, selectedBook.id, format)
+    return deleteResult.kind === "ok"
+  }
+
   return {
     form,
     selectedBook,
     selectedLibrary,
     onSubmit,
+    onUploadFormat,
+    onDeleteFormat,
   }
 }

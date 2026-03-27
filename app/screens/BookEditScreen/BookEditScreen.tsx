@@ -22,7 +22,8 @@ export const BookEditScreen: FC = observer(() => {
   const route = useRoute<BookEditScreenRouteProp>()
   const modal = useModal<ModalStackParams>()
   const convergenceHook = useConvergence()
-  const { form, selectedBook, selectedLibrary, onSubmit } = useBookEdit()
+  const { form, selectedBook, selectedLibrary, onSubmit, onUploadFormat, onDeleteFormat } =
+    useBookEdit()
 
   useLayoutEffect(() => {
     // Note: header options would be set here if navigation context was available
@@ -41,6 +42,8 @@ export const BookEditScreen: FC = observer(() => {
           control={form.control as any}
           fieldMetadataList={selectedLibrary.fieldMetadataList}
           tagBrowser={selectedLibrary.tagBrowser}
+          onUploadFormat={onUploadFormat}
+          onDeleteFormat={onDeleteFormat}
           marginTop={"$3"}
         />
       </VStack>

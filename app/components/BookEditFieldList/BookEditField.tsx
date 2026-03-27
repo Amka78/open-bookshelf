@@ -1,4 +1,5 @@
 import {
+  FormFormatField,
   FormDateTimePicker,
   FormInputField,
   FormMultipleInputField,
@@ -19,6 +20,8 @@ export type BookEditFieldProps = {
   fieldMetadata: FieldMetadata
   control: Control<MetadataSnapshotIn, unknown>
   suggestions?: string[]
+  onUploadFormat?: (params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>
+  onDeleteFormat?: (format: string) => Promise<boolean>
   containerProps?: ComponentProps<typeof VStack>
 }
 
@@ -95,7 +98,17 @@ export function BookEditField(props: BookEditFieldProps) {
       )
       break
     case "text":
-      if (props.fieldMetadata.isMultiple) {
+      if (props.fieldMetadata.label === "formats") {
+        field = (
+          <FormFormatField
+            control={props.control}
+            name={label}
+            onUploadFormat={props.onUploadFormat}
+            onDeleteFormat={props.onDeleteFormat}
+            testID={`book-edit-${String(label)}`}
+          />
+        )
+      } else if (props.fieldMetadata.isMultiple) {
         field = (
           <FormMultipleInputField
             control={props.control}

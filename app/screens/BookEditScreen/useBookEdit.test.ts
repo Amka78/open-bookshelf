@@ -1,5 +1,7 @@
 import { useStores } from "@/models"
+import { api } from "@/services/api"
 import { useNavigation } from "@react-navigation/native"
+import * as DocumentPicker from "expo-document-picker"
 import * as reactHookForm from "react-hook-form"
 import { useBookEdit } from "./useBookEdit"
 
@@ -138,5 +140,43 @@ describe("useBookEdit", () => {
     expect(result).toHaveProperty("selectedBook")
     expect(result).toHaveProperty("selectedLibrary")
     expect(result).toHaveProperty("onSubmit")
+  })
+
+  test("onUploadFormat calls uploadBookFormat API in runtime flow", async () => {
+    const getDocumentAsyncSpy = jest.spyOn(DocumentPicker, "getDocumentAsync").mockResolvedValue({
+      canceled: false,
+      assets: [
+        {
+          name: "sample.epub",
+          uri: "file:///tmp/sample.epub",
+          mimeType: "application/epub+zip",
+        },
+      ],
+    } as unknown as DocumentPicker.DocumentPickerResult)
+
+    const uploadSpy = jest.spyOn(api, "uploadBookFormat").mockResolvedValue({ kind: "ok" })
+
+    const result = useBookEdit()
+    const uploaded = await result.onUploadFormat({ targetFormat: "EPUB" })
+
+    expect(getDocumentAsyncSpy).toHaveBeenCalled()
+    expect(uploadSpy).toHaveBeenCalledWith(
+      "lib1",
+      1,
+      "EPUB",
+      "sample.epub",
+      "file:///tmp/sample.epub",
+    )
+    expect(uploaded).toEqual({ success: true, format: "EPUB" })
+  })
+
+  test("onDeleteFormat calls deleteBookFormat API", async () => {
+    const deleteSpy = jest.spyOn(api, "deleteBookFormat").mockResolvedValue({ kind: "ok" })
+
+    const result = useBookEdit()
+    const deleted = await result.onDeleteFormat("PDF")
+
+    expect(deleteSpy).toHaveBeenCalledWith("lib1", 1, "PDF")
+    expect(deleted).toBe(true)
   })
 })
