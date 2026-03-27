@@ -46,6 +46,7 @@ describe("useOpenViewer", () => {
       convert: jest.fn(),
       metaData: {
         formats: ["EPUB"],
+        formatSizes: new Map([["EPUB", 100], ["PDF", 100]]),
         size: 100,
         setProp: jest.fn(),
       },
@@ -89,6 +90,7 @@ describe("useOpenViewer", () => {
     const selectedBook = createSelectedBook({
       metaData: {
         formats: ["PDF"],
+        formatSizes: new Map([["PDF", 100]]),
         size: 100,
         setProp: jest.fn(),
       },
@@ -131,6 +133,7 @@ describe("useOpenViewer", () => {
     const selectedBook = createSelectedBook({
       metaData: {
         formats: ["PDF"],
+        formatSizes: new Map([["PDF", 100]]),
         size: 100,
         setProp: jest.fn(),
       },
@@ -172,6 +175,7 @@ describe("useOpenViewer", () => {
       path: ["/2.png"],
       metaData: {
         formats: ["EPUB"],
+        formatSizes: new Map([["EPUB", 200]]),
         size: 200,
         setProp: jest.fn(),
       },
@@ -201,6 +205,7 @@ describe("useOpenViewer", () => {
       }),
       metaData: {
         formats: ["EPUB"],
+        formatSizes: new Map([["EPUB", 300]]),
         size: 300,
         setProp: jest.fn(),
       },
@@ -248,6 +253,7 @@ describe("useOpenViewer", () => {
       }),
       metaData: {
         formats: ["EPUB"],
+        formatSizes: new Map([["EPUB", 400]]),
         size: 400,
         setProp: jest.fn(),
       },

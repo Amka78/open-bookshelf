@@ -178,6 +178,7 @@ export function FormMultipleInputField<T extends FieldValues>(
                               scheduleCloseSuggestion(100)
                             }}
                             value={rowValue}
+                            testID={`${inputProps.testID ?? `form-multiple-input-${String(name)}`}-row-${index}`}
                             ref={index === 0 ? renderProps.field.ref : undefined}
                           />
                         </Input>

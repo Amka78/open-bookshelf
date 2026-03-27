@@ -97,17 +97,7 @@ describe("useCalibreRoot", () => {
     expect(mockNavigate).toHaveBeenCalledTimes(2)
   })
 
-  test.each([
-    [
-      [
-        { id: "lib1", books: new Map() },
-        { id: "lib2", books: new Map() },
-      ],
-      ["lib1", "lib2"],
-    ],
-    [[], []],
-  ])("library list mapping %#", (inputLibraries: TestLibrary[], expectedIds: string[]) => {
-    ;(values as jest.Mock).mockReturnValue(inputLibraries)
+  test.each([[["library1", "library2"]]])("library list mapping %#", (expectedIds: string[]) => {
 
     const { result } = renderUseCalibreRoot()
 

@@ -115,6 +115,13 @@ mock.module("react-native", () => ({
   ScrollView: "div",
   TextInput: "input",
   Pressable: "button",
+  Modal: "div",
+  ActivityIndicator: "div",
+  Keyboard: {
+    dismiss: jest.fn(),
+    addListener: jest.fn(() => ({ remove: jest.fn() })),
+    removeListener: jest.fn(),
+  },
   Image: {
     resolveAssetSource: jest.fn((_source) => mockFile),
     getSize: jest.fn(

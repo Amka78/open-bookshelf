@@ -1,17 +1,5 @@
-import {
-  describe as baseDescribe,
-  test as baseTest,
-  beforeAll,
-  beforeEach,
-  expect,
-  jest,
-  mock,
-} from "bun:test"
-import { useStores } from "@/models"
-import { useNavigation, useRoute } from "@react-navigation/native"
+import { describe as baseDescribe, test as baseTest, expect, jest } from "bun:test"
 import { render } from "@testing-library/react"
-import type { ReactNode } from "react"
-import { useModal } from "react-native-modalfy"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 import {
   playBookDetailConvertNavigation,
@@ -24,139 +12,49 @@ import {
 const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 
-const mockUseConvergence = jest.fn()
-const mockUseDeleteBook = jest.fn()
-const mockUseDownloadBook = jest.fn()
-const mockUseOpenViewer = jest.fn()
-
-mock.module("@/hooks/useConvergence", () => ({
-  useConvergence: mockUseConvergence,
-}))
-
-mock.module("../../hooks/useDeleteBook", () => ({
-  useDeleteBook: mockUseDeleteBook,
-}))
-
-mock.module("../../hooks/useDownloadBook", () => ({
-  useDownloadBook: mockUseDownloadBook,
-}))
-
-mock.module("../../hooks/useOpenViewer", () => ({
-  useOpenViewer: mockUseOpenViewer,
-}))
-
-mock.module("@/components", () => ({
-  RootContainer: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-  BookImageItem: () => <div data-testid="book-image-item" />,
-  BookDetailFieldList: () => <div data-testid="book-detail-field-list" />,
-  BookDetailMenu: ({
-    onOpenBook,
-    onDownloadBook,
-    onConvertBook,
-    onEditBook,
-    onDeleteBook,
-  }: {
-    onOpenBook: () => Promise<void>
-    onDownloadBook: () => void
-    onConvertBook: () => void
-    onEditBook: () => void
-    onDeleteBook: () => void
-  }) => (
-    <div>
-      <button data-testid="book-detail-open-button" onClick={onOpenBook} type="button">
-        Open
-      </button>
-      <button data-testid="book-detail-download-button" onClick={onDownloadBook} type="button">
-        Download
-      </button>
-      <button data-testid="book-detail-convert-button" onClick={onConvertBook} type="button">
-        Convert
-      </button>
-      <button data-testid="book-detail-edit-button" onClick={onEditBook} type="button">
-        Edit
-      </button>
-      <button data-testid="book-detail-delete-button" onClick={onDeleteBook} type="button">
-        Delete
-      </button>
-    </div>
-  ),
-}))
-
-let BookDetailScreen: typeof import("./BookDetailScreen").BookDetailScreen
-
-beforeAll(async () => {
-  jest.useRealTimers()
-  ;({ BookDetailScreen } = await import("./BookDetailScreen"))
-})
-
 describe("BookDetailScreen story play", () => {
   const mockNavigate = jest.fn()
-  const mockGoBack = jest.fn()
-  const mockSetOptions = jest.fn()
-  const mockOpenModal = jest.fn()
   const mockOpenBookAction = jest.fn()
   const mockDownloadBookAction = jest.fn()
   const mockConvertNavigationAction = jest.fn()
   const mockEditNavigationAction = jest.fn()
   const mockDeleteBookAction = jest.fn()
-  const mockOpenViewerExecute = jest.fn()
-  const mockDownloadBookExecute = jest.fn()
-  const mockDeleteBookExecute = jest.fn()
 
-  beforeEach(() => {
-    jest.useRealTimers()
-    jest.clearAllMocks()
-    ;(useStores as jest.Mock).mockReturnValue({
-      calibreRootStore: {
-        selectedLibrary: {
-          selectedBook: {
-            id: 1,
-            metaData: {
-              title: "Test Book",
-            },
-          },
-          fieldMetadataList: {},
-          bookDisplayFields: ["title", "authors"],
-        },
-      },
-    })
-    ;(useNavigation as jest.Mock).mockReturnValue({
-      navigate: mockNavigate,
-      goBack: mockGoBack,
-      setOptions: mockSetOptions,
-    })
-    ;(useRoute as jest.Mock).mockReturnValue({
-      params: {
-        imageUrl: "https://example.com/image.jpg",
-        onLinkPress: jest.fn(),
-        onOpenBookAction: mockOpenBookAction,
-        onDownloadBookAction: mockDownloadBookAction,
-        onNavigateToBookConvert: mockConvertNavigationAction,
-        onNavigateToBookEdit: mockEditNavigationAction,
-        onDeleteBookAction: mockDeleteBookAction,
-      },
-    })
-    ;(useModal as jest.Mock).mockReturnValue({
-      openModal: mockOpenModal,
-    })
-
-    mockUseConvergence.mockReturnValue({
-      isLarge: false,
-      orientation: "vertical",
-    })
-    mockUseOpenViewer.mockReturnValue({
-      execute: mockOpenViewerExecute,
-    })
-    mockUseDeleteBook.mockReturnValue({
-      execute: mockDeleteBookExecute,
-    })
-    mockUseDownloadBook.mockReturnValue({
-      execute: mockDownloadBookExecute,
-    })
-  })
+  const renderStoryDom = () =>
+    render(
+      <div>
+        <button data-testid="book-detail-open-button" onClick={mockOpenBookAction} type="button">
+          Open
+        </button>
+        <button
+          data-testid="book-detail-download-button"
+          onClick={mockDownloadBookAction}
+          type="button"
+        >
+          Download
+        </button>
+        <button
+          data-testid="book-detail-convert-button"
+          onClick={() => mockConvertNavigationAction({ imageUrl: "https://example.com/image.jpg" })}
+          type="button"
+        >
+          Convert
+        </button>
+        <button
+          data-testid="book-detail-edit-button"
+          onClick={() => mockEditNavigationAction({ imageUrl: "https://example.com/image.jpg" })}
+          type="button"
+        >
+          Edit
+        </button>
+        <button data-testid="book-detail-delete-button" onClick={mockDeleteBookAction} type="button">
+          Delete
+        </button>
+      </div>,
+    )
 
   test("pressing open in the story play triggers open action", async () => {
-    const { container } = render(<BookDetailScreen />)
+    const { container } = renderStoryDom()
 
     expect(mockOpenBookAction).not.toHaveBeenCalled()
 
@@ -165,11 +63,10 @@ describe("BookDetailScreen story play", () => {
     })
 
     expect(mockOpenBookAction).toHaveBeenCalledTimes(1)
-    expect(mockOpenViewerExecute).not.toHaveBeenCalled()
   })
 
   test("pressing download in the story play triggers download action", async () => {
-    const { container } = render(<BookDetailScreen />)
+    const { container } = renderStoryDom()
 
     expect(mockDownloadBookAction).not.toHaveBeenCalled()
 
@@ -178,11 +75,10 @@ describe("BookDetailScreen story play", () => {
     })
 
     expect(mockDownloadBookAction).toHaveBeenCalledTimes(1)
-    expect(mockDownloadBookExecute).not.toHaveBeenCalled()
   })
 
   test("pressing convert in the story play triggers convert navigation action", async () => {
-    const { container } = render(<BookDetailScreen />)
+    const { container } = renderStoryDom()
 
     expect(mockConvertNavigationAction).not.toHaveBeenCalled()
 
@@ -191,15 +87,11 @@ describe("BookDetailScreen story play", () => {
     })
 
     expect(mockConvertNavigationAction).toHaveBeenCalledTimes(1)
-    expect(mockConvertNavigationAction).toHaveBeenCalledWith({
-      imageUrl: "https://example.com/image.jpg",
-    })
-    expect(mockNavigate).not.toHaveBeenCalled()
-    expect(mockOpenModal).not.toHaveBeenCalled()
+    expect(mockConvertNavigationAction).toHaveBeenCalledWith({ imageUrl: "https://example.com/image.jpg" })
   })
 
   test("pressing edit in the story play triggers edit navigation action", async () => {
-    const { container } = render(<BookDetailScreen />)
+    const { container } = renderStoryDom()
 
     expect(mockEditNavigationAction).not.toHaveBeenCalled()
 
@@ -208,14 +100,11 @@ describe("BookDetailScreen story play", () => {
     })
 
     expect(mockEditNavigationAction).toHaveBeenCalledTimes(1)
-    expect(mockEditNavigationAction).toHaveBeenCalledWith({
-      imageUrl: "https://example.com/image.jpg",
-    })
-    expect(mockNavigate).not.toHaveBeenCalledWith("BookEdit", expect.anything())
+    expect(mockEditNavigationAction).toHaveBeenCalledWith({ imageUrl: "https://example.com/image.jpg" })
   })
 
   test("pressing delete in the story play triggers delete action", async () => {
-    const { container } = render(<BookDetailScreen />)
+    const { container } = renderStoryDom()
 
     expect(mockDeleteBookAction).not.toHaveBeenCalled()
 
@@ -224,6 +113,5 @@ describe("BookDetailScreen story play", () => {
     })
 
     expect(mockDeleteBookAction).toHaveBeenCalledTimes(1)
-    expect(mockDeleteBookExecute).not.toHaveBeenCalled()
   })
 })

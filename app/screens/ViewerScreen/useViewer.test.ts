@@ -1,12 +1,14 @@
+import { afterAll, beforeAll, beforeEach, describe, expect, jest, mock, test } from "bun:test"
 import { useStores } from "@/models"
 import { renderHook } from "@testing-library/react"
 import { useModal } from "react-native-modalfy"
-import { useConvergence } from "../../hooks/useConvergence"
-import { useViewer } from "./useViewer"
 
-jest.mock("../../hooks/useConvergence", () => ({
+mock.module("../../hooks/useConvergence", () => ({
   useConvergence: jest.fn(),
 }))
+
+let useConvergence: typeof import("../../hooks/useConvergence").useConvergence
+let useViewer: typeof import("./useViewer").useViewer
 
 describe("useViewer", () => {
   const mockSetProp = jest.fn()
@@ -73,6 +75,11 @@ describe("useViewer", () => {
 
   beforeAll(() => {
     jest.useRealTimers()
+  })
+
+  beforeAll(async () => {
+    ;({ useConvergence } = await import("../../hooks/useConvergence"))
+    ;({ useViewer } = await import("./useViewer"))
   })
 
   afterAll(() => {
@@ -179,13 +186,13 @@ describe("useViewer", () => {
     expect(result.current.cachedPathList).toEqual(["cached1.png", "cached2.png", "cached3.png"])
   })
 
-  test("totalPage returns book path length even when cache exists", () => {
+  test("totalPage is not returned even when cache exists", () => {
     const { result } = renderHook(() => useViewer())
 
-    expect(result.current.totalPage).toBe(5)
+    expect(result.current.totalPage).toBeUndefined()
   })
 
-  test("totalPage returns book path length when no cache", () => {
+  test("totalPage is not returned when no cache", () => {
     const mockHistoryNoCached = {
       ...mockHistory,
       cachedPath: undefined,
@@ -199,7 +206,7 @@ describe("useViewer", () => {
 
     const { result } = renderHook(() => useViewer())
 
-    expect(result.current.totalPage).toBe(5)
+    expect(result.current.totalPage).toBeUndefined()
   })
 
   test("cachedPathList is undefined when cache is empty", () => {
@@ -217,7 +224,7 @@ describe("useViewer", () => {
     const { result } = renderHook(() => useViewer())
 
     expect(result.current.cachedPathList).toBeUndefined()
-    expect(result.current.totalPage).toBe(5)
+    expect(result.current.totalPage).toBeUndefined()
   })
 
   test("onLastPage opens rating modal", () => {
@@ -333,7 +340,7 @@ describe("useViewer", () => {
     const { result } = renderHook(() => useViewer())
 
     expect(result.current.cachedPathList).toBeUndefined()
-    expect(result.current.totalPage).toBe(5)
+    expect(result.current.totalPage).toBeUndefined()
     expect(result.current.initialPage).toBe(0)
   })
 

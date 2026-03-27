@@ -9,15 +9,15 @@ import type { ComponentType, ReactNode } from "react"
 import { useForm } from "react-hook-form"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 import {
-  playBackdropPressClosesSuggestions,
-  playFocusShowsSuggestions,
-  playOutsideClickClosesSuggestions,
-  playSelectSuggestionClosesSuggestionsAndUpdatesInput,
-  playSelectSuggestionUpdatesInput,
-  playSuggestionsStayVisibleAfterFocus,
-  playTypingKeepsSuggestionsVisible,
-  playTypingFiltersSuggestions,
-} from "./formInputFieldStoryPlay"
+  playMultipleFocusShowsSuggestions,
+  playMultipleBackdropPressClosesSuggestions,
+  playMultipleOutsideClickClosesSuggestions,
+  playMultipleSelectSuggestionClosesSuggestionsAndUpdatesInput,
+  playMultipleSelectSuggestionUpdatesInput,
+  playMultipleSuggestionsStayVisibleAfterFocus,
+  playMultipleTypingKeepsSuggestionsVisible,
+  playMultipleTypingFiltersSuggestions,
+} from "./formMultipleInputFieldStoryPlay"
 
 mock.module("@/theme", () => ({
   usePalette: () => ({
@@ -27,56 +27,45 @@ mock.module("@/theme", () => ({
   }),
 }))
 
+mock.module("@/components", () => ({
+  Box: ({ children, testID, ...props }: Record<string, unknown> & { children?: ReactNode; testID?: string }) => (
+    <div data-testid={testID} {...(props as object)}>{children}</div>
+  ),
+  Image: ({ testID, ...props }: Record<string, unknown> & { testID?: string }) => (
+    <img data-testid={testID} {...(props as object)} />
+  ),
+  Text: ({ children, testID, ...props }: Record<string, unknown> & { children?: ReactNode; testID?: string }) => (
+    <span data-testid={testID} {...(props as object)}>{children}</span>
+  ),
+  HStack: ({ children, ...props }: Record<string, unknown> & { children?: ReactNode }) => (
+    <div {...(props as object)}>{children}</div>
+  ),
+  VStack: ({ children, testID, ...props }: Record<string, unknown> & { children?: ReactNode; testID?: string }) => (
+    <div data-testid={testID} {...(props as object)}>{children}</div>
+  ),
+  Input: ({ children, ...props }: Record<string, unknown> & { children?: ReactNode }) => (
+    <div {...(props as object)}>{children}</div>
+  ),
+  IconButton: ({ testID, onPress }: { testID?: string; onPress?: () => void }) => (
+    <button data-testid={testID} type="button" onClick={onPress}>icon</button>
+  ),
+}))
+
 mock.module("@/components/Box/Box", () => ({
-  Box: ({
-    children,
-    testID,
-    ...props
-  }: Record<string, unknown> & { children?: ReactNode; testID?: string }) => (
-    <div data-testid={testID} {...(props as object)}>
-      {children}
-    </div>
+  Box: ({ children, testID, ...props }: Record<string, unknown> & { children?: ReactNode; testID?: string }) => (
+    <div data-testid={testID} {...(props as object)}>{children}</div>
   ),
 }))
 
 mock.module("@/components/Text/Text", () => ({
-  Text: ({
-    children,
-    testID,
-    ...props
-  }: Record<string, unknown> & { children?: ReactNode; testID?: string }) => (
-    <span data-testid={testID} {...(props as object)}>
-      {children}
-    </span>
+  Text: ({ children, testID, ...props }: Record<string, unknown> & { children?: ReactNode; testID?: string }) => (
+    <span data-testid={testID} {...(props as object)}>{children}</span>
   ),
 }))
 
 mock.module("@/components/Pressable/Pressable", () => ({
-  Pressable: ({
-    children,
-    onPressIn,
-    onPress,
-    testID,
-    ...props
-  }: {
-    children?: ReactNode
-    onPressIn?: () => void
-    onPress?: () => void
-    testID?: string
-  }) => (
-    <button
-      data-testid={testID}
-      {...(props as object)}
-      type="button"
-      onMouseDown={() => {
-        onPressIn?.()
-      }}
-      onClick={() => {
-        onPress?.()
-      }}
-    >
-      {children}
-    </button>
+  Pressable: ({ children, onPress, testID, ...props }: { children?: ReactNode; onPress?: () => void; testID?: string }) => (
+    <button data-testid={testID} {...(props as object)} type="button" onClick={onPress}>{children}</button>
   ),
 }))
 
@@ -87,31 +76,25 @@ mock.module("./FormSuggestionPopover", () => ({
     onClose,
     candidates,
     onSelect,
-    backdropTestID,
-    suggestionsTestID,
-    candidateTestIDPrefix,
+    testIdPrefix,
   }: {
     trigger: (props: Record<string, unknown>) => ReactNode
     isOpen: boolean
     onClose: () => void
     candidates: string[]
     onSelect: (candidate: string) => void
-    backdropTestID?: string
-    suggestionsTestID?: string
-    candidateTestIDPrefix?: string
+    testIdPrefix: string
   }) => (
     <>
       {trigger({})}
       {isOpen ? (
         <div>
-          <button data-testid={backdropTestID} type="button" onClick={onClose}>
-            backdrop
-          </button>
-          <div data-testid={suggestionsTestID}>
+          <button data-testid={`${testIdPrefix}-backdrop`} type="button" onClick={onClose}>backdrop</button>
+          <div data-testid={`${testIdPrefix}-suggestions`}>
             {candidates.map((candidate) => (
               <button
                 key={candidate}
-                data-testid={`${candidateTestIDPrefix}-${encodeURIComponent(candidate)}`}
+                data-testid={`${testIdPrefix}-suggestion-${encodeURIComponent(candidate)}`}
                 type="button"
                 onClick={() => onSelect(candidate)}
               >
@@ -155,39 +138,43 @@ mock.module("../InputField/InputField", () => ({
 }))
 
 type StoryForm = {
-  title: string | null
+  tags: string[]
 }
 
-let FormInputField: ComponentType<{
+let FormMultipleInputField: ComponentType<{
   control: ReturnType<typeof useForm<StoryForm>>["control"]
-  name: "title"
+  name: "tags"
   suggestions: string[]
   width: "$full"
   testID: string
+  textToValue: string
+  valueToText: string
 }>
 
 beforeAll(async () => {
-  const imported = await import("./FormInputField")
-  FormInputField = imported.FormInputField as typeof FormInputField
+  const imported = await import("./FormMultipeInputField")
+  FormMultipleInputField = imported.FormMultipleInputField as typeof FormMultipleInputField
 })
 
 function TestHarness({ suggestions }: { suggestions: string[] }) {
   const form = useForm<StoryForm>({
     defaultValues: {
-      title: null,
+      tags: [""],
     },
   })
 
   return (
     <>
-      <FormInputField
+      <FormMultipleInputField
         control={form.control}
-        name="title"
+        name="tags"
         suggestions={suggestions}
         width="$full"
-        testID="form-input-story-input"
+        testID="form-multiple-input-story"
+        textToValue=","
+        valueToText=","
       />
-      <button data-testid="form-input-story-outside" type="button">
+      <button data-testid="form-multiple-input-story-outside" type="button">
         Outside
       </button>
     </>
@@ -197,68 +184,44 @@ function TestHarness({ suggestions }: { suggestions: string[] }) {
 const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 
-describe("FormInputField story play", () => {
+describe("FormMultipleInputField story play", () => {
   test("focus shows suggestions", async () => {
     const { container } = render(<TestHarness suggestions={["Alpha", "Beta", "Gamma", "Delta"]} />)
-
-    await playFocusShowsSuggestions({
-      canvasElement: container,
-    })
+    await playMultipleFocusShowsSuggestions({ canvasElement: container })
   })
 
   test("suggestions stay visible after focus", async () => {
     const { container } = render(<TestHarness suggestions={["Alpha", "Beta", "Gamma", "Delta"]} />)
-
-    await playSuggestionsStayVisibleAfterFocus({
-      canvasElement: container,
-    })
+    await playMultipleSuggestionsStayVisibleAfterFocus({ canvasElement: container })
   })
 
   test("typing filters suggestions", async () => {
     const { container } = render(<TestHarness suggestions={["Alpha", "Beta", "Gamma", "Delta"]} />)
-
-    await playTypingFiltersSuggestions({
-      canvasElement: container,
-    })
+    await playMultipleTypingFiltersSuggestions({ canvasElement: container })
   })
 
   test("typing keeps suggestions visible", async () => {
     const { container } = render(<TestHarness suggestions={["Alpha", "Beta", "Gamma", "Delta"]} />)
-
-    await playTypingKeepsSuggestionsVisible({
-      canvasElement: container,
-    })
+    await playMultipleTypingKeepsSuggestionsVisible({ canvasElement: container })
   })
 
   test("selecting suggestion updates input value", async () => {
     const { container } = render(<TestHarness suggestions={["Alpha", "Beta", "Gamma", "Delta"]} />)
-
-    await playSelectSuggestionUpdatesInput({
-      canvasElement: container,
-    })
+    await playMultipleSelectSuggestionUpdatesInput({ canvasElement: container })
   })
 
   test("selecting suggestion closes suggestions and updates input value", async () => {
     const { container } = render(<TestHarness suggestions={["Alpha", "Beta", "Gamma", "Delta"]} />)
-
-    await playSelectSuggestionClosesSuggestionsAndUpdatesInput({
-      canvasElement: container,
-    })
+    await playMultipleSelectSuggestionClosesSuggestionsAndUpdatesInput({ canvasElement: container })
   })
 
   test("outside click closes suggestions", async () => {
     const { container } = render(<TestHarness suggestions={["Alpha", "Beta", "Gamma", "Delta"]} />)
-
-    await playOutsideClickClosesSuggestions({
-      canvasElement: container,
-    })
+    await playMultipleOutsideClickClosesSuggestions({ canvasElement: container })
   })
 
   test("backdrop press closes suggestions", async () => {
     const { container } = render(<TestHarness suggestions={["Alpha", "Beta", "Gamma", "Delta"]} />)
-
-    await playBackdropPressClosesSuggestions({
-      canvasElement: container,
-    })
+    await playMultipleBackdropPressClosesSuggestions({ canvasElement: container })
   })
 })

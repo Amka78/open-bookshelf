@@ -3,7 +3,9 @@
 
 const { reloadApp } = require("./reload")
 
-describe("Example", () => {
+const maybeDescribe = typeof device === "undefined" ? describe.skip : describe
+
+maybeDescribe("Example", () => {
   beforeEach(async () => {
     await reloadApp()
   })

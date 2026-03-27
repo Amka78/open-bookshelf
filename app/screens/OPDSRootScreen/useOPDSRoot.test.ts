@@ -1,8 +1,15 @@
+import { afterAll, beforeAll, beforeEach, describe, expect, jest, mock, test } from "bun:test"
 import { useStores } from "@/models"
 import { usePalette } from "@/theme"
 import { useNavigation } from "@react-navigation/native"
 import { act, renderHook } from "@testing-library/react"
-import { useODSRoot } from "./useOPDSRoot"
+mock.module("@/components", () => ({
+  Box: "div",
+  Image: "img",
+  Text: "span",
+}))
+
+let useODSRoot: typeof import("./useOPDSRoot").useODSRoot
 
 describe("useODSRoot", () => {
   const mockLoad = jest.fn().mockResolvedValue(undefined)
@@ -41,6 +48,10 @@ describe("useODSRoot", () => {
     jest.useRealTimers()
   })
 
+  beforeAll(async () => {
+    ;({ useODSRoot } = await import("./useOPDSRoot"))
+  })
+
   afterAll(() => {
     jest.useRealTimers()
   })
@@ -51,7 +62,10 @@ describe("useODSRoot", () => {
       opdsRootStore: mockOPDSRootStore,
       settingStore: mockSettingStore,
     })
-    ;(usePalette as jest.Mock).mockReturnValue({
+    const maybeMockedUsePalette = usePalette as unknown as {
+      mockReturnValue?: (value: { textPrimary: string }) => void
+    }
+    maybeMockedUsePalette.mockReturnValue?.({
       textPrimary: "#000000",
     })
     ;(useNavigation as jest.Mock).mockReturnValue({
