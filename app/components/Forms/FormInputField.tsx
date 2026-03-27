@@ -1,12 +1,14 @@
-import { Box, Text } from "@/components"
+import { Box } from "@/components/Box/Box"
+import { Pressable } from "@/components/Pressable/Pressable"
 import {
   Popover,
   PopoverBackdrop,
   PopoverBody,
   PopoverContent,
-  Pressable,
-} from "@gluestack-ui/themed"
-import { useMemo, useState } from "react"
+} from "@/components/Popover/Popover"
+import { Text } from "@/components/Text/Text"
+import { usePalette } from "@/theme"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Controller, type ControllerProps, type FieldValues } from "react-hook-form"
 import { InputField, type InputFieldProps } from "../InputField/InputField"
 
@@ -16,16 +18,42 @@ export type FormInputFiledProps<T> = Omit<InputFieldProps, "onChangeText"> &
   Omit<ControllerProps<T>, "render"> & {
     suggestions?: string[]
   }
+
 export function FormInputField<T extends FieldValues>(props: FormInputFiledProps<T>) {
+  const palette = usePalette()
   const [isSuggestionOpen, setIsSuggestionOpen] = useState(false)
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const clearCloseTimer = () => {
+    if (closeTimerRef.current != null) {
+      clearTimeout(closeTimerRef.current)
+      closeTimerRef.current = null
+    }
+  }
 
   const openSuggestion = () => {
+    clearCloseTimer()
     setIsSuggestionOpen((previous) => (previous ? previous : true))
   }
 
   const closeSuggestion = () => {
+    clearCloseTimer()
     setIsSuggestionOpen((previous) => (previous ? false : previous))
   }
+
+  const scheduleCloseSuggestion = (delayMs: number) => {
+    clearCloseTimer()
+    closeTimerRef.current = setTimeout(() => {
+      closeTimerRef.current = null
+      setIsSuggestionOpen(false)
+    }, delayMs)
+  }
+
+  useEffect(() => {
+    return () => {
+      clearCloseTimer()
+    }
+  }, [])
 
   const {
     control,
@@ -64,6 +92,7 @@ export function FormInputField<T extends FieldValues>(props: FormInputFiledProps
       render={(renderProps) => {
         const fieldValue = renderProps.field.value
         const textValue = fieldValue == null ? "" : String(fieldValue)
+        const inputTestID = inputProps.testID ?? `form-input-${String(name)}`
         const rawValue = textValue.trim().toLowerCase()
         const candidateValues: string[] = []
 
@@ -79,16 +108,18 @@ export function FormInputField<T extends FieldValues>(props: FormInputFiledProps
             }
           }
         }
+
         const isOpen = candidateValues.length > 0 && isSuggestionOpen
 
         return (
           <Popover
             placement="bottom left"
             shouldFlip={false}
-            isKeyboardDismissable={true}
+            isKeyboardDismissable={false}
             trigger={(triggerProps) => {
+              const { onPress, onPressIn, onPressOut, ...restTriggerProps } = triggerProps
               return (
-                <Box {...triggerProps} width={inputProps.width ?? "$full"}>
+                <Box {...restTriggerProps} width={inputProps.width ?? "$full"}>
                   <InputField
                     {...inputProps}
                     onChangeText={(text) => {
@@ -104,10 +135,11 @@ export function FormInputField<T extends FieldValues>(props: FormInputFiledProps
                     }}
                     onBlur={() => {
                       renderProps.field.onBlur()
-                      closeSuggestion()
+                      scheduleCloseSuggestion(100)
                     }}
                     value={textValue}
                     ref={renderProps.field.ref}
+                    testID={inputTestID}
                   />
                 </Box>
               )
@@ -119,19 +151,32 @@ export function FormInputField<T extends FieldValues>(props: FormInputFiledProps
             offset={4}
           >
             <PopoverBackdrop
+              testID={`form-input-backdrop-${String(name)}`}
               onPress={() => {
                 closeSuggestion()
               }}
             />
             <PopoverContent
+              testID={`form-input-suggestions-${String(name)}`}
               minWidth={inputProps.width ?? "$full"}
               width={inputProps.width ?? "$full"}
             >
               <PopoverBody>
-                <Box>
+                <Box
+                  backgroundColor={palette.surface}
+                  borderWidth="$1"
+                  borderColor={palette.borderStrong}
+                  borderRadius="$sm"
+                  padding="$1"
+                  shadowColor={palette.accent}
+                  shadowOffset={{ width: 0, height: 2 }}
+                  shadowOpacity={0.15}
+                  shadowRadius={4}
+                >
                   {candidateValues.map((candidate) => (
                     <Pressable
                       key={`${String(name)}-${candidate}`}
+                      testID={`form-input-suggestion-${String(name)}-${encodeURIComponent(candidate)}`}
                       onPress={() => {
                         renderProps.field.onChange(candidate)
                         closeSuggestion()
@@ -159,3 +204,4 @@ export function FormInputField<T extends FieldValues>(props: FormInputFiledProps
     />
   )
 }
+

@@ -110,6 +110,11 @@ if (!globalThis.expo) {
 
 // Mock react-native at preload time
 mock.module("react-native", () => ({
+  View: "div",
+  Text: "span",
+  ScrollView: "div",
+  TextInput: "input",
+  Pressable: "button",
   Image: {
     resolveAssetSource: jest.fn((_source) => mockFile),
     getSize: jest.fn(
@@ -161,6 +166,7 @@ mock.module("react-native", () => ({
       setValue: jest.fn(),
       interpolate: jest.fn(),
     })),
+    createAnimatedComponent: jest.fn((component) => component),
     timing: jest.fn(() => ({ start: jest.fn() })),
     spring: jest.fn(() => ({ start: jest.fn() })),
     decay: jest.fn(() => ({ start: jest.fn() })),
