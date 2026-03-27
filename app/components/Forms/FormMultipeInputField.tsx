@@ -1,13 +1,7 @@
-import { Box, HStack, IconButton, Input, Text, VStack } from "@/components"
-import {
-  Popover,
-  PopoverBackdrop,
-  PopoverBody,
-  PopoverContent,
-  Pressable,
-} from "@gluestack-ui/themed"
-import { useMemo, useState } from "react"
+import { Box, HStack, IconButton, Input, VStack } from "@/components"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Controller, type ControllerProps, type FieldValues } from "react-hook-form"
+import { FormSuggestionPopover } from "./FormSuggestionPopover"
 import { InputField, type InputFieldProps } from "../InputField/InputField"
 
 const MAX_SUGGESTIONS = 5
@@ -23,15 +17,40 @@ export function FormMultipleInputField<T extends FieldValues>(
 ) {
   const [isSuggestionOpen, setIsSuggestionOpen] = useState(false)
   const [activeRowIndex, setActiveRowIndex] = useState<number | null>(null)
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const clearCloseTimer = () => {
+    if (closeTimerRef.current != null) {
+      clearTimeout(closeTimerRef.current)
+      closeTimerRef.current = null
+    }
+  }
 
   const openSuggestion = () => {
+    clearCloseTimer()
     setIsSuggestionOpen((previous) => (previous ? previous : true))
   }
 
   const closeSuggestion = () => {
+    clearCloseTimer()
     setIsSuggestionOpen((previous) => (previous ? false : previous))
     setActiveRowIndex(null)
   }
+
+  const scheduleCloseSuggestion = (delayMs: number) => {
+    clearCloseTimer()
+    closeTimerRef.current = setTimeout(() => {
+      closeTimerRef.current = null
+      setIsSuggestionOpen(false)
+      setActiveRowIndex(null)
+    }, delayMs)
+  }
+
+  useEffect(() => {
+    return () => {
+      clearCloseTimer()
+    }
+  }, [])
 
   const {
     control,
@@ -123,13 +142,11 @@ export function FormMultipleInputField<T extends FieldValues>(
                 alignItems="center"
                 marginBottom={index === displayRows.length - 1 ? undefined : "$4"}
               >
-                <Popover
-                  placement="bottom left"
-                  shouldFlip={false}
-                  isKeyboardDismissable={true}
+                <FormSuggestionPopover
                   trigger={(triggerProps) => {
+                    const { onPress, onPressIn, onPressOut, ...restTriggerProps } = triggerProps
                     return (
-                      <Box {...triggerProps} flex={1}>
+                      <Box {...restTriggerProps} flex={1}>
                         <Input width={inputProps.width ?? "$full"}>
                           <InputField
                             {...inputProps}
@@ -158,7 +175,7 @@ export function FormMultipleInputField<T extends FieldValues>(
                             }}
                             onBlur={() => {
                               renderProps.field.onBlur()
-                              closeSuggestion()
+                              scheduleCloseSuggestion(100)
                             }}
                             value={rowValue}
                             ref={index === 0 ? renderProps.field.ref : undefined}
@@ -168,50 +185,20 @@ export function FormMultipleInputField<T extends FieldValues>(
                     )
                   }}
                   isOpen={isOpen && activeRowIndex === index}
-                  trapFocus={false}
-                  focusScope={false}
                   onClose={closeSuggestion}
-                  offset={4}
-                >
-                  <PopoverBackdrop
-                    onPress={() => {
-                      closeSuggestion()
-                    }}
-                  />
-                  <PopoverContent
-                    minWidth={inputProps.width ?? "$full"}
-                    width={inputProps.width ?? "$full"}
-                  >
-                    <PopoverBody>
-                      <Box>
-                        {candidateValues.map((candidate) => (
-                          <Pressable
-                            key={`${String(name)}-${candidate}`}
-                            onPress={() => {
-                              const sourceRows = values.length > 0 ? [...values] : [""]
-                              // 候補値そのものをセット
-                              sourceRows[index] = candidate
-                              commitRows(sourceRows)
-                              closeSuggestion()
-                            }}
-                          >
-                            <Box
-                              borderWidth="$1"
-                              borderRadius="$sm"
-                              paddingHorizontal="$4"
-                              paddingVertical="$2"
-                              marginBottom="$2"
-                            >
-                              <Text fontSize="$sm" isTruncated={true}>
-                                {candidate}
-                              </Text>
-                            </Box>
-                          </Pressable>
-                        ))}
-                      </Box>
-                    </PopoverBody>
-                  </PopoverContent>
-                </Popover>
+                  candidates={candidateValues}
+                  onSelect={(candidate) => {
+                    const sourceRows = values.length > 0 ? [...values] : [""]
+                    sourceRows[index] = candidate
+                    commitRows(sourceRows)
+                    closeSuggestion()
+                  }}
+                  width={inputProps.width as string | undefined}
+                  testIdPrefix={`form-multiple-input-${String(name)}-${index}`}
+                  optionPaddingHorizontal="$4"
+                  optionPaddingVertical="$2"
+                  optionMarginBottom="$2"
+                />
                 <IconButton
                   name="plus"
                   iconSize="sm"

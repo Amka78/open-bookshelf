@@ -1,15 +1,7 @@
 import { Box } from "@/components/Box/Box"
-import { Pressable } from "@/components/Pressable/Pressable"
-import {
-  Popover,
-  PopoverBackdrop,
-  PopoverBody,
-  PopoverContent,
-} from "@/components/Popover/Popover"
-import { Text } from "@/components/Text/Text"
-import { usePalette } from "@/theme"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { Controller, type ControllerProps, type FieldValues } from "react-hook-form"
+import { FormSuggestionPopover } from "./FormSuggestionPopover"
 import { InputField, type InputFieldProps } from "../InputField/InputField"
 
 const MAX_SUGGESTIONS = 5
@@ -20,7 +12,6 @@ export type FormInputFiledProps<T> = Omit<InputFieldProps, "onChangeText"> &
   }
 
 export function FormInputField<T extends FieldValues>(props: FormInputFiledProps<T>) {
-  const palette = usePalette()
   const [isSuggestionOpen, setIsSuggestionOpen] = useState(false)
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -110,12 +101,10 @@ export function FormInputField<T extends FieldValues>(props: FormInputFiledProps
         }
 
         const isOpen = candidateValues.length > 0 && isSuggestionOpen
+        const testIdPrefix = `form-input-${String(name)}`
 
         return (
-          <Popover
-            placement="bottom left"
-            shouldFlip={false}
-            isKeyboardDismissable={false}
+          <FormSuggestionPopover
             trigger={(triggerProps) => {
               const { onPress, onPressIn, onPressOut, ...restTriggerProps } = triggerProps
               return (
@@ -145,60 +134,18 @@ export function FormInputField<T extends FieldValues>(props: FormInputFiledProps
               )
             }}
             isOpen={isOpen}
-            trapFocus={false}
-            focusScope={false}
             onClose={closeSuggestion}
-            offset={4}
-          >
-            <PopoverBackdrop
-              testID={`form-input-backdrop-${String(name)}`}
-              onPress={() => {
-                closeSuggestion()
-              }}
-            />
-            <PopoverContent
-              testID={`form-input-suggestions-${String(name)}`}
-              minWidth={inputProps.width ?? "$full"}
-              width={inputProps.width ?? "$full"}
-            >
-              <PopoverBody>
-                <Box
-                  backgroundColor={palette.surface}
-                  borderWidth="$1"
-                  borderColor={palette.borderStrong}
-                  borderRadius="$sm"
-                  padding="$1"
-                  shadowColor={palette.accent}
-                  shadowOffset={{ width: 0, height: 2 }}
-                  shadowOpacity={0.15}
-                  shadowRadius={4}
-                >
-                  {candidateValues.map((candidate) => (
-                    <Pressable
-                      key={`${String(name)}-${candidate}`}
-                      testID={`form-input-suggestion-${String(name)}-${encodeURIComponent(candidate)}`}
-                      onPress={() => {
-                        renderProps.field.onChange(candidate)
-                        closeSuggestion()
-                      }}
-                    >
-                      <Box
-                        borderWidth="$1"
-                        borderRadius="$sm"
-                        paddingHorizontal="$2"
-                        paddingVertical="$1"
-                        marginBottom="$1"
-                      >
-                        <Text fontSize="$sm" isTruncated={true}>
-                          {candidate}
-                        </Text>
-                      </Box>
-                    </Pressable>
-                  ))}
-                </Box>
-              </PopoverBody>
-            </PopoverContent>
-          </Popover>
+            candidates={candidateValues}
+            onSelect={(candidate) => {
+              renderProps.field.onChange(candidate)
+              closeSuggestion()
+            }}
+            width={inputProps.width as string | undefined}
+            testIdPrefix={testIdPrefix}
+            backdropTestID={`form-input-backdrop-${String(name)}`}
+            suggestionsTestID={`form-input-suggestions-${String(name)}`}
+            candidateTestIDPrefix={`form-input-suggestion-${String(name)}`}
+          />
         )
       }}
     />
