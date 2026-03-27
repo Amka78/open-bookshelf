@@ -144,7 +144,7 @@ export const PDFViewerScreen = observer(() => {
         renderPage={renderPage}
         totalPage={totalPages ?? 1}
         onPageChange={setActivePage}
-        performanceMode="web-pdf"
+        performanceMode="pdf-single-page"
         disableNavigation={!pdfReady}
       />
     </Document>

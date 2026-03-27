@@ -20,10 +20,15 @@ import {
   type NativeSyntheticEvent,
   Platform,
   StyleSheet,
+  View,
   useWindowDimensions,
 } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { goToNextPage, goToPreviousPage } from "@/utils/pageTurnning"
+import {
+  SINGLE_PAGE_TAP_MOVE_THRESHOLD,
+  resolveSinglePageGesture,
+} from "./pdfSinglePageGestures"
 import { type FacingPageType, useBookViewerState } from "./useBookViewerState"
 
 const runOnNextFrame = (callback: () => void) => {
@@ -62,7 +67,7 @@ export type BookViewerProps = {
   onPageChange?: (page: number) => void
   onLastPage?: () => void
   initialPage?: number
-  performanceMode?: "default" | "android-pdf" | "web-pdf"
+  performanceMode?: "default" | "android-pdf" | "web-pdf" | "pdf-single-page"
   disableNavigation?: boolean
 }
 
@@ -118,6 +123,10 @@ export function BookViewer(props: BookViewerProps) {
   const isWeb = Platform.OS === "web"
   const isAndroidPdfMode = props.performanceMode === "android-pdf" && Platform.OS === "android"
   const isWebPdfMode = props.performanceMode === "web-pdf" && Platform.OS === "web"
+  const isSinglePagePdfMode =
+    props.performanceMode === "pdf-single-page" ||
+    props.performanceMode === "web-pdf" ||
+    (props.performanceMode === "android-pdf" && Platform.OS === "android")
   const isHorizontalReading = viewerHook.readingStyle !== "verticalScroll"
   const flashListAxisKey = isHorizontalReading ? "horizontal" : "vertical"
   const isInverted =
@@ -299,10 +308,40 @@ export function BookViewer(props: BookViewerProps) {
     inverted: isInverted && !useTransformInvert,
   } as unknown as Record<string, boolean>
   const latestHorizontalIndexRef = useRef(scrollIndex)
+  const currentRenderedIndex = Math.max(0, Math.min(scrollIndex, Math.max(data.length - 1, 0)))
+  const singlePageTouchStartRef = useRef<
+    { x: number; y: number; longPressTriggered: boolean } | undefined
+  >(undefined)
+  const singlePageLongPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const clearSinglePageLongPressTimer = useCallback(() => {
+    if (singlePageLongPressTimerRef.current != null) {
+      clearTimeout(singlePageLongPressTimerRef.current)
+      singlePageLongPressTimerRef.current = null
+    }
+  }, [])
+
+  const navigateSinglePageDirection = useCallback(
+    (baseIndex: number, direction: "next" | "previous") => {
+      const targetIndex =
+        direction === "previous"
+          ? goToPreviousPage(baseIndex, 1)
+          : goToNextPage(baseIndex, data.length, 1)
+
+      scrollToIndex(targetIndex, true, isHorizontalReading ? undefined : 0.5)
+    },
+    [data.length, isHorizontalReading, scrollToIndex],
+  )
 
   useEffect(() => {
     latestHorizontalIndexRef.current = scrollIndex
   }, [scrollIndex])
+
+  useEffect(() => {
+    return () => {
+      clearSinglePageLongPressTimer()
+    }
+  }, [clearSinglePageLongPressTimer])
 
   const scheduleHorizontalRecenter = useCallback(() => {
     let secondFrame: number | undefined
@@ -399,15 +438,70 @@ export function BookViewer(props: BookViewerProps) {
           viewerHook.onSetPageDirection(pageDirection)
         }}
       />
-      {pages && isWebPdfMode ? (
+      {pages && isSinglePagePdfMode ? (
         <Box style={styles.viewerRoot} alignSelf="center" width={listViewportWidth}>
           <Box style={listContainerStyle}>
-            {data.length > 0
-              ? renderItemContent(
-                  data[Math.max(0, Math.min(scrollIndex, Math.max(data.length - 1, 0)))],
-                  Math.max(0, Math.min(scrollIndex, Math.max(data.length - 1, 0))),
-                )
-              : null}
+            {data.length > 0 ? renderItemContent(data[currentRenderedIndex], currentRenderedIndex) : null}
+            {data.length > 1 ? (
+              <View
+                style={styles.singlePageOverlay}
+                onStartShouldSetResponder={() => true}
+                onMoveShouldSetResponder={() => true}
+                onResponderGrant={(event) => {
+                  const { locationX, locationY } = event.nativeEvent
+                  singlePageTouchStartRef.current = {
+                    x: locationX,
+                    y: locationY,
+                    longPressTriggered: false,
+                  }
+
+                  clearSinglePageLongPressTimer()
+                  singlePageLongPressTimerRef.current = setTimeout(() => {
+                    if (singlePageTouchStartRef.current) {
+                      singlePageTouchStartRef.current.longPressTriggered = true
+                    }
+                    viewerHook.onManageMenu()
+                  }, 350)
+                }}
+                onResponderMove={(event) => {
+                  const start = singlePageTouchStartRef.current
+                  if (!start) return
+
+                  const dx = Math.abs(event.nativeEvent.locationX - start.x)
+                  const dy = Math.abs(event.nativeEvent.locationY - start.y)
+
+                  if (dx > SINGLE_PAGE_TAP_MOVE_THRESHOLD || dy > SINGLE_PAGE_TAP_MOVE_THRESHOLD) {
+                    clearSinglePageLongPressTimer()
+                  }
+                }}
+                onResponderRelease={(event) => {
+                  const start = singlePageTouchStartRef.current
+                  clearSinglePageLongPressTimer()
+                  singlePageTouchStartRef.current = undefined
+
+                  if (!start || props.disableNavigation || start.longPressTriggered) {
+                    return
+                  }
+
+                  const direction = resolveSinglePageGesture({
+                    startX: start.x,
+                    endX: event.nativeEvent.locationX,
+                    startY: start.y,
+                    endY: event.nativeEvent.locationY,
+                    width: listViewportWidth,
+                    pageDirection: viewerHook.pageDirection,
+                  })
+
+                  if (direction) {
+                    navigateSinglePageDirection(currentRenderedIndex, direction)
+                  }
+                }}
+                onResponderTerminate={() => {
+                  clearSinglePageLongPressTimer()
+                  singlePageTouchStartRef.current = undefined
+                }}
+              />
+            ) : null}
           </Box>
         </Box>
       ) : pages ? (
@@ -497,6 +591,10 @@ const styles = StyleSheet.create({
   listInverted: {
     flex: 1,
     transform: [{ scaleX: -1 }],
+  },
+  singlePageOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 2,
   },
   scaleXInverted: {
     transform: [{ scaleX: -1 }],
