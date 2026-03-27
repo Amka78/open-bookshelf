@@ -3,6 +3,7 @@ import { usePalette } from "@/theme"
 import { goToNextPage, goToPreviousPage } from "@/utils/pageTurnning"
 import { Slider, SliderFilledTrack, SliderThumb, SliderTrack, styled } from "@gluestack-ui/themed"
 import type { ComponentProps } from "react"
+import { formatPageIndicator } from "./pageIndicator"
 
 export type PageManagerProps = {
   currentPage: number
@@ -24,7 +25,7 @@ function PageManagerCore({
   const palette = usePalette()
 
   const lastPageIndex = Math.max(props.totalPage - 1, 0)
-  const pageNum = props.currentPage ? props.currentPage + 1 : 1
+  const pageIndicator = formatPageIndicator(props.currentPage, props.totalPage, props.facingPage)
 
   const onPageFastMoveButtonPress = (forward: boolean) => {
     if (forward) {
@@ -107,7 +108,7 @@ function PageManagerCore({
         />
       </HStack>
       <Text textAlign="center" marginBottom={"$4"}>
-        {pageNum}/{props.totalPage}
+        {pageIndicator}
       </Text>
     </VStack>
   ) : undefined
