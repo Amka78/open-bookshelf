@@ -36,6 +36,16 @@ export type ApiBookManifestStatusType = {
   traceback?: string
 }
 
+export type ApiConversionBookData = {
+  input_formats: string[]
+  output_formats: string[]
+  profiles: unknown
+  conversion_options: unknown
+  title: string
+  authors: string[]
+  book_id: number
+}
+
 type BookManifestChildren = {
   title: string
   dest: string

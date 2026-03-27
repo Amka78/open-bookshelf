@@ -50,38 +50,48 @@ export function HeuristicsSection({ control }: Props) {
         control={control}
         name={"heuristics.enabled"}
         render={({ field: { value: heuristicsEnabled } }) => (
-          <VStack space={"sm"} opacity={heuristicsEnabled ? 1 : 0.4}>
-            <SwitchRow
-              control={control}
-              name={"unwrapLines"}
-              labelTx={"bookConvertScreen.heuristicsUnwrapLines"}
-              disabled={!heuristicsEnabled}
-            />
-            <SwitchRow
-              control={control}
-              name={"deleteBlankLines"}
-              labelTx={"bookConvertScreen.heuristicsDeleteBlankLines"}
-              disabled={!heuristicsEnabled}
-            />
-            <SwitchRow
-              control={control}
-              name={"formatSceneBreaks"}
-              labelTx={"bookConvertScreen.heuristicsFormatSceneBreaks"}
-              disabled={!heuristicsEnabled}
-            />
-            <SwitchRow
-              control={control}
-              name={"renumberHeadings"}
-              labelTx={"bookConvertScreen.heuristicsRenumberHeadings"}
-              disabled={!heuristicsEnabled}
-            />
-            <SwitchRow
-              control={control}
-              name={"detectItalics"}
-              labelTx={"bookConvertScreen.heuristicsDetectItalics"}
-              disabled={!heuristicsEnabled}
-            />
-          </VStack>
+          <HStack space={"sm"} flexWrap="wrap" opacity={heuristicsEnabled ? 1 : 0.4}>
+            <VStack flex={1} minWidth={"$64"}>
+              <SwitchRow
+                control={control}
+                name={"unwrapLines"}
+                labelTx={"bookConvertScreen.heuristicsUnwrapLines"}
+                disabled={!heuristicsEnabled}
+              />
+            </VStack>
+            <VStack flex={1} minWidth={"$64"}>
+              <SwitchRow
+                control={control}
+                name={"deleteBlankLines"}
+                labelTx={"bookConvertScreen.heuristicsDeleteBlankLines"}
+                disabled={!heuristicsEnabled}
+              />
+            </VStack>
+            <VStack flex={1} minWidth={"$64"}>
+              <SwitchRow
+                control={control}
+                name={"formatSceneBreaks"}
+                labelTx={"bookConvertScreen.heuristicsFormatSceneBreaks"}
+                disabled={!heuristicsEnabled}
+              />
+            </VStack>
+            <VStack flex={1} minWidth={"$64"}>
+              <SwitchRow
+                control={control}
+                name={"renumberHeadings"}
+                labelTx={"bookConvertScreen.heuristicsRenumberHeadings"}
+                disabled={!heuristicsEnabled}
+              />
+            </VStack>
+            <VStack flex={1} minWidth={"$64"}>
+              <SwitchRow
+                control={control}
+                name={"detectItalics"}
+                labelTx={"bookConvertScreen.heuristicsDetectItalics"}
+                disabled={!heuristicsEnabled}
+              />
+            </VStack>
+          </HStack>
         )}
       />
     </VStack>

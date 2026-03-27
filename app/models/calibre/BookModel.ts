@@ -17,7 +17,9 @@ import { type Metadata, MetadataModel, type ReadingHistory } from "../calibre"
 import { handleCommonApiError } from "../errors/errors"
 import { withSetPropAction } from "../helpers/withSetPropAction"
 
-type BookConvertResponse = Awaited<ReturnType<typeof api.CheckBookConverting>>
+type BookConvertResponse =
+  | Awaited<ReturnType<typeof api.CheckBookConverting>>
+  | Awaited<ReturnType<typeof api.startConversion>>
 
 function normalizeUpdateFieldValue(field: string, value: unknown) {
   if (field === "seriesIndex") {
@@ -76,7 +78,12 @@ export const BookModel = types
       const convertParams = convertOptions ? convertOptionsToParams(convertOptions) : undefined
       let response: BookConvertResponse | undefined
       while (!response || !isConvertManifestResponse(response)) {
-        response = yield api.CheckBookConverting(libraryId, root.id, format, convertParams)
+        const inputFmt = convertOptions?.inputFormat
+        if (inputFmt) {
+          response = yield api.startConversion(libraryId, root.id, inputFmt, format, convertParams)
+        } else {
+          response = yield api.CheckBookConverting(libraryId, root.id, format, convertParams)
+        }
 
         if (response.kind !== "ok") {
           if (response.kind === "not-found") {

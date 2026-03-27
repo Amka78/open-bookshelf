@@ -261,7 +261,7 @@ function convertLibraryInformation(bookInfo: ApiBookInfo, libraryInfo: LibraryMa
         dateFormat: bookInfo.field_metadata[key].display.date_format,
       })
     }
-    let isMultiple
+    let isMultiple = undefined
     if (bookInfo.field_metadata[key].is_multiple.cache_to_list) {
       isMultiple = IsMultipleModel.create({
         cacheToList: bookInfo.field_metadata[key].is_multiple.cache_to_list,

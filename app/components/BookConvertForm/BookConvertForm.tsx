@@ -16,15 +16,17 @@ import { type Control, Controller, type UseFormWatch } from "react-hook-form"
 import type { ConvertOptions } from "./ConvertOptions"
 import { HeuristicsSection } from "./sections/HeuristicsSection"
 import { LookAndFeelSection } from "./sections/LookAndFeelSection"
-import { OutputSection } from "./sections/OutputSection"
+import { hasOutputFormatSpecificOptions, OutputSection } from "./sections/OutputSection"
 import { StructureSection } from "./sections/StructureSection"
 import { TOCSection } from "./sections/TOCSection"
 
 export type ConvertStatus = "idle" | "converting" | "success" | "error"
 
 export type BookConvertFormProps = {
-  /** 利用可能なフォーマット一覧 */
-  formats: string[]
+  /** 入力元フォーマット一覧 (選択中の書籍が持つフォーマット) */
+  inputFormats: string[]
+  /** 出力先フォーマット一覧 (Calibre が変換可能なフォーマット) */
+  outputFormats: string[]
   /** react-hook-form control */
   control: Control<ConvertOptions>
   /** watch for outputFormat to show format-specific section */
@@ -33,18 +35,17 @@ export type BookConvertFormProps = {
   convertStatus: ConvertStatus
   /** エラーメッセージ */
   errorMessage: string | null
-  /** 変換実行コールバック */
-  onConvert: () => void
 }
 
 export function BookConvertForm(props: BookConvertFormProps) {
-  const { formats, control, watch, convertStatus, errorMessage, onConvert } = props
+  const { inputFormats, outputFormats, control, watch, convertStatus, errorMessage } = props
 
   const isConverting = convertStatus === "converting"
   const isSuccess = convertStatus === "success"
   const isError = convertStatus === "error"
 
   const outputFormat = watch("outputFormat") ?? ""
+  const showOutputOptions = hasOutputFormatSpecificOptions(outputFormat)
 
   return (
     <VStack space={"sm"} flex={1}>
@@ -52,20 +53,22 @@ export function BookConvertForm(props: BookConvertFormProps) {
       <VStack space={"xs"}>
         <Text fontWeight="$bold" tx={"bookConvertScreen.inputFormat"} />
         <Text>
-          {formats.length > 0 ? formats.join(", ") : translate("bookConvertScreen.noFormats")}
+          {inputFormats.length > 0
+            ? inputFormats.join(", ")
+            : translate("bookConvertScreen.noFormats")}
         </Text>
       </VStack>
 
       {/* ===== 変換先フォーマット選択 ===== */}
       <VStack space={"xs"}>
         <Text fontWeight="$bold" tx={"bookConvertScreen.outputFormat"} />
-        {formats.length > 0 ? (
+        {outputFormats.length > 0 ? (
           <Controller
             control={control}
             name={"outputFormat"}
             render={({ field }) => (
               <ButtonGroup flexDirection="row" flexWrap="wrap">
-                {formats.map((format) => (
+                {outputFormats.map((format) => (
                   <Button
                     key={format}
                     testID={`format-button-${format}`}
@@ -88,9 +91,18 @@ export function BookConvertForm(props: BookConvertFormProps) {
 
       {/* ===== 詳細設定 (Accordion) ===== */}
       <ScrollView flex={1} nestedScrollEnabled>
-        <Accordion variant="filled" type="multiple" isCollapsible testID="convert-accordion">
+        <Accordion
+          variant="filled"
+          type="multiple"
+          isCollapsible
+          testID="convert-accordion"
+          flexDirection="row"
+          flexWrap="wrap"
+          alignItems="flex-start"
+          gap="$2"
+        >
           {/* --- Look & Feel --- */}
-          <AccordionItem value="lookAndFeel">
+          <AccordionItem value="lookAndFeel" flex={1} minWidth={"$80"} alignSelf="flex-start">
             <AccordionHeader>
               <AccordionTrigger>
                 {({ isExpanded }: { isExpanded: boolean }) => (
@@ -109,7 +121,7 @@ export function BookConvertForm(props: BookConvertFormProps) {
           </AccordionItem>
 
           {/* --- Heuristic Processing --- */}
-          <AccordionItem value="heuristics">
+          <AccordionItem value="heuristics" flex={1} minWidth={"$80"} alignSelf="flex-start">
             <AccordionHeader>
               <AccordionTrigger>
                 {({ isExpanded }: { isExpanded: boolean }) => (
@@ -128,7 +140,7 @@ export function BookConvertForm(props: BookConvertFormProps) {
           </AccordionItem>
 
           {/* --- Structure Detection --- */}
-          <AccordionItem value="structure">
+          <AccordionItem value="structure" flex={1} minWidth={"$80"} alignSelf="flex-start">
             <AccordionHeader>
               <AccordionTrigger>
                 {({ isExpanded }: { isExpanded: boolean }) => (
@@ -147,7 +159,7 @@ export function BookConvertForm(props: BookConvertFormProps) {
           </AccordionItem>
 
           {/* --- Table of Contents --- */}
-          <AccordionItem value="toc">
+          <AccordionItem value="toc" flex={1} minWidth={"$80"} alignSelf="flex-start">
             <AccordionHeader>
               <AccordionTrigger>
                 {({ isExpanded }: { isExpanded: boolean }) => (
@@ -166,23 +178,25 @@ export function BookConvertForm(props: BookConvertFormProps) {
           </AccordionItem>
 
           {/* --- Output Format Specific --- */}
-          <AccordionItem value="output">
-            <AccordionHeader>
-              <AccordionTrigger>
-                {({ isExpanded }: { isExpanded: boolean }) => (
-                  <>
-                    <AccordionTitleText>
-                      {translate("bookConvertScreen.sectionOutput")}
-                    </AccordionTitleText>
-                    <Icon as={isExpanded ? ChevronUpIcon : ChevronDownIcon} />
-                  </>
-                )}
-              </AccordionTrigger>
-            </AccordionHeader>
-            <AccordionContent>
-              <OutputSection control={control} outputFormat={outputFormat} />
-            </AccordionContent>
-          </AccordionItem>
+          {showOutputOptions && (
+            <AccordionItem value="output" flex={1} minWidth={"$80"} alignSelf="flex-start">
+              <AccordionHeader>
+                <AccordionTrigger>
+                  {({ isExpanded }: { isExpanded: boolean }) => (
+                    <>
+                      <AccordionTitleText>
+                        {translate("bookConvertScreen.sectionOutput")}
+                      </AccordionTitleText>
+                      <Icon as={isExpanded ? ChevronUpIcon : ChevronDownIcon} />
+                    </>
+                  )}
+                </AccordionTrigger>
+              </AccordionHeader>
+              <AccordionContent>
+                <OutputSection control={control} outputFormat={outputFormat} />
+              </AccordionContent>
+            </AccordionItem>
+          )}
         </Accordion>
       </ScrollView>
 
@@ -198,14 +212,6 @@ export function BookConvertForm(props: BookConvertFormProps) {
           {errorMessage}
         </Text>
       )}
-
-      {/* ===== 変換実行ボタン ===== */}
-      <Button
-        testID="convert-button"
-        tx={"bookConvertScreen.convert"}
-        onPress={onConvert}
-        isDisabled={!outputFormat || isConverting}
-      />
     </VStack>
   )
 }

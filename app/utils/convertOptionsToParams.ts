@@ -49,8 +49,7 @@ export function convertOptionsToParams(
   if (toc.forceUseAutoTOC) params.toc_force_auto_generation = true
   if (toc.noInlineTOC) params.no_inline_toc = true
   if (toc.maxTOCLinks !== 50) params.max_toc_links = toc.maxTOCLinks
-  if (toc.numberOfHeadingsForAutoTOC !== 6)
-    params.toc_threshold = toc.numberOfHeadingsForAutoTOC
+  if (toc.numberOfHeadingsForAutoTOC !== 6) params.toc_threshold = toc.numberOfHeadingsForAutoTOC
 
   // ---- Output format-specific ----
   const fmt = options.outputFormat?.toUpperCase()

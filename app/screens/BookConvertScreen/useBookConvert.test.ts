@@ -8,7 +8,8 @@ import {
   DEFAULT_CONVERT_TOC,
 } from "@/components/BookConvertForm/ConvertOptions"
 import { useStores } from "@/models"
-import { act, renderHook } from "@testing-library/react"
+import { api } from "@/services/api"
+import { act, renderHook, waitFor } from "@testing-library/react"
 import { useBookConvert } from "./useBookConvert"
 
 describe("useBookConvert", () => {
@@ -34,9 +35,25 @@ describe("useBookConvert", () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    jest.spyOn(api, "getConversionBookData").mockResolvedValue({
+      kind: "ok",
+      data: {
+        input_formats: ["EPUB", "PDF", "MOBI"],
+        output_formats: ["EPUB", "AZW3", "MOBI"],
+        profiles: {},
+        conversion_options: {},
+        title: "Test Book",
+        authors: ["Author 1"],
+        book_id: 1,
+      },
+    })
     ;(useStores as jest.Mock).mockReturnValue({
       calibreRootStore: mockCalibreRootStore,
     })
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
   })
 
   // ============================================================
@@ -53,26 +70,40 @@ describe("useBookConvert", () => {
       expect(result.current.errorMessage).toBeNull()
     })
 
-    test("book formats are returned correctly", () => {
+    test("input formats are returned correctly", () => {
       const { result } = renderHook(() => useBookConvert())
-      expect(result.current.formats).toEqual(["EPUB", "PDF", "MOBI"])
+      expect(result.current.inputFormats).toEqual(["EPUB", "PDF", "MOBI"])
     })
 
-    test("returns an empty array when formats do not exist", () => {
+    test("output formats are returned from conversion book data", async () => {
+      const { result } = renderHook(() => useBookConvert())
+      await waitFor(() => {
+        expect(result.current.outputFormats).toEqual(["EPUB", "AZW3", "MOBI"])
+      })
+    })
+
+    test("falls back to input formats when conversion book data fails", async () => {
+      jest.spyOn(api, "getConversionBookData").mockResolvedValueOnce({
+        kind: "not-found",
+        message: "not found",
+      })
       ;(useStores as jest.Mock).mockReturnValue({
         calibreRootStore: {
           selectedLibrary: {
             id: "test-library",
             selectedBook: {
               id: 1,
-              metaData: { title: "Test", formats: null },
+              metaData: { title: "Test", formats: ["PDF"] },
               convert: mockConvert,
             },
           },
         },
       })
       const { result } = renderHook(() => useBookConvert())
-      expect(result.current.formats).toEqual([])
+      await waitFor(() => {
+        expect(result.current.inputFormats).toEqual(["PDF"])
+        expect(result.current.outputFormats).toEqual(["PDF"])
+      })
     })
 
     test("react-hook-form is initialized", () => {

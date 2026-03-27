@@ -69,83 +69,91 @@ export function LookAndFeelSection({ control }: Props) {
       </HStack>
 
       {/* Text Justification */}
-      <VStack>
-        <Text fontSize={"$xs"} tx={"bookConvertScreen.textJustification"} />
-        <FormSelectField
-          control={control}
-          name={"lookAndFeel.textJustification"}
-          options={justificationOptions}
-          placeholder={"(default)"}
-        />
-      </VStack>
-
-      {/* Font settings */}
       <HStack space={"sm"} flexWrap="wrap">
-        <VStack flex={1} minWidth={"$24"}>
-          <Text fontSize={"$xs"} tx={"bookConvertScreen.baseFontSize"} />
-          <Input width={"$full"}>
-            <FormInputField
-              control={control}
-              name={"lookAndFeel.baseFontSize"}
-              keyboardType="numeric"
-              width={"$full"}
-            />
-          </Input>
+        <VStack flex={1} minWidth={"$64"}>
+          <Text fontSize={"$xs"} tx={"bookConvertScreen.textJustification"} />
+          <FormSelectField
+            control={control}
+            name={"lookAndFeel.textJustification"}
+            options={justificationOptions}
+            placeholder={"(default)"}
+          />
         </VStack>
-        <VStack flex={1} minWidth={"$24"}>
-          <Text fontSize={"$xs"} tx={"bookConvertScreen.lineHeight"} />
-          <Input width={"$full"}>
-            <FormInputField
-              control={control}
-              name={"lookAndFeel.lineHeight"}
-              keyboardType="numeric"
-              width={"$full"}
-            />
-          </Input>
+
+        {/* Font settings */}
+        <VStack flex={1} minWidth={"$64"}>
+          <HStack space={"sm"} flexWrap="wrap">
+            <VStack flex={1} minWidth={"$24"}>
+              <Text fontSize={"$xs"} tx={"bookConvertScreen.baseFontSize"} />
+              <Input width={"$full"}>
+                <FormInputField
+                  control={control}
+                  name={"lookAndFeel.baseFontSize"}
+                  keyboardType="numeric"
+                  width={"$full"}
+                />
+              </Input>
+            </VStack>
+            <VStack flex={1} minWidth={"$24"}>
+              <Text fontSize={"$xs"} tx={"bookConvertScreen.lineHeight"} />
+              <Input width={"$full"}>
+                <FormInputField
+                  control={control}
+                  name={"lookAndFeel.lineHeight"}
+                  keyboardType="numeric"
+                  width={"$full"}
+                />
+              </Input>
+            </VStack>
+          </HStack>
         </VStack>
       </HStack>
 
       {/* Encoding */}
-      <VStack>
-        <Text fontSize={"$xs"} tx={"bookConvertScreen.inputEncoding"} />
-        <Input width={"$full"}>
-          <FormInputField
-            control={control}
-            name={"lookAndFeel.inputEncoding"}
-            placeholder={"utf-8"}
-            width={"$full"}
-          />
-        </Input>
-      </VStack>
+      <HStack space={"sm"} flexWrap="wrap">
+        <VStack flex={1} minWidth={"$64"}>
+          <Text fontSize={"$xs"} tx={"bookConvertScreen.inputEncoding"} />
+          <Input width={"$full"}>
+            <FormInputField
+              control={control}
+              name={"lookAndFeel.inputEncoding"}
+              placeholder={"utf-8"}
+              width={"$full"}
+            />
+          </Input>
+        </VStack>
+      </HStack>
 
       {/* Boolean options */}
-      <HStack justifyContent="space-between" alignItems="center">
-        <Text fontSize={"$xs"} flex={1} tx={"bookConvertScreen.disableFontRescaling"} />
-        <Controller
-          control={control}
-          name={"lookAndFeel.disableFontRescaling"}
-          render={({ field }) => (
-            <Switch
-              testID="switch-disableFontRescaling"
-              value={field.value as boolean}
-              onValueChange={field.onChange}
-            />
-          )}
-        />
-      </HStack>
-      <HStack justifyContent="space-between" alignItems="center">
-        <Text fontSize={"$xs"} flex={1} tx={"bookConvertScreen.removeASCIIReplacements"} />
-        <Controller
-          control={control}
-          name={"lookAndFeel.removeASCIIReplacements"}
-          render={({ field }) => (
-            <Switch
-              testID="switch-removeASCIIReplacements"
-              value={field.value as boolean}
-              onValueChange={field.onChange}
-            />
-          )}
-        />
+      <HStack space={"sm"} flexWrap="wrap">
+        <HStack flex={1} minWidth={"$64"} justifyContent="space-between" alignItems="center">
+          <Text fontSize={"$xs"} flex={1} tx={"bookConvertScreen.disableFontRescaling"} />
+          <Controller
+            control={control}
+            name={"lookAndFeel.disableFontRescaling"}
+            render={({ field }) => (
+              <Switch
+                testID="switch-disableFontRescaling"
+                value={field.value as boolean}
+                onValueChange={field.onChange}
+              />
+            )}
+          />
+        </HStack>
+        <HStack flex={1} minWidth={"$64"} justifyContent="space-between" alignItems="center">
+          <Text fontSize={"$xs"} flex={1} tx={"bookConvertScreen.removeASCIIReplacements"} />
+          <Controller
+            control={control}
+            name={"lookAndFeel.removeASCIIReplacements"}
+            render={({ field }) => (
+              <Switch
+                testID="switch-removeASCIIReplacements"
+                value={field.value as boolean}
+                onValueChange={field.onChange}
+              />
+            )}
+          />
+        </HStack>
       </HStack>
     </VStack>
   )

@@ -13,7 +13,7 @@ import { useBookConvert } from "./useBookConvert"
 
 export const BookConvertScreen: FC = observer(() => {
   const navigation = useNavigation<ApppNavigationProp>()
-  const { selectedBook, formats, form, convertStatus, errorMessage, handleConvert } =
+  const { selectedBook, inputFormats, outputFormats, form, convertStatus, errorMessage } =
     useBookConvert()
 
   useLayoutEffect(() => {
@@ -28,12 +28,12 @@ export const BookConvertScreen: FC = observer(() => {
         {selectedBook?.metaData?.title ?? ""}
       </Heading>
       <BookConvertForm
-        formats={formats}
+        inputFormats={inputFormats}
+        outputFormats={outputFormats}
         control={form.control}
         watch={form.watch}
         convertStatus={convertStatus}
         errorMessage={errorMessage}
-        onConvert={handleConvert}
       />
     </RootContainer>
   )
@@ -44,12 +44,12 @@ export const BookConvertScreen: FC = observer(() => {
  */
 export type BookConvertScreenTemplateProps = {
   bookTitle?: string
-  formats: string[]
+  inputFormats: string[]
+  outputFormats: string[]
   control: Control<ConvertOptions>
   watch: UseFormWatch<ConvertOptions>
   convertStatus: ConvertStatus
   errorMessage: string | null
-  onConvert: () => void
 }
 
 export function BookConvertScreenTemplate(props: BookConvertScreenTemplateProps) {
@@ -59,12 +59,12 @@ export function BookConvertScreenTemplate(props: BookConvertScreenTemplateProps)
         {props.bookTitle ?? ""}
       </Heading>
       <BookConvertForm
-        formats={props.formats}
+        inputFormats={props.inputFormats}
+        outputFormats={props.outputFormats}
         control={props.control}
         watch={props.watch}
         convertStatus={props.convertStatus}
         errorMessage={props.errorMessage}
-        onConvert={props.onConvert}
       />
     </RootContainer>
   )

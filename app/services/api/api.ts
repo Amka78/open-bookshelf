@@ -16,6 +16,7 @@ import type {
   ApiBookFile,
   ApiBookInfo,
   ApiBookInfoCore,
+  ApiConversionBookData,
   ApiBookManifestResultType,
   ApiBookManifestStatusType,
   ApiCalibreInterfaceType,
@@ -274,6 +275,72 @@ export class Api {
           extraQuery ? `&${extraQuery}` : ""
         }`,
       )
+
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response)
+      if (problem) return problem
+    }
+
+    return { kind: "ok", data: response.data }
+  }
+
+  /**
+   * Start book conversion via Calibre Content Server.
+   *
+   * Calls `POST conversion/start/{bookId}?library_id={libraryId}&sort=timestamp.desc`
+   * and passes conversion settings in the JSON body.
+   */
+  async startConversion(
+    libraryId: string,
+    bookId: number,
+    inputFmt: string,
+    outputFmt: string,
+    convertParams?: Record<string, string | number | boolean>,
+  ): Promise<
+    | {
+        kind: "ok"
+        data: ApiBookManifestStatusType | ApiBookManifestResultType
+      }
+    | GeneralApiProblem
+  > {
+    const requestBody = {
+      input_fmt: inputFmt,
+      output_fmt: outputFmt,
+      ...(convertParams ?? {}),
+    }
+    const response: ApiResponse<ApiBookManifestStatusType | ApiBookManifestResultType> =
+      await this.apisauce.post(
+        `conversion/start/${bookId}?library_id=${encodeURIComponent(
+          libraryId,
+        )}&sort=timestamp.desc`,
+        requestBody,
+      )
+
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response)
+      if (problem) return problem
+    }
+
+    return { kind: "ok", data: response.data }
+  }
+
+  async getConversionBookData(
+    libraryId: string,
+    bookId: number,
+    inputFmt?: string,
+    outputFmt?: string,
+  ): Promise<{ kind: "ok"; data: ApiConversionBookData } | GeneralApiProblem> {
+    const query = [
+      `library_id=${encodeURIComponent(libraryId)}`,
+      inputFmt ? `input_fmt=${encodeURIComponent(inputFmt)}` : "",
+      outputFmt ? `output_fmt=${encodeURIComponent(outputFmt)}` : "",
+    ]
+      .filter(Boolean)
+      .join("&")
+
+    const response: ApiResponse<ApiConversionBookData> = await this.apisauce.get(
+      `conversion/book-data/${bookId}?${query}`,
+    )
 
     if (!response.ok) {
       const problem = getGeneralApiProblem(response)

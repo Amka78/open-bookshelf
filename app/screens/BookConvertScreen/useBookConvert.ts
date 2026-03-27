@@ -4,7 +4,8 @@ import {
   DEFAULT_CONVERT_OPTIONS,
 } from "@/components/BookConvertForm/ConvertOptions"
 import { useStores } from "@/models"
-import { useState } from "react"
+import { api } from "@/services/api"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 
 export function useBookConvert() {
@@ -13,7 +14,8 @@ export function useBookConvert() {
   const selectedLibrary = calibreRootStore.selectedLibrary
   const selectedBook = selectedLibrary.selectedBook
 
-  const formats: string[] = selectedBook?.metaData?.formats ?? []
+  const inputFormats: string[] = selectedBook?.metaData?.formats ?? []
+  const [outputFormats, setOutputFormats] = useState<string[]>(inputFormats)
 
   const [convertStatus, setConvertStatus] = useState<ConvertStatus>("idle")
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -21,10 +23,49 @@ export function useBookConvert() {
   const form = useForm<ConvertOptions>({
     defaultValues: {
       outputFormat: "",
-      inputFormat: null,
+      inputFormat: inputFormats[0] ?? null,
       ...DEFAULT_CONVERT_OPTIONS,
     },
   })
+
+  useEffect(() => {
+    const preferredInputFormat = inputFormats[0] ?? null
+    form.setValue("inputFormat", preferredInputFormat)
+
+    if (!selectedBook?.id) {
+      setOutputFormats(inputFormats)
+      return
+    }
+
+    let cancelled = false
+
+    const loadConversionBookData = async () => {
+      const response = await api.getConversionBookData(
+        selectedLibrary.id,
+        selectedBook.id,
+        preferredInputFormat ?? undefined,
+      )
+
+      if (cancelled) return
+
+      if (response.kind === "ok") {
+        setOutputFormats(response.data.output_formats)
+        const currentOutputFormat = form.getValues("outputFormat")
+        if (currentOutputFormat && !response.data.output_formats.includes(currentOutputFormat)) {
+          form.setValue("outputFormat", "")
+        }
+        return
+      }
+
+      setOutputFormats(inputFormats)
+    }
+
+    void loadConversionBookData()
+
+    return () => {
+      cancelled = true
+    }
+  }, [form, inputFormats, selectedBook?.id, selectedLibrary.id])
 
   const handleConvert = async () => {
     const values = form.getValues()
@@ -45,7 +86,7 @@ export function useBookConvert() {
   const handleReset = () => {
     form.reset({
       outputFormat: "",
-      inputFormat: null,
+      inputFormat: inputFormats[0] ?? null,
       ...DEFAULT_CONVERT_OPTIONS,
     })
     setConvertStatus("idle")
@@ -55,7 +96,8 @@ export function useBookConvert() {
   return {
     selectedBook,
     selectedLibrary,
-    formats,
+    inputFormats,
+    outputFormats,
     form,
     convertStatus,
     errorMessage,

@@ -13,11 +13,11 @@ import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenConta
 // ============================================================
 type WrapperProps = {
   bookTitle?: string
-  formats: string[]
+  inputFormats: string[]
+  outputFormats: string[]
   outputFormat?: string
   convertStatus: "idle" | "converting" | "success" | "error"
   errorMessage: string | null
-  onConvert: () => void
 }
 
 function BookConvertStoryWrapper(props: WrapperProps) {
@@ -35,12 +35,12 @@ function BookConvertStoryWrapper(props: WrapperProps) {
         {props.bookTitle ?? ""}
       </Heading>
       <BookConvertForm
-        formats={props.formats}
+        inputFormats={props.inputFormats}
+        outputFormats={props.outputFormats}
         control={form.control}
         watch={form.watch}
         convertStatus={props.convertStatus}
         errorMessage={props.errorMessage}
-        onConvert={props.onConvert}
       />
     </RootContainer>
   )
@@ -51,14 +51,13 @@ export default {
   component: BookConvertStoryWrapper,
   args: {
     bookTitle: "The Great Gatsby",
-    formats: ["EPUB", "PDF", "MOBI", "AZW3"],
+    inputFormats: ["EPUB", "PDF", "MOBI"],
+    outputFormats: ["EPUB", "PDF", "MOBI", "AZW3", "DOCX", "TXT"],
     outputFormat: "",
     convertStatus: "idle" as const,
     errorMessage: null,
-    onConvert: () => {},
   },
   argTypes: {
-    onConvert: { action: "convert pressed" },
     convertStatus: {
       control: { type: "select" },
       options: ["idle", "converting", "success", "error"],
@@ -123,7 +122,8 @@ export const ConvertError: Story = {
 /** フォーマットが存在しない場合 */
 export const NoFormats: Story = {
   args: {
-    formats: [],
+    inputFormats: [],
+    outputFormats: [],
   },
 }
 
@@ -147,7 +147,7 @@ export const SelectOutputFormat: Story = {
 }
 
 /**
- * 変換ボタンが outputFormat なしでは無効になっていることを確認。
+ * outputFormat が未選択でも出力フォーマット選択UIが表示されることを確認。
  */
 export const ConvertButtonDisabledWithoutFormat: Story = {
   args: {
@@ -156,25 +156,23 @@ export const ConvertButtonDisabledWithoutFormat: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
 
-    const convertButton = await canvas.findByTestId("convert-button")
-    expect(convertButton).toBeTruthy()
+    const epubButton = await canvas.findByTestId("format-button-EPUB")
+    expect(epubButton).toBeTruthy()
   },
 }
 
 /**
- * フォーマット選択後に変換ボタンが押下できることを確認。
+ * フォーマット選択ボタンが表示されることを確認。
  */
 export const ConvertButtonEnabledWithFormat: Story = {
   args: {
     outputFormat: "PDF",
   },
-  play: async ({ canvasElement, args }) => {
+  play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
 
-    const convertButton = await canvas.findByTestId("convert-button")
-    await userEvent.click(convertButton)
-
-    expect(args.onConvert).toHaveBeenCalled()
+    const pdfButton = await canvas.findByTestId("format-button-PDF")
+    expect(pdfButton).toBeTruthy()
   },
 }
 

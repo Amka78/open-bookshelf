@@ -12,31 +12,39 @@ export function TOCSection({ control }: Props) {
   return (
     <VStack space={"sm"}>
       {/* Boolean options */}
-      {(
-        [
-          { name: "forceUseAutoTOC", tx: "bookConvertScreen.tocForceAutoTOC" },
-          { name: "noInlineTOC", tx: "bookConvertScreen.tocNoInlineTOC" },
-        ] as const
-      ).map(({ name, tx }) => (
-        <HStack key={name} justifyContent="space-between" alignItems="center">
-          <Text fontSize={"$xs"} flex={1} tx={tx} />
-          <Controller
-            control={control}
-            name={`toc.${name}` as FieldPath<ConvertOptions>}
-            render={({ field }) => (
-              <Switch
-                testID={`switch-toc-${name}`}
-                value={field.value}
-                onValueChange={field.onChange}
-              />
-            )}
-          />
-        </HStack>
-      ))}
+      <HStack space={"sm"} flexWrap="wrap">
+        {(
+          [
+            { name: "forceUseAutoTOC", tx: "bookConvertScreen.tocForceAutoTOC" },
+            { name: "noInlineTOC", tx: "bookConvertScreen.tocNoInlineTOC" },
+          ] as const
+        ).map(({ name, tx }) => (
+          <HStack
+            key={name}
+            flex={1}
+            minWidth={"$64"}
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Text fontSize={"$xs"} flex={1} tx={tx} />
+            <Controller
+              control={control}
+              name={`toc.${name}` as FieldPath<ConvertOptions>}
+              render={({ field }) => (
+                <Switch
+                  testID={`switch-toc-${name}`}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                />
+              )}
+            />
+          </HStack>
+        ))}
+      </HStack>
 
       {/* Numeric options */}
-      <HStack space={"sm"}>
-        <VStack flex={1}>
+      <HStack space={"sm"} flexWrap="wrap">
+        <VStack flex={1} minWidth={"$64"}>
           <Text fontSize={"$xs"} tx={"bookConvertScreen.tocMaxLinks"} />
           <Input width={"$full"}>
             <FormInputField
@@ -47,7 +55,7 @@ export function TOCSection({ control }: Props) {
             />
           </Input>
         </VStack>
-        <VStack flex={1}>
+        <VStack flex={1} minWidth={"$64"}>
           <Text fontSize={"$xs"} tx={"bookConvertScreen.tocNumberOfHeadings"} />
           <Input width={"$full"}>
             <FormInputField

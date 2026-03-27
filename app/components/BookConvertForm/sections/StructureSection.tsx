@@ -20,42 +20,52 @@ export function StructureSection({ control }: Props) {
   return (
     <VStack space={"sm"}>
       {/* Chapter mark */}
-      <VStack>
-        <Text fontSize={"$xs"} tx={"bookConvertScreen.structureChapterMark"} />
-        <FormSelectField
-          control={control}
-          name={"structureDetection.chapterMark"}
-          options={chapterMarkOptions}
-        />
-      </VStack>
+      <HStack space={"sm"} flexWrap="wrap">
+        <VStack flex={1} minWidth={"$64"}>
+          <Text fontSize={"$xs"} tx={"bookConvertScreen.structureChapterMark"} />
+          <FormSelectField
+            control={control}
+            name={"structureDetection.chapterMark"}
+            options={chapterMarkOptions}
+          />
+        </VStack>
+      </HStack>
 
       {/* Boolean options */}
-      {(
-        [
-          { name: "insertMetadata", tx: "bookConvertScreen.structureInsertMetadata" },
-          {
-            name: "pageBreaksBeforeChapters",
-            tx: "bookConvertScreen.structurePageBreaksBeforeChapters",
-          },
-          { name: "removeFirstImage", tx: "bookConvertScreen.structureRemoveFirstImage" },
-          { name: "removeTableOfContents", tx: "bookConvertScreen.structureRemoveTOC" },
-        ] as const
-      ).map(({ name, tx }) => (
-        <HStack key={name} justifyContent="space-between" alignItems="center">
-          <Text fontSize={"$xs"} flex={1} tx={tx} />
-          <Controller
-            control={control}
-            name={`structureDetection.${name}` as FieldPath<ConvertOptions>}
-            render={({ field }) => (
-              <Switch
-                testID={`switch-structure-${name}`}
-                value={field.value}
-                onValueChange={field.onChange}
-              />
-            )}
-          />
-        </HStack>
-      ))}
+      <HStack space={"sm"} flexWrap="wrap">
+        {(
+          [
+            { name: "insertMetadata", tx: "bookConvertScreen.structureInsertMetadata" },
+            {
+              name: "pageBreaksBeforeChapters",
+              tx: "bookConvertScreen.structurePageBreaksBeforeChapters",
+            },
+            { name: "removeFirstImage", tx: "bookConvertScreen.structureRemoveFirstImage" },
+            { name: "removeTableOfContents", tx: "bookConvertScreen.structureRemoveTOC" },
+          ] as const
+        ).map(({ name, tx }) => (
+          <HStack
+            key={name}
+            flex={1}
+            minWidth={"$64"}
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Text fontSize={"$xs"} flex={1} tx={tx} />
+            <Controller
+              control={control}
+              name={`structureDetection.${name}` as FieldPath<ConvertOptions>}
+              render={({ field }) => (
+                <Switch
+                  testID={`switch-structure-${name}`}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                />
+              )}
+            />
+          </HStack>
+        ))}
+      </HStack>
     </VStack>
   )
 }

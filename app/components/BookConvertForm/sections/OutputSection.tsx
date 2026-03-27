@@ -17,6 +17,11 @@ type Props = {
   outputFormat: string
 }
 
+export function hasOutputFormatSpecificOptions(outputFormat: string) {
+  const fmt = outputFormat?.toUpperCase()
+  return fmt === "EPUB" || fmt === "MOBI" || fmt === "AZW3" || fmt === "KF8" || fmt === "PDF"
+}
+
 const epubVersionOptions = [
   { value: "2" as EPUBVersion, labelTx: "bookConvertScreen.epubVersion2" as const },
   { value: "3" as EPUBVersion, labelTx: "bookConvertScreen.epubVersion3" as const },
@@ -68,8 +73,8 @@ export function OutputSection({ control, outputFormat }: Props) {
   return (
     <VStack space={"sm"}>
       {isEPUB && (
-        <>
-          <VStack>
+        <HStack space={"sm"} flexWrap="wrap">
+          <VStack flex={1} minWidth={"$64"}>
             <Text fontSize={"$xs"} tx={"bookConvertScreen.epubVersion"} />
             <FormSelectField
               control={control}
@@ -85,7 +90,13 @@ export function OutputSection({ control, outputFormat }: Props) {
               { name: "flattenFiles", tx: "bookConvertScreen.epubFlattenFiles" },
             ] as const
           ).map(({ name, tx }) => (
-            <HStack key={name} justifyContent="space-between" alignItems="center">
+            <HStack
+              key={name}
+              flex={1}
+              minWidth={"$64"}
+              justifyContent="space-between"
+              alignItems="center"
+            >
               <Text fontSize={"$xs"} flex={1} tx={tx} />
               <Controller
                 control={control}
@@ -100,12 +111,12 @@ export function OutputSection({ control, outputFormat }: Props) {
               />
             </HStack>
           ))}
-        </>
+        </HStack>
       )}
 
       {isMOBI && (
-        <>
-          <VStack>
+        <HStack space={"sm"} flexWrap="wrap">
+          <VStack flex={1} minWidth={"$64"}>
             <Text fontSize={"$xs"} tx={"bookConvertScreen.mobiFileType"} />
             <FormSelectField
               control={control}
@@ -113,7 +124,7 @@ export function OutputSection({ control, outputFormat }: Props) {
               options={mobiFileTypeOptions}
             />
           </VStack>
-          <HStack justifyContent="space-between" alignItems="center">
+          <HStack flex={1} minWidth={"$64"} justifyContent="space-between" alignItems="center">
             <Text fontSize={"$xs"} flex={1}>
               {"No inline table"}
             </Text>
@@ -129,12 +140,12 @@ export function OutputSection({ control, outputFormat }: Props) {
               )}
             />
           </HStack>
-        </>
+        </HStack>
       )}
 
       {isPDF && (
-        <>
-          <VStack>
+        <HStack space={"sm"} flexWrap="wrap">
+          <VStack flex={1} minWidth={"$64"}>
             <Text fontSize={"$xs"} tx={"bookConvertScreen.pdfPaperSize"} />
             <FormSelectField
               control={control}
@@ -142,7 +153,7 @@ export function OutputSection({ control, outputFormat }: Props) {
               options={pdfPaperSizeOptions}
             />
           </VStack>
-          <VStack>
+          <VStack flex={1} minWidth={"$64"}>
             <Text fontSize={"$xs"} tx={"bookConvertScreen.pdfOrientation"} />
             <FormSelectField
               control={control}
@@ -150,16 +161,11 @@ export function OutputSection({ control, outputFormat }: Props) {
               options={pdfOrientationOptions}
             />
           </VStack>
-          <VStack>
+          <VStack flex={1} minWidth={"$64"}>
             <Text fontSize={"$xs"} tx={"bookConvertScreen.pdfUnit"} />
-            <FormSelectField
-              control={control}
-              name={"outputPDF.unit"}
-              options={pdfUnitOptions}
-              width={"$32"}
-            />
+            <FormSelectField control={control} name={"outputPDF.unit"} options={pdfUnitOptions} />
           </VStack>
-        </>
+        </HStack>
       )}
     </VStack>
   )
