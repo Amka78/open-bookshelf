@@ -5,12 +5,17 @@ import { ScrollView } from "@gluestack-ui/themed"
 import { observer } from "mobx-react-lite"
 import { memo, useCallback, useMemo } from "react"
 
+import { Box } from "../Box/Box"
 import { LeftSideMenuItem } from "../LeftSideMenuItem/LeftSideMenuItem"
+
+export type QueryOperator = "AND" | "OR"
 
 export type LeftSideMenuProps = {
   tagBrowser: Category[]
-  selectedName?: string
+  selectedNames?: string[]
+  itemOperators?: Record<string, QueryOperator>
   onNodePress: (nodeName: string) => Promise<void>
+  onItemOperatorChange?: (query: string, op: QueryOperator) => void
 }
 
 type MenuNode = {
@@ -130,16 +135,16 @@ function normalizeTagQuery(query: string | undefined): string | null {
 }
 
 function isTagQuerySelected(
-  selectedQuery: string | undefined,
+  selectedQueries: string[] | undefined,
   categoryKey: string,
   value: string,
 ): boolean {
-  const normalizedSelectedQuery = normalizeTagQuery(selectedQuery)
-  if (!normalizedSelectedQuery) return false
+  if (!selectedQueries || selectedQueries.length === 0) return false
 
   const normalizedTargetQuery = normalizeTagQuery(buildTagQuery(categoryKey, value))
+  if (!normalizedTargetQuery) return false
 
-  return normalizedSelectedQuery === normalizedTargetQuery
+  return selectedQueries.some((q) => normalizeTagQuery(q) === normalizedTargetQuery)
 }
 
 function getInitialCharacter(name: string): string {
@@ -224,19 +229,38 @@ const NodeItem = memo(
     depth,
     categoryKey,
     onPress,
-    selectedName,
+    selectedNames,
+    itemOperators,
+    onItemOperatorChange,
   }: {
     node: MenuNode
     depth: number
     categoryKey: string
     onPress: (query: string) => Promise<void>
-    selectedName?: string
+    selectedNames?: string[]
+    itemOperators?: Record<string, QueryOperator>
+    onItemOperatorChange?: (query: string, op: QueryOperator) => void
   }) => {
     const query = useMemo(() => buildTagQuery(categoryKey, node.name), [categoryKey, node.name])
+    const isSelected = useMemo(
+      () => isTagQuerySelected(selectedNames, categoryKey, node.name),
+      [selectedNames, categoryKey, node.name],
+    )
+    const isLastSelected = useMemo(
+      () =>
+        (selectedNames?.length ?? 0) <= 1 ||
+        selectedNames?.[selectedNames.length - 1]?.toLowerCase() === query.toLowerCase(),
+      [selectedNames, query],
+    )
+    const operator: QueryOperator = itemOperators?.[query.toLowerCase()] ?? "AND"
 
     const handlePress = useCallback(async () => {
       await onPress(query)
     }, [onPress, query])
+
+    const handleOperatorToggle = useCallback(() => {
+      onItemOperatorChange?.(query, operator === "AND" ? "OR" : "AND")
+    }, [onItemOperatorChange, query, operator])
 
     return (
       <LeftSideMenuItem
@@ -245,7 +269,9 @@ const NodeItem = memo(
         count={node.count}
         name={node.name}
         onLastNodePress={handlePress}
-        selected={isTagQuerySelected(selectedName, categoryKey, node.name)}
+        selected={isSelected}
+        operator={operator}
+        onOperatorToggle={isSelected && !isLastSelected ? handleOperatorToggle : undefined}
       />
     )
   },
@@ -257,13 +283,17 @@ const NodeList = memo(
     depth,
     categoryKey,
     onPress,
-    selectedName,
+    selectedNames,
+    itemOperators,
+    onItemOperatorChange,
   }: {
     nodes: MenuNode[]
     depth: number
     categoryKey: string
     onPress: (query: string) => Promise<void>
-    selectedName?: string
+    selectedNames?: string[]
+    itemOperators?: Record<string, QueryOperator>
+    onItemOperatorChange?: (query: string, op: QueryOperator) => void
   }) => {
     const shouldUseIncremental = nodes.length > INCREMENTAL_RENDER_THRESHOLD
     const visibleCount = useIncrementalRender(nodes.length, 50, shouldUseIncremental)
@@ -277,7 +307,9 @@ const NodeList = memo(
             depth={depth}
             categoryKey={categoryKey}
             onPress={onPress}
-            selectedName={selectedName}
+            selectedNames={selectedNames}
+            itemOperators={itemOperators}
+            onItemOperatorChange={onItemOperatorChange}
           />
         ))}
       </>
@@ -290,21 +322,41 @@ const SubCategoryItem = memo(
     subCategory,
     categoryKey,
     onPress,
-    selectedName,
+    selectedNames,
+    itemOperators,
+    onItemOperatorChange,
   }: {
     subCategory: MenuSubCategory
     categoryKey: string
     onPress: (query: string) => Promise<void>
-    selectedName?: string
+    selectedNames?: string[]
+    itemOperators?: Record<string, QueryOperator>
+    onItemOperatorChange?: (query: string, op: QueryOperator) => void
   }) => {
     const query = useMemo(
       () => buildTagQuery(categoryKey, subCategory.name),
       [categoryKey, subCategory.name],
     )
+    const isSelected = useMemo(
+      () => isTagQuerySelected(selectedNames, categoryKey, subCategory.name),
+      [selectedNames, categoryKey, subCategory.name],
+    )
+    const operator: QueryOperator = itemOperators?.[query.toLowerCase()] ?? "AND"
+
+    const isLastSelected = useMemo(
+      () =>
+        (selectedNames?.length ?? 0) <= 1 ||
+        selectedNames?.[selectedNames.length - 1]?.toLowerCase() === query.toLowerCase(),
+      [selectedNames, query],
+    )
 
     const handlePress = useCallback(async () => {
       await onPress(query)
     }, [onPress, query])
+
+    const handleOperatorToggle = useCallback(() => {
+      onItemOperatorChange?.(query, operator === "AND" ? "OR" : "AND")
+    }, [onItemOperatorChange, query, operator])
 
     return (
       <LeftSideMenuItem
@@ -313,7 +365,9 @@ const SubCategoryItem = memo(
         count={subCategory.count}
         name={subCategory.name}
         onLastNodePress={handlePress}
-        selected={isTagQuerySelected(selectedName, categoryKey, subCategory.name)}
+        selected={isSelected}
+        operator={operator}
+        onOperatorToggle={isSelected && !isLastSelected ? handleOperatorToggle : undefined}
       >
         {subCategory.children.length > 0 && (
           <NodeList
@@ -321,7 +375,9 @@ const SubCategoryItem = memo(
             depth={2}
             categoryKey={categoryKey}
             onPress={onPress}
-            selectedName={selectedName}
+            selectedNames={selectedNames}
+            itemOperators={itemOperators}
+            onItemOperatorChange={onItemOperatorChange}
           />
         )}
       </LeftSideMenuItem>
@@ -334,12 +390,16 @@ const SubCategoryList = memo(
     subCategories,
     categoryKey,
     onPress,
-    selectedName,
+    selectedNames,
+    itemOperators,
+    onItemOperatorChange,
   }: {
     subCategories: MenuSubCategory[]
     categoryKey: string
     onPress: (query: string) => Promise<void>
-    selectedName?: string
+    selectedNames?: string[]
+    itemOperators?: Record<string, QueryOperator>
+    onItemOperatorChange?: (query: string, op: QueryOperator) => void
   }) => {
     const shouldUseIncremental = subCategories.length > INCREMENTAL_RENDER_THRESHOLD
     const visibleCount = useIncrementalRender(subCategories.length, 50, shouldUseIncremental)
@@ -352,7 +412,9 @@ const SubCategoryList = memo(
             subCategory={subCategory}
             categoryKey={categoryKey}
             onPress={onPress}
-            selectedName={selectedName}
+            selectedNames={selectedNames}
+            itemOperators={itemOperators}
+            onItemOperatorChange={onItemOperatorChange}
           />
         ))}
       </>
@@ -364,11 +426,15 @@ const CategoryItem = memo(
   ({
     category,
     onPress,
-    selectedName,
+    selectedNames,
+    itemOperators,
+    onItemOperatorChange,
   }: {
     category: Category
     onPress: (query: string) => Promise<void>
-    selectedName?: string
+    selectedNames?: string[]
+    itemOperators?: Record<string, QueryOperator>
+    onItemOperatorChange?: (query: string, op: QueryOperator) => void
   }) => {
     const itemSubCategories: MenuSubCategory[] = useMemo(
       () =>
@@ -404,14 +470,18 @@ const CategoryItem = memo(
             depth={1}
             categoryKey={category.category}
             onPress={onPress}
-            selectedName={selectedName}
+            selectedNames={selectedNames}
+            itemOperators={itemOperators}
+            onItemOperatorChange={onItemOperatorChange}
           />
         ) : subCategories.length > 0 ? (
           <SubCategoryList
             subCategories={subCategories}
             categoryKey={category.category}
             onPress={onPress}
-            selectedName={selectedName}
+            selectedNames={selectedNames}
+            itemOperators={itemOperators}
+            onItemOperatorChange={onItemOperatorChange}
           />
         ) : null}
       </LeftSideMenuItem>
@@ -423,21 +493,25 @@ export const LeftSideMenu = observer((props: LeftSideMenuProps) => {
   const palette = usePalette()
 
   return props.tagBrowser ? (
-    <ScrollView
+    <Box
       backgroundColor={palette.surface}
       maxWidth={"$32"}
       height={"$full"}
       borderRightWidth={1}
       borderRightColor={palette.borderSubtle}
     >
-      {props.tagBrowser.map((category) => (
-        <CategoryItem
-          key={category.name}
-          category={category}
-          onPress={props.onNodePress}
-          selectedName={props.selectedName}
-        />
-      ))}
-    </ScrollView>
+      <ScrollView>
+        {props.tagBrowser.map((category) => (
+          <CategoryItem
+            key={category.name}
+            category={category}
+            onPress={props.onNodePress}
+            selectedNames={props.selectedNames}
+            itemOperators={props.itemOperators}
+            onItemOperatorChange={props.onItemOperatorChange}
+          />
+        ))}
+      </ScrollView>
+    </Box>
   ) : undefined
 })

@@ -1,4 +1,5 @@
 import { Box, HStack, MaterialCommunityIcon, Text } from "@/components"
+import { usePalette } from "@/theme"
 import { logger } from "@/utils/logger"
 import { Pressable } from "@gluestack-ui/themed"
 import { Children, memo, useMemo, useState } from "react"
@@ -12,12 +13,15 @@ export type LeftSideMenuItemProps = {
   depth?: number
   onLastNodePress?: () => void
   selected?: boolean
+  operator?: "AND" | "OR"
+  onOperatorToggle?: () => void
 }
 export const LeftSideMenuItem = memo(function LeftSideMenuItem({
   mode = "category",
   ...restProps
 }: LeftSideMenuItemProps) {
   const props = { mode, ...restProps }
+  const palette = usePalette()
   const [isOpen, setIsOpen] = useState(false)
   const childCount = useMemo(() => Children.count(props.children), [props.children])
 
@@ -62,6 +66,20 @@ export const LeftSideMenuItem = memo(function LeftSideMenuItem({
         >
           <MaterialCommunityIcon name={icon} iconSize={"sm"} />
           <Text fontSize={"$md"}>{props.name}</Text>
+          {props.selected && props.onOperatorToggle && (
+            <Pressable
+              onPress={props.onOperatorToggle}
+              marginLeft={"$1"}
+              paddingHorizontal={"$1"}
+              paddingVertical={"$0.5"}
+              backgroundColor={palette.surfaceStrong}
+              borderRadius={"$sm"}
+            >
+              <Text fontSize={"$xs"} fontWeight="$bold" color={palette.accent}>
+                {props.operator ?? "AND"}
+              </Text>
+            </Pressable>
+          )}
           <Box flex={1} />
           <Text fontSize={"$md"}>{props.count}</Text>
         </HStack>
