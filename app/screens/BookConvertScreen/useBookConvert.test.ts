@@ -56,22 +56,33 @@ describe("useBookConvert", () => {
     jest.restoreAllMocks()
   })
 
+  const renderUseBookConvertAndWaitForInitialization = async () => {
+    const hook = renderHook(() => useBookConvert())
+
+    await waitFor(() => {
+      expect(hook.result.current.form.getValues().inputFormat).toBe("EPUB")
+      expect(hook.result.current.outputFormats).toEqual(["EPUB", "AZW3", "MOBI"])
+    })
+
+    return hook
+  }
+
   // ============================================================
   // 初期状態
   // ============================================================
   describe("Initial state", () => {
-    test("convertStatus is idle in the initial state", () => {
-      const { result } = renderHook(() => useBookConvert())
+    test("convertStatus is idle in the initial state", async () => {
+      const { result } = await renderUseBookConvertAndWaitForInitialization()
       expect(result.current.convertStatus).toBe("idle")
     })
 
-    test("errorMessage is null in the initial state", () => {
-      const { result } = renderHook(() => useBookConvert())
+    test("errorMessage is null in the initial state", async () => {
+      const { result } = await renderUseBookConvertAndWaitForInitialization()
       expect(result.current.errorMessage).toBeNull()
     })
 
-    test("input formats are returned correctly", () => {
-      const { result } = renderHook(() => useBookConvert())
+    test("input formats are returned correctly", async () => {
+      const { result } = await renderUseBookConvertAndWaitForInitialization()
       expect(result.current.inputFormats).toEqual(["EPUB", "PDF", "MOBI"])
     })
 
@@ -106,8 +117,53 @@ describe("useBookConvert", () => {
       })
     })
 
-    test("react-hook-form is initialized", () => {
+    test("syncs the form input format to the first available source format", async () => {
+      const { result } = await renderUseBookConvertAndWaitForInitialization()
+
+      expect(result.current.form.getValues().inputFormat).toBe("EPUB")
+    })
+
+    test("clears the selected output format when the fetched output formats no longer include it", async () => {
+      let resolveBookData:
+        | ((value: Awaited<ReturnType<typeof api.getConversionBookData>>) => void)
+        | undefined
+
+      jest.spyOn(api, "getConversionBookData").mockReturnValueOnce(
+        new Promise((resolve) => {
+          resolveBookData = resolve
+        }),
+      )
+
       const { result } = renderHook(() => useBookConvert())
+
+      act(() => {
+        result.current.form.setValue("outputFormat", "PDF")
+      })
+
+      expect(result.current.form.getValues().outputFormat).toBe("PDF")
+
+      await act(async () => {
+        resolveBookData?.({
+          kind: "ok",
+          data: {
+            input_formats: ["EPUB", "PDF", "MOBI"],
+            output_formats: ["EPUB", "AZW3", "MOBI"],
+            profiles: {},
+            conversion_options: {},
+            title: "Test Book",
+            authors: ["Author 1"],
+            book_id: 1,
+          },
+        })
+      })
+
+      await waitFor(() => {
+        expect(result.current.form.getValues().outputFormat).toBe("")
+      })
+    })
+
+    test("react-hook-form is initialized", async () => {
+      const { result } = await renderUseBookConvertAndWaitForInitialization()
       expect(result.current.form).toBeDefined()
       expect(result.current.form.control).toBeDefined()
       expect(result.current.form.watch).toBeDefined()
@@ -118,50 +174,50 @@ describe("useBookConvert", () => {
   // デフォルト値
   // ============================================================
   describe("Default values", () => {
-    test("Look & Feel default values are correct", () => {
-      const { result } = renderHook(() => useBookConvert())
+    test("Look & Feel default values are correct", async () => {
+      const { result } = await renderUseBookConvertAndWaitForInitialization()
       const values = result.current.form.getValues()
       expect(values.lookAndFeel).toEqual(DEFAULT_CONVERT_LOOK_AND_FEEL)
     })
 
-    test("Heuristics default values are correct", () => {
-      const { result } = renderHook(() => useBookConvert())
+    test("Heuristics default values are correct", async () => {
+      const { result } = await renderUseBookConvertAndWaitForInitialization()
       const values = result.current.form.getValues()
       expect(values.heuristics).toEqual(DEFAULT_CONVERT_HEURISTICS)
     })
 
-    test("Structure Detection default values are correct", () => {
-      const { result } = renderHook(() => useBookConvert())
+    test("Structure Detection default values are correct", async () => {
+      const { result } = await renderUseBookConvertAndWaitForInitialization()
       const values = result.current.form.getValues()
       expect(values.structureDetection).toEqual(DEFAULT_CONVERT_STRUCTURE)
     })
 
-    test("TOC default values are correct", () => {
-      const { result } = renderHook(() => useBookConvert())
+    test("TOC default values are correct", async () => {
+      const { result } = await renderUseBookConvertAndWaitForInitialization()
       const values = result.current.form.getValues()
       expect(values.toc).toEqual(DEFAULT_CONVERT_TOC)
     })
 
-    test("Output EPUB default values are correct", () => {
-      const { result } = renderHook(() => useBookConvert())
+    test("Output EPUB default values are correct", async () => {
+      const { result } = await renderUseBookConvertAndWaitForInitialization()
       const values = result.current.form.getValues()
       expect(values.outputEPUB).toEqual(DEFAULT_CONVERT_OUTPUT_EPUB)
     })
 
-    test("Output MOBI default values are correct", () => {
-      const { result } = renderHook(() => useBookConvert())
+    test("Output MOBI default values are correct", async () => {
+      const { result } = await renderUseBookConvertAndWaitForInitialization()
       const values = result.current.form.getValues()
       expect(values.outputMOBI).toEqual(DEFAULT_CONVERT_OUTPUT_MOBI)
     })
 
-    test("Output PDF default values are correct", () => {
-      const { result } = renderHook(() => useBookConvert())
+    test("Output PDF default values are correct", async () => {
+      const { result } = await renderUseBookConvertAndWaitForInitialization()
       const values = result.current.form.getValues()
       expect(values.outputPDF).toEqual(DEFAULT_CONVERT_OUTPUT_PDF)
     })
 
-    test("initial outputFormat is an empty string", () => {
-      const { result } = renderHook(() => useBookConvert())
+    test("initial outputFormat is an empty string", async () => {
+      const { result } = await renderUseBookConvertAndWaitForInitialization()
       const values = result.current.form.getValues()
       expect(values.outputFormat).toBe("")
     })
@@ -271,7 +327,7 @@ describe("useBookConvert", () => {
   describe("handleReset", () => {
     test("handleReset resets all states", async () => {
       mockConvert.mockResolvedValue(undefined)
-      const { result } = renderHook(() => useBookConvert())
+      const { result } = await renderUseBookConvertAndWaitForInitialization()
 
       act(() => {
         result.current.form.setValue("outputFormat", "EPUB")
@@ -293,7 +349,7 @@ describe("useBookConvert", () => {
     })
 
     test("handleReset restores all options to default values", async () => {
-      const { result } = renderHook(() => useBookConvert())
+      const { result } = await renderUseBookConvertAndWaitForInitialization()
 
       act(() => {
         result.current.form.setValue("lookAndFeel.baseFontSize", 18)
@@ -316,8 +372,8 @@ describe("useBookConvert", () => {
   // オプション設定テスト
   // ============================================================
   describe("Conversion option settings", () => {
-    test("Look & Feel - margin settings can be changed", () => {
-      const { result } = renderHook(() => useBookConvert())
+    test("Look & Feel - margin settings can be changed", async () => {
+      const { result } = await renderUseBookConvertAndWaitForInitialization()
 
       act(() => {
         result.current.form.setValue("lookAndFeel.marginTop", 10)
@@ -329,8 +385,8 @@ describe("useBookConvert", () => {
       expect(values.lookAndFeel.marginBottom).toBe(10)
     })
 
-    test("Look & Feel - text alignment can be set", () => {
-      const { result } = renderHook(() => useBookConvert())
+    test("Look & Feel - text alignment can be set", async () => {
+      const { result } = await renderUseBookConvertAndWaitForInitialization()
 
       act(() => {
         result.current.form.setValue("lookAndFeel.textJustification", "justify")
@@ -339,8 +395,8 @@ describe("useBookConvert", () => {
       expect(result.current.form.getValues().lookAndFeel.textJustification).toBe("justify")
     })
 
-    test("Heuristics - enabled flag can be toggled", () => {
-      const { result } = renderHook(() => useBookConvert())
+    test("Heuristics - enabled flag can be toggled", async () => {
+      const { result } = await renderUseBookConvertAndWaitForInitialization()
 
       act(() => {
         result.current.form.setValue("heuristics.enabled", true)
@@ -349,8 +405,8 @@ describe("useBookConvert", () => {
       expect(result.current.form.getValues().heuristics.enabled).toBe(true)
     })
 
-    test("Structure - chapter mark can be configured", () => {
-      const { result } = renderHook(() => useBookConvert())
+    test("Structure - chapter mark can be configured", async () => {
+      const { result } = await renderUseBookConvertAndWaitForInitialization()
 
       act(() => {
         result.current.form.setValue("structureDetection.chapterMark", "rule")
@@ -359,8 +415,8 @@ describe("useBookConvert", () => {
       expect(result.current.form.getValues().structureDetection.chapterMark).toBe("rule")
     })
 
-    test("TOC - max link count can be configured", () => {
-      const { result } = renderHook(() => useBookConvert())
+    test("TOC - max link count can be configured", async () => {
+      const { result } = await renderUseBookConvertAndWaitForInitialization()
 
       act(() => {
         result.current.form.setValue("toc.maxTOCLinks", 100)
@@ -369,8 +425,8 @@ describe("useBookConvert", () => {
       expect(result.current.form.getValues().toc.maxTOCLinks).toBe(100)
     })
 
-    test("Output EPUB - version can be configured", () => {
-      const { result } = renderHook(() => useBookConvert())
+    test("Output EPUB - version can be configured", async () => {
+      const { result } = await renderUseBookConvertAndWaitForInitialization()
 
       act(() => {
         result.current.form.setValue("outputEPUB.epubVersion", "2")
@@ -379,8 +435,8 @@ describe("useBookConvert", () => {
       expect(result.current.form.getValues().outputEPUB.epubVersion).toBe("2")
     })
 
-    test("Output PDF - paper size can be configured", () => {
-      const { result } = renderHook(() => useBookConvert())
+    test("Output PDF - paper size can be configured", async () => {
+      const { result } = await renderUseBookConvertAndWaitForInitialization()
 
       act(() => {
         result.current.form.setValue("outputPDF.paperSize", "letter")
@@ -389,8 +445,8 @@ describe("useBookConvert", () => {
       expect(result.current.form.getValues().outputPDF.paperSize).toBe("letter")
     })
 
-    test("Output MOBI - file type can be configured", () => {
-      const { result } = renderHook(() => useBookConvert())
+    test("Output MOBI - file type can be configured", async () => {
+      const { result } = await renderUseBookConvertAndWaitForInitialization()
 
       act(() => {
         result.current.form.setValue("outputMOBI.mobiFileType", "both")
@@ -404,8 +460,8 @@ describe("useBookConvert", () => {
   // ストアデータアクセス
   // ============================================================
   describe("Store data access", () => {
-    test("selectedBook and selectedLibrary are returned", () => {
-      const { result } = renderHook(() => useBookConvert())
+    test("selectedBook and selectedLibrary are returned", async () => {
+      const { result } = await renderUseBookConvertAndWaitForInitialization()
 
       expect(result.current.selectedBook).toBe(mockSelectedBook)
       expect(result.current.selectedLibrary).toBe(mockSelectedLibrary)

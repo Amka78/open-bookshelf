@@ -2,11 +2,17 @@ import { Heading, RootContainer } from "@/components"
 import { BookConvertForm } from "@/components/BookConvertForm/BookConvertForm"
 import type { ConvertOptions } from "@/components/BookConvertForm/ConvertOptions"
 import { DEFAULT_CONVERT_OPTIONS } from "@/components/BookConvertForm/ConvertOptions"
-import { expect } from "@storybook/jest"
 import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, within } from "@storybook/testing-library"
 import { useForm } from "react-hook-form"
 import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
+import {
+  playBookConvertSelectsOutputFormat,
+  playBookConvertShowsAccordionSections,
+  playBookConvertShowsErrorState,
+  playBookConvertShowsFormatSelection,
+  playBookConvertShowsSpinnerWhileConverting,
+  playBookConvertShowsSuccessState,
+} from "./bookConvertScreenPlay"
 
 // ============================================================
 // Storybook用ラッパー: react-hook-form の Context を提供
@@ -135,14 +141,11 @@ export const NoFormats: Story = {
  * フォーマットボタンを選択する操作の確認。
  */
 export const SelectOutputFormat: Story = {
-  play: async ({ canvasElement, args }) => {
-    const canvas = within(canvasElement)
-
-    const epubButton = await canvas.findByTestId("format-button-EPUB")
-    await userEvent.click(epubButton)
-
-    // ボタンのアクセシビリティを確認
-    expect(epubButton).toBeTruthy()
+  play: async ({ canvasElement }) => {
+    await playBookConvertSelectsOutputFormat({
+      canvasElement,
+      format: "EPUB",
+    })
   },
 }
 
@@ -154,10 +157,10 @@ export const ConvertButtonDisabledWithoutFormat: Story = {
     outputFormat: "",
   },
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-
-    const epubButton = await canvas.findByTestId("format-button-EPUB")
-    expect(epubButton).toBeTruthy()
+    await playBookConvertShowsFormatSelection({
+      canvasElement,
+      format: "EPUB",
+    })
   },
 }
 
@@ -169,10 +172,10 @@ export const ConvertButtonEnabledWithFormat: Story = {
     outputFormat: "PDF",
   },
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-
-    const pdfButton = await canvas.findByTestId("format-button-PDF")
-    expect(pdfButton).toBeTruthy()
+    await playBookConvertShowsFormatSelection({
+      canvasElement,
+      format: "PDF",
+    })
   },
 }
 
@@ -185,10 +188,9 @@ export const ConvertingShowsSpinner: Story = {
     convertStatus: "converting" as const,
   },
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-
-    const spinner = await canvas.findByTestId("convert-spinner")
-    expect(spinner).toBeTruthy()
+    await playBookConvertShowsSpinnerWhileConverting({
+      canvasElement,
+    })
   },
 }
 
@@ -201,10 +203,9 @@ export const SuccessMessageVisible: Story = {
     convertStatus: "success" as const,
   },
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-
-    const successMsg = await canvas.findByTestId("convert-success")
-    expect(successMsg).toBeTruthy()
+    await playBookConvertShowsSuccessState({
+      canvasElement,
+    })
   },
 }
 
@@ -218,10 +219,9 @@ export const ErrorMessageVisible: Story = {
     errorMessage: "Conversion traceback: invalid format",
   },
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-
-    const errorMsg = await canvas.findByTestId("convert-error")
-    expect(errorMsg).toBeTruthy()
+    await playBookConvertShowsErrorState({
+      canvasElement,
+    })
   },
 }
 
@@ -230,9 +230,8 @@ export const ErrorMessageVisible: Story = {
  */
 export const AccordionSectionsVisible: Story = {
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-
-    const accordion = await canvas.findByTestId("convert-accordion")
-    expect(accordion).toBeTruthy()
+    await playBookConvertShowsAccordionSections({
+      canvasElement,
+    })
   },
 }
