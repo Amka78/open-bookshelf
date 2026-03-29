@@ -2,12 +2,15 @@ import { useStores } from "@/models"
 import type { LibraryMap } from "@/models/CalibreRootStore"
 import { type ClientSetting, ClientSettingModel } from "@/models/calibre"
 import type { MetadataSnapshotIn } from "@/models/calibre"
+import { api } from "@/services/api"
 import type { BookReadingStyleType } from "@/type/types"
 import { isCalibreHtmlViewerFormat } from "@/utils/calibreHtmlViewer"
 import { logger } from "@/utils/logger"
 import { useEffect, useRef, useState } from "react"
 import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import { useConvergence } from "../../hooks/useConvergence"
+
+const SYNC_DEBOUNCE_MS = 1000
 
 const runOnNextFrame = (callback: () => void) => {
   if (typeof requestAnimationFrame === "function") {
@@ -38,6 +41,7 @@ export function useViewer() {
   const resolvedPromptKeyRef = useRef<string | undefined>(undefined)
   const pendingPromptKeyRef = useRef<string | undefined>(undefined)
   const handledRatingPromptKeyRef = useRef<string | undefined>(undefined)
+  const syncTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const convergenceHook = useConvergence()
 
@@ -197,6 +201,17 @@ export function useViewer() {
   const onPageChange = async (page: number) => {
     if (history?.currentPage !== page) {
       history?.setCurrentPage(page)
+
+      if (selectedBook && selectedLibraryId && history) {
+        clearTimeout(syncTimerRef.current)
+        syncTimerRef.current = setTimeout(() => {
+          api
+            .syncReadingPosition(selectedLibraryId, selectedBook.id, history.format, page)
+            .catch((err) => {
+              logger.warn("Failed to sync reading position", err)
+            })
+        }, SYNC_DEBOUNCE_MS)
+      }
     }
   }
 

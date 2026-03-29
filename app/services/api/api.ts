@@ -744,6 +744,28 @@ export class Api {
 
     return { kind: "ok" }
   }
+
+  async syncReadingPosition(
+    libraryId: string,
+    bookId: number,
+    format: string,
+    page: number,
+  ): Promise<{ kind: "ok" } | GeneralApiProblem> {
+    const response: ApiResponse<unknown> = await this.apisauce.post(
+      `cdb/set-fields/${bookId}/${libraryId}`,
+      {
+        changes: { reading_pos: { format, page } },
+        loaded_book_ids: [bookId],
+      },
+    )
+
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response)
+      if (problem) return problem
+    }
+
+    return { kind: "ok" }
+  }
 }
 
 // Singleton instance of the API for convenience

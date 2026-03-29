@@ -67,6 +67,7 @@ async function playResumeReadingPromptDeclines({
 
 const useStoresMock = jest.fn()
 const useModalMock = jest.fn()
+const mockSyncReadingPosition = jest.fn().mockResolvedValue({ kind: "ok" })
 
 mock.module("@/models", () => ({
   useStores: () => useStoresMock(),
@@ -74,6 +75,14 @@ mock.module("@/models", () => ({
 
 mock.module("/home/amka78/open-bookshelf/app/models/index.ts", () => ({
   useStores: () => useStoresMock(),
+}))
+
+mock.module("@/services/api", () => ({
+  api: { syncReadingPosition: mockSyncReadingPosition },
+}))
+
+mock.module("/home/amka78/open-bookshelf/app/services/api/index.ts", () => ({
+  api: { syncReadingPosition: mockSyncReadingPosition },
 }))
 
 mock.module("../../hooks/useConvergence", () => ({
@@ -279,6 +288,59 @@ describe("useViewer", () => {
     await result.current.onPageChange(2)
 
     expect(mockSetCurrentPage).not.toHaveBeenCalled()
+  })
+
+  test("onPageChange calls syncReadingPosition after debounce", async () => {
+    jest.useFakeTimers()
+    const { result } = renderHook(() => useViewer())
+
+    await act(async () => {
+      await result.current.onPageChange(5)
+    })
+
+    expect(mockSyncReadingPosition).not.toHaveBeenCalled()
+
+    await act(async () => {
+      jest.advanceTimersByTime(1000)
+    })
+
+    expect(mockSyncReadingPosition).toHaveBeenCalledWith("lib-1", 1, "pdf", 5)
+    jest.useRealTimers()
+  })
+
+  test("onPageChange debounces rapid page changes and only syncs final page", async () => {
+    jest.useFakeTimers()
+    const { result } = renderHook(() => useViewer())
+
+    await act(async () => {
+      await result.current.onPageChange(3)
+      await result.current.onPageChange(4)
+      await result.current.onPageChange(5)
+    })
+
+    await act(async () => {
+      jest.advanceTimersByTime(1000)
+    })
+
+    expect(mockSyncReadingPosition).toHaveBeenCalledTimes(1)
+    expect(mockSyncReadingPosition).toHaveBeenCalledWith("lib-1", 1, "pdf", 5)
+    jest.useRealTimers()
+  })
+
+  test("onPageChange does not sync when page is unchanged", async () => {
+    jest.useFakeTimers()
+    const { result } = renderHook(() => useViewer())
+
+    await act(async () => {
+      await result.current.onPageChange(2) // same as mockHistory.currentPage
+    })
+
+    await act(async () => {
+      jest.advanceTimersByTime(1000)
+    })
+
+    expect(mockSyncReadingPosition).not.toHaveBeenCalled()
+    jest.useRealTimers()
   })
 
   test("cachedPathList returns history cached path", () => {
