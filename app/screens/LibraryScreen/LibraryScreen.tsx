@@ -33,7 +33,13 @@ import { type FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useS
 import { Platform, useWindowDimensions } from "react-native"
 import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import type { SearchBarCommands } from "react-native-screens"
-import type { QueryOperator } from "@/components/LeftSideMenu/LeftSideMenu"
+import type { CalibreFieldOperator, QueryOperator } from "@/components/LeftSideMenu/LeftSideMenu"
+import {
+  buildItemKey,
+  buildTagQuery,
+  normalizeTagQuery,
+  parseTagQuery,
+} from "@/components/LeftSideMenu/LeftSideMenu"
 import { useLibrary } from "./useLibrary"
 
 /** Split a query string by AND or OR, returning individual conditions. */
@@ -53,6 +59,9 @@ export const LibraryScreen: FC = observer(() => {
   const modal = useElectrobunModal()
   const isFocused = useIsFocused()
   const [itemOperators, setItemOperators] = useState<Record<string, QueryOperator>>({})
+  const [itemCalibreOperators, setItemCalibreOperators] = useState<
+    Record<string, CalibreFieldOperator>
+  >({})
 
   const convergenceHook = useConvergence()
   const window = useWindowDimensions()
@@ -388,16 +397,23 @@ export const LibraryScreen: FC = observer(() => {
           onNodePress={async (query) => {
             const currentQuery = selectedLibrary?.searchSetting?.query ?? ""
             const currentParts = parseQueryParts(currentQuery)
-            const normalizedNew = query.trim().toLowerCase()
+            const normalizedNew = normalizeTagQuery(query)
             const alreadySelected = currentParts.some(
-              (q) => q.trim().toLowerCase() === normalizedNew,
+              (q) => normalizeTagQuery(q) === normalizedNew,
             )
             let nextParts: string[]
             let nextOperators: Record<string, QueryOperator>
             if (alreadySelected) {
-              nextParts = currentParts.filter((q) => q.trim().toLowerCase() !== normalizedNew)
+              nextParts = currentParts.filter((q) => normalizeTagQuery(q) !== normalizedNew)
+              const removedParsed = currentParts.find((q) => normalizeTagQuery(q) === normalizedNew)
+              const removedItemKey = removedParsed
+                ? (() => {
+                    const p = parseTagQuery(removedParsed)
+                    return p ? buildItemKey(p.categoryKey, p.value) : null
+                  })()
+                : null
               nextOperators = { ...itemOperators }
-              delete nextOperators[normalizedNew]
+              if (removedItemKey) delete nextOperators[removedItemKey]
             } else {
               nextParts = [...currentParts, query.trim()]
               nextOperators = { ...itemOperators }
@@ -405,28 +421,58 @@ export const LibraryScreen: FC = observer(() => {
             setItemOperators(nextOperators)
             const nextQuery = nextParts.reduce((acc, part, i) => {
               if (i === 0) return part
-              const op = nextOperators[nextParts[i - 1].trim().toLowerCase()] ?? "AND"
+              const prevParsed = parseTagQuery(nextParts[i - 1])
+              const prevKey = prevParsed ? buildItemKey(prevParsed.categoryKey, prevParsed.value) : ""
+              const op = nextOperators[prevKey] ?? "AND"
               return `${acc} ${op} ${part}`
             }, "")
             libraryHook.setHeaderSearchText(nextQuery)
             await libraryHook.onSearch(nextQuery)
           }}
-          onItemOperatorChange={async (query, op) => {
-            const normalizedKey = query.trim().toLowerCase()
-            const nextOperators = { ...itemOperators, [normalizedKey]: op }
+          onItemOperatorChange={async (itemKey, op) => {
+            const nextOperators = { ...itemOperators, [itemKey]: op }
             setItemOperators(nextOperators)
             const currentQuery = selectedLibrary?.searchSetting?.query ?? ""
             const parts = parseQueryParts(currentQuery)
             const nextQuery = parts.reduce((acc, part, i) => {
               if (i === 0) return part
-              const partOp = nextOperators[parts[i - 1].trim().toLowerCase()] ?? "AND"
+              const prevParsed = parseTagQuery(parts[i - 1])
+              const prevKey = prevParsed ? buildItemKey(prevParsed.categoryKey, prevParsed.value) : ""
+              const partOp = nextOperators[prevKey] ?? "AND"
               return `${acc} ${partOp} ${part}`
             }, "")
             libraryHook.setHeaderSearchText(nextQuery)
             await libraryHook.onSearch(nextQuery)
           }}
+          onItemCalibreOperatorChange={async (categoryKey, value, newOp) => {
+            const itemKey = buildItemKey(categoryKey, value)
+            const oldOp = itemCalibreOperators[itemKey] ?? "="
+            setItemCalibreOperators((prev) => ({ ...prev, [itemKey]: newOp }))
+            const currentQuery = selectedLibrary?.searchSetting?.query ?? ""
+            const parts = parseQueryParts(currentQuery)
+            const oldNorm = normalizeTagQuery(buildTagQuery(categoryKey, value, oldOp))
+            const updatedParts = parts.map((p) =>
+              normalizeTagQuery(p) === oldNorm
+                ? buildTagQuery(categoryKey, value, newOp)
+                : p,
+            )
+            if (updatedParts.some((p, i) => p !== parts[i])) {
+              const nextQuery = updatedParts.reduce((acc, part, i) => {
+                if (i === 0) return part
+                const prevParsed = parseTagQuery(updatedParts[i - 1])
+                const prevKey = prevParsed
+                  ? buildItemKey(prevParsed.categoryKey, prevParsed.value)
+                  : ""
+                const op = itemOperators[prevKey] ?? "AND"
+                return `${acc} ${op} ${part}`
+              }, "")
+              libraryHook.setHeaderSearchText(nextQuery)
+              await libraryHook.onSearch(nextQuery)
+            }
+          }}
           tagBrowser={selectedLibrary?.tagBrowser}
           itemOperators={itemOperators}
+          itemCalibreOperators={itemCalibreOperators}
           selectedNames={parseQueryParts(selectedLibrary?.searchSetting?.query ?? "")}
         />
       </Box>

@@ -9,13 +9,16 @@ import { Box } from "../Box/Box"
 import { LeftSideMenuItem } from "../LeftSideMenuItem/LeftSideMenuItem"
 
 export type QueryOperator = "AND" | "OR"
+export type CalibreFieldOperator = "=" | "~" | "!=" | "!~"
 
 export type LeftSideMenuProps = {
   tagBrowser: Category[]
   selectedNames?: string[]
   itemOperators?: Record<string, QueryOperator>
+  itemCalibreOperators?: Record<string, CalibreFieldOperator>
   onNodePress: (nodeName: string) => Promise<void>
-  onItemOperatorChange?: (query: string, op: QueryOperator) => void
+  onItemOperatorChange?: (itemKey: string, op: QueryOperator) => void
+  onItemCalibreOperatorChange?: (categoryKey: string, value: string, op: CalibreFieldOperator) => void
 }
 
 type MenuNode = {
@@ -55,16 +58,28 @@ const ONE_LEVEL_CATEGORY_KEYS = new Set([
   "ratings",
 ])
 
-function normalizeCategoryKey(categoryKey: string): string {
+export function normalizeCategoryKey(categoryKey: string): string {
   const normalizedKey = categoryKey.trim().toLowerCase()
 
   return CATEGORY_QUERY_ALIASES[normalizedKey] ?? normalizedKey
 }
 
-function buildTagQuery(categoryKey: string, value: string): string {
-  const normalizedValue = value.trim()
+export function buildTagQuery(
+  categoryKey: string,
+  value: string,
+  calibreOp: CalibreFieldOperator = "=",
+): string {
+  return `${normalizeCategoryKey(categoryKey)}:${calibreOp}${value.trim()}`
+}
 
-  return `${normalizeCategoryKey(categoryKey)}:=${normalizedValue}`
+/** Stable key for a menu item: `"category:value"` (no calibre op, lowercase) */
+export function buildItemKey(categoryKey: string, value: string): string {
+  return `${normalizeCategoryKey(categoryKey)}:${value.trim().toLowerCase()}`
+}
+
+export function nextCalibreOperator(current: CalibreFieldOperator): CalibreFieldOperator {
+  const cycle: CalibreFieldOperator[] = ["=", "~", "!=", "!~"]
+  return cycle[(cycle.indexOf(current) + 1) % cycle.length]
 }
 
 function decodeIfPossible(value: string): string {
@@ -91,13 +106,13 @@ function stripWrappingQuotes(value: string): string {
 function normalizeQueryValue(value: string): string {
   let normalizedValue = decodeIfPossible(value).trim()
   normalizedValue = stripWrappingQuotes(normalizedValue)
-  normalizedValue = normalizedValue.replace(/^[=]+/, "").trim()
+  normalizedValue = normalizedValue.replace(/^(!?[=~])/, "").trim()
   normalizedValue = stripWrappingQuotes(normalizedValue)
 
   return normalizedValue.toLowerCase()
 }
 
-function parseTagQuery(query: string): { categoryKey: string; value: string } | null {
+export function parseTagQuery(query: string): { categoryKey: string; value: string } | null {
   const trimmedQuery = decodeIfPossible(query).trim()
   const separatorIndex = trimmedQuery.indexOf(":")
 
@@ -111,16 +126,15 @@ function parseTagQuery(query: string): { categoryKey: string; value: string } | 
     rawValue = rawValue.slice(0, booleanOperatorMatch.index).trim()
   }
 
-  if (rawValue.startsWith("=")) {
-    rawValue = rawValue.slice(1).trim()
-  }
+  // strip any leading calibre operator: =, ~, !=, !~
+  rawValue = rawValue.replace(/^(!?[=~])/, "").trim()
 
   if (!rawCategory || !rawValue) return null
 
   return { categoryKey: rawCategory, value: rawValue }
 }
 
-function normalizeTagQuery(query: string | undefined): string | null {
+export function normalizeTagQuery(query: string | undefined): string | null {
   if (!query) return null
 
   const parsedQuery = parseTagQuery(query)
@@ -231,7 +245,9 @@ const NodeItem = memo(
     onPress,
     selectedNames,
     itemOperators,
+    itemCalibreOperators,
     onItemOperatorChange,
+    onItemCalibreOperatorChange,
   }: {
     node: MenuNode
     depth: number
@@ -239,9 +255,16 @@ const NodeItem = memo(
     onPress: (query: string) => Promise<void>
     selectedNames?: string[]
     itemOperators?: Record<string, QueryOperator>
-    onItemOperatorChange?: (query: string, op: QueryOperator) => void
+    itemCalibreOperators?: Record<string, CalibreFieldOperator>
+    onItemOperatorChange?: (itemKey: string, op: QueryOperator) => void
+    onItemCalibreOperatorChange?: (categoryKey: string, value: string, op: CalibreFieldOperator) => void
   }) => {
-    const query = useMemo(() => buildTagQuery(categoryKey, node.name), [categoryKey, node.name])
+    const itemKey = useMemo(() => buildItemKey(categoryKey, node.name), [categoryKey, node.name])
+    const calibreOp: CalibreFieldOperator = itemCalibreOperators?.[itemKey] ?? "="
+    const query = useMemo(
+      () => buildTagQuery(categoryKey, node.name, calibreOp),
+      [categoryKey, node.name, calibreOp],
+    )
     const isSelected = useMemo(
       () => isTagQuerySelected(selectedNames, categoryKey, node.name),
       [selectedNames, categoryKey, node.name],
@@ -249,18 +272,23 @@ const NodeItem = memo(
     const isLastSelected = useMemo(
       () =>
         (selectedNames?.length ?? 0) <= 1 ||
-        selectedNames?.[selectedNames.length - 1]?.toLowerCase() === query.toLowerCase(),
+        normalizeTagQuery(selectedNames?.[selectedNames.length - 1]) ===
+          normalizeTagQuery(query),
       [selectedNames, query],
     )
-    const operator: QueryOperator = itemOperators?.[query.toLowerCase()] ?? "AND"
+    const operator: QueryOperator = itemOperators?.[itemKey] ?? "AND"
 
     const handlePress = useCallback(async () => {
       await onPress(query)
     }, [onPress, query])
 
     const handleOperatorToggle = useCallback(() => {
-      onItemOperatorChange?.(query, operator === "AND" ? "OR" : "AND")
-    }, [onItemOperatorChange, query, operator])
+      onItemOperatorChange?.(itemKey, operator === "AND" ? "OR" : "AND")
+    }, [onItemOperatorChange, itemKey, operator])
+
+    const handleCalibreOperatorToggle = useCallback(() => {
+      onItemCalibreOperatorChange?.(categoryKey, node.name, nextCalibreOperator(calibreOp))
+    }, [onItemCalibreOperatorChange, categoryKey, node.name, calibreOp])
 
     return (
       <LeftSideMenuItem
@@ -272,6 +300,8 @@ const NodeItem = memo(
         selected={isSelected}
         operator={operator}
         onOperatorToggle={isSelected && !isLastSelected ? handleOperatorToggle : undefined}
+        calibreOperator={calibreOp}
+        onCalibreOperatorToggle={handleCalibreOperatorToggle}
       />
     )
   },
@@ -285,7 +315,9 @@ const NodeList = memo(
     onPress,
     selectedNames,
     itemOperators,
+    itemCalibreOperators,
     onItemOperatorChange,
+    onItemCalibreOperatorChange,
   }: {
     nodes: MenuNode[]
     depth: number
@@ -293,7 +325,9 @@ const NodeList = memo(
     onPress: (query: string) => Promise<void>
     selectedNames?: string[]
     itemOperators?: Record<string, QueryOperator>
-    onItemOperatorChange?: (query: string, op: QueryOperator) => void
+    itemCalibreOperators?: Record<string, CalibreFieldOperator>
+    onItemOperatorChange?: (itemKey: string, op: QueryOperator) => void
+    onItemCalibreOperatorChange?: (categoryKey: string, value: string, op: CalibreFieldOperator) => void
   }) => {
     const shouldUseIncremental = nodes.length > INCREMENTAL_RENDER_THRESHOLD
     const visibleCount = useIncrementalRender(nodes.length, 50, shouldUseIncremental)
@@ -309,7 +343,9 @@ const NodeList = memo(
             onPress={onPress}
             selectedNames={selectedNames}
             itemOperators={itemOperators}
+            itemCalibreOperators={itemCalibreOperators}
             onItemOperatorChange={onItemOperatorChange}
+            onItemCalibreOperatorChange={onItemCalibreOperatorChange}
           />
         ))}
       </>
@@ -324,29 +360,39 @@ const SubCategoryItem = memo(
     onPress,
     selectedNames,
     itemOperators,
+    itemCalibreOperators,
     onItemOperatorChange,
+    onItemCalibreOperatorChange,
   }: {
     subCategory: MenuSubCategory
     categoryKey: string
     onPress: (query: string) => Promise<void>
     selectedNames?: string[]
     itemOperators?: Record<string, QueryOperator>
-    onItemOperatorChange?: (query: string, op: QueryOperator) => void
+    itemCalibreOperators?: Record<string, CalibreFieldOperator>
+    onItemOperatorChange?: (itemKey: string, op: QueryOperator) => void
+    onItemCalibreOperatorChange?: (categoryKey: string, value: string, op: CalibreFieldOperator) => void
   }) => {
-    const query = useMemo(
-      () => buildTagQuery(categoryKey, subCategory.name),
+    const itemKey = useMemo(
+      () => buildItemKey(categoryKey, subCategory.name),
       [categoryKey, subCategory.name],
+    )
+    const calibreOp: CalibreFieldOperator = itemCalibreOperators?.[itemKey] ?? "="
+    const query = useMemo(
+      () => buildTagQuery(categoryKey, subCategory.name, calibreOp),
+      [categoryKey, subCategory.name, calibreOp],
     )
     const isSelected = useMemo(
       () => isTagQuerySelected(selectedNames, categoryKey, subCategory.name),
       [selectedNames, categoryKey, subCategory.name],
     )
-    const operator: QueryOperator = itemOperators?.[query.toLowerCase()] ?? "AND"
+    const operator: QueryOperator = itemOperators?.[itemKey] ?? "AND"
 
     const isLastSelected = useMemo(
       () =>
         (selectedNames?.length ?? 0) <= 1 ||
-        selectedNames?.[selectedNames.length - 1]?.toLowerCase() === query.toLowerCase(),
+        normalizeTagQuery(selectedNames?.[selectedNames.length - 1]) ===
+          normalizeTagQuery(query),
       [selectedNames, query],
     )
 
@@ -355,8 +401,16 @@ const SubCategoryItem = memo(
     }, [onPress, query])
 
     const handleOperatorToggle = useCallback(() => {
-      onItemOperatorChange?.(query, operator === "AND" ? "OR" : "AND")
-    }, [onItemOperatorChange, query, operator])
+      onItemOperatorChange?.(itemKey, operator === "AND" ? "OR" : "AND")
+    }, [onItemOperatorChange, itemKey, operator])
+
+    const handleCalibreOperatorToggle = useCallback(() => {
+      onItemCalibreOperatorChange?.(
+        categoryKey,
+        subCategory.name,
+        nextCalibreOperator(calibreOp),
+      )
+    }, [onItemCalibreOperatorChange, categoryKey, subCategory.name, calibreOp])
 
     return (
       <LeftSideMenuItem
@@ -368,6 +422,8 @@ const SubCategoryItem = memo(
         selected={isSelected}
         operator={operator}
         onOperatorToggle={isSelected && !isLastSelected ? handleOperatorToggle : undefined}
+        calibreOperator={calibreOp}
+        onCalibreOperatorToggle={handleCalibreOperatorToggle}
       >
         {subCategory.children.length > 0 && (
           <NodeList
@@ -377,7 +433,9 @@ const SubCategoryItem = memo(
             onPress={onPress}
             selectedNames={selectedNames}
             itemOperators={itemOperators}
+            itemCalibreOperators={itemCalibreOperators}
             onItemOperatorChange={onItemOperatorChange}
+            onItemCalibreOperatorChange={onItemCalibreOperatorChange}
           />
         )}
       </LeftSideMenuItem>
@@ -392,14 +450,18 @@ const SubCategoryList = memo(
     onPress,
     selectedNames,
     itemOperators,
+    itemCalibreOperators,
     onItemOperatorChange,
+    onItemCalibreOperatorChange,
   }: {
     subCategories: MenuSubCategory[]
     categoryKey: string
     onPress: (query: string) => Promise<void>
     selectedNames?: string[]
     itemOperators?: Record<string, QueryOperator>
-    onItemOperatorChange?: (query: string, op: QueryOperator) => void
+    itemCalibreOperators?: Record<string, CalibreFieldOperator>
+    onItemOperatorChange?: (itemKey: string, op: QueryOperator) => void
+    onItemCalibreOperatorChange?: (categoryKey: string, value: string, op: CalibreFieldOperator) => void
   }) => {
     const shouldUseIncremental = subCategories.length > INCREMENTAL_RENDER_THRESHOLD
     const visibleCount = useIncrementalRender(subCategories.length, 50, shouldUseIncremental)
@@ -414,7 +476,9 @@ const SubCategoryList = memo(
             onPress={onPress}
             selectedNames={selectedNames}
             itemOperators={itemOperators}
+            itemCalibreOperators={itemCalibreOperators}
             onItemOperatorChange={onItemOperatorChange}
+            onItemCalibreOperatorChange={onItemCalibreOperatorChange}
           />
         ))}
       </>
@@ -428,13 +492,17 @@ const CategoryItem = memo(
     onPress,
     selectedNames,
     itemOperators,
+    itemCalibreOperators,
     onItemOperatorChange,
+    onItemCalibreOperatorChange,
   }: {
     category: Category
     onPress: (query: string) => Promise<void>
     selectedNames?: string[]
     itemOperators?: Record<string, QueryOperator>
-    onItemOperatorChange?: (query: string, op: QueryOperator) => void
+    itemCalibreOperators?: Record<string, CalibreFieldOperator>
+    onItemOperatorChange?: (itemKey: string, op: QueryOperator) => void
+    onItemCalibreOperatorChange?: (categoryKey: string, value: string, op: CalibreFieldOperator) => void
   }) => {
     const itemSubCategories: MenuSubCategory[] = useMemo(
       () =>
@@ -472,7 +540,9 @@ const CategoryItem = memo(
             onPress={onPress}
             selectedNames={selectedNames}
             itemOperators={itemOperators}
+            itemCalibreOperators={itemCalibreOperators}
             onItemOperatorChange={onItemOperatorChange}
+            onItemCalibreOperatorChange={onItemCalibreOperatorChange}
           />
         ) : subCategories.length > 0 ? (
           <SubCategoryList
@@ -481,7 +551,9 @@ const CategoryItem = memo(
             onPress={onPress}
             selectedNames={selectedNames}
             itemOperators={itemOperators}
+            itemCalibreOperators={itemCalibreOperators}
             onItemOperatorChange={onItemOperatorChange}
+            onItemCalibreOperatorChange={onItemCalibreOperatorChange}
           />
         ) : null}
       </LeftSideMenuItem>
@@ -495,7 +567,7 @@ export const LeftSideMenu = observer((props: LeftSideMenuProps) => {
   return props.tagBrowser ? (
     <Box
       backgroundColor={palette.surface}
-      maxWidth={"$32"}
+      maxWidth={"$48"}
       height={"$full"}
       borderRightWidth={1}
       borderRightColor={palette.borderSubtle}
@@ -508,7 +580,9 @@ export const LeftSideMenu = observer((props: LeftSideMenuProps) => {
             onPress={props.onNodePress}
             selectedNames={props.selectedNames}
             itemOperators={props.itemOperators}
+            itemCalibreOperators={props.itemCalibreOperators}
             onItemOperatorChange={props.onItemOperatorChange}
+            onItemCalibreOperatorChange={props.onItemCalibreOperatorChange}
           />
         ))}
       </ScrollView>

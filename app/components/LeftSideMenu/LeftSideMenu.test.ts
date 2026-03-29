@@ -1,14 +1,46 @@
 import { describe, expect, test } from "bun:test"
 
 type QueryOperator = "AND" | "OR"
+type CalibreFieldOperator = "=" | "~" | "!=" | "!~"
 
-function playBuildTagQuery(categoryKey: string, value: string): string {
-  return `${categoryKey.trim().toLowerCase()}:=${value.trim()}`
+/** Mirrors buildItemKey from LeftSideMenu: "category:value" (no calibre op, lowercase) */
+function buildItemKey(categoryKey: string, value: string): string {
+  return `${categoryKey.trim().toLowerCase()}:${value.trim().toLowerCase()}`
+}
+
+function buildTagQuery(
+  categoryKey: string,
+  value: string,
+  calibreOp: CalibreFieldOperator = "=",
+): string {
+  return `${categoryKey.trim().toLowerCase()}:${calibreOp}${value.trim()}`
+}
+
+function normalizeTagQuery(query: string): string | null {
+  const sepIdx = query.indexOf(":")
+  if (sepIdx <= 0) return null
+  const cat = query.slice(0, sepIdx).trim().toLowerCase()
+  let val = query.slice(sepIdx + 1).trim()
+  // strip boolean operators appended after value
+  const boolMatch = val.match(/\s+(and|or)\s+/i)
+  if (boolMatch?.index !== undefined) val = val.slice(0, boolMatch.index).trim()
+  // strip calibre op prefix
+  val = val.replace(/^(!?[=~])/, "").trim().toLowerCase()
+  if (!cat || !val) return null
+  return `${cat}:=${val}`
 }
 
 function parseQueryParts(query: string): string[] {
   if (!query.trim()) return []
   return query.split(/ AND | OR /i).map((q) => q.trim()).filter(Boolean)
+}
+
+function playBuildTagQuery(
+  categoryKey: string,
+  value: string,
+  calibreOp: CalibreFieldOperator = "=",
+): string {
+  return buildTagQuery(categoryKey, value, calibreOp)
 }
 
 function playToggleQuery(
@@ -17,11 +49,14 @@ function playToggleQuery(
   itemOperators: Record<string, QueryOperator> = {},
 ): string {
   const current = currentQuery ? parseQueryParts(currentQuery) : []
-  const normalizedNew = newQuery.trim().toLowerCase()
-  const alreadySelected = current.some((q) => q.toLowerCase() === normalizedNew)
-  const nextParts = alreadySelected
-    ? current.filter((q) => q.toLowerCase() !== normalizedNew)
-    : [...current, newQuery.trim()]
+  const normalizedNew = normalizeTagQuery(newQuery)
+  const alreadySelected = current.some((q) => normalizeTagQuery(q) === normalizedNew)
+  let nextParts: string[]
+  if (alreadySelected) {
+    nextParts = current.filter((q) => normalizeTagQuery(q) !== normalizedNew)
+  } else {
+    nextParts = [...current, newQuery.trim()]
+  }
   return buildQueryFromParts(nextParts, itemOperators)
 }
 
@@ -33,25 +68,81 @@ function playToggleItemOperator(current: QueryOperator): QueryOperator {
   return current === "AND" ? "OR" : "AND"
 }
 
+function nextCalibreOperator(current: CalibreFieldOperator): CalibreFieldOperator {
+  const cycle: CalibreFieldOperator[] = ["=", "~", "!=", "!~"]
+  return cycle[(cycle.indexOf(current) + 1) % cycle.length]
+}
+
 function buildQueryFromParts(
   parts: string[],
   itemOperators: Record<string, QueryOperator>,
 ): string {
   return parts.reduce((acc, part, i) => {
     if (i === 0) return part
-    const op = itemOperators[parts[i - 1].trim().toLowerCase()] ?? "AND"
+    // key is itemKey of the previous part: "category:value" without calibre op
+    const prevNorm = normalizeTagQuery(parts[i - 1])
+    // Convert "category:=value" → "category:value" for itemKey lookup
+    const prevKey = prevNorm ? prevNorm.replace(":=", ":") : parts[i - 1].trim().toLowerCase()
+    const op = itemOperators[prevKey] ?? "AND"
     return `${acc} ${op} ${part}`
   }, "")
 }
 
 describe("LeftSideMenu multi-select", () => {
-  describe("playBuildTagQuery", () => {
-    test("builds a normalized tag query", () => {
+  describe("buildTagQuery with calibre operators", () => {
+    test("builds exact match query (default)", () => {
       expect(playBuildTagQuery("authors", "Tolkien")).toBe("authors:=Tolkien")
+    })
+
+    test("builds contains query with ~", () => {
+      expect(playBuildTagQuery("authors", "Tolkien", "~")).toBe("authors:~Tolkien")
+    })
+
+    test("builds not-equal query with !=", () => {
+      expect(playBuildTagQuery("authors", "Tolkien", "!=")).toBe("authors:!=Tolkien")
+    })
+
+    test("builds not-contains query with !~", () => {
+      expect(playBuildTagQuery("authors", "Tolkien", "!~")).toBe("authors:!~Tolkien")
     })
 
     test("trims whitespace in category key and value", () => {
       expect(playBuildTagQuery(" Authors ", " Tolkien ")).toBe("authors:=Tolkien")
+    })
+  })
+
+  describe("buildItemKey", () => {
+    test("returns category:value lowercase without calibre op", () => {
+      expect(buildItemKey("authors", "Tolkien")).toBe("authors:tolkien")
+    })
+
+    test("trims and lowercases both parts", () => {
+      expect(buildItemKey(" Authors ", " Tolkien, J.R.R. ")).toBe("authors:tolkien, j.r.r.")
+    })
+  })
+
+  describe("nextCalibreOperator cycle", () => {
+    test("= cycles to ~", () => expect(nextCalibreOperator("=")).toBe("~"))
+    test("~ cycles to !=", () => expect(nextCalibreOperator("~")).toBe("!="))
+    test("!= cycles to !~", () => expect(nextCalibreOperator("!=")).toBe("!~"))
+    test("!~ cycles back to =", () => expect(nextCalibreOperator("!~")).toBe("="))
+  })
+
+  describe("normalizeTagQuery", () => {
+    test("normalizes = operator query", () => {
+      expect(normalizeTagQuery("authors:=Tolkien")).toBe("authors:=tolkien")
+    })
+
+    test("normalizes ~ operator query", () => {
+      expect(normalizeTagQuery("authors:~Tolkien")).toBe("authors:=tolkien")
+    })
+
+    test("normalizes != operator query", () => {
+      expect(normalizeTagQuery("authors:!=Tolkien")).toBe("authors:=tolkien")
+    })
+
+    test("normalizes !~ operator query", () => {
+      expect(normalizeTagQuery("authors:!~Tolkien")).toBe("authors:=tolkien")
     })
   })
 
@@ -67,25 +158,23 @@ describe("LeftSideMenu multi-select", () => {
     })
 
     test("removes a query that is already selected (deselect)", () => {
-      // "authors:=tolkien" is first item, its operator was "AND" connecting to "formats:=EPUB"
-      // After deselecting authors, only formats remains → no operator needed
       expect(
-        playToggleQuery(
-          "authors:=Tolkien AND formats:=EPUB",
-          "authors:=tolkien",
-          {},
-        ),
+        playToggleQuery("authors:=Tolkien AND formats:=EPUB", "authors:=Tolkien", {}),
       ).toBe("formats:=EPUB")
     })
 
-    test("deselecting the last query returns empty string", () => {
-      expect(playToggleQuery("authors:=Tolkien", "Authors:=Tolkien")).toBe("")
+    test("deselects regardless of calibre operator difference", () => {
+      // authors was selected with =, toggled again with ~ → should deselect
+      expect(playToggleQuery("authors:=Tolkien", "authors:~Tolkien")).toBe("")
     })
 
-    test("adding a third item with per-item operators (keyed by preceding item)", () => {
-      // "authors:=tolkien" has OR → connects A to B as OR
-      // "formats:=epub" has AND → connects B to C as AND
-      const operators = { "authors:=tolkien": "OR", "formats:=epub": "AND" } as Record<string, "AND" | "OR">
+    test("deselecting the last query returns empty string", () => {
+      expect(playToggleQuery("authors:=Tolkien", "authors:=Tolkien")).toBe("")
+    })
+
+    test("adding a third item with per-item operators (itemKey keyed)", () => {
+      // keys are "authors:tolkien" and "formats:epub"
+      const operators = { "authors:tolkien": "OR", "formats:epub": "AND" } as Record<string, "AND" | "OR">
       expect(
         playToggleQuery("authors:=Tolkien OR formats:=EPUB", "rating:=5", operators),
       ).toBe("authors:=Tolkien OR formats:=EPUB AND rating:=5")
@@ -130,7 +219,7 @@ describe("LeftSideMenu multi-select", () => {
     })
   })
 
-  describe("buildQueryFromParts", () => {
+  describe("buildQueryFromParts (itemKey-keyed operators)", () => {
     test("single part returns that part", () => {
       expect(buildQueryFromParts(["authors:=Tolkien"], {})).toBe("authors:=Tolkien")
     })
@@ -141,10 +230,10 @@ describe("LeftSideMenu multi-select", () => {
       )
     })
 
-    test("first item operator OR connects to second item", () => {
+    test("first item operator OR connects to second item (itemKey key)", () => {
       expect(
         buildQueryFromParts(["authors:=Tolkien", "formats:=EPUB"], {
-          "authors:=tolkien": "OR",
+          "authors:tolkien": "OR",
         }),
       ).toBe("authors:=Tolkien OR formats:=EPUB")
     })
@@ -152,10 +241,18 @@ describe("LeftSideMenu multi-select", () => {
     test("three parts: first item AND, second item OR", () => {
       expect(
         buildQueryFromParts(["authors:=Tolkien", "formats:=EPUB", "rating:=5"], {
-          "authors:=tolkien": "AND",
-          "formats:=epub": "OR",
+          "authors:tolkien": "AND",
+          "formats:epub": "OR",
         }),
       ).toBe("authors:=Tolkien AND formats:=EPUB OR rating:=5")
+    })
+
+    test("calibre op in parts does not break operator lookup", () => {
+      expect(
+        buildQueryFromParts(["authors:~Tolkien", "formats:!=EPUB"], {
+          "authors:tolkien": "OR",
+        }),
+      ).toBe("authors:~Tolkien OR formats:!=EPUB")
     })
 
     test("empty parts returns empty string", () => {
@@ -163,3 +260,4 @@ describe("LeftSideMenu multi-select", () => {
     })
   })
 })
+

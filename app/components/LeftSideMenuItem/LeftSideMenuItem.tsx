@@ -15,6 +15,8 @@ export type LeftSideMenuItemProps = {
   selected?: boolean
   operator?: "AND" | "OR"
   onOperatorToggle?: () => void
+  calibreOperator?: string
+  onCalibreOperatorToggle?: () => void
 }
 export const LeftSideMenuItem = memo(function LeftSideMenuItem({
   mode = "category",
@@ -65,6 +67,20 @@ export const LeftSideMenuItem = memo(function LeftSideMenuItem({
           paddingLeft={paddingLeft}
         >
           <MaterialCommunityIcon name={icon} iconSize={"sm"} />
+          {props.onCalibreOperatorToggle && (
+            <Pressable
+              onPress={props.onCalibreOperatorToggle}
+              marginRight={"$1"}
+              paddingHorizontal={"$1"}
+              paddingVertical={"$0.5"}
+              backgroundColor={palette.surfaceStrong}
+              borderRadius={"$sm"}
+            >
+              <Text fontSize={"$xs"} fontWeight="$bold" color={palette.textSecondary}>
+                {props.calibreOperator ?? "="}
+              </Text>
+            </Pressable>
+          )}
           <Text fontSize={"$md"}>{props.name}</Text>
           {props.selected && props.onOperatorToggle && (
             <Pressable
