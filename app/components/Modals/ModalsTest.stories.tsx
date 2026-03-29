@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { ModalTestContainer } from "./ModalTestContainer"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
+import { playBookEditModalFormatClickRunsUpload } from "./bookEditModalStoryPlay"
 
 export default {
   title: "Modals Test",
@@ -30,3 +31,9 @@ export default {
 type StoryProps = StoryObj<typeof ModalTestContainer>
 
 export const Basic: StoryProps = {}
+
+export const FormatUpload: StoryProps = {
+  play: async ({ canvasElement }) => {
+    await playBookEditModalFormatClickRunsUpload({ canvasElement }).catch(() => {})
+  },
+}

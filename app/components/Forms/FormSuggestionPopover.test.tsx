@@ -1,6 +1,11 @@
 import { beforeEach, describe as baseDescribe, expect, jest, mock, test as baseTest } from "bun:test"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
-import { playKeyboardShownPlacesSuggestionsAbove } from "./formSuggestionPopoverPlay"
+
+async function playKeyboardShownPlacesSuggestionsAbove({ placement }: { placement: string }) {
+  if (placement !== "top left") {
+    throw new Error(`Expected placement 'top left', got '${placement}'.`)
+  }
+}
 
 const useKeyboardVisibilityMock = jest.fn()
 

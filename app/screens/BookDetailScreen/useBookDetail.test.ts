@@ -3,14 +3,14 @@ import {
   test as baseTest,
   beforeAll,
   beforeEach,
+  afterEach,
   expect,
   jest,
   mock,
 } from "bun:test"
 import { useStores } from "@/models"
 import { useNavigation, useRoute } from "@react-navigation/native"
-import { renderHook } from "@testing-library/react"
-import { useModal } from "react-native-modalfy"
+import { act, renderHook } from "@testing-library/react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 const describe = localizeTestRegistrar(baseDescribe)
@@ -20,6 +20,7 @@ const mockUseConvergence = jest.fn()
 const mockUseDeleteBook = jest.fn()
 const mockUseDownloadBook = jest.fn()
 const mockUseOpenViewer = jest.fn()
+const mockUseElectrobunModal = jest.fn()
 
 mock.module("@/hooks/useConvergence", () => ({
   useConvergence: mockUseConvergence,
@@ -37,6 +38,10 @@ mock.module("../../hooks/useOpenViewer", () => ({
   useOpenViewer: mockUseOpenViewer,
 }))
 
+mock.module("@/hooks/useElectrobunModal", () => ({
+  useElectrobunModal: mockUseElectrobunModal,
+}))
+
 let useBookDetail: typeof import("./useBookDetail").useBookDetail
 
 beforeAll(async () => {
@@ -48,7 +53,9 @@ describe("useBookDetail", () => {
   const mockGoBack = jest.fn()
   const mockSetOptions = jest.fn()
   const mockOnLinkPress = jest.fn()
-  const mockExecute = jest.fn()
+  const mockOpenViewerExecute = jest.fn()
+  const mockDeleteBookExecute = jest.fn()
+  const mockDownloadBookExecute = jest.fn()
   const mockOpenModal = jest.fn()
   const mockModal = { openModal: mockOpenModal } as Record<string, unknown>
 
@@ -80,6 +87,10 @@ describe("useBookDetail", () => {
     },
   }
 
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
   beforeEach(() => {
     jest.clearAllMocks()
 
@@ -93,18 +104,18 @@ describe("useBookDetail", () => {
       setOptions: mockSetOptions,
     })
     ;(useRoute as jest.Mock).mockReturnValue(mockRoute)
-    ;(useModal as jest.Mock).mockReturnValue(mockModal)
+    mockUseElectrobunModal.mockReturnValue(mockModal)
     mockUseConvergence.mockReturnValue({
       isLarge: false,
     })
     mockUseOpenViewer.mockReturnValue({
-      execute: mockExecute,
+      execute: mockOpenViewerExecute,
     })
     mockUseDeleteBook.mockReturnValue({
-      execute: mockExecute,
+      execute: mockDeleteBookExecute,
     })
     mockUseDownloadBook.mockReturnValue({
-      execute: mockExecute,
+      execute: mockDownloadBookExecute,
     })
   })
 
@@ -130,12 +141,129 @@ describe("useBookDetail", () => {
     expect(mockSetOptions).toHaveBeenCalled()
   })
 
-  test("handleEditBook should navigate", () => {
+  test("navigates to the edit screen when no custom edit action is provided", () => {
     const { result } = renderHook(() => useBookDetail())
 
     result.current.handleEditBook()
 
-    expect(mockNavigate).toHaveBeenCalled()
+    expect(mockNavigate).toHaveBeenCalledWith("BookEdit", {
+      imageUrl: "https://example.com/image.jpg",
+    })
+  })
+
+  test("executes the default open viewer action when no custom open action is provided", async () => {
+    const { result } = renderHook(() => useBookDetail())
+
+    await act(async () => {
+      await result.current.handleOpenBook()
+    })
+
+    expect(mockOpenViewerExecute).toHaveBeenCalledWith(mockModal)
+  })
+
+  test("executes the custom open action instead of the default viewer action when provided", async () => {
+    const customOpenAction = jest.fn().mockResolvedValue(undefined)
+    ;(useRoute as jest.Mock).mockReturnValue({
+      params: {
+        ...mockRoute.params,
+        onOpenBookAction: customOpenAction,
+      },
+    })
+
+    const { result } = renderHook(() => useBookDetail())
+
+    await act(async () => {
+      await result.current.handleOpenBook()
+    })
+
+    expect(customOpenAction).toHaveBeenCalledTimes(1)
+    expect(mockOpenViewerExecute).not.toHaveBeenCalled()
+  })
+
+  test("executes the default download action when no custom download action is provided", async () => {
+    const { result } = renderHook(() => useBookDetail())
+
+    await act(async () => {
+      await result.current.handleDownloadBook()
+    })
+
+    expect(mockDownloadBookExecute).toHaveBeenCalledWith(mockModal)
+  })
+
+  test("executes the custom download action instead of the default download flow when provided", async () => {
+    const customDownloadAction = jest.fn().mockResolvedValue(undefined)
+    ;(useRoute as jest.Mock).mockReturnValue({
+      params: {
+        ...mockRoute.params,
+        onDownloadBookAction: customDownloadAction,
+      },
+    })
+
+    const { result } = renderHook(() => useBookDetail())
+
+    await act(async () => {
+      await result.current.handleDownloadBook()
+    })
+
+    expect(customDownloadAction).toHaveBeenCalledTimes(1)
+    expect(mockDownloadBookExecute).not.toHaveBeenCalled()
+  })
+
+  test("executes the default delete action when no custom delete action is provided", async () => {
+    const { result } = renderHook(() => useBookDetail())
+
+    await act(async () => {
+      await result.current.handleDeleteBook()
+    })
+
+    expect(mockDeleteBookExecute).toHaveBeenCalledWith(mockModal)
+  })
+
+  test("executes the custom delete action instead of the default delete flow when provided", async () => {
+    const customDeleteAction = jest.fn().mockResolvedValue(undefined)
+    ;(useRoute as jest.Mock).mockReturnValue({
+      params: {
+        ...mockRoute.params,
+        onDeleteBookAction: customDeleteAction,
+      },
+    })
+
+    const { result } = renderHook(() => useBookDetail())
+
+    await act(async () => {
+      await result.current.handleDeleteBook()
+    })
+
+    expect(customDeleteAction).toHaveBeenCalledTimes(1)
+    expect(mockDeleteBookExecute).not.toHaveBeenCalled()
+  })
+
+  test("uses the custom edit navigation callback instead of screen navigation when provided", () => {
+    const customEditNavigation = jest.fn()
+    ;(useRoute as jest.Mock).mockReturnValue({
+      params: {
+        ...mockRoute.params,
+        onNavigateToBookEdit: customEditNavigation,
+      },
+    })
+
+    const { result } = renderHook(() => useBookDetail())
+
+    result.current.handleEditBook()
+
+    expect(customEditNavigation).toHaveBeenCalledWith({
+      imageUrl: "https://example.com/image.jpg",
+    })
+    expect(mockNavigate).not.toHaveBeenCalled()
+  })
+
+  test("calls the field link callback and returns to the previous screen when a field is pressed", () => {
+    const { result } = renderHook(() => useBookDetail())
+
+    result.current.handleFieldPress("authors:asimov")
+
+    expect(mockOnLinkPress).toHaveBeenCalledWith("authors:asimov")
+    expect(mockGoBack).toHaveBeenCalledTimes(1)
   })
 
   describe("handleConvertBook", () => {
@@ -149,6 +277,27 @@ describe("useBookDetail", () => {
       expect(mockNavigate).toHaveBeenCalledWith("BookConvert", {
         imageUrl: "https://example.com/image.jpg",
       })
+      expect(mockOpenModal).not.toHaveBeenCalled()
+    })
+
+    test("On small screens, use the custom convert navigation callback when provided", () => {
+      const customConvertNavigation = jest.fn()
+      mockUseConvergence.mockReturnValue({ isLarge: false })
+      ;(useRoute as jest.Mock).mockReturnValue({
+        params: {
+          ...mockRoute.params,
+          onNavigateToBookConvert: customConvertNavigation,
+        },
+      })
+
+      const { result } = renderHook(() => useBookDetail())
+
+      result.current.handleConvertBook()
+
+      expect(customConvertNavigation).toHaveBeenCalledWith({
+        imageUrl: "https://example.com/image.jpg",
+      })
+      expect(mockNavigate).not.toHaveBeenCalled()
       expect(mockOpenModal).not.toHaveBeenCalled()
     })
 

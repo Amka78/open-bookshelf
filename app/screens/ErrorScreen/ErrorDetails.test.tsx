@@ -1,11 +1,27 @@
 import { beforeEach, describe as baseDescribe, expect, jest, mock, test as baseTest } from "bun:test"
-import { render } from "@testing-library/react"
+import { render, fireEvent } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
-import {
-  playPressResetButton,
-  playResetButtonIsVisible,
-} from "./errorDetailsPlay"
+
+async function findByTestId(canvasElement: HTMLElement, testId: string): Promise<HTMLElement> {
+  for (let retry = 0; retry < 15; retry += 1) {
+    const found = canvasElement.querySelector(`[data-testid="${testId}"]`) as HTMLElement | null
+    if (found) return found
+    await new Promise((resolve) => setTimeout(resolve, 20))
+  }
+  throw new Error(`Element with data-testid='${testId}' was not found.`)
+}
+
+async function playResetButtonIsVisible({ canvasElement }: { canvasElement: HTMLElement }) {
+  const button = await findByTestId(canvasElement, "error-reset-button")
+  if (!button) throw new Error("Reset button should be visible.")
+}
+
+async function playPressResetButton({ canvasElement }: { canvasElement: HTMLElement }) {
+  const button = await findByTestId(canvasElement, "error-reset-button")
+  fireEvent.click(button)
+  await new Promise((resolve) => setTimeout(resolve, 50))
+}
 
 const BoxMock = jest.fn(({ children }: { children?: ReactNode }) => <div>{children}</div>)
 

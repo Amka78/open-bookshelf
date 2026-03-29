@@ -3,6 +3,17 @@ import { useStores } from "@/models"
 import { usePalette } from "@/theme"
 import { useNavigation } from "@react-navigation/native"
 import { act, renderHook } from "@testing-library/react"
+
+async function playODSRootInitializationCompletes() {
+  await act(async () => {
+    await Promise.resolve()
+    await Promise.resolve()
+  })
+}
+
+function playODSRootReadsEntryTitles({ entries }: { entries: Array<{ title: string }> }) {
+  return entries.map((entry) => entry.title)
+}
 mock.module("@/components", () => ({
   Box: "div",
   Image: "img",
@@ -75,18 +86,16 @@ describe("useODSRoot", () => {
 
   test("initializes with entries from store", () => {
     const { result } = renderHook(() => useODSRoot())
+    const titles = playODSRootReadsEntryTitles({ entries: result.current.entries })
 
     expect(result.current.entries).toHaveLength(2)
-    expect(result.current.entries[0].title).toBe("Book 1")
-    expect(result.current.entries[1].title).toBe("Book 2")
+    expect(titles).toEqual(["Book 1", "Book 2"])
   })
 
   test("calls opdsRootStore.root.load with initialPath", async () => {
     renderHook(() => useODSRoot())
 
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 0))
-    })
+    await playODSRootInitializationCompletes()
 
     expect(mockLoad).toHaveBeenCalledWith("/opds")
   })
@@ -94,9 +103,7 @@ describe("useODSRoot", () => {
   test("sets navigation header options after loading", async () => {
     renderHook(() => useODSRoot())
 
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 0))
-    })
+    await playODSRootInitializationCompletes()
 
     expect(mockSetOptions).toHaveBeenCalled()
   })

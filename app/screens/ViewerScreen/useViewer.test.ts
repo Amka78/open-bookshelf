@@ -1,18 +1,97 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, jest, mock, test } from "bun:test"
-import { useStores } from "@/models"
 import { act, renderHook } from "@testing-library/react"
-import { useModal } from "react-native-modalfy"
-import {
-  createFrameScheduler,
-  playResumeReadingPromptAccepts,
-  playResumeReadingPromptAppears,
-  playResumeReadingPromptDeclines,
-  playResumeReadingPromptDoesNotReopenOnRerender,
-} from "./useViewerPlay"
+
+function createFrameScheduler() {
+  let nextId = 1
+  const callbacks = new Map<number, FrameRequestCallback>()
+  return {
+    requestAnimationFrame: (callback: FrameRequestCallback) => {
+      const id = nextId++
+      callbacks.set(id, callback)
+      return id
+    },
+    cancelAnimationFrame: (id: number) => {
+      callbacks.delete(id)
+    },
+    flushFrame: () => {
+      const entry = callbacks.entries().next().value as [number, FrameRequestCallback] | undefined
+      if (!entry) return false
+      const [id, callback] = entry
+      callbacks.delete(id)
+      callback(0)
+      return true
+    },
+  }
+}
+
+async function playResumeReadingPromptAppears({ flushFrame }: { flushFrame: () => boolean }) {
+  await act(async () => {
+    flushFrame()
+    flushFrame()
+  })
+}
+
+async function playResumeReadingPromptDoesNotReopenOnRerender({
+  rerender,
+  flushFrame,
+}: { rerender: () => void; flushFrame: () => boolean }) {
+  await playResumeReadingPromptAppears({ flushFrame })
+  await act(async () => {
+    rerender()
+  })
+  await act(async () => {
+    flushFrame()
+    flushFrame()
+  })
+}
+
+async function playResumeReadingPromptAccepts({
+  flushFrame,
+  onAccept,
+}: { flushFrame: () => boolean; onAccept: () => void }) {
+  await playResumeReadingPromptAppears({ flushFrame })
+  await act(async () => {
+    onAccept()
+  })
+}
+
+async function playResumeReadingPromptDeclines({
+  flushFrame,
+  onDecline,
+}: { flushFrame: () => boolean; onDecline: () => void }) {
+  await playResumeReadingPromptAppears({ flushFrame })
+  await act(async () => {
+    onDecline()
+  })
+}
+
+const useStoresMock = jest.fn()
+const useModalMock = jest.fn()
+
+mock.module("@/models", () => ({
+  useStores: () => useStoresMock(),
+}))
+
+mock.module("/home/amka78/open-bookshelf/app/models/index.ts", () => ({
+  useStores: () => useStoresMock(),
+}))
 
 mock.module("../../hooks/useConvergence", () => ({
   useConvergence: jest.fn(),
 }))
+
+mock.module("react-native-modalfy", () => ({
+  useModal: () => useModalMock(),
+  modalfy: jest.fn(),
+}))
+
+mock.module(
+  "/home/amka78/open-bookshelf/node_modules/react-native-modalfy/lib/commonjs/index.js",
+  () => ({
+    useModal: () => useModalMock(),
+    modalfy: jest.fn(),
+  }),
+)
 
 let useConvergence: typeof import("../../hooks/useConvergence").useConvergence
 let useViewer: typeof import("./useViewer").useViewer
@@ -67,6 +146,7 @@ describe("useViewer", () => {
   }
   const originalRequestAnimationFrame = globalThis.requestAnimationFrame
   const originalCancelAnimationFrame = globalThis.cancelAnimationFrame
+  const originalElectrobunFlag = window.__ELECTROBUN__
 
   const getLastModalArgs = <T>(modalName: string) => {
     const matchedCall = [...mockOpenModal.mock.calls]
@@ -78,14 +158,15 @@ describe("useViewer", () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    ;(useStores as jest.Mock).mockReturnValue({
+    useStoresMock.mockReturnValue({
       calibreRootStore: mockCalibreRootStore,
     })
     ;(useConvergence as jest.Mock).mockReturnValue({
       isLarge: false,
       orientation: "vertical",
     })
-    ;(useModal as jest.Mock).mockReturnValue({
+    window.__ELECTROBUN__ = false
+    useModalMock.mockReturnValue({
       openModal: mockOpenModal,
     })
   })
@@ -103,6 +184,7 @@ describe("useViewer", () => {
     jest.useRealTimers()
     globalThis.requestAnimationFrame = originalRequestAnimationFrame
     globalThis.cancelAnimationFrame = originalCancelAnimationFrame
+    window.__ELECTROBUN__ = originalElectrobunFlag
   })
 
   test("returns hidden menu and first-page defaults on initial render", () => {
@@ -216,7 +298,7 @@ describe("useViewer", () => {
       ...mockHistory,
       cachedPath: undefined,
     }
-    ;(useStores as jest.Mock).mockReturnValue({
+    useStoresMock.mockReturnValue({
       calibreRootStore: {
         selectedLibrary: mockSelectedLibrary,
         readingHistories: [mockHistoryNoCached],
@@ -233,7 +315,7 @@ describe("useViewer", () => {
       ...mockHistory,
       cachedPath: [],
     }
-    ;(useStores as jest.Mock).mockReturnValue({
+    useStoresMock.mockReturnValue({
       calibreRootStore: {
         selectedLibrary: mockSelectedLibrary,
         readingHistories: [mockHistoryEmptyCached],
@@ -323,7 +405,7 @@ describe("useViewer", () => {
 
   test("restores the selected format from reading history when the book format is unset", async () => {
     const setSelectedFormat = jest.fn()
-    ;(useStores as jest.Mock).mockReturnValue({
+    useStoresMock.mockReturnValue({
       calibreRootStore: {
         selectedLibrary: {
           ...mockSelectedLibrary,
@@ -348,7 +430,7 @@ describe("useViewer", () => {
   })
 
   test("starts the viewer immediately without a resume prompt when saved progress is at the first page", () => {
-    ;(useStores as jest.Mock).mockReturnValue({
+    useStoresMock.mockReturnValue({
       calibreRootStore: {
         selectedLibrary: mockSelectedLibrary,
         readingHistories: [
@@ -387,7 +469,7 @@ describe("useViewer", () => {
     const frames = createFrameScheduler()
     globalThis.requestAnimationFrame = frames.requestAnimationFrame
     globalThis.cancelAnimationFrame = frames.cancelAnimationFrame
-    ;(useStores as jest.Mock).mockReturnValue({
+    useStoresMock.mockReturnValue({
       calibreRootStore: {
         selectedLibrary: {
           ...mockSelectedLibrary,
@@ -475,7 +557,7 @@ describe("useViewer", () => {
   })
 
   test("creates default client setting if not found", () => {
-    ;(useStores as jest.Mock).mockReturnValue({
+    useStoresMock.mockReturnValue({
       calibreRootStore: {
         selectedLibrary: {
           ...mockSelectedLibrary,
@@ -491,7 +573,7 @@ describe("useViewer", () => {
   })
 
   test("handles when selected library is null", () => {
-    ;(useStores as jest.Mock).mockReturnValue({
+    useStoresMock.mockReturnValue({
       calibreRootStore: {
         selectedLibrary: null,
         readingHistories: [],
@@ -512,7 +594,7 @@ describe("useViewer", () => {
   })
 
   test("matches history case-insensitively by selected format", () => {
-    ;(useStores as jest.Mock).mockReturnValue({
+    useStoresMock.mockReturnValue({
       calibreRootStore: {
         selectedLibrary: {
           ...mockSelectedLibrary,
@@ -534,7 +616,7 @@ describe("useViewer", () => {
   })
 
   test("does not fall back to a different format history", () => {
-    ;(useStores as jest.Mock).mockReturnValue({
+    useStoresMock.mockReturnValue({
       calibreRootStore: {
         selectedLibrary: {
           ...mockSelectedLibrary,
@@ -558,7 +640,7 @@ describe("useViewer", () => {
   })
 
   test("returns initial page 0 when no history exists", () => {
-    ;(useStores as jest.Mock).mockReturnValue({
+    useStoresMock.mockReturnValue({
       calibreRootStore: {
         selectedLibrary: mockSelectedLibrary,
         readingHistories: [],

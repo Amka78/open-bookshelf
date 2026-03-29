@@ -12,20 +12,81 @@ import {
 import { render, screen, act, cleanup } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
-import {
-  createViewerScreenFrameScheduler,
-  playViewerScreenResumePromptAccepts,
-  playViewerScreenResumePromptAppears,
-  playViewerScreenResumePromptDeclines,
-  playViewerScreenResumePromptDoesNotReopenOnRerender,
-} from "./viewerScreenPlay"
+
+function createViewerScreenFrameScheduler() {
+  let nextId = 1
+  const callbacks = new Map<number, FrameRequestCallback>()
+  return {
+    requestAnimationFrame: (callback: FrameRequestCallback) => {
+      const id = nextId++
+      callbacks.set(id, callback)
+      return id
+    },
+    cancelAnimationFrame: (id: number) => {
+      callbacks.delete(id)
+    },
+    flushFrame: () => {
+      const next = callbacks.entries().next().value as [number, FrameRequestCallback] | undefined
+      if (!next) return false
+      const [id, callback] = next
+      callbacks.delete(id)
+      callback(0)
+      return true
+    },
+  }
+}
+
+async function playViewerScreenResumePromptAppears({ flushFrame }: { flushFrame: () => boolean }) {
+  await act(async () => {
+    flushFrame()
+    flushFrame()
+  })
+}
+
+async function playViewerScreenResumePromptDoesNotReopenOnRerender({
+  rerender,
+  flushFrame,
+}: { rerender: () => void; flushFrame: () => boolean }) {
+  await playViewerScreenResumePromptAppears({ flushFrame })
+  await act(async () => {
+    rerender()
+  })
+  await act(async () => {
+    flushFrame()
+    flushFrame()
+  })
+}
+
+async function playViewerScreenResumePromptAccepts({
+  flushFrame,
+  onAccept,
+}: { flushFrame: () => boolean; onAccept: () => void }) {
+  await playViewerScreenResumePromptAppears({ flushFrame })
+  await act(async () => {
+    onAccept()
+  })
+}
+
+async function playViewerScreenResumePromptDeclines({
+  flushFrame,
+  onDecline,
+}: { flushFrame: () => boolean; onDecline: () => void }) {
+  await playViewerScreenResumePromptAppears({ flushFrame })
+  await act(async () => {
+    onDecline()
+  })
+}
 
 const useStoresMock = jest.fn()
 const useNavigationMock = jest.fn()
-const useModalMock = jest.fn()
 const useConvergenceMock = jest.fn()
+const useModalMock = jest.fn()
 
 mock.module("@/models", () => ({
+  useStores: () => useStoresMock(),
+}))
+
+mock.module("/home/amka78/open-bookshelf/app/models/index.ts", () => ({
   useStores: () => useStoresMock(),
 }))
 
@@ -41,8 +102,16 @@ mock.module("@react-navigation/native", () => ({
 
 mock.module("react-native-modalfy", () => ({
   useModal: () => useModalMock(),
-  modalfy: () => useModalMock(),
+  modalfy: jest.fn(),
 }))
+
+mock.module(
+  "/home/amka78/open-bookshelf/node_modules/react-native-modalfy/lib/commonjs/index.js",
+  () => ({
+    useModal: () => useModalMock(),
+    modalfy: jest.fn(),
+  }),
+)
 
 mock.module("../../hooks/useConvergence", () => ({
   useConvergence: () => useConvergenceMock(),
@@ -108,6 +177,7 @@ describe("ViewerScreen resume modal", () => {
   const navigate = jest.fn()
   const originalRequestAnimationFrame = globalThis.requestAnimationFrame
   const originalCancelAnimationFrame = globalThis.cancelAnimationFrame
+  const originalElectrobunFlag = window.__ELECTROBUN__
 
   const createStoreState = ({
     currentPage = 2,
@@ -166,6 +236,7 @@ describe("ViewerScreen resume modal", () => {
   afterAll(() => {
     globalThis.requestAnimationFrame = originalRequestAnimationFrame
     globalThis.cancelAnimationFrame = originalCancelAnimationFrame
+    window.__ELECTROBUN__ = originalElectrobunFlag
   })
 
   afterEach(() => {
@@ -175,6 +246,7 @@ describe("ViewerScreen resume modal", () => {
   beforeEach(() => {
     jest.clearAllMocks()
     useNavigationMock.mockReturnValue({ navigate })
+    window.__ELECTROBUN__ = false
     useModalMock.mockReturnValue({ openModal })
     useConvergenceMock.mockReturnValue({ isLarge: false, orientation: "vertical" })
     useStoresMock.mockReturnValue(createStoreState())

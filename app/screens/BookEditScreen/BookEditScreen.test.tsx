@@ -1,17 +1,30 @@
-import { beforeEach, describe as baseDescribe, expect, jest, mock, test as baseTest } from "bun:test"
+import {
+  beforeEach,
+  describe as baseDescribe,
+  expect,
+  jest,
+  mock,
+  test as baseTest,
+} from "bun:test"
 import { render } from "@testing-library/react"
 import { type ReactNode, forwardRef, useImperativeHandle, useRef } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 import {
   playFocusTriggersAutoScroll,
+  playLargeScreenShowsSaveButton,
   playKeyboardShownHidesCover,
   playKeyboardShownKeepsFieldsVisible,
-} from "./bookEditScreenPlay"
+  playPressingSaveTriggersSubmit,
+  playSmallScreenHidesSaveButton,
+} from "./bookEditScreenStoryPlay"
 
 const useKeyboardVisibilityMock = jest.fn()
 const useConvergenceMock = jest.fn()
-const useBookEditMock = jest.fn()
+const useStoresMock = jest.fn()
+const useNavigationMock = jest.fn()
 const scrollToEndMock = jest.fn()
+const mockUpdate = jest.fn()
+const mockGoBack = jest.fn()
 
 mock.module("@/hooks/useKeyboardVisibility", () => ({
   useKeyboardVisibility: () => useKeyboardVisibilityMock(),
@@ -21,8 +34,17 @@ mock.module("@/hooks/useConvergence", () => ({
   useConvergence: () => useConvergenceMock(),
 }))
 
-mock.module("./useBookEdit", () => ({
-  useBookEdit: () => useBookEditMock(),
+mock.module("@/models", () => ({
+  useStores: () => useStoresMock(),
+}))
+
+mock.module("mobx-state-tree", () => ({
+  getSnapshot: (value: unknown) => value,
+}))
+
+mock.module("@react-navigation/native", () => ({
+  useRoute: jest.fn(),
+  useNavigation: () => useNavigationMock(),
 }))
 
 mock.module("@/components/RootContainer/RootContainer", () => ({
@@ -87,7 +109,15 @@ mock.module("@/components/BookEditFieldList/BookEditFieldList", () => ({
 }))
 
 mock.module("@/components/Button/Button", () => ({
-  Button: ({ children }: { children?: ReactNode }) => <button type="button">{children}</button>,
+  Button: ({
+    children,
+    tx,
+    onPress,
+  }: { children?: ReactNode; tx?: string; onPress?: () => void }) => (
+    <button onClick={onPress} type="button">
+      {tx === "bookEditScreen.save" ? "Save" : children}
+    </button>
+  ),
 }))
 
 let BookEditScreen: typeof import("./BookEditScreen").BookEditScreen
@@ -103,16 +133,29 @@ beforeEach(async () => {
     },
   })
 
+  useNavigationMock.mockReturnValue({ goBack: mockGoBack })
   useConvergenceMock.mockReturnValue({ isLarge: false })
-  useBookEditMock.mockReturnValue({
-    form: { control: {} },
-    selectedBook: {},
-    selectedLibrary: { fieldMetadataList: new Map(), tagBrowser: [] },
-    onSubmit: jest.fn(),
-    onUploadFormat: jest.fn(),
-    onDeleteFormat: jest.fn(),
+  useStoresMock.mockReturnValue({
+    calibreRootStore: {
+      selectedLibrary: {
+        id: "lib1",
+        selectedBook: {
+          id: 1,
+          metaData: {
+            title: "Edited Book",
+            authors: ["Author 1"],
+            languages: ["English"],
+            langNames: {
+              en: "English",
+            },
+          },
+          update: mockUpdate,
+        },
+        fieldMetadataList: new Map(),
+        tagBrowser: [],
+      },
+    },
   })
-
   ;({ BookEditScreen } = await import("./BookEditScreen"))
 })
 
@@ -159,5 +202,50 @@ describe("BookEditScreen keyboard handling", () => {
     })
 
     expect(scrollToEndMock).toHaveBeenCalled()
+  })
+
+  test("shows the save button on large screens", async () => {
+    useKeyboardVisibilityMock.mockReturnValue({
+      isKeyboardVisible: false,
+      keyboardHeight: 0,
+    })
+    useConvergenceMock.mockReturnValue({ isLarge: true })
+
+    const { container } = render(<BookEditScreen />)
+
+    await playLargeScreenShowsSaveButton({
+      canvasElement: container,
+    })
+  })
+
+  test("hides the save button on small screens", async () => {
+    useKeyboardVisibilityMock.mockReturnValue({
+      isKeyboardVisible: false,
+      keyboardHeight: 0,
+    })
+    useConvergenceMock.mockReturnValue({ isLarge: false })
+
+    const { container } = render(<BookEditScreen />)
+
+    await playSmallScreenHidesSaveButton({
+      canvasElement: container,
+    })
+  })
+
+  test("pressing the save button on large screens triggers submit", async () => {
+    useKeyboardVisibilityMock.mockReturnValue({
+      isKeyboardVisible: false,
+      keyboardHeight: 0,
+    })
+    useConvergenceMock.mockReturnValue({ isLarge: true })
+
+    const { container } = render(<BookEditScreen />)
+
+    await playPressingSaveTriggersSubmit({
+      canvasElement: container,
+    })
+
+    expect(mockUpdate).toHaveBeenCalledTimes(1)
+    expect(mockGoBack).toHaveBeenCalledTimes(1)
   })
 })

@@ -1,10 +1,9 @@
-import type { ModalStackParams } from "@/components/Modals/Types"
 import { useConvergence } from "@/hooks/useConvergence"
 import { useStores } from "@/models"
 import type { AppStackParamList, ApppNavigationProp } from "@/navigators/types"
 import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { useLayoutEffect } from "react"
-import { useModal } from "react-native-modalfy"
+import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import { useDeleteBook } from "../../hooks/useDeleteBook"
 import { useDownloadBook } from "../../hooks/useDownloadBook"
 import { useOpenViewer } from "../../hooks/useOpenViewer"
@@ -15,7 +14,7 @@ export function useBookDetail() {
   const { calibreRootStore } = useStores()
   const navigation = useNavigation<ApppNavigationProp>()
   const route = useRoute<BookDetailScreenRouteProp>()
-  const modal = useModal<ModalStackParams>()
+  const modal = useElectrobunModal()
   const convergenceHook = useConvergence()
   const openViewerHook = useOpenViewer()
   const deleteBookHook = useDeleteBook()

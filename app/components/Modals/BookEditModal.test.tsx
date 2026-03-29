@@ -12,7 +12,7 @@ import type { ReactNode } from "react"
 import { api } from "@/services/api"
 import * as DocumentPicker from "expo-document-picker"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
-import { playBookEditModalFormatClickRunsUpload } from "./bookEditModalPlay"
+import { playBookEditModalFormatClickRunsUpload } from "./bookEditModalStoryPlay"
 
 mock.module("@/components/BookEditFieldList/BookEditFieldList", () => ({
   BookEditFieldList: ({

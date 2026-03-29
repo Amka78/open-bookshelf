@@ -12,7 +12,7 @@ import {
   playBookConvertShowsFormatSelection,
   playBookConvertShowsSpinnerWhileConverting,
   playBookConvertShowsSuccessState,
-} from "./bookConvertScreenPlay"
+} from "./bookConvertScreenStoryPlay"
 
 // ============================================================
 // Storybook用ラッパー: react-hook-form の Context を提供

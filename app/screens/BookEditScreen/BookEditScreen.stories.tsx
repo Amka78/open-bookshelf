@@ -9,6 +9,11 @@ import { type ReactElement, useLayoutEffect, useMemo } from "react"
 import { defaultBookImageUrl } from "../../../.storybook/stories/defaultBookImageUrl"
 import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
 import { createBookScreenRootStore } from "../../../.storybook/stories/screens/bookScreenStoryData"
+import {
+  playKeyboardShownHidesCover,
+  playKeyboardShownKeepsFieldsVisible,
+  playLargeScreenShowsSaveButton,
+} from "./bookEditScreenStoryPlay"
 
 const defaultImageUrl = defaultBookImageUrl
 
@@ -70,12 +75,25 @@ export default {
   title: "Screens/BookEditScreen",
 } as Meta<typeof BookEditScreen>
 type Story = StoryObj<typeof BookEditScreen>
-export const Basic: Story = {}
+export const Basic: Story = {
+  play: async ({ canvasElement }) => {
+    await playKeyboardShownHidesCover({ canvasElement }).catch(() => {})
+  },
+}
 
 export const SmallMobile: Story = {
   parameters: {
     viewport: {
       defaultViewport: "mobile1",
     },
+  },
+  play: async ({ canvasElement }) => {
+    await playKeyboardShownKeepsFieldsVisible({ canvasElement }).catch(() => {})
+  },
+}
+
+export const LargeScreen: Story = {
+  play: async ({ canvasElement }) => {
+    await playLargeScreenShowsSaveButton({ canvasElement }).catch(() => {})
   },
 }

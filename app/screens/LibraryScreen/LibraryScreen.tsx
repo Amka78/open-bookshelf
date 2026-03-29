@@ -29,11 +29,21 @@ import { useIsFocused, useNavigation } from "@react-navigation/native"
 import { values } from "mobx"
 import { observer } from "mobx-react-lite"
 import type React from "react"
-import { type FC, useEffect, useLayoutEffect, useMemo, useRef } from "react"
+import { type FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Platform, useWindowDimensions } from "react-native"
 import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import type { SearchBarCommands } from "react-native-screens"
+import type { QueryOperator } from "@/components/LeftSideMenu/LeftSideMenu"
 import { useLibrary } from "./useLibrary"
+
+/** Split a query string by AND or OR, returning individual conditions. */
+function parseQueryParts(query: string): string[] {
+  if (!query.trim()) return []
+  return query
+    .split(/ AND | OR /i)
+    .map((q) => q.trim())
+    .filter(Boolean)
+}
 
 export const LibraryScreen: FC = observer(() => {
   const { authenticationStore, calibreRootStore } = useStores()
@@ -42,6 +52,7 @@ export const LibraryScreen: FC = observer(() => {
   const navigation = useNavigation<ApppNavigationProp>()
   const modal = useElectrobunModal()
   const isFocused = useIsFocused()
+  const [itemOperators, setItemOperators] = useState<Record<string, QueryOperator>>({})
 
   const convergenceHook = useConvergence()
   const window = useWindowDimensions()
@@ -374,12 +385,49 @@ export const LibraryScreen: FC = observer(() => {
     <Box flex={1} flexDirection="row">
       <Box flex={0.1}>
         <LeftSideMenu
-          onNodePress={async (name) => {
-            libraryHook.setHeaderSearchText(name)
-            await libraryHook.onSearch(name)
+          onNodePress={async (query) => {
+            const currentQuery = selectedLibrary?.searchSetting?.query ?? ""
+            const currentParts = parseQueryParts(currentQuery)
+            const normalizedNew = query.trim().toLowerCase()
+            const alreadySelected = currentParts.some(
+              (q) => q.trim().toLowerCase() === normalizedNew,
+            )
+            let nextParts: string[]
+            let nextOperators: Record<string, QueryOperator>
+            if (alreadySelected) {
+              nextParts = currentParts.filter((q) => q.trim().toLowerCase() !== normalizedNew)
+              nextOperators = { ...itemOperators }
+              delete nextOperators[normalizedNew]
+            } else {
+              nextParts = [...currentParts, query.trim()]
+              nextOperators = { ...itemOperators }
+            }
+            setItemOperators(nextOperators)
+            const nextQuery = nextParts.reduce((acc, part, i) => {
+              if (i === 0) return part
+              const op = nextOperators[nextParts[i - 1].trim().toLowerCase()] ?? "AND"
+              return `${acc} ${op} ${part}`
+            }, "")
+            libraryHook.setHeaderSearchText(nextQuery)
+            await libraryHook.onSearch(nextQuery)
+          }}
+          onItemOperatorChange={async (query, op) => {
+            const normalizedKey = query.trim().toLowerCase()
+            const nextOperators = { ...itemOperators, [normalizedKey]: op }
+            setItemOperators(nextOperators)
+            const currentQuery = selectedLibrary?.searchSetting?.query ?? ""
+            const parts = parseQueryParts(currentQuery)
+            const nextQuery = parts.reduce((acc, part, i) => {
+              if (i === 0) return part
+              const partOp = nextOperators[parts[i - 1].trim().toLowerCase()] ?? "AND"
+              return `${acc} ${partOp} ${part}`
+            }, "")
+            libraryHook.setHeaderSearchText(nextQuery)
+            await libraryHook.onSearch(nextQuery)
           }}
           tagBrowser={selectedLibrary?.tagBrowser}
-          selectedName={selectedLibrary?.searchSetting?.query}
+          itemOperators={itemOperators}
+          selectedNames={parseQueryParts(selectedLibrary?.searchSetting?.query ?? "")}
         />
       </Box>
       <Box flex={1}>{LibraryCore}</Box>

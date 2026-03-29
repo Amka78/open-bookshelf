@@ -8,7 +8,7 @@ import {
   playBookConvertShowsFormatSelection,
   playBookConvertShowsSpinnerWhileConverting,
   playBookConvertShowsSuccessState,
-} from "./bookConvertScreenPlay"
+} from "./bookConvertScreenStoryPlay"
 
 const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
