@@ -2,7 +2,13 @@ import { afterAll, beforeAll, beforeEach, describe, expect, jest, mock, test } f
 import { useStores } from "@/models"
 import { act, renderHook } from "@testing-library/react"
 import { useModal } from "react-native-modalfy"
-import { createFrameScheduler, playResumeReadingPromptOpensOnce } from "./useViewerPlay"
+import {
+  createFrameScheduler,
+  playResumeReadingPromptAccepts,
+  playResumeReadingPromptAppears,
+  playResumeReadingPromptDeclines,
+  playResumeReadingPromptDoesNotReopenOnRerender,
+} from "./useViewerPlay"
 
 mock.module("../../hooks/useConvergence", () => ({
   useConvergence: jest.fn(),
@@ -62,6 +68,14 @@ describe("useViewer", () => {
   const originalRequestAnimationFrame = globalThis.requestAnimationFrame
   const originalCancelAnimationFrame = globalThis.cancelAnimationFrame
 
+  const getLastModalArgs = <T>(modalName: string) => {
+    const matchedCall = [...mockOpenModal.mock.calls]
+      .reverse()
+      .find(([calledModalName]) => calledModalName === modalName)
+
+    return matchedCall?.[1] as T | undefined
+  }
+
   beforeEach(() => {
     jest.clearAllMocks()
     ;(useStores as jest.Mock).mockReturnValue({
@@ -91,7 +105,7 @@ describe("useViewer", () => {
     globalThis.cancelAnimationFrame = originalCancelAnimationFrame
   })
 
-  test("initializes with default values", () => {
+  test("returns hidden menu and first-page defaults on initial render", () => {
     const { result } = renderHook(() => useViewer())
 
     expect(result.current.showMenu).toBe(false)
@@ -256,7 +270,7 @@ describe("useViewer", () => {
     expect(mockOpenModal).not.toHaveBeenCalled()
   })
 
-  test("returns properties when book and library exist", () => {
+  test("returns viewer handlers and selected entities when book and library are available", () => {
     const { result } = renderHook(() => useViewer())
 
     expect(result.current.selectedBook).not.toBeNull()
@@ -266,16 +280,15 @@ describe("useViewer", () => {
     expect(result.current.onLastPage).toBeDefined()
   })
 
-  test("opens resume reading confirm modal when there is reading progress", async () => {
+  test("opens the resume reading confirm modal when the current format has saved progress", async () => {
     const frames = createFrameScheduler()
     globalThis.requestAnimationFrame = frames.requestAnimationFrame
     globalThis.cancelAnimationFrame = frames.cancelAnimationFrame
 
     renderHook(() => useViewer())
 
-    await act(async () => {
-      frames.flushFrame()
-      frames.flushFrame()
+    await playResumeReadingPromptAppears({
+      flushFrame: frames.flushFrame,
     })
 
     expect(mockOpenModal).toHaveBeenCalledWith(
@@ -287,14 +300,14 @@ describe("useViewer", () => {
     )
   })
 
-  test("does not open resume reading confirm modal twice for the same book on rerender", async () => {
+  test("keeps the resume reading confirm modal to a single open call across rerenders", async () => {
     const frames = createFrameScheduler()
     globalThis.requestAnimationFrame = frames.requestAnimationFrame
     globalThis.cancelAnimationFrame = frames.cancelAnimationFrame
 
     const { rerender } = renderHook(() => useViewer())
 
-    await playResumeReadingPromptOpensOnce({
+    await playResumeReadingPromptDoesNotReopenOnRerender({
       rerender,
       flushFrame: frames.flushFrame,
     })
@@ -304,6 +317,159 @@ describe("useViewer", () => {
       "ConfirmModal",
       expect.objectContaining({
         titleTx: "modal.resumeReadingConfirmModal.title",
+      }),
+    )
+  })
+
+  test("restores the selected format from reading history when the book format is unset", async () => {
+    const setSelectedFormat = jest.fn()
+    ;(useStores as jest.Mock).mockReturnValue({
+      calibreRootStore: {
+        selectedLibrary: {
+          ...mockSelectedLibrary,
+          selectedBook: {
+            ...mockSelectedBook,
+            metaData: {
+              ...mockSelectedBook.metaData,
+              selectedFormat: undefined,
+              setProp: setSelectedFormat,
+            },
+          },
+        },
+        readingHistories: [mockHistory],
+      },
+    })
+
+    renderHook(() => useViewer())
+
+    await act(async () => {})
+
+    expect(setSelectedFormat).toHaveBeenCalledWith("selectedFormat", "pdf")
+  })
+
+  test("starts the viewer immediately without a resume prompt when saved progress is at the first page", () => {
+    ;(useStores as jest.Mock).mockReturnValue({
+      calibreRootStore: {
+        selectedLibrary: mockSelectedLibrary,
+        readingHistories: [
+          {
+            ...mockHistory,
+            currentPage: 0,
+          },
+        ],
+      },
+    })
+
+    const { result } = renderHook(() => useViewer())
+
+    expect(result.current.viewerReady).toBe(true)
+    expect(result.current.initialPage).toBe(0)
+    expect(mockOpenModal).not.toHaveBeenCalled()
+  })
+
+  test("accepting the resume reading confirm modal resumes from the saved page", async () => {
+    const frames = createFrameScheduler()
+    globalThis.requestAnimationFrame = frames.requestAnimationFrame
+    globalThis.cancelAnimationFrame = frames.cancelAnimationFrame
+
+    const { result } = renderHook(() => useViewer())
+
+    await playResumeReadingPromptAccepts({
+      flushFrame: frames.flushFrame,
+      onAccept: () => getLastModalArgs<{ onOKPress: () => void }>("ConfirmModal")?.onOKPress(),
+    })
+
+    expect(result.current.viewerReady).toBe(true)
+    expect(result.current.initialPage).toBe(2)
+  })
+
+  test("accepting the resume reading confirm modal clamps the restored page to the last available page", async () => {
+    const frames = createFrameScheduler()
+    globalThis.requestAnimationFrame = frames.requestAnimationFrame
+    globalThis.cancelAnimationFrame = frames.cancelAnimationFrame
+    ;(useStores as jest.Mock).mockReturnValue({
+      calibreRootStore: {
+        selectedLibrary: {
+          ...mockSelectedLibrary,
+          selectedBook: {
+            ...mockSelectedBook,
+            path: ["page1.png", "page2.png", "page3.png"],
+          },
+        },
+        readingHistories: [
+          {
+            ...mockHistory,
+            currentPage: 99,
+          },
+        ],
+      },
+    })
+
+    const { result } = renderHook(() => useViewer())
+
+    await playResumeReadingPromptAccepts({
+      flushFrame: frames.flushFrame,
+      onAccept: () => getLastModalArgs<{ onOKPress: () => void }>("ConfirmModal")?.onOKPress(),
+    })
+
+    expect(result.current.initialPage).toBe(2)
+    expect(result.current.viewerReady).toBe(true)
+  })
+
+  test("declining the resume reading confirm modal starts from the first page", async () => {
+    const frames = createFrameScheduler()
+    globalThis.requestAnimationFrame = frames.requestAnimationFrame
+    globalThis.cancelAnimationFrame = frames.cancelAnimationFrame
+
+    const { result } = renderHook(() => useViewer())
+
+    await playResumeReadingPromptDeclines({
+      flushFrame: frames.flushFrame,
+      onDecline: () =>
+        getLastModalArgs<{ onCancelPress: () => void }>("ConfirmModal")?.onCancelPress(),
+    })
+
+    expect(result.current.viewerReady).toBe(true)
+    expect(result.current.initialPage).toBe(0)
+  })
+
+  test("submitting a rating from the last-page modal updates the selected book", async () => {
+    const { result } = renderHook(() => useViewer())
+
+    result.current.onLastPage()
+
+    const ratingModalArgs = getLastModalArgs<{ onSubmit: (rating: number) => Promise<void> }>(
+      "ViewerRatingModal",
+    )
+    expect(ratingModalArgs?.onSubmit).toBeDefined()
+
+    await act(async () => {
+      await ratingModalArgs?.onSubmit(4)
+    })
+
+    expect(mockUpdate).toHaveBeenCalledWith("lib-1", { rating: 4 }, ["rating"])
+  })
+
+  test("opens an error modal when saving a last-page rating fails", async () => {
+    mockUpdate.mockResolvedValueOnce(false)
+
+    const { result } = renderHook(() => useViewer())
+
+    result.current.onLastPage()
+
+    const ratingModalArgs = getLastModalArgs<{ onSubmit: (rating: number) => Promise<void> }>(
+      "ViewerRatingModal",
+    )
+
+    await act(async () => {
+      await ratingModalArgs?.onSubmit(1)
+    })
+
+    expect(mockOpenModal).toHaveBeenCalledWith(
+      "ErrorModal",
+      expect.objectContaining({
+        titleTx: "common.error",
+        message: "Failed to update rating.",
       }),
     )
   })

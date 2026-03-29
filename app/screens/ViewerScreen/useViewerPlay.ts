@@ -26,13 +26,26 @@ export function createFrameScheduler() {
   }
 }
 
-export async function playResumeReadingPromptOpensOnce({
+export async function playResumeReadingPromptAppears({
+  flushFrame,
+}: {
+  flushFrame: () => boolean
+}) {
+  await act(async () => {
+    flushFrame()
+    flushFrame()
+  })
+}
+
+export async function playResumeReadingPromptDoesNotReopenOnRerender({
   rerender,
   flushFrame,
 }: {
   rerender: () => void
   flushFrame: () => boolean
 }) {
+  await playResumeReadingPromptAppears({ flushFrame })
+
   await act(async () => {
     rerender()
   })
@@ -40,5 +53,33 @@ export async function playResumeReadingPromptOpensOnce({
   await act(async () => {
     flushFrame()
     flushFrame()
+  })
+}
+
+export async function playResumeReadingPromptAccepts({
+  flushFrame,
+  onAccept,
+}: {
+  flushFrame: () => boolean
+  onAccept: () => void
+}) {
+  await playResumeReadingPromptAppears({ flushFrame })
+
+  await act(async () => {
+    onAccept()
+  })
+}
+
+export async function playResumeReadingPromptDeclines({
+  flushFrame,
+  onDecline,
+}: {
+  flushFrame: () => boolean
+  onDecline: () => void
+}) {
+  await playResumeReadingPromptAppears({ flushFrame })
+
+  await act(async () => {
+    onDecline()
   })
 }

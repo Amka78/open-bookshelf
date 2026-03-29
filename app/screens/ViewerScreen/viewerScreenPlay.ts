@@ -26,13 +26,26 @@ export function createViewerScreenFrameScheduler() {
   }
 }
 
-export async function playViewerScreenResumePromptOpensOnce({
+export async function playViewerScreenResumePromptAppears({
+  flushFrame,
+}: {
+  flushFrame: () => boolean
+}) {
+  await act(async () => {
+    flushFrame()
+    flushFrame()
+  })
+}
+
+export async function playViewerScreenResumePromptDoesNotReopenOnRerender({
   rerender,
   flushFrame,
 }: {
   rerender: () => void
   flushFrame: () => boolean
 }) {
+  await playViewerScreenResumePromptAppears({ flushFrame })
+
   await act(async () => {
     rerender()
   })
@@ -40,5 +53,33 @@ export async function playViewerScreenResumePromptOpensOnce({
   await act(async () => {
     flushFrame()
     flushFrame()
+  })
+}
+
+export async function playViewerScreenResumePromptAccepts({
+  flushFrame,
+  onAccept,
+}: {
+  flushFrame: () => boolean
+  onAccept: () => void
+}) {
+  await playViewerScreenResumePromptAppears({ flushFrame })
+
+  await act(async () => {
+    onAccept()
+  })
+}
+
+export async function playViewerScreenResumePromptDeclines({
+  flushFrame,
+  onDecline,
+}: {
+  flushFrame: () => boolean
+  onDecline: () => void
+}) {
+  await playViewerScreenResumePromptAppears({ flushFrame })
+
+  await act(async () => {
+    onDecline()
   })
 }
