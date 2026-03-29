@@ -1,16 +1,15 @@
 import { observer } from "mobx-react-lite"
 import React, { type FC } from "react"
 import { View } from "react-native"
-import { useModal } from "react-native-modalfy"
+import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 
 import { FlatList, ListItem, RootContainer, Text } from "@/components"
-import type { ModalStackParams } from "@/components/Modals/Types"
 import type { LibraryMap } from "@/models/calibre"
 import { useCalibreRoot } from "./useCalibreRoot"
 
 export const CalibreRootScreen: FC = observer(() => {
   const calibreRootHook = useCalibreRoot()
-  const modal = useModal<ModalStackParams>()
+  const modal = useElectrobunModal()
 
   const renderItem = ({ item }: { item: LibraryMap }) => {
     return (

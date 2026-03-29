@@ -1,4 +1,3 @@
-import type { ModalStackParams } from "@/components/Modals/Types"
 import { useStores } from "@/models"
 import type { LibraryMap } from "@/models/CalibreRootStore"
 import { type ClientSetting, ClientSettingModel } from "@/models/calibre"
@@ -7,7 +6,7 @@ import type { BookReadingStyleType } from "@/type/types"
 import { isCalibreHtmlViewerFormat } from "@/utils/calibreHtmlViewer"
 import { logger } from "@/utils/logger"
 import { useEffect, useRef, useState } from "react"
-import { useModal } from "react-native-modalfy"
+import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import { useConvergence } from "../../hooks/useConvergence"
 
 const runOnNextFrame = (callback: () => void) => {
@@ -31,7 +30,7 @@ const cancelScheduledFrame = (id: number) => {
 
 export function useViewer() {
   const { calibreRootStore } = useStores()
-  const modal = useModal<ModalStackParams>()
+  const modal = useElectrobunModal()
 
   const [showMenu, setShowMenu] = useState(false)
   const [initialPage, setInitialPage] = useState(0)

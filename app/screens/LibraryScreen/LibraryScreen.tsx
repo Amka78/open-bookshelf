@@ -16,7 +16,6 @@ import {
   VirtualLibraryButton,
 } from "@/components"
 import { InputField } from "@/components/InputField/InputField"
-import type { ModalStackParams } from "@/components/Modals/Types"
 import { useConvergence } from "@/hooks/useConvergence"
 import { useDeleteBook } from "@/hooks/useDeleteBook"
 import { useDownloadBook } from "@/hooks/useDownloadBook"
@@ -32,7 +31,7 @@ import { observer } from "mobx-react-lite"
 import type React from "react"
 import { type FC, useEffect, useLayoutEffect, useMemo, useRef } from "react"
 import { Platform, useWindowDimensions } from "react-native"
-import { useModal } from "react-native-modalfy"
+import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import type { SearchBarCommands } from "react-native-screens"
 import { useLibrary } from "./useLibrary"
 
@@ -41,7 +40,7 @@ export const LibraryScreen: FC = observer(() => {
 
   const selectedLibrary = calibreRootStore.selectedLibrary
   const navigation = useNavigation<ApppNavigationProp>()
-  const modal = useModal<ModalStackParams>()
+  const modal = useElectrobunModal()
   const isFocused = useIsFocused()
 
   const convergenceHook = useConvergence()
