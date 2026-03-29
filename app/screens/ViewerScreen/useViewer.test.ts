@@ -1,7 +1,8 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, jest, mock, test } from "bun:test"
 import { useStores } from "@/models"
-import { renderHook } from "@testing-library/react"
+import { act, renderHook } from "@testing-library/react"
 import { useModal } from "react-native-modalfy"
+import { createFrameScheduler, playResumeReadingPromptOpensOnce } from "./useViewerPlay"
 
 mock.module("../../hooks/useConvergence", () => ({
   useConvergence: jest.fn(),
@@ -58,6 +59,8 @@ describe("useViewer", () => {
     selectedLibrary: mockSelectedLibrary,
     readingHistories: [mockHistory],
   }
+  const originalRequestAnimationFrame = globalThis.requestAnimationFrame
+  const originalCancelAnimationFrame = globalThis.cancelAnimationFrame
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -84,6 +87,8 @@ describe("useViewer", () => {
 
   afterAll(() => {
     jest.useRealTimers()
+    globalThis.requestAnimationFrame = originalRequestAnimationFrame
+    globalThis.cancelAnimationFrame = originalCancelAnimationFrame
   })
 
   test("initializes with default values", () => {
@@ -259,6 +264,48 @@ describe("useViewer", () => {
     expect(result.current.orientation).toBeDefined()
     expect(result.current.onPageChange).toBeDefined()
     expect(result.current.onLastPage).toBeDefined()
+  })
+
+  test("opens resume reading confirm modal when there is reading progress", async () => {
+    const frames = createFrameScheduler()
+    globalThis.requestAnimationFrame = frames.requestAnimationFrame
+    globalThis.cancelAnimationFrame = frames.cancelAnimationFrame
+
+    renderHook(() => useViewer())
+
+    await act(async () => {
+      frames.flushFrame()
+      frames.flushFrame()
+    })
+
+    expect(mockOpenModal).toHaveBeenCalledWith(
+      "ConfirmModal",
+      expect.objectContaining({
+        titleTx: "modal.resumeReadingConfirmModal.title",
+        messageTx: "modal.resumeReadingConfirmModal.message",
+      }),
+    )
+  })
+
+  test("does not open resume reading confirm modal twice for the same book on rerender", async () => {
+    const frames = createFrameScheduler()
+    globalThis.requestAnimationFrame = frames.requestAnimationFrame
+    globalThis.cancelAnimationFrame = frames.cancelAnimationFrame
+
+    const { rerender } = renderHook(() => useViewer())
+
+    await playResumeReadingPromptOpensOnce({
+      rerender,
+      flushFrame: frames.flushFrame,
+    })
+
+    expect(mockOpenModal).toHaveBeenCalledTimes(1)
+    expect(mockOpenModal).toHaveBeenCalledWith(
+      "ConfirmModal",
+      expect.objectContaining({
+        titleTx: "modal.resumeReadingConfirmModal.title",
+      }),
+    )
   })
 
   test("creates default client setting if not found", () => {

@@ -36,7 +36,8 @@ export function useViewer() {
   const [showMenu, setShowMenu] = useState(false)
   const [initialPage, setInitialPage] = useState(0)
   const [viewerReady, setViewerReady] = useState(false)
-  const handledPromptKeyRef = useRef<string | undefined>(undefined)
+  const resolvedPromptKeyRef = useRef<string | undefined>(undefined)
+  const pendingPromptKeyRef = useRef<string | undefined>(undefined)
   const handledRatingPromptKeyRef = useRef<string | undefined>(undefined)
 
   const convergenceHook = useConvergence()
@@ -95,16 +96,19 @@ export function useViewer() {
     let cleanup = () => {}
 
     if (!history || history.currentPage <= 0) {
-      handledPromptKeyRef.current = promptKey
+      resolvedPromptKeyRef.current = promptKey
+      pendingPromptKeyRef.current = undefined
       setInitialPage(0)
       setViewerReady(true)
       logger.debug("No reading history or at first page, starting from the beginning", {
         promptKey,
       })
-    } else if (handledPromptKeyRef.current === promptKey) {
+    } else if (resolvedPromptKeyRef.current === promptKey) {
       setViewerReady(true)
+    } else if (pendingPromptKeyRef.current === promptKey) {
+      setViewerReady(false)
     } else {
-      handledPromptKeyRef.current = promptKey
+      pendingPromptKeyRef.current = promptKey
       setViewerReady(false)
 
       const maxPage = Math.max(availablePathLength - 1, 0)
@@ -113,16 +117,24 @@ export function useViewer() {
       let secondFrame: number | undefined
       const firstFrame = runOnNextFrame(() => {
         secondFrame = runOnNextFrame(() => {
+          if (pendingPromptKeyRef.current !== promptKey) {
+            return
+          }
+
           modal.openModal("ConfirmModal", {
             titleTx: "modal.resumeReadingConfirmModal.title",
             messageTx: "modal.resumeReadingConfirmModal.message",
             okTx: "common.yes",
             cancelTx: "common.no",
             onOKPress: () => {
+              pendingPromptKeyRef.current = undefined
+              resolvedPromptKeyRef.current = promptKey
               setInitialPage(resumePage)
               setViewerReady(true)
             },
             onCancelPress: () => {
+              pendingPromptKeyRef.current = undefined
+              resolvedPromptKeyRef.current = promptKey
               setInitialPage(0)
               setViewerReady(true)
             },
