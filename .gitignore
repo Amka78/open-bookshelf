@@ -99,7 +99,6 @@ npm-debug.*
 
 # typescript
 *.tsbuildinfo
-おo
 .tsbuild/
 
 # @end expo-cli
