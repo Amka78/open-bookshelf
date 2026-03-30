@@ -18,19 +18,12 @@ export const PDFViewerScreen = observer(() => {
     calculatePageDimensions,
   } = pdfHook
 
-  if (!selectedBook) {
-    return undefined
-  }
-
+  // NOTE: hooks must be declared before any early return to satisfy Rules of Hooks
   const onPageLoadComplete = useCallback(
     (numberOfPages: number, _path: string, size: { width: number; height: number }) => {
-      setTotalPages((prev) => {
-        if (prev === numberOfPages) {
-          return prev
-        }
-
-        return numberOfPages
-      })
+      // Use Math.max so a subsequent onLoadComplete(1) from a single-page render
+      // can never overwrite a previously obtained correct total page count
+      setTotalPages((prev) => Math.max(prev ?? 0, numberOfPages))
 
       setSourcePageSize((prev) => {
         if (prev && prev.width === size.width && prev.height === size.height) {
@@ -73,7 +66,7 @@ export const PDFViewerScreen = observer(() => {
           onLoadComplete={onPageLoadComplete}
           trustAllCerts={false}
           enablePaging={false}
-          singlePage={true}
+          scrollEnabled={false}
           page={renderProps.page + 1}
         />
       )
@@ -86,6 +79,10 @@ export const PDFViewerScreen = observer(() => {
       windowDimension.height,
     ],
   )
+
+  if (!selectedBook) {
+    return undefined
+  }
 
   return (
     <BookViewer

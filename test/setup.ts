@@ -149,6 +149,7 @@ mock.module("react-native", () => ({
     addEventListener: jest.fn(),
     removeEventListener: jest.fn(),
   },
+  useWindowDimensions: jest.fn(() => ({ width: 375, height: 667, scale: 1, fontScale: 1 })),
   Easing: {
     linear: (t: number) => t,
     ease: (t: number) => t,
