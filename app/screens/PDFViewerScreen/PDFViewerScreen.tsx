@@ -99,19 +99,23 @@ export const PDFViewerScreen = observer(() => {
 
   return (
     <View style={styles.fullscreen}>
-      {/* Hidden 1×1 PDF without singlePage to obtain the real total page count.
-          On Android, singlePage={true} causes onLoadComplete to report numberOfPages=1.
-          This hidden component fires onLoadComplete with the correct count, which then
-          wins via Math.max. It stays mounted until totalPages exceeds 1 so it can still
-          fire after the visible PDF's premature onLoadComplete(1). */}
+      {/* Full-screen hidden PDF (no singlePage) to obtain the true total page count.
+          On Android, singlePage={true} on the visible PDF causes onLoadComplete to
+          report numberOfPages=1. This hidden PDF with proper full-screen dimensions
+          reliably fires onLoadComplete with the correct count (Math.max wins).
+          opacity:0 makes it invisible; pointerEvents="none" prevents touch blocking.
+          Stays mounted until totalPages > 1 so it fires even after the visible PDF's
+          premature onLoadComplete(1). */}
       {(totalPages === undefined || totalPages <= 1) && (
-        <PDF
-          source={pdfSource}
-          style={styles.hiddenCountPdf}
-          onLoadComplete={onHiddenPdfLoadComplete}
-          trustAllCerts={false}
-          page={1}
-        />
+        <View style={styles.hiddenPdfWrapper} pointerEvents="none">
+          <PDF
+            source={pdfSource}
+            style={styles.hiddenPdfContent}
+            onLoadComplete={onHiddenPdfLoadComplete}
+            trustAllCerts={false}
+            page={1}
+          />
+        </View>
       )}
       <BookViewer
         bookTitle={selectedBook.metaData.title}
@@ -132,9 +136,13 @@ const styles = StyleSheet.create({
     height: "100%",
     width: "100%",
   },
-  hiddenCountPdf: {
-    position: "absolute",
-    width: 1,
-    height: 1,
+  // Full-screen wrapper for the hidden page-count PDF.
+  // opacity:0 = invisible; proper dimensions = drawPdf() runs reliably on Android.
+  hiddenPdfWrapper: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0,
+  },
+  hiddenPdfContent: {
+    flex: 1,
   },
 })
