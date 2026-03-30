@@ -103,6 +103,24 @@ describe("usePDFViewer", () => {
     expect(result.current.totalPages).toBe(5)
   })
 
+  test("hidden PDF が先に onLoadComplete(1) を報告しても後から正しい値に更新できる", async () => {
+    const { result } = renderHook(() => usePDFViewer())
+
+    // visible PDF が先に singlePage artifact として 1 を報告
+    await act(async () => {
+      result.current.setTotalPages((prev) => Math.max(prev ?? 0, 1))
+    })
+
+    expect(result.current.totalPages).toBe(1)
+
+    // hidden PDF が後から本当のページ数を報告
+    await act(async () => {
+      result.current.setTotalPages((prev) => Math.max(prev ?? 0, 42))
+    })
+
+    expect(result.current.totalPages).toBe(42)
+  })
+
   test("より大きい値で totalPages を更新できる", async () => {
     const { result } = renderHook(() => usePDFViewer())
 
