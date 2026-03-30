@@ -19,9 +19,16 @@ export type BookImageprops = Pick<ImageProps, "source"> & {
   loading?: boolean
   detailMenuProps?: BookDetailMenuProps
   showCachedIcon?: boolean
+  selected?: boolean
+  onSelectToggle?: () => void
 }
-export function BookImageItem({ loading = false, ...restProps }: BookImageprops) {
-  const props = { loading, ...restProps }
+export function BookImageItem({
+  loading = false,
+  selected,
+  onSelectToggle,
+  ...restProps
+}: BookImageprops) {
+  const props = { loading, selected, onSelectToggle, ...restProps }
   const [loadingState, setLoadingState] = useState(props.loading)
   const [isHovered, setIsHovered] = useState(false)
   const hoverOutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -100,8 +107,19 @@ export function BookImageItem({ loading = false, ...restProps }: BookImageprops)
     contentWithMenu
   )
 
+  const selectionOverlay = onSelectToggle ? (
+    <Pressable onPress={onSelectToggle} style={styles.selectionArea}>
+      <MaterialCommunityIcon
+        name={selected ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"}
+        iconSize="sm"
+        color={selected ? "$primary500" : "$textLight400"}
+      />
+    </Pressable>
+  ) : null
+
   return (
     <Box marginHorizontal={"$2"} marginTop={"$2"}>
+      {selectionOverlay}
       {loading || loadingState ? (
         <LabeledSpinner
           containerStyle={styles.imageSize}
@@ -111,6 +129,7 @@ export function BookImageItem({ loading = false, ...restProps }: BookImageprops)
       ) : (
         content
       )}
+      {selected ? <Box style={styles.selectedOverlay} pointerEvents="none" /> : null}
     </Box>
   )
 }
@@ -155,5 +174,24 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.35,
     shadowRadius: 2,
     elevation: 2,
+  },
+  selectionArea: {
+    height: 28,
+    width: 240,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 6,
+    backgroundColor: "rgba(0,0,0,0.04)",
+  },
+  selectedOverlay: {
+    position: "absolute",
+    top: 28,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(59,130,246,0.18)",
+    borderWidth: 2,
+    borderColor: "rgba(59,130,246,0.7)",
+    pointerEvents: "none",
   },
 })

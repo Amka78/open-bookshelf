@@ -1,5 +1,6 @@
 import { useConvergence } from "@/hooks/useConvergence"
 import { useStores } from "@/models"
+import type { Book } from "@/models/calibre"
 import { api } from "@/services/api"
 import { logger } from "@/utils/logger"
 import type { DocumentPickerAsset } from "expo-document-picker"
@@ -10,6 +11,7 @@ export function useLibrary() {
   const selectedLibrary = calibreRootStore.selectedLibrary
 
   const [searching, setSearching] = useState(false)
+  const [selectedBookIds, setSelectedBookIds] = useState<Set<number>>(new Set())
   const [mobileViewStyle, setMovileViewStyle] = useState<LibraryViewStyle>("viewList")
   const [desktopViewStyle, setDesktopViewStyle] = useState<LibraryViewStyle>("gridView")
   const [headerSearchText, setHeaderSearchText] = useState(
@@ -17,6 +19,36 @@ export function useLibrary() {
   )
 
   const convergenceHook = useConvergence()
+
+  const isSelectionMode = selectedBookIds.size > 0
+
+  const toggleBookSelection = useCallback((bookId: number) => {
+    setSelectedBookIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(bookId)) {
+        next.delete(bookId)
+      } else {
+        next.add(bookId)
+      }
+      return next
+    })
+  }, [])
+
+  const clearSelection = useCallback(() => {
+    setSelectedBookIds(new Set())
+  }, [])
+
+  const isBookSelected = useCallback(
+    (bookId: number) => selectedBookIds.has(bookId),
+    [selectedBookIds],
+  )
+
+  const selectedBooks = useMemo(() => {
+    if (!selectedLibrary) return []
+    return Array.from(selectedBookIds)
+      .map((id) => selectedLibrary.books.get(id.toString()))
+      .filter(Boolean) as Book[]
+  }, [selectedBookIds, selectedLibrary])
 
   const searchParameterCandidates = useMemo(() => {
     if (!selectedLibrary) {
@@ -138,5 +170,11 @@ export function useLibrary() {
     setHeaderSearchText,
     searchParameterCandidates,
     completeSearchParameter,
+    selectedBookIds,
+    isSelectionMode,
+    toggleBookSelection,
+    clearSelection,
+    isBookSelected,
+    selectedBooks,
   }
 }

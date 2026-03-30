@@ -118,6 +118,16 @@ const en = {
       title: "Rate this book",
       message: "Please rate this book.",
     },
+    bulkEditModal: {
+      title: "Bulk Edit",
+      bookCount: "{{count}} books selected",
+    },
+  },
+  multiSelectBar: {
+    selectedCount: "{{count}} selected",
+    bulkEdit: "Edit All",
+    bulkDownload: "Download All",
+    clearSelection: "Clear",
   },
   rating: {
     noRate: "No Rate",

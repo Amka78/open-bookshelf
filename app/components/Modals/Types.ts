@@ -56,4 +56,9 @@ export type ModalStackParams = {
     initialRating: number
     onSubmit: (rating: number) => void | Promise<void>
   }
+  BulkEditModal: {
+    books: Book[]
+    libraryId: string
+    onComplete?: () => void
+  }
 }

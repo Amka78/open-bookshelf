@@ -1,5 +1,6 @@
 import type { ModalStackConfig } from "react-native-modalfy"
 import { BookConvertModal } from "./BookConvertModal"
+import { BulkEditModal } from "./BulkEditModal"
 import { BookDetailModal } from "./BookDetailModal"
 import { BookEditModal } from "./BookEditModal"
 import { ConfirmModal } from "./ConfirmModal"
@@ -13,6 +14,7 @@ export const modalConfig: ModalStackConfig = {
   BookConvertModal,
   BookDetailModal,
   BookEditModal,
+  BulkEditModal,
   ConfirmModal,
   ErrorModal,
   FormatSelectModal,

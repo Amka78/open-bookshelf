@@ -120,6 +120,16 @@ const ko: Translations = {
       title: "이 책 평가",
       message: "이 책을 평가해 주세요.",
     },
+    bulkEditModal: {
+      title: "일괄 편집",
+      bookCount: "{{count}}권 선택됨",
+    },
+  },
+  multiSelectBar: {
+    selectedCount: "{{count}}개 선택됨",
+    bulkEdit: "일괄 편집",
+    bulkDownload: "일괄 다운로드",
+    clearSelection: "선택 해제",
   },
   bookConvertScreen: {
     inputFormat: "현재 형식",

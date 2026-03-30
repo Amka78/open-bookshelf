@@ -10,6 +10,7 @@ import {
   Input,
   LeftSideMenu,
   LibraryViewButton,
+  SelectionActionBar,
   SortMenu,
   StaggerContainer,
   Text,
@@ -32,6 +33,7 @@ import type React from "react"
 import { type FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Platform, useWindowDimensions } from "react-native"
 import { useElectrobunModal } from "@/hooks/useElectrobunModal"
+import { useBulkDownloadBooks } from "@/hooks/useBulkDownloadBooks"
 import type { SearchBarCommands } from "react-native-screens"
 import type { CalibreFieldOperator, QueryOperator } from "@/components/LeftSideMenu/LeftSideMenu"
 import {
@@ -69,6 +71,7 @@ export const LibraryScreen: FC = observer(() => {
   const openViewerHook = useOpenViewer()
   const deleteBookHook = useDeleteBook()
   const downloadBookHook = useDownloadBook()
+  const bulkDownloadHook = useBulkDownloadBooks()
   const libraryHook = useLibrary()
 
   const searchBar = useRef<SearchBarCommands | null>(null)
@@ -329,15 +332,17 @@ export const LibraryScreen: FC = observer(() => {
           source={{ uri: imageUrl, headers: authenticationStore.getHeader() }}
           showCachedIcon={hasReadingHistory}
           onCachedIconPress={onClearBookCache}
-          onPress={onPress}
+          onPress={libraryHook.isSelectionMode ? async () => libraryHook.toggleBookSelection(item.id) : onPress}
           onLongPress={onLongPress}
-          detailMenuProps={{
+          detailMenuProps={libraryHook.isSelectionMode ? undefined : {
             onOpenBook: onOpenBook,
             onDownloadBook: onDownloadBook,
             onConvertBook: onConvertBook,
             onEditBook: onEditBook,
             onDeleteBook: onDeleteBook,
           }}
+          selected={libraryHook.isBookSelected(item.id)}
+          onSelectToggle={() => libraryHook.toggleBookSelection(item.id)}
         />
       )
     } else {
@@ -360,8 +365,32 @@ export const LibraryScreen: FC = observer(() => {
     return listItem
   }
 
+  const onBulkEdit = () => {
+    if (libraryHook.selectedBooks.length === 0) return
+    modal.openModal("BulkEditModal", {
+      books: libraryHook.selectedBooks,
+      libraryId: selectedLibrary.id,
+      onComplete: () => {
+        libraryHook.clearSelection()
+      },
+    })
+  }
+
+  const onBulkDownload = async () => {
+    if (libraryHook.selectedBooks.length === 0) return
+    await bulkDownloadHook.execute(libraryHook.selectedBooks, selectedLibrary.id, modal)
+  }
+
   const LibraryCore = (
     <>
+      {libraryHook.isSelectionMode && (
+        <SelectionActionBar
+          selectedCount={libraryHook.selectedBookIds.size}
+          onBulkEdit={onBulkEdit}
+          onBulkDownload={onBulkDownload}
+          onClearSelection={libraryHook.clearSelection}
+        />
+      )}
       {selectedLibrary ? (
         <FlatList<Book>
           key={libraryHook.currentListStyle} // to force re-render when list style change

@@ -121,6 +121,16 @@ const ja: Translations = {
       title: "この本の評価",
       message: "この本を評価してください。",
     },
+    bulkEditModal: {
+      title: "一括編集",
+      bookCount: "{{count}}冊選択中",
+    },
+  },
+  multiSelectBar: {
+    selectedCount: "{{count}}件選択中",
+    bulkEdit: "一括編集",
+    bulkDownload: "一括ダウンロード",
+    clearSelection: "選択解除",
   },
   rating: {
     noRate: "評価なし",

@@ -120,6 +120,16 @@ const ar: Translations = {
       title: "تقييم هذا الكتاب",
       message: "يرجى تقييم هذا الكتاب.",
     },
+    bulkEditModal: {
+      title: "تعديل جماعي",
+      bookCount: "{{count}} كتب محددة",
+    },
+  },
+  multiSelectBar: {
+    selectedCount: "{{count}} محدد",
+    bulkEdit: "تعديل الكل",
+    bulkDownload: "تنزيل الكل",
+    clearSelection: "إلغاء التحديد",
   },
   rating: {
     noRate: "بدون تقييم",
