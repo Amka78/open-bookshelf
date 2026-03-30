@@ -3,11 +3,10 @@ import { PDF } from "@/library/PDF/Pdf"
 import { usePDFViewer } from "@/screens/PDFViewerScreen/usePDFViewer"
 import { observer } from "mobx-react-lite"
 import React, { useCallback, useState } from "react"
-import { type FlexAlignType, Platform, StyleSheet, type ViewStyle } from "react-native"
+import { type FlexAlignType, StyleSheet, type ViewStyle } from "react-native"
 
 export const PDFViewerScreen = observer(() => {
   const pdfHook = usePDFViewer()
-  const isAndroid = Platform.OS === "android"
   const [sourcePageSize, setSourcePageSize] = useState<{ width: number; height: number }>()
 
   const {
@@ -93,7 +92,7 @@ export const PDFViewerScreen = observer(() => {
       bookTitle={selectedBook.metaData.title}
       renderPage={renderPage}
       totalPage={totalPages ?? 1}
-      performanceMode={isAndroid ? "android-pdf" : "default"}
+      performanceMode="pdf-single-page"
     />
   )
 })
