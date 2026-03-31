@@ -162,10 +162,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   leftPage: {
-    alignItems: "flex-end",
+    alignItems: "center",
   },
   rightPage: {
-    alignItems: "flex-start",
+    alignItems: "center",
   },
   // 先読みページ専用コンテナ: DOM上に保持しつつ完全に非表示・クリップ
   preloadContainer: {

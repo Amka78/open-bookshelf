@@ -41,6 +41,13 @@ export function usePDFViewer() {
     return api.getInlineBookUrl("PDF", selectedBook.id, selectedLibrary.id)
   }, [cachedPdfPath, selectedBook, selectedLibrary])
 
+  // Remote API URL (always HTTP, never a local file path).
+  // Used as a fallback when a cached native PDF file is no longer available.
+  const remoteUri = useMemo(() => {
+    if (!selectedBook || !selectedLibrary) return ""
+    return api.getInlineBookUrl("PDF", selectedBook.id, selectedLibrary.id)
+  }, [selectedBook, selectedLibrary])
+
   // Create document file object for react-pdf (web)
   // rangeChunkSize を 512KB に拡大し、大きな画像ページでの Range Request 往復回数を削減する
   const documentFile = useMemo(
@@ -53,50 +60,27 @@ export function usePDFViewer() {
     [header, sourceUri],
   )
 
-  // Create native PDF source object
-  const pdfSource = useMemo(
-    () => ({
-      uri: sourceUri,
-      cache: true,
-      headers: header,
-    }),
-    [sourceUri, header],
-  )
-
-  const handlePDFLoadComplete = (numberOfPages: number) => {
-    if (!totalPages) {
-      setTotalPages(numberOfPages)
-    }
-  }
-
   const calculatePageWidth = (isFacingPage: boolean, windowWidth: number): number => {
     if (isFacingPage) {
-      return Math.max(Math.floor(windowWidth / 2) - 24, 1)
+      return Math.max(Math.floor(windowWidth / 2), 1)
     }
-    return Math.max(Math.floor(windowWidth) - 32, 1)
+    return Math.max(Math.floor(windowWidth), 1)
   }
 
   const calculatePageDimensions = (
     size: { width: number; height: number },
     windowWidth: number,
     windowHeight: number,
-    isFacingPage: boolean,
+    _isFacingPage: boolean,
   ): { width: number; height: number } => {
-    let pdfHeight = size.height
-    let pdfWidth = size.width
+    const safeWidth = Math.max(windowWidth, 1)
+    const safeHeight = Math.max(windowHeight, 1)
+    const scale = Math.min(safeWidth / size.width, safeHeight / size.height)
 
-    if (size.height > windowHeight) {
-      pdfWidth = pdfWidth * (windowHeight / size.height)
-      pdfHeight = windowHeight
+    return {
+      width: Math.max(1, size.width * scale),
+      height: Math.max(1, size.height * scale),
     }
-
-    if (pdfWidth > windowWidth) {
-      pdfWidth = windowWidth
-    } else if (isFacingPage) {
-      if (pdfWidth > windowWidth / 2) pdfWidth = windowWidth / 2
-    }
-
-    return { width: pdfWidth, height: pdfHeight }
   }
 
   return {
@@ -105,10 +89,9 @@ export function usePDFViewer() {
     setTotalPages,
     header,
     sourceUri,
+    remoteUri,
     documentFile,
-    pdfSource,
     windowDimension,
-    handlePDFLoadComplete,
     calculatePageWidth,
     calculatePageDimensions,
   }

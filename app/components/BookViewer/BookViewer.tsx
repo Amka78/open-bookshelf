@@ -309,6 +309,12 @@ export function BookViewer(props: BookViewerProps) {
   } as unknown as Record<string, boolean>
   const latestHorizontalIndexRef = useRef(scrollIndex)
   const currentRenderedIndex = Math.max(0, Math.min(scrollIndex, Math.max(data.length - 1, 0)))
+  const currentRenderedItem = data[currentRenderedIndex]
+  const currentSinglePageTapNavigationMode =
+    typeof currentRenderedItem === "number" ||
+    (currentRenderedItem as FacingPageType | undefined)?.page2 === undefined
+      ? "single"
+      : "spread"
   const singlePageTouchStartRef = useRef<
     { x: number; y: number; longPressTriggered: boolean } | undefined
   >(undefined)
@@ -490,6 +496,7 @@ export function BookViewer(props: BookViewerProps) {
                     endY: event.nativeEvent.locationY,
                     width: listViewportWidth,
                     pageDirection: viewerHook.pageDirection,
+                    tapNavigationMode: currentSinglePageTapNavigationMode,
                   })
 
                   if (direction) {

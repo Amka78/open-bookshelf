@@ -8,6 +8,7 @@ export type ResolveSinglePageGestureInput = {
   endY: number
   width: number
   pageDirection: SinglePageGesturePageDirection
+  tapNavigationMode: "single" | "spread"
 }
 
 export const SINGLE_PAGE_TAP_MOVE_THRESHOLD = 12
@@ -25,13 +26,17 @@ export function resolveSinglePageGesture(
     const swipeLeft = dx < 0
 
     if (input.pageDirection === "left") {
-      return swipeLeft ? "previous" : "next"
+      return swipeLeft ? "next" : "previous"
     }
 
-    return swipeLeft ? "next" : "previous"
+    return swipeLeft ? "previous" : "next"
   }
 
   if (absDx <= SINGLE_PAGE_TAP_MOVE_THRESHOLD && absDy <= SINGLE_PAGE_TAP_MOVE_THRESHOLD) {
+    if (input.tapNavigationMode === "single") {
+      return "next"
+    }
+
     const tappedLeftHalf = input.endX < input.width / 2
 
     if (input.pageDirection === "left") {

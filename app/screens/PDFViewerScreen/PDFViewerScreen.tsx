@@ -1,40 +1,115 @@
-import { BookViewer, type RenderPageProps } from "@/components"
+import { BookViewer, Text, type RenderPageProps } from "@/components"
 import { PDF } from "@/library/PDF/Pdf"
+import { PDFWebPage } from "@/library/PDF/PDFWebPage"
 import { usePDFViewer } from "@/screens/PDFViewerScreen/usePDFViewer"
+import { logger } from "@/utils/logger"
+import { File } from "expo-file-system"
 import { observer } from "mobx-react-lite"
-import React, { useCallback, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { type FlexAlignType, StyleSheet, View, type ViewStyle } from "react-native"
+import { useViewer } from "@/screens/ViewerScreen/useViewer"
 
 export const PDFViewerScreen = observer(() => {
   const pdfHook = usePDFViewer()
+  const { initialPage, onPageChange } = useViewer()
   const [sourcePageSize, setSourcePageSize] = useState<{ width: number; height: number }>()
+  const [pdfError, setPdfError] = useState<string | undefined>(undefined)
+  const [pageCountPdfBase64, setPageCountPdfBase64] = useState<string | undefined>(undefined)
 
   const {
     selectedBook,
     totalPages,
     setTotalPages,
-    pdfSource,
     windowDimension,
     calculatePageDimensions,
+    sourceUri,
+    remoteUri,
+    header,
   } = pdfHook
 
-  // NOTE: hooks must be declared before any early return to satisfy Rules of Hooks
+  const isLocalPdfSource = useMemo(() => {
+    return sourceUri.startsWith("file://")
+  }, [sourceUri])
 
-  // Hidden PDF (no singlePage) callback: only used to retrieve the true total page count.
-  // On Android, singlePage={true} causes the native PDF renderer to load only 1 page, so
-  // onLoadComplete reports numberOfPages=1. A separate hidden PDF without singlePage
-  // reports the correct count and keeps the visible PDF rendering cleanly.
-  const onHiddenPdfLoadComplete = useCallback(
+  const hasReadableLocalPdf = useMemo(() => {
+    if (!isLocalPdfSource) return false
+    const cachedFile = new File(sourceUri)
+    return cachedFile.exists
+  }, [isLocalPdfSource, sourceUri])
+
+  const viewerSourceUri =
+    isLocalPdfSource && !hasReadableLocalPdf && remoteUri.length > 0 ? remoteUri : sourceUri
+
+  const isViewerSourceLocalPdf = useMemo(() => {
+    return viewerSourceUri.startsWith("file://")
+  }, [viewerSourceUri])
+
+  const viewerPdfSource = useMemo(
+    () => ({
+      uri: viewerSourceUri,
+      cache: true,
+      headers: header,
+    }),
+    [header, viewerSourceUri],
+  )
+
+  useEffect(() => {
+    setPdfError(undefined)
+
+    if (isLocalPdfSource && !hasReadableLocalPdf && remoteUri.length > 0) {
+      logger.warn("Cached PDF file is missing, falling back to remote source", {
+        sourceUri,
+        remoteUri,
+      })
+    }
+  }, [hasReadableLocalPdf, isLocalPdfSource, remoteUri, sourceUri])
+
+  useEffect(() => {
+    let isActive = true
+
+    setPageCountPdfBase64(undefined)
+
+    if (!isViewerSourceLocalPdf) {
+      return () => {
+        isActive = false
+      }
+    }
+
+    const pdfFile = new File(viewerSourceUri)
+    if (!pdfFile.exists) {
+      return () => {
+        isActive = false
+      }
+    }
+
+    pdfFile
+      .base64()
+      .then((base64) => {
+        if (!isActive) return
+        setPageCountPdfBase64(base64)
+      })
+      .catch((error: unknown) => {
+        const message = error instanceof Error ? error.message : String(error)
+        logger.warn("Failed to read PDF file for page count detection", {
+          message,
+          sourceUri: viewerSourceUri,
+        })
+      })
+
+    return () => {
+      isActive = false
+    }
+  }, [isViewerSourceLocalPdf, viewerSourceUri])
+
+  const handleHiddenPdfLoadComplete = useCallback(
     (numberOfPages: number) => {
       setTotalPages((prev) => Math.max(prev ?? 0, numberOfPages))
     },
     [setTotalPages],
   )
 
-  const onPageLoadComplete = useCallback(
+  const handlePageLoadComplete = useCallback(
     (numberOfPages: number, _path: string, size: { width: number; height: number }) => {
-      // Use Math.max so a subsequent onLoadComplete(1) from singlePage={true} on Android
-      // can never overwrite a previously obtained correct total page count
       setTotalPages((prev) => Math.max(prev ?? 0, numberOfPages))
 
       setSourcePageSize((prev) => {
@@ -48,9 +123,27 @@ export const PDFViewerScreen = observer(() => {
     [setTotalPages],
   )
 
+  const handlePageError = useCallback(
+    (error: unknown) => {
+      const message = error instanceof Error ? error.message : String(error)
+      logger.error("Failed to render PDF page", { message, sourceUri: viewerSourceUri })
+      setPdfError(message)
+    },
+    [viewerSourceUri],
+  )
+
+  const handleHiddenPageCountError = useCallback(
+    (message: string) => {
+      logger.warn("Failed to detect PDF page count in hidden WebView", {
+        message,
+        sourceUri: viewerSourceUri,
+      })
+    },
+    [viewerSourceUri],
+  )
+
   const renderPage = useCallback(
     (renderProps: RenderPageProps) => {
-      let alignSelf: FlexAlignType = "center"
       const imageSize =
         sourcePageSize &&
         calculatePageDimensions(
@@ -60,22 +153,17 @@ export const PDFViewerScreen = observer(() => {
           false,
         )
 
-      if (renderProps.pageType === "leftPage") {
-        alignSelf = "flex-end"
-      } else if (renderProps.pageType === "rightPage") {
-        alignSelf = "flex-start"
-      }
-
       const pageAlignStyle: ViewStyle = {
-        alignSelf,
+        alignSelf: "center" as FlexAlignType,
         justifyContent: "center",
       }
 
       return (
         <PDF
-          source={pdfSource}
+          source={viewerPdfSource}
           style={[styles.page, pageAlignStyle, imageSize]}
-          onLoadComplete={onPageLoadComplete}
+          onLoadComplete={handlePageLoadComplete}
+          onError={handlePageError}
           trustAllCerts={false}
           enablePaging={false}
           scrollEnabled={false}
@@ -86,42 +174,51 @@ export const PDFViewerScreen = observer(() => {
     },
     [
       calculatePageDimensions,
-      onPageLoadComplete,
-      pdfSource,
+      handlePageError,
+      handlePageLoadComplete,
       sourcePageSize,
+      viewerPdfSource,
       windowDimension.height,
     ],
   )
 
-  if (!selectedBook) {
-    return undefined
+  if (!selectedBook) return null
+
+  if (pdfError) {
+    return (
+      <View style={styles.errorRoot}>
+        <Text style={styles.errorText}>{pdfError}</Text>
+      </View>
+    )
   }
+
+  const shouldRenderHiddenPageCounter =
+    (totalPages === undefined || totalPages <= 1) &&
+    (!isViewerSourceLocalPdf || pageCountPdfBase64 !== undefined)
 
   return (
     <View style={styles.fullscreen}>
-      {/* Full-screen hidden PDF (no singlePage) to obtain the true total page count.
-          On Android, singlePage={true} on the visible PDF causes onLoadComplete to
-          report numberOfPages=1. This hidden PDF with proper full-screen dimensions
-          reliably fires onLoadComplete with the correct count (Math.max wins).
-          opacity:0 makes it invisible; pointerEvents="none" prevents touch blocking.
-          Stays mounted until totalPages > 1 so it fires even after the visible PDF's
-          premature onLoadComplete(1). */}
-      {(totalPages === undefined || totalPages <= 1) && (
+      {shouldRenderHiddenPageCounter ? (
         <View style={styles.hiddenPdfWrapper} pointerEvents="none">
-          <PDF
-            source={pdfSource}
+          <PDFWebPage
+            uri={viewerSourceUri}
+            pageNumber={1}
+            headers={header}
+            pdfBase64={pageCountPdfBase64}
             style={styles.hiddenPdfContent}
-            onLoadComplete={onHiddenPdfLoadComplete}
-            trustAllCerts={false}
-            page={1}
+            onTotalPages={handleHiddenPdfLoadComplete}
+            onError={handleHiddenPageCountError}
           />
         </View>
-      )}
+      ) : null}
       <BookViewer
         bookTitle={selectedBook.metaData.title}
         renderPage={renderPage}
         totalPage={totalPages ?? 1}
+        initialPage={initialPage}
+        onPageChange={onPageChange}
         performanceMode="pdf-single-page"
+        disableNavigation={totalPages === undefined}
       />
     </View>
   )
@@ -131,18 +228,27 @@ const styles = StyleSheet.create({
   fullscreen: {
     flex: 1,
   },
+  errorRoot: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 16,
+  },
+  errorText: {
+    color: "#b00020",
+  },
   page: {
     flex: 1,
     height: "100%",
     width: "100%",
   },
-  // Full-screen wrapper for the hidden page-count PDF.
-  // opacity:0 = invisible; proper dimensions = drawPdf() runs reliably on Android.
   hiddenPdfWrapper: {
     ...StyleSheet.absoluteFillObject,
     opacity: 0,
+    zIndex: -1,
   },
   hiddenPdfContent: {
-    flex: 1,
+    width: 1,
+    height: 1,
   },
 })

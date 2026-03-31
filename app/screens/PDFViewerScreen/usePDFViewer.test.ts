@@ -165,4 +165,20 @@ describe("usePDFViewer", () => {
     expect(dims.height).toBeLessThanOrEqual(667)
     expect(dims.width).toBeGreaterThan(0)
   })
+
+  test("calculatePageWidth: 見開きでは半画面いっぱいまで幅を使う", () => {
+    const { result } = renderHook(() => usePDFViewer())
+
+    expect(result.current.calculatePageWidth(true, 800)).toBe(400)
+  })
+
+  test("calculatePageDimensions: 利用可能な幅に合わせて拡大できる", () => {
+    const { result } = renderHook(() => usePDFViewer())
+
+    const size = { width: 300, height: 600 }
+    const dims = result.current.calculatePageDimensions(size, 400, 900, true)
+
+    expect(dims.width).toBe(400)
+    expect(dims.height).toBe(800)
+  })
 })

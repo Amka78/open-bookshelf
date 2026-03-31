@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
 import { resolveSinglePageGesture } from "./pdfSinglePageGestures"
 
 describe("resolveSinglePageGesture", () => {
-  test("LTR tap right half goes next", () => {
+  test("single page tap always goes next for right page direction", () => {
     expect(
       resolveSinglePageGesture({
         startX: 250,
@@ -11,11 +11,12 @@ describe("resolveSinglePageGesture", () => {
         endY: 102,
         width: 300,
         pageDirection: "right",
+        tapNavigationMode: "single",
       }),
     ).toBe("next")
   })
 
-  test("LTR tap left half goes previous", () => {
+  test("single page tap always goes next for left page direction", () => {
     expect(
       resolveSinglePageGesture({
         startX: 40,
@@ -23,12 +24,13 @@ describe("resolveSinglePageGesture", () => {
         startY: 100,
         endY: 100,
         width: 300,
-        pageDirection: "right",
+        pageDirection: "left",
+        tapNavigationMode: "single",
       }),
-    ).toBe("previous")
+    ).toBe("next")
   })
 
-  test("RTL tap left half goes next", () => {
+  test("spread tap left half goes next for left page direction", () => {
     expect(
       resolveSinglePageGesture({
         startX: 40,
@@ -37,11 +39,54 @@ describe("resolveSinglePageGesture", () => {
         endY: 101,
         width: 300,
         pageDirection: "left",
+        tapNavigationMode: "spread",
       }),
     ).toBe("next")
   })
 
-  test("LTR swipe left goes next", () => {
+  test("spread tap right half goes previous for left page direction", () => {
+    expect(
+      resolveSinglePageGesture({
+        startX: 260,
+        endX: 262,
+        startY: 100,
+        endY: 101,
+        width: 300,
+        pageDirection: "left",
+        tapNavigationMode: "spread",
+      }),
+    ).toBe("previous")
+  })
+
+  test("spread tap left half goes previous for right page direction", () => {
+    expect(
+      resolveSinglePageGesture({
+        startX: 40,
+        endX: 41,
+        startY: 100,
+        endY: 100,
+        width: 300,
+        pageDirection: "right",
+        tapNavigationMode: "spread",
+      }),
+    ).toBe("previous")
+  })
+
+  test("spread tap right half goes next for right page direction", () => {
+    expect(
+      resolveSinglePageGesture({
+        startX: 250,
+        endX: 252,
+        startY: 100,
+        endY: 102,
+        width: 300,
+        pageDirection: "right",
+        tapNavigationMode: "spread",
+      }),
+    ).toBe("next")
+  })
+
+  test("left page direction swipe left goes next", () => {
     expect(
       resolveSinglePageGesture({
         startX: 250,
@@ -49,12 +94,13 @@ describe("resolveSinglePageGesture", () => {
         startY: 100,
         endY: 104,
         width: 300,
-        pageDirection: "right",
+        pageDirection: "left",
+        tapNavigationMode: "spread",
       }),
     ).toBe("next")
   })
 
-  test("RTL swipe right goes next", () => {
+  test("left page direction swipe right goes previous", () => {
     expect(
       resolveSinglePageGesture({
         startX: 100,
@@ -63,8 +109,37 @@ describe("resolveSinglePageGesture", () => {
         endY: 100,
         width: 300,
         pageDirection: "left",
+        tapNavigationMode: "spread",
+      }),
+    ).toBe("previous")
+  })
+
+  test("right page direction swipe right goes next", () => {
+    expect(
+      resolveSinglePageGesture({
+        startX: 100,
+        endX: 180,
+        startY: 100,
+        endY: 100,
+        width: 300,
+        pageDirection: "right",
+        tapNavigationMode: "spread",
       }),
     ).toBe("next")
+  })
+
+  test("right page direction swipe left goes previous", () => {
+    expect(
+      resolveSinglePageGesture({
+        startX: 250,
+        endX: 150,
+        startY: 100,
+        endY: 104,
+        width: 300,
+        pageDirection: "right",
+        tapNavigationMode: "spread",
+      }),
+    ).toBe("previous")
   })
 
   test("small drag returns no navigation", () => {
@@ -76,6 +151,7 @@ describe("resolveSinglePageGesture", () => {
         endY: 145,
         width: 300,
         pageDirection: "right",
+        tapNavigationMode: "spread",
       }),
     ).toBeNull()
   })
