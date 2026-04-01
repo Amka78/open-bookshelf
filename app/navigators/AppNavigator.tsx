@@ -87,7 +87,11 @@ const AppStack = observer(function AppStack() {
     }
 
     if (authenticationStore.isAuthenticated) {
-      api.setAuthorization(authenticationStore.token)
+      api.setCredentials(
+        authenticationStore.userId,
+        authenticationStore.password,
+        authenticationStore.token,
+      )
     }
   }, [authenticationStore.isAuthenticated, authenticationStore.token, settingStore.api.baseUrl])
 
@@ -259,7 +263,11 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
         }
 
         if (authenticationStore.isAuthenticated && authenticationStore.token) {
-          api.setAuthorization(authenticationStore.token)
+          api.setCredentials(
+            authenticationStore.userId,
+            authenticationStore.password,
+            authenticationStore.token,
+          )
         }
 
         if (!calibreRootStore.libraryMap.size) {
@@ -354,7 +362,6 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
                     size,
                     hash,
                     pathList: selectedBook.path.slice(),
-                    headers: authenticationStore.getHeader(),
                   })
 
               const historyModel = ReadingHistoryModel.create({

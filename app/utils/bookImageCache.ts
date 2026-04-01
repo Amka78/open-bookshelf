@@ -10,7 +10,6 @@ type CacheBookImagesInput = {
   size: number
   hash: number
   pathList: string[]
-  headers?: Record<string, string>
 }
 
 type CacheBookFileInput = {
@@ -18,7 +17,6 @@ type CacheBookFileInput = {
   format: string
   libraryId: string
   baseUrl: string
-  headers?: Record<string, string>
 }
 
 const getRequiredDirectoryUri = (directory: string | null, label: string) => {
@@ -107,8 +105,7 @@ export async function cacheBookImages(input: CacheBookImagesInput): Promise<stri
           value,
           input.libraryId,
         )
-        await File.downloadFileAsync(url, targetFile, {
-          headers: input.headers,
+        await api.downloadFileWithAuth(url, targetFile, {
           idempotent: true,
         })
       }
@@ -137,8 +134,7 @@ export async function cacheBookFile(input: CacheBookFileInput): Promise<string> 
 
   const targetFile = new File(cacheDir, `${input.bookId}.${input.format.toLowerCase()}`)
   if (!targetFile.exists) {
-    await File.downloadFileAsync(downloadUrl, targetFile, {
-      headers: input.headers,
+    await api.downloadFileWithAuth(downloadUrl, targetFile, {
       idempotent: true,
     })
   }

@@ -62,7 +62,7 @@ export const ViewerScreen: FC = observer(() => {
           bookId={selectedBook.id}
           format={selectedBook.metaData.selectedFormat ?? "AZW3"}
           hash={selectedBook.hash ?? 0}
-          headers={authenticationStore.getHeader()}
+          headers={authenticationStore.getHeader(sourcePagePath)}
           libraryId={selectedLibrary.id}
           onPress={props.onPress}
           onLongPress={props.onLongPress}
@@ -86,7 +86,7 @@ export const ViewerScreen: FC = observer(() => {
         availableHeight={props.availableHeight}
         source={{
           uri: pagePath,
-          headers: isRemotePath ? authenticationStore.getHeader() : undefined,
+          headers: isRemotePath ? authenticationStore.getHeader(pagePath) : undefined,
         }}
       />
     )

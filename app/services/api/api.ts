@@ -8,9 +8,15 @@
 import Config from "@/config"
 import { logger } from "@/utils/logger"
 import { type ApiResponse, type ApisauceInstance, create } from "apisauce"
-import { File as FileSystemFile } from "expo-file-system"
+import { type Directory, type DownloadOptions, File as FileSystemFile } from "expo-file-system"
 import { Platform } from "react-native"
 import { type GeneralApiProblem, getGeneralApiProblem } from "./apiProblem"
+import {
+  type DigestChallenge,
+  computeDigestHeader,
+  generateCnonce,
+  parseDigestChallenge,
+} from "./digestAuth"
 
 import type {
   ApiBookFile,
@@ -45,6 +51,10 @@ export class Api {
   apisauce: ApisauceInstance
   config: ApiConfig
   authenticaion: Record<string, string>
+  private credentials: { username: string; password: string; basicToken: string } | null = null
+  private authMethod: "basic" | "digest" | null = null
+  private digestChallenge: DigestChallenge | null = null
+  private digestNc = 0
 
   /**
    * Set up our API instance. Keep this lightweight!
@@ -58,6 +68,7 @@ export class Api {
         Accept: "application/atom+xml",
       },
     })
+    this.setupAuthInterceptors()
   }
 
   setUrl(baseUrl: string) {
@@ -70,6 +81,291 @@ export class Api {
 
   clearAuthorization() {
     this.apisauce.deleteHeader("Authorization")
+  }
+
+  /**
+   * Store credentials for HTTP auth negotiation (Basic or Digest).
+   * No Authorization header is set immediately — the interceptors will
+   * handle the server challenge and pick the right scheme automatically.
+   */
+  setCredentials(username: string, password: string, basicToken: string) {
+    this.credentials = { username, password, basicToken }
+    this.authMethod = null
+    this.digestChallenge = null
+    this.digestNc = 0
+    this.apisauce.deleteHeader("Authorization")
+  }
+
+  clearCredentials() {
+    this.credentials = null
+    this.authMethod = null
+    this.digestChallenge = null
+    this.digestNc = 0
+    this.apisauce.deleteHeader("Authorization")
+  }
+
+  /**
+   * Return the correct Authorization header for a given URL.
+   * For Digest auth the header is URL-specific (the URI is part of the hash).
+   * For Basic auth the header is the same regardless of URL.
+   * Used by image loaders, file downloads, and viewers that bypass axios.
+   */
+  getAuthHeaders(url?: string, method = "GET"): Record<string, string> | undefined {
+    if (!this.credentials) return undefined
+
+    if (this.authMethod === "digest" && this.digestChallenge) {
+      if (!url) return undefined
+      this.digestNc++
+      const cnonce = generateCnonce()
+      const uri = this.getDigestUri(url)
+      return {
+        Authorization: computeDigestHeader(
+          this.digestChallenge,
+          this.credentials.username,
+          this.credentials.password,
+          method,
+          uri,
+          this.digestNc,
+          cnonce,
+        ),
+      }
+    }
+
+    if (this.credentials.basicToken) {
+      return { Authorization: `Basic ${this.credentials.basicToken}` }
+    }
+
+    return undefined
+  }
+
+  private getDigestUri(url?: string, baseURL?: string): string {
+    try {
+      const fullUrl = new URL(url ?? "", baseURL || this.apisauce.getBaseURL())
+      return fullUrl.pathname + fullUrl.search
+    } catch {
+      if (!url) return "/"
+      return url.startsWith("/") ? url : `/${url}`
+    }
+  }
+
+  private setupAuthInterceptors() {
+    const axiosInstance = this.apisauce.axiosInstance
+
+    // Proactively add auth header for subsequent requests after
+    // the server's auth method has been determined.
+    axiosInstance.interceptors.request.use((config) => {
+      const cfg = config as typeof config & { _authRetry?: boolean }
+      // Skip if this is a retry from the response interceptor (header already set)
+      if (cfg._authRetry) return config
+
+      if (!this.credentials) return config
+
+      if (this.digestChallenge) {
+        this.digestNc++
+        const cnonce = generateCnonce()
+        const uri = this.getDigestUri(config.url, config.baseURL)
+        const method = (config.method || "GET").toUpperCase()
+
+        config.headers["Authorization"] = computeDigestHeader(
+          this.digestChallenge,
+          this.credentials.username,
+          this.credentials.password,
+          method,
+          uri,
+          this.digestNc,
+          cnonce,
+        )
+      } else if (this.authMethod === "basic") {
+        config.headers["Authorization"] = `Basic ${this.credentials.basicToken}`
+      }
+      // If authMethod is null, no header is sent — the server will challenge us
+      return config
+    })
+
+    // Handle 401 challenges: parse WWW-Authenticate and retry with the
+    // correct scheme (Basic or Digest).
+    // Also handles the case where WWW-Authenticate is not accessible
+    // (e.g., CORS blocking on web) by trying Basic auth as a fallback.
+    axiosInstance.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest = error.config as typeof error.config & {
+          _authRetry?: boolean
+        }
+        if (!originalRequest || originalRequest._authRetry) {
+          return Promise.reject(error)
+        }
+
+        if (error.response?.status === 401 && this.credentials) {
+          const headers = error.response.headers
+          const wwwAuthenticate =
+            typeof headers?.get === "function"
+              ? headers.get("www-authenticate")
+              : headers?.["WWW-Authenticate"] ?? headers?.["www-authenticate"]
+
+          // Build a clean retry config to avoid issues with reusing
+          // processed axios configs.
+          const retryHeaders =
+            typeof originalRequest.headers?.toJSON === "function"
+              ? { ...originalRequest.headers.toJSON() }
+              : { ...(originalRequest.headers ?? {}) }
+
+          const retryConfig = {
+            method: originalRequest.method,
+            url: originalRequest.url,
+            baseURL: originalRequest.baseURL,
+            headers: retryHeaders,
+            params: originalRequest.params,
+            data: originalRequest.data,
+            timeout: originalRequest.timeout,
+            responseType: originalRequest.responseType,
+            _authRetry: true,
+          }
+
+          if (wwwAuthenticate) {
+            // Try Digest first
+            const challenge = parseDigestChallenge(wwwAuthenticate)
+            if (challenge) {
+              this.digestChallenge = challenge
+              this.authMethod = "digest"
+              this.digestNc = 1
+              const cnonce = generateCnonce()
+              const uri = this.getDigestUri(originalRequest.url, originalRequest.baseURL)
+              const method = (originalRequest.method || "GET").toUpperCase()
+
+              retryConfig.headers["Authorization"] = computeDigestHeader(
+                challenge,
+                this.credentials.username,
+                this.credentials.password,
+                method,
+                uri,
+                this.digestNc,
+                cnonce,
+              )
+
+              try {
+                return await axiosInstance.request(retryConfig)
+              } catch {
+                this.digestChallenge = null
+                this.authMethod = null
+                this.digestNc = 0
+                return Promise.reject(error)
+              }
+            }
+
+            // Fall back to Basic if the challenge header indicates Basic
+            if (wwwAuthenticate.toLowerCase().startsWith("basic")) {
+              this.authMethod = "basic"
+              this.apisauce.setHeader(
+                "Authorization",
+                `Basic ${this.credentials.basicToken}`,
+              )
+              retryConfig.headers["Authorization"] =
+                `Basic ${this.credentials.basicToken}`
+
+              try {
+                return await axiosInstance.request(retryConfig)
+              } catch {
+                this.authMethod = null
+                this.apisauce.deleteHeader("Authorization")
+                return Promise.reject(error)
+              }
+            }
+          }
+
+          // WWW-Authenticate header not available (e.g. CORS blocking on web).
+          // Try Basic auth first; if the server rejects it with 400
+          // "Unsupported authentication method", it needs Digest auth —
+          // but we can't negotiate Digest without the WWW-Authenticate header.
+          if (!wwwAuthenticate && !this.authMethod) {
+            logger.warn(
+              "WWW-Authenticate header not available. Trying Basic auth.",
+              "If using a CORS proxy, add: Access-Control-Expose-Headers: WWW-Authenticate",
+            )
+            retryConfig.headers["Authorization"] =
+              `Basic ${this.credentials.basicToken}`
+
+            try {
+              const retryResponse = await axiosInstance.request(retryConfig)
+              // Basic auth worked
+              this.authMethod = "basic"
+              this.apisauce.setHeader(
+                "Authorization",
+                `Basic ${this.credentials.basicToken}`,
+              )
+              return retryResponse
+            } catch (basicError) {
+              const basicStatus = (basicError as any)?.response?.status
+              const basicData = (basicError as any)?.response?.data
+              if (
+                basicStatus === 400 &&
+                typeof basicData === "string" &&
+                basicData.includes("Unsupported")
+              ) {
+                // Server requires Digest auth but we can't negotiate
+                // without WWW-Authenticate header. Propagate as 401
+                // so the LoginModal shows with a helpful error.
+                logger.error(
+                  "Server requires Digest auth but WWW-Authenticate header is not accessible.",
+                  "Update your CORS proxy config to add: Access-Control-Expose-Headers: WWW-Authenticate",
+                )
+              }
+              return Promise.reject(error)
+            }
+          }
+        }
+
+        return Promise.reject(error)
+      },
+    )
+  }
+
+  /**
+   * Make a HEAD request to the given URL so the axios interceptors can run
+   * the 401 challenge-response and determine the auth method (Basic / Digest).
+   * Call this before any download that bypasses axios (e.g. File.downloadFileAsync).
+   */
+  private async ensureAuthNegotiated(url: string): Promise<void> {
+    if (this.authMethod !== null || !this.credentials) return
+    try {
+      await this.apisauce.axiosInstance.head(url)
+    } catch {
+      // Auth negotiation is handled by the interceptors.
+      // Errors here (including the initial 401 challenge) are expected.
+    }
+  }
+
+  /**
+   * Download a file with automatic Digest/Basic auth handling.
+   *
+   * Unlike File.downloadFileAsync, this method:
+   * 1. Ensures auth has been negotiated via axios (handles the case where
+   *    authMethod is null after an app restart).
+   * 2. Retries once on a 401 response to handle stale Digest nonces.
+   */
+  async downloadFileWithAuth(
+    url: string,
+    destination: FileSystemFile | Directory,
+    options?: DownloadOptions,
+  ): ReturnType<typeof FileSystemFile.downloadFileAsync> {
+    await this.ensureAuthNegotiated(url)
+    const headers = this.getAuthHeaders(url)
+    try {
+      return await FileSystemFile.downloadFileAsync(url, destination, { ...options, headers })
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      // Both iOS ("status 401") and Android ("status: 401") use this pattern.
+      if (/status:?\s*401/i.test(msg) && this.credentials) {
+        // Stale nonce or auth not yet negotiated — reset and retry once.
+        this.digestChallenge = null
+        this.authMethod = null
+        this.digestNc = 0
+        await this.ensureAuthNegotiated(url)
+        const retryHeaders = this.getAuthHeaders(url)
+        return FileSystemFile.downloadFileAsync(url, destination, { ...options, headers: retryHeaders })
+      }
+      throw error
+    }
   }
 
   getBookDownloadUrl(format: string, bookId: number, libraryId: string): string {
@@ -134,34 +430,6 @@ export class Api {
   async initializeCalibre(): Promise<
     { kind: "ok"; data: ApiCalibreInterfaceType } | GeneralApiProblem
   > {
-    /* this.apisauce.setHeader(
-      "Authorization",
-      `Digest username="Hikaru", realm="calibre", nonce="415ac5608f2e9c690001:74d63386f75735e211e70a402f63c0f99232ed431575da10925b24baa0105b0b", uri="/interface-data/update/1c3bdc26caf3cb9a377550f0f6c19a9acaa23393?1693787767213", algorithm=MD5, response="f91781cb80149e898fcb0ef1c5fe7962", qop=auth, nc=00000001, cnonce="2c875dcb2ca74015"`,
-    )
-    const response: ApiResponse<ApiCalibreInterfaceType> = await this.apisauce.get(
-      `/interface-data/update/1c3bdc26caf3cb9a377550f0f6c19a9acaa23393?1693787767213`,
-      {},
-      {},
-    )
-
-    console.tron.log(response)
-
-    if (!response.ok) {
-      if (response.headers["www-authenticate"]) {
-        const parsed = parse(response.headers["www-authenticate"])
-
-        this.apisauce.setHeader(
-          "Authorization",
-          `Digest username="Hikaru", realm="calibre", nonce="415ac5608f2e9c690001:74d63386f75735e211e70a402f63c0f99232ed431575da10925b24baa0105b0b", uri="/interface-data/update/1c3bdc26caf3cb9a377550f0f6c19a9acaa23393?1693787767213", algorithm=MD5, response="f91781cb80149e898fcb0ef1c5fe7962", qop=auth, nc=00000001, cnonce="2c875dcb2ca74015"`,
-        )
-
-        console.tron.log(this.apisauce.headers)
-      }
-      const problem = getGeneralApiProblem(response)
-      if (problem) return problem
-    }
-
-    return { kind: "ok", data: response.data } */
     const response: ApiResponse<ApiCalibreInterfaceType> = await this.apisauce.get(
       `/interface-data/update?${Date.now()}`,
     )

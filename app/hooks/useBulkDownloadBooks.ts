@@ -1,5 +1,4 @@
 import type { ModalStackParams } from "@/components/Modals/Types"
-import { useStores } from "@/models"
 import type { Book } from "@/models/calibre"
 import { api } from "@/services/api"
 import { File, Paths } from "expo-file-system"
@@ -16,15 +15,11 @@ const getRequiredDirectoryUri = (directory: string | null, label: string) => {
 }
 
 export function useBulkDownloadBooks() {
-  const { authenticationStore } = useStores()
-
   const execute = async (
     books: Book[],
     libraryId: string,
     modal: UsableModalProp<ModalStackParams>,
   ) => {
-    const header = authenticationStore.getHeader()
-
     for (const book of books) {
       const format = book.metaData.formats[0]
       if (!format) continue
@@ -52,8 +47,7 @@ export function useBulkDownloadBooks() {
             "Document directory",
           )
           const destination = new File(documentDirectory, fileName)
-          const result = await File.downloadFileAsync(downloadUrl, destination, {
-            headers: header,
+          const result = await api.downloadFileWithAuth(downloadUrl, destination, {
             idempotent: true,
           })
           await Sharing.shareAsync(result.uri)

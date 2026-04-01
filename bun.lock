@@ -40,6 +40,7 @@
         "expo-status-bar": "~3.0.9",
         "expo-updates": "~29.0.16",
         "i18n-js": "3.9.2",
+        "js-md5": "^0.8.3",
         "jsdom": "^29.0.1",
         "mobx": "6.6.0",
         "mobx-react-lite": "3.4.0",
@@ -2586,6 +2587,8 @@
     "joi": ["joi@14.0.4", "", { "dependencies": { "hoek": "6.x.x", "isemail": "3.x.x", "topo": "3.x.x" } }, "sha512-KUXRcinDUMMbtlOk7YLGHQvG73dLyf8bmgE+6sBTkdJbZpeGVGAlPXEHLiQBV7KinD/VLD5OA0EUgoTTfbRAJQ=="],
 
     "join-component": ["join-component@1.1.0", "", {}, "sha512-bF7vcQxbODoGK1imE2P9GS9aw4zD0Sd+Hni68IMZLj7zRnquH7dXUmMw9hDI5S/Jzt7q+IyTXN0rSg2GI0IKhQ=="],
+
+    "js-md5": ["js-md5@0.8.3", "", {}, "sha512-qR0HB5uP6wCuRMrWPTrkMaev7MJZwJuuw4fnwAzRgP4J4/F8RwtodOKpGp4XpqsLBFzzgqIO42efFAyz2Et6KQ=="],
 
     "js-tokens": ["js-tokens@4.0.0", "", {}, "sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ=="],
 

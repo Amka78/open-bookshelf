@@ -35,6 +35,7 @@ server {
     add_header 'Access-Control-Allow-Origin' '*' always;
     add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
     add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, Accept' always;
+    add_header 'Access-Control-Expose-Headers' 'WWW-Authenticate' always;
     add_header 'Access-Control-Allow-Credentials' 'true' always;
 
     # OPTIONSプリフライトリクエストに即応答
@@ -42,6 +43,7 @@ server {
         add_header 'Access-Control-Allow-Origin' '*';
         add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS';
         add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, Accept';
+        add_header 'Access-Control-Expose-Headers' 'WWW-Authenticate';
         add_header 'Content-Length' '0';
         return 204;
     }
@@ -89,6 +91,7 @@ sudo apt install caddy
     header Access-Control-Allow-Origin *
     header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
     header Access-Control-Allow-Headers "Authorization, Content-Type, Accept"
+    header Access-Control-Expose-Headers "WWW-Authenticate"
 
     @preflight method OPTIONS
     respond @preflight 204

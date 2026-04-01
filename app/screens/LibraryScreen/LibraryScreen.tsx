@@ -78,11 +78,6 @@ export const LibraryScreen: FC = observer(() => {
     Map<Book["id"], { uri: string; headers: Record<string, string> | undefined }>
   >(new Map())
 
-  const authHeader = useMemo(() => {
-    if (!authenticationStore.isAuthenticated) return undefined
-    return { Authorization: `Basic ${authenticationStore.token}` }
-  }, [authenticationStore.isAuthenticated, authenticationStore.token])
-
   const rawBookList = selectedLibrary?.books ? Array.from(selectedLibrary.books.values()) : []
   const bookListKey = rawBookList.map((book) => `${book.id}`).join("|")
   const bookList = useMemo(() => rawBookList, [bookListKey])
@@ -94,16 +89,16 @@ export const LibraryScreen: FC = observer(() => {
       const uri = encodeURI(api.getBookThumbnailUrl(book.id, selectedLibrary.id))
       const cachedSource = thumbnailSourceCacheRef.current.get(book.id)
       const source =
-        cachedSource && cachedSource.uri === uri && cachedSource.headers === authHeader
+        cachedSource && cachedSource.uri === uri
           ? cachedSource
-          : { uri, headers: authHeader }
+          : { uri, headers: api.getAuthHeaders(uri) }
 
       nextCache.set(book.id, source)
     }
 
     thumbnailSourceCacheRef.current = nextCache
     return nextCache
-  }, [authHeader, bookList, selectedLibrary.id])
+  }, [authenticationStore.isAuthenticated, authenticationStore.token, bookList, selectedLibrary.id])
 
   const libraryActions = useMemo(() => {
     return (
@@ -270,7 +265,9 @@ export const LibraryScreen: FC = observer(() => {
 
       const imageSource = thumbnailSourceById.get(item.id) ?? {
         uri: encodeURI(api.getBookThumbnailUrl(item.id, selectedLibrary.id)),
-        headers: authHeader,
+        headers: api.getAuthHeaders(
+          encodeURI(api.getBookThumbnailUrl(item.id, selectedLibrary.id)),
+        ),
       }
       const imageUrl = imageSource.uri
 
@@ -405,7 +402,6 @@ export const LibraryScreen: FC = observer(() => {
       return listItem
     },
     [
-      authHeader,
       calibreRootStore,
       convergenceHook.isLarge,
       deleteBookHook,

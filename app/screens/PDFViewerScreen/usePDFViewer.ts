@@ -22,13 +22,13 @@ export function usePDFViewer() {
       })?.cachedPath[0]
     : undefined
 
-  // Create authentication header
+  // Create authentication header for the current source URI
   const header: Record<string, string> | undefined = useMemo(() => {
-    if (authenticationStore.isAuthenticated) {
-      return { Authorization: `Basic ${authenticationStore.token}` }
+    if (authenticationStore.isAuthenticated && sourceUri) {
+      return api.getAuthHeaders(sourceUri)
     }
     return undefined
-  }, [authenticationStore.isAuthenticated, authenticationStore.token])
+  }, [authenticationStore.isAuthenticated, authenticationStore.token, sourceUri])
 
   // Get PDF source URL
   const sourceUri = useMemo(() => {

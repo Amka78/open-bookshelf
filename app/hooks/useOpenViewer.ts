@@ -33,7 +33,6 @@ export function useOpenViewer() {
           format,
           libraryId: selectedLibraryId,
           baseUrl: settingStore.api.baseUrl,
-          headers: authenticationStore.getHeader(),
         })
 
         if (history) {
@@ -77,7 +76,6 @@ export function useOpenViewer() {
                 size,
                 hash,
                 pathList: book.path.slice(),
-                headers: authenticationStore.getHeader(),
               })
 
           const historyModel = ReadingHistoryModel.create({

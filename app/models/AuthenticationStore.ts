@@ -14,11 +14,7 @@ export const AuthenticationStoreModel = types
       return !!store.token
     },
     get AuthenticationHeader() {
-      return store.token
-        ? {
-            Authorization: `Basic ${store.token}`,
-          }
-        : undefined
+      return store.token ? api.getAuthHeaders() : undefined
     },
   }))
   .actions((store) => ({
@@ -26,17 +22,17 @@ export const AuthenticationStoreModel = types
       store.userId = userId
       store.password = password
       store.token = Buffer.from(`${userId}:${password}`, "utf-8").toString("base64")
-      api.setAuthorization(store.token)
+      api.setCredentials(userId, password, store.token)
     },
     logout() {
       store.token = undefined
       store.userId = ""
       store.password = ""
-      api.clearAuthorization()
+      api.clearCredentials()
     },
-    getHeader() {
+    getHeader(url?: string) {
       if (store.isAuthenticated) {
-        return { Authorization: `Basic ${store.token}` }
+        return api.getAuthHeaders(url)
       }
       return undefined
     },

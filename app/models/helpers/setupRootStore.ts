@@ -42,8 +42,12 @@ export async function setupRootStore(rootStore: RootStore): Promise<{
     if (settingStore.api.baseUrl) {
       api.setUrl(settingStore.api.baseUrl)
     }
-    if (authenticationStore.token) {
-      api.setAuthorization(authenticationStore.token)
+    if (authenticationStore.userId && authenticationStore.password && authenticationStore.token) {
+      api.setCredentials(
+        authenticationStore.userId,
+        authenticationStore.password,
+        authenticationStore.token,
+      )
     }
   } catch (e) {
     // if there's any problems loading, then inform the dev what happened

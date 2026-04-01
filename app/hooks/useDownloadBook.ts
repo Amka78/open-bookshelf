@@ -16,7 +16,7 @@ const getRequiredDirectoryUri = (directory: string | null, label: string) => {
 }
 
 export function useDownloadBook() {
-  const { authenticationStore, calibreRootStore } = useStores()
+  const { calibreRootStore } = useStores()
 
   const selectedLibrary = calibreRootStore.selectedLibrary
   const selectedBook = selectedLibrary.selectedBook
@@ -26,15 +26,12 @@ export function useDownloadBook() {
         modal.openModal("FormatSelectModal", {
           formats: selectedBook.metaData.formats,
           onSelectFormat: async (format) => {
-            await executeSharing(selectedLibrary, authenticationStore.getHeader(), format)
+            await executeSharing(selectedLibrary, format)
           },
         })
       } else {
-        await executeSharing(
-          selectedLibrary,
-          authenticationStore.getHeader(),
-          selectedBook.metaData.formats[0],
-        )
+        const format = selectedBook.metaData.formats[0]
+        await executeSharing(selectedLibrary, format)
       }
     } catch (e) {
       modal.openModal("ErrorModal", {
@@ -51,7 +48,6 @@ export function useDownloadBook() {
 
 async function executeSharing(
   selectedLibrary: LibraryMap,
-  header: { Authorization: string },
   format: string,
 ) {
   const selectedBook = selectedLibrary.selectedBook
@@ -74,8 +70,7 @@ async function executeSharing(
     "Document directory",
   )
   const destination = new File(documentDirectory, fileName)
-  const result = await File.downloadFileAsync(downloadUrl, destination, {
-    headers: header,
+  const result = await api.downloadFileWithAuth(downloadUrl, destination, {
     idempotent: true,
   })
   await Sharing.shareAsync(result.uri)
