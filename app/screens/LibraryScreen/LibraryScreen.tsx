@@ -72,33 +72,55 @@ export const LibraryScreen: FC = observer(() => {
   const downloadBookHook = useDownloadBook()
   const bulkDownloadHook = useBulkDownloadBooks()
   const libraryHook = useLibrary()
+  const [authStateVersion, setAuthStateVersion] = useState(() => api.getAuthStateVersion())
+
+  useEffect(() => {
+    return api.subscribeAuthState((version) => {
+      setAuthStateVersion(version)
+    })
+  }, [])
 
   const searchBar = useRef<SearchBarCommands | null>(null)
   const thumbnailSourceCacheRef = useRef<
-    Map<Book["id"], { uri: string; headers: Record<string, string> | undefined }>
+    Map<
+      Book["id"],
+      {
+        authStateVersion: number
+        source: { uri: string; headers: Record<string, string> | undefined }
+      }
+    >
   >(new Map())
 
   const rawBookList = selectedLibrary?.books ? Array.from(selectedLibrary.books.values()) : []
-  const bookListKey = rawBookList.map((book) => `${book.id}`).join("|")
-  const bookList = useMemo(() => rawBookList, [bookListKey])
+  const bookList = rawBookList
 
   const thumbnailSourceById = useMemo(() => {
-    const nextCache = new Map<Book["id"], { uri: string; headers: Record<string, string> | undefined }>()
+    const nextCache = new Map<
+      Book["id"],
+      {
+        authStateVersion: number
+        source: { uri: string; headers: Record<string, string> | undefined }
+      }
+    >()
 
     for (const book of bookList) {
       const uri = encodeURI(api.getBookThumbnailUrl(book.id, selectedLibrary.id))
+      const headers = api.getAuthHeaders(uri)
       const cachedSource = thumbnailSourceCacheRef.current.get(book.id)
-      const source =
-        cachedSource && cachedSource.uri === uri
+      const cacheEntry =
+        cachedSource &&
+        cachedSource.authStateVersion === authStateVersion &&
+        cachedSource.source.uri === uri &&
+        cachedSource.source.headers === headers
           ? cachedSource
-          : { uri, headers: api.getAuthHeaders(uri) }
+          : { authStateVersion, source: { uri, headers } }
 
-      nextCache.set(book.id, source)
+      nextCache.set(book.id, cacheEntry)
     }
 
     thumbnailSourceCacheRef.current = nextCache
     return nextCache
-  }, [authenticationStore.isAuthenticated, authenticationStore.token, bookList, selectedLibrary.id])
+  }, [authStateVersion, bookList, selectedLibrary.id])
 
   const libraryActions = useMemo(() => {
     return (
@@ -263,11 +285,10 @@ export const LibraryScreen: FC = observer(() => {
         )
       })
 
-      const imageSource = thumbnailSourceById.get(item.id) ?? {
-        uri: encodeURI(api.getBookThumbnailUrl(item.id, selectedLibrary.id)),
-        headers: api.getAuthHeaders(
-          encodeURI(api.getBookThumbnailUrl(item.id, selectedLibrary.id)),
-        ),
+      const thumbnailUri = encodeURI(api.getBookThumbnailUrl(item.id, selectedLibrary.id))
+      const imageSource = thumbnailSourceById.get(item.id)?.source ?? {
+        uri: thumbnailUri,
+        headers: api.getAuthHeaders(thumbnailUri),
       }
       const imageUrl = imageSource.uri
 
@@ -364,7 +385,9 @@ export const LibraryScreen: FC = observer(() => {
             showCachedIcon={hasReadingHistory}
             onCachedIconPress={onClearBookCache}
             onPress={
-              libraryHook.isSelectionMode ? async () => libraryHook.toggleBookSelection(item.id) : onPress
+              libraryHook.isSelectionMode
+                ? async () => libraryHook.toggleBookSelection(item.id)
+                : onPress
             }
             onLongPress={onLongPress}
             detailMenuProps={
@@ -478,9 +501,7 @@ export const LibraryScreen: FC = observer(() => {
             const currentQuery = selectedLibrary?.searchSetting?.query ?? ""
             const currentParts = parseQueryParts(currentQuery)
             const normalizedNew = normalizeTagQuery(query)
-            const alreadySelected = currentParts.some(
-              (q) => normalizeTagQuery(q) === normalizedNew,
-            )
+            const alreadySelected = currentParts.some((q) => normalizeTagQuery(q) === normalizedNew)
             let nextParts: string[]
             let nextOperators: Record<string, QueryOperator>
             if (alreadySelected) {
@@ -502,7 +523,9 @@ export const LibraryScreen: FC = observer(() => {
             const nextQuery = nextParts.reduce((acc, part, i) => {
               if (i === 0) return part
               const prevParsed = parseTagQuery(nextParts[i - 1])
-              const prevKey = prevParsed ? buildItemKey(prevParsed.categoryKey, prevParsed.value) : ""
+              const prevKey = prevParsed
+                ? buildItemKey(prevParsed.categoryKey, prevParsed.value)
+                : ""
               const op = nextOperators[prevKey] ?? "AND"
               return `${acc} ${op} ${part}`
             }, "")
@@ -517,7 +540,9 @@ export const LibraryScreen: FC = observer(() => {
             const nextQuery = parts.reduce((acc, part, i) => {
               if (i === 0) return part
               const prevParsed = parseTagQuery(parts[i - 1])
-              const prevKey = prevParsed ? buildItemKey(prevParsed.categoryKey, prevParsed.value) : ""
+              const prevKey = prevParsed
+                ? buildItemKey(prevParsed.categoryKey, prevParsed.value)
+                : ""
               const partOp = nextOperators[prevKey] ?? "AND"
               return `${acc} ${partOp} ${part}`
             }, "")
@@ -532,9 +557,7 @@ export const LibraryScreen: FC = observer(() => {
             const parts = parseQueryParts(currentQuery)
             const oldNorm = normalizeTagQuery(buildTagQuery(categoryKey, value, oldOp))
             const updatedParts = parts.map((p) =>
-              normalizeTagQuery(p) === oldNorm
-                ? buildTagQuery(categoryKey, value, newOp)
-                : p,
+              normalizeTagQuery(p) === oldNorm ? buildTagQuery(categoryKey, value, newOp) : p,
             )
             if (updatedParts.some((p, i) => p !== parts[i])) {
               const nextQuery = updatedParts.reduce((acc, part, i) => {

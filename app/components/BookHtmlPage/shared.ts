@@ -419,22 +419,34 @@ const decodeTextResourcePath = (path: string) => {
 
 const fetchBookFileResponse = async (props: BookHtmlPageProps, path: string) => {
   const normalizedPath = decodeTextResourcePath(path)
+  const resourceUrl = buildRemoteBookFileUrl(props, normalizedPath)
   logger.debug("Fetching book resource", {
     path,
     normalizedPath,
+    resourceUrl,
     bookId: props.bookId,
     libraryId: props.libraryId,
     format: props.format,
   })
-  const response = await fetch(buildRemoteBookFileUrl(props, normalizedPath), {
+  const response = await api.fetchWithAuth(resourceUrl, {
     headers: props.headers,
   })
 
   if (!response.ok) {
-    logger.error("Failed to fetch book resource", { path, normalizedPath, status: response.status })
+    logger.error("Failed to fetch book resource", {
+      path,
+      normalizedPath,
+      resourceUrl,
+      status: response.status,
+    })
   }
 
-  logger.debug("Fetched book resource", { path, normalizedPath, status: response.status })
+  logger.debug("Fetched book resource", {
+    path,
+    normalizedPath,
+    resourceUrl,
+    status: response.status,
+  })
 
   return response
 }

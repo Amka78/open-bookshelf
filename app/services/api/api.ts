@@ -55,6 +55,8 @@ export class Api {
   private authMethod: "basic" | "digest" | null = null
   private digestChallenge: DigestChallenge | null = null
   private digestNc = 0
+  private authStateVersion = 0
+  private authStateListeners = new Set<(version: number) => void>()
 
   /**
    * Set up our API instance. Keep this lightweight!
@@ -94,6 +96,7 @@ export class Api {
     this.digestChallenge = null
     this.digestNc = 0
     this.apisauce.deleteHeader("Authorization")
+    this.notifyAuthStateChanged()
   }
 
   clearCredentials() {
@@ -102,6 +105,25 @@ export class Api {
     this.digestChallenge = null
     this.digestNc = 0
     this.apisauce.deleteHeader("Authorization")
+    this.notifyAuthStateChanged()
+  }
+
+  getAuthStateVersion(): number {
+    return this.authStateVersion
+  }
+
+  subscribeAuthState(listener: (version: number) => void): () => void {
+    this.authStateListeners.add(listener)
+    return () => {
+      this.authStateListeners.delete(listener)
+    }
+  }
+
+  private notifyAuthStateChanged() {
+    this.authStateVersion += 1
+    for (const listener of this.authStateListeners) {
+      listener(this.authStateVersion)
+    }
   }
 
   /**
@@ -136,6 +158,37 @@ export class Api {
     }
 
     return undefined
+  }
+
+  private mergeRequestHeaders(
+    headers?: HeadersInit,
+    authHeaders?: Record<string, string>,
+  ): Record<string, string> | undefined {
+    if (!headers && !authHeaders) {
+      return undefined
+    }
+
+    const mergedHeaders: Record<string, string> = {}
+
+    if (headers) {
+      if (typeof Headers !== "undefined" && headers instanceof Headers) {
+        headers.forEach((value, key) => {
+          mergedHeaders[key] = value
+        })
+      } else if (Array.isArray(headers)) {
+        for (const [key, value] of headers) {
+          mergedHeaders[key] = value
+        }
+      } else {
+        Object.assign(mergedHeaders, headers)
+      }
+    }
+
+    if (authHeaders) {
+      Object.assign(mergedHeaders, authHeaders)
+    }
+
+    return mergedHeaders
   }
 
   private getDigestUri(url?: string, baseURL?: string): string {
@@ -229,6 +282,7 @@ export class Api {
               this.digestChallenge = challenge
               this.authMethod = "digest"
               this.digestNc = 1
+              this.notifyAuthStateChanged()
               const cnonce = generateCnonce()
               const uri = this.getDigestUri(originalRequest.url, originalRequest.baseURL)
               const method = (originalRequest.method || "GET").toUpperCase()
@@ -249,6 +303,7 @@ export class Api {
                 this.digestChallenge = null
                 this.authMethod = null
                 this.digestNc = 0
+                this.notifyAuthStateChanged()
                 return Promise.reject(error)
               }
             }
@@ -256,18 +311,16 @@ export class Api {
             // Fall back to Basic if the challenge header indicates Basic
             if (wwwAuthenticate.toLowerCase().startsWith("basic")) {
               this.authMethod = "basic"
-              this.apisauce.setHeader(
-                "Authorization",
-                `Basic ${this.credentials.basicToken}`,
-              )
-              retryConfig.headers["Authorization"] =
-                `Basic ${this.credentials.basicToken}`
+              this.apisauce.setHeader("Authorization", `Basic ${this.credentials.basicToken}`)
+              this.notifyAuthStateChanged()
+              retryConfig.headers["Authorization"] = `Basic ${this.credentials.basicToken}`
 
               try {
                 return await axiosInstance.request(retryConfig)
               } catch {
                 this.authMethod = null
                 this.apisauce.deleteHeader("Authorization")
+                this.notifyAuthStateChanged()
                 return Promise.reject(error)
               }
             }
@@ -282,17 +335,14 @@ export class Api {
               "WWW-Authenticate header not available. Trying Basic auth.",
               "If using a CORS proxy, add: Access-Control-Expose-Headers: WWW-Authenticate",
             )
-            retryConfig.headers["Authorization"] =
-              `Basic ${this.credentials.basicToken}`
+            retryConfig.headers["Authorization"] = `Basic ${this.credentials.basicToken}`
 
             try {
               const retryResponse = await axiosInstance.request(retryConfig)
               // Basic auth worked
               this.authMethod = "basic"
-              this.apisauce.setHeader(
-                "Authorization",
-                `Basic ${this.credentials.basicToken}`,
-              )
+              this.apisauce.setHeader("Authorization", `Basic ${this.credentials.basicToken}`)
+              this.notifyAuthStateChanged()
               return retryResponse
             } catch (basicError) {
               const basicStatus = (basicError as any)?.response?.status
@@ -360,12 +410,50 @@ export class Api {
         this.digestChallenge = null
         this.authMethod = null
         this.digestNc = 0
+        this.notifyAuthStateChanged()
         await this.ensureAuthNegotiated(url)
         const retryHeaders = this.getAuthHeaders(url)
-        return FileSystemFile.downloadFileAsync(url, destination, { ...options, headers: retryHeaders })
+        return FileSystemFile.downloadFileAsync(url, destination, {
+          ...options,
+          headers: retryHeaders,
+        })
       }
       throw error
     }
+  }
+
+  /**
+   * Fetch a resource with automatic Digest/Basic auth handling.
+   * Useful for callers that bypass axios but still need per-URL Digest headers.
+   */
+  async fetchWithAuth(url: string, init: RequestInit = {}): Promise<Response> {
+    if (!this.credentials) {
+      return fetch(url, init)
+    }
+
+    const method = (init.method || "GET").toUpperCase()
+    await this.ensureAuthNegotiated(url)
+
+    const response = await fetch(url, {
+      ...init,
+      headers: this.mergeRequestHeaders(init.headers, this.getAuthHeaders(url, method)),
+    })
+
+    if (response.status !== 401) {
+      return response
+    }
+
+    this.digestChallenge = null
+    this.authMethod = null
+    this.digestNc = 0
+    this.notifyAuthStateChanged()
+
+    await this.ensureAuthNegotiated(url)
+
+    return fetch(url, {
+      ...init,
+      headers: this.mergeRequestHeaders(init.headers, this.getAuthHeaders(url, method)),
+    })
   }
 
   getBookDownloadUrl(format: string, bookId: number, libraryId: string): string {
@@ -718,7 +806,7 @@ export class Api {
           url: uploadUrl,
           data: { fileName, libraryName },
         })
-        const uploadResponse = await fetch(uploadUrl, {
+        const uploadResponse = await this.fetchWithAuth(uploadUrl, {
           method: "POST",
           headers: this.apisauce.headers,
           body: formData,
@@ -761,7 +849,7 @@ export class Api {
       const formData = new FormData()
       formData.append("file", new FileSystemFile(file), fileName)
 
-      const response = await fetch(uploadUrl, {
+      const response = await this.fetchWithAuth(uploadUrl, {
         method: "POST",
         headers: this.apisauce.headers,
         body: formData,
@@ -804,7 +892,7 @@ export class Api {
       url: uploadUrl,
       data: { fileName, libraryName },
     })
-    const response = await fetch(uploadUrl, {
+    const response = await this.fetchWithAuth(uploadUrl, {
       method: "POST",
       headers: this.apisauce.headers,
       body: formData,
@@ -873,7 +961,7 @@ export class Api {
           url: uploadUrl,
           data: { fileName, libraryId, bookId, format },
         })
-        const uploadResponse = await fetch(uploadUrl, {
+        const uploadResponse = await this.fetchWithAuth(uploadUrl, {
           method: "POST",
           headers: this.apisauce.headers,
           body: formData,
@@ -916,7 +1004,7 @@ export class Api {
         url: uploadUrl,
         data: { fileName, libraryId, bookId, format },
       })
-      const response = await fetch(uploadUrl, {
+      const response = await this.fetchWithAuth(uploadUrl, {
         method: "POST",
         headers: this.apisauce.headers,
         body: formData,
@@ -959,7 +1047,7 @@ export class Api {
       url: uploadUrl,
       data: { fileName, libraryId, bookId, format },
     })
-    const response = await fetch(uploadUrl, {
+    const response = await this.fetchWithAuth(uploadUrl, {
       method: "POST",
       headers: this.apisauce.headers,
       body: formData,
