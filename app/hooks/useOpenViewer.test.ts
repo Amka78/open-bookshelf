@@ -239,6 +239,70 @@ describe("useOpenViewer", () => {
     expect(navigate).toHaveBeenCalledWith("Viewer")
   })
 
+  test("skips cacheBookImages when book paths are HTML (text formats like MOBI/FB2/DOCX)", async () => {
+    const navigate = jest.fn()
+    ;(useNavigation as jest.Mock).mockReturnValue({ navigate })
+
+    const selectedBook = createSelectedBook({
+      id: 5,
+      hash: 11,
+      path: ["content.xhtml", "content-2.xhtml"],
+      convert: jest.fn(async (_format, _libraryId, callback) => {
+        await callback()
+      }),
+      metaData: {
+        formats: ["MOBI"],
+        formatSizes: new Map([["MOBI", 200]]),
+        size: 200,
+        setProp: jest.fn(),
+      },
+    })
+    const addReadingHistory = jest.fn()
+    jest.spyOn(bookImageCache, "cacheBookImages").mockResolvedValue([])
+    jest.spyOn(ReadingHistoryModel, "create").mockReturnValue({ history: true } as never)
+
+    setupStore({ selectedBook, addReadingHistory })
+
+    const { execute } = useOpenViewer()
+    await execute(createModal())
+
+    expect(selectedBook.convert).toHaveBeenCalled()
+    expect(bookImageCache.cacheBookImages).not.toHaveBeenCalled()
+    expect(navigate).toHaveBeenCalledWith("Viewer")
+  })
+
+  test("calls cacheBookImages when book paths are images (comic formats like CBR/CBZ)", async () => {
+    const navigate = jest.fn()
+    ;(useNavigation as jest.Mock).mockReturnValue({ navigate })
+
+    const selectedBook = createSelectedBook({
+      id: 6,
+      hash: 12,
+      path: ["cover.jpg", "page001.jpg"],
+      convert: jest.fn(async (_format, _libraryId, callback) => {
+        await callback()
+      }),
+      metaData: {
+        formats: ["CBR"],
+        formatSizes: new Map([["CBR", 500]]),
+        size: 500,
+        setProp: jest.fn(),
+      },
+    })
+    const addReadingHistory = jest.fn()
+    jest.spyOn(bookImageCache, "cacheBookImages").mockResolvedValue(["cache/cover.jpg", "cache/page001.jpg"])
+    jest.spyOn(ReadingHistoryModel, "create").mockReturnValue({ history: true } as never)
+
+    setupStore({ selectedBook, addReadingHistory })
+
+    const { execute } = useOpenViewer()
+    await execute(createModal())
+
+    expect(selectedBook.convert).toHaveBeenCalled()
+    expect(bookImageCache.cacheBookImages).toHaveBeenCalled()
+    expect(navigate).toHaveBeenCalledWith("Viewer")
+  })
+
   test("opens error modal when conversion fails", async () => {
     const navigate = jest.fn()
     const openModal = jest.fn()

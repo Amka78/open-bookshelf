@@ -11,7 +11,9 @@ export const isCalibreHtmlViewerFormat = (format?: string | null) => {
     return false
   }
 
-  return HTML_VIEWER_FORMATS.has(format.toUpperCase())
+  const normalized = format.toUpperCase()
+  // Handle AZW3, KF8, and KF8:joint (joint MOBI/KF8 hybrid files)
+  return HTML_VIEWER_FORMATS.has(normalized) || normalized.startsWith("KF8:")
 }
 
 export const isCalibreSerializedHtmlPath = (path?: string | null) => {

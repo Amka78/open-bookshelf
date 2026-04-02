@@ -3,7 +3,7 @@ import { useStores } from "@/models"
 import { type Book, ReadingHistoryModel } from "@/models/calibre"
 import type { ApppNavigationProp } from "@/navigators/types"
 import { cacheBookFile, cacheBookImages } from "@/utils/bookImageCache"
-import { isCalibreHtmlViewerFormat } from "@/utils/calibreHtmlViewer"
+import { isCalibreHtmlViewerFormat, isCalibreSerializedHtmlPath } from "@/utils/calibreHtmlViewer"
 import { useNavigation } from "@react-navigation/native"
 import type { UsableModalProp } from "react-native-modalfy"
 
@@ -66,17 +66,22 @@ export function useOpenViewer() {
         await book.convert(format, selectedLibraryId, async () => {
           const size = book.metaData?.formatSizes.get(format) ?? 0
           const hash = book.hash ?? 0
-          const bookImageList = isHtmlViewerFormat
-            ? book.path.slice()
-            : await cacheBookImages({
-                bookId: book.id,
-                format,
-                libraryId: calibreRootStore.selectedLibrary.id,
-                baseUrl: settingStore.api.baseUrl,
-                size,
-                hash,
-                pathList: book.path.slice(),
-              })
+          // Text-based formats (MOBI, FB2, DOCX, RTF, TXT, etc.) populate book.path
+          // with XHTML spine files. Detect this at runtime to avoid downloading
+          // HTML documents through the image cache pipeline.
+          const pathsAreHtml = book.path.length > 0 && isCalibreSerializedHtmlPath(book.path[0])
+          const bookImageList =
+            isHtmlViewerFormat || pathsAreHtml
+              ? book.path.slice()
+              : await cacheBookImages({
+                  bookId: book.id,
+                  format,
+                  libraryId: calibreRootStore.selectedLibrary.id,
+                  baseUrl: settingStore.api.baseUrl,
+                  size,
+                  hash,
+                  pathList: book.path.slice(),
+                })
 
           const historyModel = ReadingHistoryModel.create({
             bookId: book.id,

@@ -1,3 +1,4 @@
+import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import { useStores } from "@/models"
 import type { LibraryMap } from "@/models/CalibreRootStore"
 import { type ClientSetting, ClientSettingModel } from "@/models/calibre"
@@ -7,7 +8,6 @@ import type { BookReadingStyleType } from "@/type/types"
 import { isCalibreHtmlViewerFormat } from "@/utils/calibreHtmlViewer"
 import { logger } from "@/utils/logger"
 import { useEffect, useRef, useState } from "react"
-import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import { useConvergence } from "../../hooks/useConvergence"
 
 const SYNC_DEBOUNCE_MS = 1000
@@ -244,6 +244,37 @@ export function useViewer() {
     })
   }
 
+  const onSetCoverByPage = async (page: number) => {
+    if (!selectedBook || !selectedLibrary) {
+      return false
+    }
+
+    const coverPath = cachedPathList?.[page] ?? selectedBook.path?.[page]
+
+    if (!coverPath) {
+      modal.openModal("ErrorModal", {
+        titleTx: "common.error",
+        messageTx: "viewerMenu.failedToUpdateCover",
+      })
+      return false
+    }
+
+    const result = await selectedBook.update(
+      selectedLibrary.id,
+      { cover: coverPath } as Partial<MetadataSnapshotIn>,
+      ["cover"],
+    )
+
+    if (!result) {
+      modal.openModal("ErrorModal", {
+        titleTx: "common.error",
+        messageTx: "viewerMenu.failedToUpdateCover",
+      })
+    }
+
+    return result
+  }
+
   const onManageMenu = () => {
     setShowMenu(!showMenu)
   }
@@ -263,6 +294,7 @@ export function useViewer() {
     selectedLibrary,
     onPageChange,
     onLastPage,
+    onSetCoverByPage,
   }
 }
 

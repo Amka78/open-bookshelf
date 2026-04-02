@@ -618,6 +618,63 @@ describe("useViewer", () => {
     )
   })
 
+  test("sets the cover using the cached page path when available", async () => {
+    const { result } = renderHook(() => useViewer())
+
+    await act(async () => {
+      await result.current.onSetCoverByPage(1)
+    })
+
+    expect(mockUpdate).toHaveBeenCalledWith("lib-1", { cover: "cached2.png" }, ["cover"])
+  })
+
+  test("falls back to the source page path when cached page path is unavailable", async () => {
+    useStoresMock.mockReturnValue({
+      calibreRootStore: {
+        selectedLibrary: {
+          ...mockSelectedLibrary,
+          selectedBook: {
+            ...mockSelectedBook,
+            path: ["page1.png", "page2.png", "page3.png", "page4.png", "page5.png"],
+            update: mockUpdate,
+          },
+        },
+        readingHistories: [
+          {
+            ...mockHistory,
+            cachedPath: [],
+          },
+        ],
+      },
+    })
+
+    const { result } = renderHook(() => useViewer())
+
+    await act(async () => {
+      await result.current.onSetCoverByPage(2)
+    })
+
+    expect(mockUpdate).toHaveBeenCalledWith("lib-1", { cover: "page3.png" }, ["cover"])
+  })
+
+  test("opens an error modal when cover update fails", async () => {
+    mockUpdate.mockResolvedValueOnce(false)
+
+    const { result } = renderHook(() => useViewer())
+
+    await act(async () => {
+      await result.current.onSetCoverByPage(1)
+    })
+
+    expect(mockOpenModal).toHaveBeenCalledWith(
+      "ErrorModal",
+      expect.objectContaining({
+        titleTx: "common.error",
+        messageTx: "viewerMenu.failedToUpdateCover",
+      }),
+    )
+  })
+
   test("creates default client setting if not found", () => {
     useStoresMock.mockReturnValue({
       calibreRootStore: {

@@ -20,11 +20,17 @@ mock.module("/home/amka78/private/open-bookshelf/app/models/index.ts", () => ({
 }))
 
 mock.module("@/services/api", () => ({
-  api: { getInlineBookUrl: jest.fn(() => "http://calibre-test/book.pdf") },
+  api: {
+    getInlineBookUrl: jest.fn(() => "http://calibre-test/book.pdf"),
+    getAuthHeaders: jest.fn(() => ({ Authorization: "Digest token-xyz" })),
+  },
 }))
 
 mock.module("/home/amka78/private/open-bookshelf/app/services/api/index.ts", () => ({
-  api: { getInlineBookUrl: jest.fn(() => "http://calibre-test/book.pdf") },
+  api: {
+    getInlineBookUrl: jest.fn(() => "http://calibre-test/book.pdf"),
+    getAuthHeaders: jest.fn(() => ({ Authorization: "Digest token-xyz" })),
+  },
 }))
 
 let usePDFViewer: typeof import("./usePDFViewer").usePDFViewer
@@ -154,6 +160,25 @@ describe("usePDFViewer", () => {
     const { result } = renderHook(() => usePDFViewer())
 
     expect(result.current.sourceUri).toBe("http://calibre-test/book.pdf")
+  })
+
+  test("認証済みの場合、header に sourceUri の認証ヘッダーが設定される", () => {
+    const { result } = renderHook(() => usePDFViewer())
+
+    expect(result.current.header).toEqual({ Authorization: "Digest token-xyz" })
+  })
+
+  test("未認証の場合、header は undefined", () => {
+    useStoresMock.mockReturnValue({
+      authenticationStore: { isAuthenticated: false, token: "" },
+      calibreRootStore: {
+        selectedLibrary: mockLibrary,
+        readingHistories: [],
+      },
+    })
+
+    const { result } = renderHook(() => usePDFViewer())
+    expect(result.current.header).toBeUndefined()
   })
 
   test("calculatePageDimensions: ページ高さがウィンドウより大きい場合は縮小する", () => {

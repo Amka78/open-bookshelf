@@ -166,8 +166,10 @@ export const BookModel = types
       const result: ApiBookManifestResultType = response.data
 
       if (shouldUseHtmlViewer(format, result)) {
+        // AZW3 / KF8 / KF8:joint → HTML spine files rendered by BookHtmlPage
         pathList.push(...result.spine)
-      } else if (result.book_format !== "KF8") {
+      } else if (result.book_format === "EPUB") {
+        // EPUB → pre-rendered JPEG images extracted from the spine
         const spineResponse = yield api.getLibraryInformation(
           libraryId,
           root.id,
@@ -187,34 +189,55 @@ export const BookModel = types
           })
         }
 
-        if (result.book_format === "EPUB") {
-          Object.values(result.spine).forEach((value: string, index) => {
-            if (index !== 0) {
-              const pagePath = value
-                .replace(".xhtml", ".jpg")
-                .replace("xhtml", "image")
-                .replace("text", "image")
+        Object.values(result.spine).forEach((value: string, index) => {
+          if (index !== 0) {
+            const pagePath = value
+              .replace(".xhtml", ".jpg")
+              .replace("xhtml", "image")
+              .replace("text", "image")
 
-              const prefixImagePath = pagePath.replace("p", "i")
+            const prefixImagePath = pagePath.replace("p", "i")
 
-              if (result.files[prefixImagePath]) {
-                pathList.push(prefixImagePath)
-                return
-              }
-
-              const numberOnlyPath = pagePath.replace("p-", "")
-              if (result.files[numberOnlyPath]) {
-                pathList.push(numberOnlyPath)
-                return
-              }
-              pathList.push(pagePath)
+            if (result.files[prefixImagePath]) {
+              pathList.push(prefixImagePath)
+              return
             }
-          })
+
+            const numberOnlyPath = pagePath.replace("p-", "")
+            if (result.files[numberOnlyPath]) {
+              pathList.push(numberOnlyPath)
+              return
+            }
+            pathList.push(pagePath)
+          }
+        })
+      } else if (result.is_comic) {
+        // Comic formats (CBZ, CBR, CB7, CBC, …) → images embedded in a single
+        // wrapper XHTML; extract each image via its data-calibre-src attribute.
+        if (result.spine.length > 0) {
+          const spineResponse = yield api.getLibraryInformation(
+            libraryId,
+            root.id,
+            result.book_format,
+            root.metaData?.size ?? 0,
+            result.book_hash.mtime,
+            result.spine[0],
+          )
+
+          if (spineResponse.kind === "ok") {
+            Object.values(spineResponse.data.tree.c[1].c).forEach((path: { a: unknown }) => {
+              Object.values(path.a).forEach((avalue) => {
+                if (avalue[0] === "data-calibre-src") {
+                  pathList.push(avalue[1])
+                }
+              })
+            })
+          }
         }
       } else {
-        for (const value of Object.values(result.spine)) {
-          pathList.push(value)
-        }
+        // All other text-based formats (MOBI old, FB2, RTF, DOCX, TXT, HTML, …)
+        // Calibre renders these as XHTML spine files; use HTML viewer path.
+        pathList.push(...result.spine)
       }
 
       root.setProp("path", pathList)

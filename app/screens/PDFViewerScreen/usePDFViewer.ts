@@ -22,14 +22,6 @@ export function usePDFViewer() {
       })?.cachedPath[0]
     : undefined
 
-  // Create authentication header for the current source URI
-  const header: Record<string, string> | undefined = useMemo(() => {
-    if (authenticationStore.isAuthenticated && sourceUri) {
-      return api.getAuthHeaders(sourceUri)
-    }
-    return undefined
-  }, [authenticationStore.isAuthenticated, authenticationStore.token, sourceUri])
-
   // Get PDF source URL
   const sourceUri = useMemo(() => {
     if (!selectedBook || !selectedLibrary) return ""
@@ -40,6 +32,14 @@ export function usePDFViewer() {
 
     return api.getInlineBookUrl("PDF", selectedBook.id, selectedLibrary.id)
   }, [cachedPdfPath, selectedBook, selectedLibrary])
+
+  // Create authentication header for the current source URI
+  const header: Record<string, string> | undefined = useMemo(() => {
+    if (authenticationStore.isAuthenticated && sourceUri) {
+      return api.getAuthHeaders(sourceUri)
+    }
+    return undefined
+  }, [authenticationStore.isAuthenticated, authenticationStore.token, sourceUri])
 
   // Remote API URL (always HTTP, never a local file path).
   // Used as a fallback when a cached native PDF file is no longer available.
