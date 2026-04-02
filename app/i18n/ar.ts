@@ -78,6 +78,12 @@ const ar: Translations = {
     tooltipActive: "تقليب الصفحة التلقائي قيد التشغيل",
     tooltipInactive: "تقليب الصفحة التلقائي متوقف",
   },
+  viewerMenu: {
+    setCurrentPageAsCover: "تعيين هذه الصفحة كغلاف",
+    setLeftPageAsCover: "تعيين الصفحة اليسرى كغلاف",
+    setRightPageAsCover: "تعيين الصفحة اليمنى كغلاف",
+    failedToUpdateCover: "فشل تحديث الغلاف.",
+  },
   bookImage: {
     loading: "يتم تجهيز الكتاب للقراءة.",
   },

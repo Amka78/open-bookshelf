@@ -22,6 +22,9 @@ export type ViewerMenuProps = {
   readingStyle: BookReadingStyleType
   onSelectReadingStyle: (readingStyle: BookReadingStyleType) => void
   onSelectPageDirection: (pageDirection) => void
+  onSelectCurrentPageAsCover?: () => void
+  onSelectLeftPageAsCover?: () => void
+  onSelectRightPageAsCover?: () => void
   autoPageTurning: boolean
   autoPageTurnIntervalMs: number
   onToggleAutoPageTurning?: () => void
@@ -60,10 +63,10 @@ export function ViewerMenu(props: ViewerMenuProps) {
   return (
     <HStack gap="$3">
       <Menu
-        placement="bottom"
+        placement="bottom right"
         trigger={(triggerProps) => {
           return (
-            <Pressable {...triggerProps}>
+            <Pressable {...triggerProps} testID="viewer-display-settings-trigger">
               <IconButton
                 iconSize="md-"
                 name="book-settings"
@@ -152,6 +155,33 @@ export function ViewerMenu(props: ViewerMenuProps) {
           })
         }}
       />
+
+      <Menu
+        placement="bottom right"
+        trigger={(triggerProps) => {
+          return (
+            <Pressable {...triggerProps} testID="viewer-display-settings-trigger">
+              <IconButton iconSize="md-" name="settings" pressable={false} />
+            </Pressable>
+          )
+        }}
+      >
+        {props.onSelectCurrentPageAsCover ? (
+          <MenuItem textValue="setCurrentPageAsCover" onPress={props.onSelectCurrentPageAsCover}>
+            <MenuItemLabel tx="viewerMenu.setCurrentPageAsCover" />
+          </MenuItem>
+        ) : null}
+        {props.onSelectLeftPageAsCover ? (
+          <MenuItem textValue="setLeftPageAsCover" onPress={props.onSelectLeftPageAsCover}>
+            <MenuItemLabel tx="viewerMenu.setLeftPageAsCover" />
+          </MenuItem>
+        ) : null}
+        {props.onSelectRightPageAsCover ? (
+          <MenuItem textValue="setRightPageAsCover" onPress={props.onSelectRightPageAsCover}>
+            <MenuItemLabel tx="viewerMenu.setRightPageAsCover" />
+          </MenuItem>
+        ) : null}
+      </Menu>
     </HStack>
   )
 }

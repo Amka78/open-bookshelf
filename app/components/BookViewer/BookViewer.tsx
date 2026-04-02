@@ -10,6 +10,7 @@ import { useStores } from "@/models"
 import type { ApppNavigationProp } from "@/navigators/types"
 import { useViewer } from "@/screens/ViewerScreen/useViewer"
 import { usePalette } from "@/theme"
+import { goToNextPage, goToPreviousPage } from "@/utils/pageTurnning"
 import { useNavigation } from "@react-navigation/native"
 import { FlashList, type FlashListRef, type ListRenderItem } from "@shopify/flash-list"
 import React from "react"
@@ -24,11 +25,8 @@ import {
   useWindowDimensions,
 } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { goToNextPage, goToPreviousPage } from "@/utils/pageTurnning"
-import {
-  SINGLE_PAGE_TAP_MOVE_THRESHOLD,
-  resolveSinglePageGesture,
-} from "./pdfSinglePageGestures"
+import { resolveVisibleCoverTargets } from "./coverSelection"
+import { SINGLE_PAGE_TAP_MOVE_THRESHOLD, resolveSinglePageGesture } from "./pdfSinglePageGestures"
 import { type FacingPageType, useBookViewerState } from "./useBookViewerState"
 
 const runOnNextFrame = (callback: () => void) => {
@@ -310,6 +308,10 @@ export function BookViewer(props: BookViewerProps) {
   const latestHorizontalIndexRef = useRef(scrollIndex)
   const currentRenderedIndex = Math.max(0, Math.min(scrollIndex, Math.max(data.length - 1, 0)))
   const currentRenderedItem = data[currentRenderedIndex]
+  const currentCoverTargets = resolveVisibleCoverTargets(
+    currentRenderedItem as number | FacingPageType | undefined,
+    viewerHook.pageDirection,
+  )
   const currentSinglePageTapNavigationMode =
     typeof currentRenderedItem === "number" ||
     (currentRenderedItem as FacingPageType | undefined)?.page2 === undefined
@@ -443,11 +445,34 @@ export function BookViewer(props: BookViewerProps) {
         onSelectPageDirection={(pageDirection) => {
           viewerHook.onSetPageDirection(pageDirection)
         }}
+        onSelectCurrentPageAsCover={
+          currentCoverTargets.singlePage !== undefined
+            ? () => {
+                viewerHook.onSetCoverByPage(currentCoverTargets.singlePage as number)
+              }
+            : undefined
+        }
+        onSelectLeftPageAsCover={
+          currentCoverTargets.leftPage !== undefined
+            ? () => {
+                viewerHook.onSetCoverByPage(currentCoverTargets.leftPage as number)
+              }
+            : undefined
+        }
+        onSelectRightPageAsCover={
+          currentCoverTargets.rightPage !== undefined
+            ? () => {
+                viewerHook.onSetCoverByPage(currentCoverTargets.rightPage as number)
+              }
+            : undefined
+        }
       />
       {pages && isSinglePagePdfMode ? (
         <Box style={styles.viewerRoot} alignSelf="center" width={listViewportWidth}>
           <Box style={listContainerStyle}>
-            {data.length > 0 ? renderItemContent(data[currentRenderedIndex], currentRenderedIndex) : null}
+            {data.length > 0
+              ? renderItemContent(data[currentRenderedIndex], currentRenderedIndex)
+              : null}
             {data.length > 1 ? (
               <View
                 style={styles.singlePageOverlay}

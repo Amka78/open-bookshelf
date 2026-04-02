@@ -79,6 +79,12 @@ const ja: Translations = {
     tooltipActive: "自動ページめくり ON",
     tooltipInactive: "自動ページめくり OFF",
   },
+  viewerMenu: {
+    setCurrentPageAsCover: "このページを表紙にする",
+    setLeftPageAsCover: "左ページを表紙にする",
+    setRightPageAsCover: "右ページを表紙にする",
+    failedToUpdateCover: "表紙の更新に失敗しました。",
+  },
   bookImage: {
     loading: "書籍を開く準備中です。",
   },

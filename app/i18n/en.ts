@@ -33,7 +33,8 @@ const en = {
     timeoutDescription:
       "The connection with Calibre is taking too long. Please wait a few moments before connecting or restart the server.",
     notFound: "Cannot connect to server.",
-    notFoundDescription: "Cannot connect to server. Would you like to specify the connection destination again?",
+    notFoundDescription:
+      "Cannot connect to server. Would you like to specify the connection destination again?",
   },
   connectScreen: {
     welcome: "Welcome!!",
@@ -75,6 +76,12 @@ const en = {
     tooltip: "Toggle automatic page turning",
     tooltipActive: "Automatic page turning is ON",
     tooltipInactive: "Automatic page turning is OFF",
+  },
+  viewerMenu: {
+    setCurrentPageAsCover: "Set this page as cover",
+    setLeftPageAsCover: "Set left page as cover",
+    setRightPageAsCover: "Set right page as cover",
+    failedToUpdateCover: "Failed to update cover.",
   },
   bookImage: {
     loading: "Preparing to read the book.",

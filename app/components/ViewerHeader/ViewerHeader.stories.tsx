@@ -6,6 +6,7 @@ import {
   viewerMenuStoryArgTypes,
   viewerMenuStoryArgs,
 } from "../../../.storybook/stories/data/viewerMenuStoryData"
+import { playViewerHeaderShowsTitleAndActions } from "./viewerHeaderStoryPlay"
 
 export default {
   title: "ViewerHeader",
@@ -37,7 +38,9 @@ export default {
 
 type StoryProps = StoryObj<typeof ViewerHeader>
 
-export const Basic: StoryProps = {}
+export const Basic: StoryProps = {
+  play: playViewerHeaderShowsTitleAndActions,
+}
 export const LongTitle: StoryProps = {
   args: {
     title: "HeaderTitleXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",

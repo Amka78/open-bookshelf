@@ -78,6 +78,12 @@ const ko: Translations = {
     tooltipActive: "자동 페이지 넘김 켜짐",
     tooltipInactive: "자동 페이지 넘김 꺼짐",
   },
+  viewerMenu: {
+    setCurrentPageAsCover: "이 페이지를 표지로 설정",
+    setLeftPageAsCover: "왼쪽 페이지를 표지로 설정",
+    setRightPageAsCover: "오른쪽 페이지를 표지로 설정",
+    failedToUpdateCover: "표지 업데이트에 실패했습니다.",
+  },
   bookImage: {
     loading: "책을 읽을 준비 중입니다.",
   },

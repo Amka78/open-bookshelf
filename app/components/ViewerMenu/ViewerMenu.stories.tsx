@@ -6,6 +6,7 @@ import {
   viewerMenuStoryArgTypes,
   viewerMenuStoryArgs,
 } from "../../../.storybook/stories/data/viewerMenuStoryData"
+import { playViewerMenuShowsActionsTrigger } from "./viewerMenuStoryPlay"
 
 export default {
   title: "ViewerMenu",
@@ -27,4 +28,5 @@ type StoryProps = StoryObj<typeof ViewerMenu>
 export const Basic: StoryProps = {
   args: viewerMenuStoryArgs,
   argTypes: viewerMenuStoryArgTypes,
+  play: playViewerMenuShowsActionsTrigger,
 }

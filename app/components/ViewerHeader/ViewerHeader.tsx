@@ -29,7 +29,13 @@ export function ViewerHeader(props: ViewerHeaderProps) {
       >
         <HStack flex={1} justifyContent={"flex-start"} marginLeft={"$4"}>
           <IconButton name="arrow-left" onPress={props.onLeftArrowPress} iconSize="md-" />
-          <Text marginLeft={"$3"} fontSize={"$lg"} isTruncated={true} color={palette.textPrimary}>
+          <Text
+            testID="viewer-header-title"
+            marginLeft={"$3"}
+            fontSize={"$lg"}
+            isTruncated={true}
+            color={palette.textPrimary}
+          >
             {props.title}
           </Text>
         </HStack>
