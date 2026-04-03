@@ -93,8 +93,7 @@ mock.module("@/services/api", () => ({
     syncReadingPosition: mockSyncReadingPosition,
     getBookFileUrl: (...args: Parameters<typeof mockGetBookFileUrl>) => mockGetBookFileUrl(...args),
     fetchWithAuth: (...args: Parameters<typeof mockFetchWithAuth>) => mockFetchWithAuth(...args),
-    setCoverBinary: (...args: Parameters<typeof mockSetCoverBinary>) =>
-      mockSetCoverBinary(...args),
+    setCoverBinary: (...args: Parameters<typeof mockSetCoverBinary>) => mockSetCoverBinary(...args),
   },
 }))
 
@@ -103,8 +102,7 @@ mock.module("/home/amka78/open-bookshelf/app/services/api/index.ts", () => ({
     syncReadingPosition: mockSyncReadingPosition,
     getBookFileUrl: (...args: Parameters<typeof mockGetBookFileUrl>) => mockGetBookFileUrl(...args),
     fetchWithAuth: (...args: Parameters<typeof mockFetchWithAuth>) => mockFetchWithAuth(...args),
-    setCoverBinary: (...args: Parameters<typeof mockSetCoverBinary>) =>
-      mockSetCoverBinary(...args),
+    setCoverBinary: (...args: Parameters<typeof mockSetCoverBinary>) => mockSetCoverBinary(...args),
   },
 }))
 
@@ -669,9 +667,7 @@ describe("useViewer", () => {
             update: mockUpdate,
           },
         },
-        readingHistories: [
-          { ...mockHistory, cachedPath: [] },
-        ],
+        readingHistories: [{ ...mockHistory, cachedPath: [] }],
       },
     })
 

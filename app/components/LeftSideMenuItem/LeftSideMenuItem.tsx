@@ -18,10 +18,7 @@ export type LeftSideMenuItemProps = {
   calibreOperator?: string
   onCalibreOperatorToggle?: () => void
 }
-export function LeftSideMenuItem({
-  mode = "category",
-  ...restProps
-}: LeftSideMenuItemProps) {
+export function LeftSideMenuItem({ mode = "category", ...restProps }: LeftSideMenuItemProps) {
   const props = { mode, ...restProps }
   const palette = usePalette()
   const [isOpen, setIsOpen] = useState(false)

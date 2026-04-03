@@ -12,6 +12,10 @@ const ko: Translations = {
     logOut: "로그아웃",
     error: "오류",
   },
+  detailSearchScreen: {
+    title: "상세 검색",
+    search: "검색",
+  },
   bookEditScreen: {
     save: "저장",
     authorSortAutoTooltip: "저자에서 author_sort 자동 생성",

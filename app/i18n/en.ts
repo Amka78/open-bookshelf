@@ -10,6 +10,10 @@ const en = {
     logOut: "Log Out",
     error: "Error",
   },
+  detailSearchScreen: {
+    title: "Detail Search",
+    search: "Search",
+  },
   bookEditScreen: {
     save: "Save",
     authorSortAutoTooltip: "Generate author sort from authors",

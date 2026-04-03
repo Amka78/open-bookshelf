@@ -23,6 +23,7 @@ import {
   BookEditScreen,
   CalibreRootScreen,
   ConnectScreen,
+  DetailSearchScreen,
   LibraryScreen,
   OPDSRootScreen,
   ViewerScreen,
@@ -64,6 +65,7 @@ const getLinking = (): LinkingOptions<AppStackParamList> => {
         BookDetail: "book-detail",
         BookEdit: "book-edit",
         BookConvert: "book-convert",
+        DetailSearch: "detail-search",
       },
     },
   }
@@ -125,6 +127,7 @@ const AppStack = observer(function AppStack() {
       <Stack.Screen name="BookDetail" component={BookDetailScreen} />
       <Stack.Screen name="BookEdit" component={BookEditScreen} />
       <Stack.Screen name="BookConvert" component={BookConvertScreen} />
+      <Stack.Screen name="DetailSearch" component={DetailSearchScreen} />
     </Stack.Navigator>
   )
 })

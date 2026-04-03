@@ -5,10 +5,7 @@ import { type ClientSetting, ClientSettingModel } from "@/models/calibre"
 import type { MetadataSnapshotIn } from "@/models/calibre"
 import { api } from "@/services/api"
 import type { BookReadingStyleType } from "@/type/types"
-import {
-  isCalibreHtmlViewerFormat,
-  isCalibreSerializedHtmlPath,
-} from "@/utils/calibreHtmlViewer"
+import { isCalibreHtmlViewerFormat, isCalibreSerializedHtmlPath } from "@/utils/calibreHtmlViewer"
 import { logger } from "@/utils/logger"
 import { useEffect, useRef, useState } from "react"
 import { useConvergence } from "../../hooks/useConvergence"
@@ -380,11 +377,7 @@ export function useViewer() {
 
       // 2) Try binary upload via cdb/set-cover (uses apisauce/axios auth)
       logger.debug("[onSetCoverByPage] Trying setCoverBinary (cdb/set-cover)")
-      const binaryResult = await api.setCoverBinary(
-        selectedLibrary.id,
-        selectedBook.id,
-        blob,
-      )
+      const binaryResult = await api.setCoverBinary(selectedLibrary.id, selectedBook.id, blob)
       if (binaryResult.kind === "ok") {
         logger.debug("[onSetCoverByPage] setCoverBinary succeeded")
         return true

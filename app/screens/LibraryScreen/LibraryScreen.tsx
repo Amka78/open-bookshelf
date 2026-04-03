@@ -488,7 +488,26 @@ export const LibraryScreen: FC = observer(() => {
         />
       ) : null}
       {convergenceHook.isLarge ? null : (
-        <StaggerContainer menusHeight={230} menus={libraryActions} />
+        <StaggerContainer
+          menusHeight={270}
+          menus={
+            <>
+              <IconButton
+                name="filter-variant"
+                variant="staggerChild"
+                onPress={() => {
+                  navigation.navigate("DetailSearch", {
+                    initialQuery: selectedLibrary?.searchSetting?.query ?? "",
+                    onSearch: (query) => {
+                      libraryHook.onSearch(query)
+                    },
+                  })
+                }}
+              />
+              {libraryActions}
+            </>
+          }
+        />
       )}
     </>
   )

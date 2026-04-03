@@ -12,6 +12,10 @@ const ja: Translations = {
     logOut: "ログアウト",
     error: "エラー",
   },
+  detailSearchScreen: {
+    title: "詳細検索",
+    search: "検索",
+  },
   bookEditScreen: {
     save: "保存",
     authorSortAutoTooltip: "著者から author_sort を自動生成",

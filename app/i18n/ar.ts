@@ -12,6 +12,10 @@ const ar: Translations = {
     logOut: "تسجيل خروج",
     error: "خطأ",
   },
+  detailSearchScreen: {
+    title: "بحث مفصّل",
+    search: "بحث",
+  },
   bookEditScreen: {
     save: "حفظ",
     authorSortAutoTooltip: "إنشاء author_sort تلقائيًا من المؤلفين",

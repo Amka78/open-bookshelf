@@ -35,7 +35,13 @@ export function useODSRoot() {
     }
 
     void initialize()
-  }, [navigation, opdsRootStore.root, palette.textPrimary, settingStore.api.baseUrl, settingStore.api.initialPath])
+  }, [
+    navigation,
+    opdsRootStore.root,
+    palette.textPrimary,
+    settingStore.api.baseUrl,
+    settingStore.api.initialPath,
+  ])
 
   const entries = opdsRootStore.root?.entry.slice() ?? []
 

@@ -31,6 +31,10 @@ export type AppStackParamList = {
   BookConvert: {
     imageUrl: string
   }
+  DetailSearch: {
+    initialQuery: string
+    onSearch: (query: string) => void
+  }
 }
 
 export type AppStackScreenProps<T extends keyof AppStackParamList> = NativeStackScreenProps<
