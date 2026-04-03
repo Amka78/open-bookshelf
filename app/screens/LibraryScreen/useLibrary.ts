@@ -4,7 +4,7 @@ import type { Book } from "@/models/calibre"
 import { api } from "@/services/api"
 import { logger } from "@/utils/logger"
 import type { DocumentPickerAsset } from "expo-document-picker"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 export type LibraryViewStyle = "gridView" | "viewList"
 export function useLibrary() {
   const { calibreRootStore } = useStores()
@@ -22,7 +22,7 @@ export function useLibrary() {
 
   const isSelectionMode = selectedBookIds.size > 0
 
-  const toggleBookSelection = useCallback((bookId: number) => {
+  const toggleBookSelection = (bookId: number) => {
     setSelectedBookIds((prev) => {
       const next = new Set(prev)
       if (next.has(bookId)) {
@@ -32,63 +32,54 @@ export function useLibrary() {
       }
       return next
     })
-  }, [])
+  }
 
-  const clearSelection = useCallback(() => {
+  const clearSelection = () => {
     setSelectedBookIds(new Set())
-  }, [])
+  }
 
-  const isBookSelected = useCallback(
-    (bookId: number) => selectedBookIds.has(bookId),
-    [selectedBookIds],
-  )
+  const isBookSelected = (bookId: number) => selectedBookIds.has(bookId)
 
-  const selectedBooks = useMemo(() => {
-    if (!selectedLibrary) return []
-    return Array.from(selectedBookIds)
-      .map((id) => selectedLibrary.books.get(id.toString()))
-      .filter(Boolean) as Book[]
-  }, [selectedBookIds, selectedLibrary])
+  const selectedBooks = !selectedLibrary
+    ? ([] as Book[])
+    : (Array.from(selectedBookIds)
+        .map((id) => selectedLibrary.books.get(id.toString()))
+        .filter(Boolean) as Book[])
 
-  const searchParameterCandidates = useMemo(() => {
-    if (!selectedLibrary) {
-      return [] as string[]
+  const searchParameterCandidates = !selectedLibrary
+    ? ([] as string[])
+    : Array.from(
+        new Set(
+          Array.from(selectedLibrary.fieldMetadataList.values())
+            .flatMap((metadata) => metadata.searchTerms.slice())
+            .filter((term) => term && term !== "all"),
+        ),
+      )
+
+  const completeSearchParameter = (text: string) => {
+    const lastSpaceIndex = text.lastIndexOf(" ")
+    const prefixText = lastSpaceIndex >= 0 ? text.slice(0, lastSpaceIndex + 1) : ""
+    const token = lastSpaceIndex >= 0 ? text.slice(lastSpaceIndex + 1) : text
+
+    if (!token.endsWith(":")) {
+      return text
     }
 
-    const terms = Array.from(selectedLibrary.fieldMetadataList.values())
-      .flatMap((metadata) => metadata.searchTerms.slice())
-      .filter((term) => term && term !== "all")
+    const rawParameter = token.slice(0, -1).toLowerCase()
+    if (!rawParameter) {
+      return text
+    }
 
-    return Array.from(new Set(terms))
-  }, [selectedLibrary])
+    const matches = searchParameterCandidates.filter((candidate) => {
+      return candidate.toLowerCase().startsWith(rawParameter)
+    })
 
-  const completeSearchParameter = useCallback(
-    (text: string) => {
-      const lastSpaceIndex = text.lastIndexOf(" ")
-      const prefixText = lastSpaceIndex >= 0 ? text.slice(0, lastSpaceIndex + 1) : ""
-      const token = lastSpaceIndex >= 0 ? text.slice(lastSpaceIndex + 1) : text
+    if (matches.length !== 1) {
+      return text
+    }
 
-      if (!token.endsWith(":")) {
-        return text
-      }
-
-      const rawParameter = token.slice(0, -1).toLowerCase()
-      if (!rawParameter) {
-        return text
-      }
-
-      const matches = searchParameterCandidates.filter((candidate) => {
-        return candidate.toLowerCase().startsWith(rawParameter)
-      })
-
-      if (matches.length !== 1) {
-        return text
-      }
-
-      return `${prefixText}${matches[0]}:=`
-    },
-    [searchParameterCandidates],
-  )
+    return `${prefixText}${matches[0]}:=`
+  }
   const search = async () => {
     setSearching(true)
     try {
@@ -103,10 +94,19 @@ export function useLibrary() {
   }, [selectedLibrary?.searchSetting?.query])
 
   useEffect(() => {
-    search()
+    const initialize = async () => {
+      setSearching(true)
+      try {
+        await calibreRootStore.searchLibrary()
+      } finally {
+        setSearching(false)
+      }
 
-    calibreRootStore.getTagBrowser()
-  }, [])
+      calibreRootStore.getTagBrowser()
+    }
+
+    void initialize()
+  }, [calibreRootStore])
 
   const onSelectVirtualLibrary = async (vl: string | null) => {
     selectedLibrary.searchSetting.setProp("vl", vl)

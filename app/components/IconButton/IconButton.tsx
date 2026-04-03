@@ -2,7 +2,7 @@ import { HStack, MaterialCommunityIcon, Text } from "@/components"
 import type { MessageKey } from "@/i18n"
 import { usePalette } from "@/theme"
 import { ButtonSpinner, Pressable } from "@gluestack-ui/themed"
-import { type ComponentProps, forwardRef, useState } from "react"
+import { type ComponentProps, useTransition } from "react"
 
 export type IconButtonProps = ComponentProps<typeof Pressable> & {
   iconSize?: "md" | "md-" | "sm" | "sm-"
@@ -12,13 +12,14 @@ export type IconButtonProps = ComponentProps<typeof Pressable> & {
   rotate?: "90" | "180" | "270"
 } & Pick<ComponentProps<typeof MaterialCommunityIcon>, "name">
 
-export const IconButton = forwardRef(
-  (
-    { iconSize = "md", variant = "common", pressable = true, ...restProps }: IconButtonProps,
-    ref,
-  ) => {
+export const IconButton = ({
+  iconSize = "md",
+  variant = "common",
+  pressable = true,
+  ...restProps
+}: IconButtonProps) => {
     const palette = usePalette()
-    const [loading, setLoading] = useState(false)
+    const [isPending, startTransition] = useTransition()
     const props = restProps
     const icon = (
       <MaterialCommunityIcon
@@ -40,19 +41,18 @@ export const IconButton = forwardRef(
     return pressable ? (
       <Pressable
         {...props}
-        onPress={async (event) => {
+        onPress={(event) => {
           if (props.onPress) {
-            setLoading(true)
-            await props.onPress(event)
-            setLoading(false)
+            startTransition(async () => {
+              await props.onPress!(event)
+            })
           }
         }}
-        disabled={loading}
+        disabled={isPending}
       >
-        {loading ? <ButtonSpinner color={palette.textSecondary} size={35} /> : content}
+        {isPending ? <ButtonSpinner color={palette.textSecondary} size={35} /> : content}
       </Pressable>
     ) : (
       content
     )
-  },
-)
+}

@@ -8,44 +8,54 @@ import { logger } from "@/utils/logger"
 import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { Image } from "expo-image"
 import { observer } from "mobx-react-lite"
-import React, { type FC, useCallback, useEffect, useState } from "react"
+import React, { type FC, useEffect, useState } from "react"
 
 type AcquisitionScreenRouteProp = RouteProp<AppStackParamList, "Acquisition">
+
+async function loadOpdsFromLink(href: string) {
+  const linkOopds = OpdsModel.create()
+  await linkOopds.load(href)
+  logger.debug("OPDS loaded", linkOopds)
+  return linkOopds
+}
+
 export const AcquisitionScreen: FC = observer(() => {
   const { opdsRootStore, settingStore } = useStores()
   const palette = usePalette()
 
   const route = useRoute<AcquisitionScreenRouteProp>()
+  const linkHref = route.params.link.href
 
   const navigation = useNavigation<ApppNavigationProp>()
 
   const [currentOpds, setCurrentOPDS] = useState<OpdsRoot>()
 
-  const initialize = useCallback(async () => {
-    /* const childOPDS = opdsRootStore.children.find((value) => {
-      return value.linkPath === route.params.link.href
-    }) */
-
-    /* if (childOPDS) {
-      setCurrentOPDS(childOPDS.opds)
-    } else { */
-    const linkOopds = OpdsModel.create()
-    await linkOopds.load(route.params.link.href)
-
-    logger.debug("OPDS loaded", linkOopds)
-
-    setCurrentOPDS(linkOopds)
-    const children = OpdsChildrenModel.create({
-      linkPath: route.params.link.href,
-      opds: linkOopds,
-    })
-    // opdsRootStore.add(children)
-    // }
-  }, [route.params.link.href])
-
   useEffect(() => {
-    void initialize()
-  }, [initialize])
+    let canceled = false
+    void (async () => {
+      /* const childOPDS = opdsRootStore.children.find((value) => {
+        return value.linkPath === linkHref
+      }) */
+
+      /* if (childOPDS) {
+        setCurrentOPDS(childOPDS.opds)
+      } else { */
+      const linkOopds = await loadOpdsFromLink(linkHref)
+      if (canceled) return
+
+      setCurrentOPDS(linkOopds)
+      const children = OpdsChildrenModel.create({
+        linkPath: linkHref,
+        opds: linkOopds,
+      })
+      // opdsRootStore.add(children)
+      // }
+    })()
+
+    return () => {
+      canceled = true
+    }
+  }, [linkHref])
 
   useEffect(() => {
     navigation.setOptions({
@@ -132,7 +142,8 @@ export const AcquisitionScreen: FC = observer(() => {
         data={currentOpds?.entry.slice()}
         renderItem={renderItem}
         onRefresh={async () => {
-          await initialize()
+          const linkOopds = await loadOpdsFromLink(linkHref)
+          setCurrentOPDS(linkOopds)
         }}
         onEndReached={async () => {
           const link = currentOpds.link.find((value) => {

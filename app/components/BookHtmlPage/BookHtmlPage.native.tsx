@@ -1,6 +1,6 @@
 import { Text } from "@/components"
 import { usePalette } from "@/theme"
-import React, { useMemo, useState } from "react"
+import React, { useState } from "react"
 import { ActivityIndicator, StyleSheet, View, type ViewStyle, useColorScheme } from "react-native"
 import { WebView } from "react-native-webview"
 import {
@@ -27,14 +27,11 @@ export function BookHtmlPage(props: BookHtmlPageProps) {
 
   const height = autoHeight ? Math.max(contentHeight, 1) : props.availableHeight ?? 1
 
-  const containerStyle = useMemo(() => {
-    const sizeStyle: ViewStyle = {
-      height,
-      ...(typeof props.availableWidth === "number" ? { width: props.availableWidth } : {}),
-    }
-
-    return [styles.container, sizeStyle]
-  }, [height, props.availableWidth])
+  const sizeStyle: ViewStyle = {
+    height,
+    ...(typeof props.availableWidth === "number" ? { width: props.availableWidth } : {}),
+  }
+  const containerStyle = [styles.container, sizeStyle]
 
   if (error) {
     return (

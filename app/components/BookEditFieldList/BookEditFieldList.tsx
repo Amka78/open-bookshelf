@@ -1,9 +1,9 @@
 import { Box, FormInputField, HStack, Input, ScrollView, Text, VStack } from "@/components"
 import type { Book, Category, FieldMetadataMap, MetadataSnapshotIn } from "@/models/calibre"
 import type { ComponentProps } from "react"
-import { useCallback, useRef } from "react"
-import { Keyboard, View, findNodeHandle } from "react-native"
+import { useRef } from "react"
 import type { Control, Path } from "react-hook-form"
+import { Keyboard, View, findNodeHandle } from "react-native"
 import { BookEditField } from "./BookEditField"
 import { useEditFieldSuggestions } from "./useEditFieldSuggestions"
 
@@ -12,7 +12,10 @@ export type BookEditFieldListProps = {
   book: Book
   control: Control<MetadataSnapshotIn, unknown>
   tagBrowser?: Category[]
-  onUploadFormat?: (params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>
+  onUploadFormat?: (params: { targetFormat?: string }) => Promise<{
+    success: boolean
+    format?: string
+  }>
   onDeleteFormat?: (format: string) => Promise<boolean>
   /** フォーカス時にコンテナのnodeHandleを渡すコールバック */
   onTextInputFocus?: (getContainerHandle: () => number | null) => void
@@ -42,14 +45,14 @@ export function BookEditFieldList(props: BookEditFieldListProps) {
   // --- フォーカスチェーン管理 ---
   const focusChainRef = useRef<{ id: string; focus: () => void }[]>([])
 
-  const registerFocusChain = useCallback((id: string, focus: () => void): (() => void) => {
+  const registerFocusChain = (id: string, focus: () => void): (() => void) => {
     focusChainRef.current = [...focusChainRef.current, { id, focus }]
     return () => {
       focusChainRef.current = focusChainRef.current.filter((item) => item.id !== id)
     }
-  }, [])
+  }
 
-  const focusNext = useCallback((id: string) => {
+  const focusNext = (id: string) => {
     const chain = focusChainRef.current
     const index = chain.findIndex((item) => item.id === id)
     if (index >= 0 && index < chain.length - 1) {
@@ -57,14 +60,11 @@ export function BookEditFieldList(props: BookEditFieldListProps) {
     } else {
       Keyboard.dismiss()
     }
-  }, [])
+  }
 
   // series フィールドのコンテナ ref（ラベル表示用）
   const seriesContainerRef = useRef<View | null>(null)
-  const getSeriesContainerHandle = useCallback(
-    () => findNodeHandle(seriesContainerRef.current),
-    [],
-  )
+  const getSeriesContainerHandle = () => findNodeHandle(seriesContainerRef.current)
 
   const fields = EditFieldSort.map((label) => {
     const value = props.fieldMetadataList.get(label)
@@ -85,7 +85,13 @@ export function BookEditFieldList(props: BookEditFieldListProps) {
       return (
         <View key={`${value.label}-seriesIndex`} ref={seriesContainerRef}>
           <HStack space="sm" alignItems="flex-start" width="$full">
-            <VStack alignItems="flex-start" space={"sm"} marginBottom={"$2.5"} flex={1} width="$full">
+            <VStack
+              alignItems="flex-start"
+              space={"sm"}
+              marginBottom={"$2.5"}
+              flex={1}
+              width="$full"
+            >
               <Text isTruncated={true} fontWeight="$bold">
                 {value.name}
               </Text>

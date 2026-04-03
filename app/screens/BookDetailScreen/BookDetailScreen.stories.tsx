@@ -5,7 +5,7 @@ import { BookDetailScreen } from "@/screens/BookDetailScreen/BookDetailScreen"
 import { useNavigation } from "@react-navigation/native"
 import { action } from "@storybook/addon-actions"
 import type { Meta, StoryObj } from "@storybook/react"
-import { type ReactElement, useLayoutEffect, useMemo } from "react"
+import { type ReactElement, useLayoutEffect } from "react"
 import {
   playBookDetailConvertNavigation,
   playBookDetailDeleteAction,
@@ -39,7 +39,7 @@ function createBookDetailModalProps(imageUrl: string) {
 function ResponsiveBookDetailStory({ imageUrl }: { imageUrl: string }) {
   const { isLarge } = useConvergence()
   const navigation = useNavigation<ApppNavigationProp>()
-  const modalProp = useMemo(() => createBookDetailModalProps(imageUrl), [imageUrl])
+  const modalProp = createBookDetailModalProps(imageUrl)
 
   useLayoutEffect(() => {
     navigation.setOptions({

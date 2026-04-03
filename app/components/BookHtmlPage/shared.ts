@@ -1,6 +1,6 @@
 import { api } from "@/services/api"
 import { logger } from "@/utils/logger"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 
 export type BookHtmlPageProps = {
   libraryId: string
@@ -1460,10 +1460,6 @@ export const useCalibreHtmlDocument = (props: BookHtmlPageProps): UseCalibreHtml
 
   const { bookId, format, hash, headers, libraryId, pagePath, size } = props
   const headersKey = JSON.stringify(headers ?? {})
-  const stableHeaders = useMemo(
-    () => (headersKey ? (JSON.parse(headersKey) as Record<string, string>) : undefined),
-    [headersKey],
-  )
   const documentKey = buildPageCacheKey({
     libraryId,
     bookId,
@@ -1471,7 +1467,6 @@ export const useCalibreHtmlDocument = (props: BookHtmlPageProps): UseCalibreHtml
     size,
     hash,
     pagePath,
-    headers: stableHeaders,
   })
   const autoHeight = typeof props.availableHeight !== "number"
 
@@ -1485,7 +1480,7 @@ export const useCalibreHtmlDocument = (props: BookHtmlPageProps): UseCalibreHtml
       size,
       hash,
       pagePath,
-      headers: stableHeaders,
+      headers: headersKey ? (JSON.parse(headersKey) as Record<string, string>) : undefined,
     }
 
     setLoading(true)
@@ -1513,35 +1508,22 @@ export const useCalibreHtmlDocument = (props: BookHtmlPageProps): UseCalibreHtml
     return () => {
       cancelled = true
     }
-  }, [bookId, format, hash, libraryId, pagePath, size, stableHeaders])
+  }, [bookId, format, hash, libraryId, pagePath, size, headersKey])
 
-  const html = useMemo(() => {
-    if (!preparedDocument) {
-      return null
-    }
-
-    return buildPreparedHtmlDocument(
-      preparedDocument,
-      documentKey,
-      autoHeight ? "content" : "viewport",
-      props.pageType ?? "singlePage",
-      {
-        themeMode: props.themeMode ?? "light",
-        textColor: props.themeTextColor ?? "#111318",
-        linkColor: props.themeLinkColor ?? props.themeTextColor ?? "#111318",
-        fallbackBackgroundColor: props.themeFallbackBackgroundColor ?? "#ffffff",
-      },
-    )
-  }, [
-    autoHeight,
-    documentKey,
-    preparedDocument,
-    props.themeFallbackBackgroundColor,
-    props.themeLinkColor,
-    props.themeMode,
-    props.themeTextColor,
-    props.pageType,
-  ])
+  const html = !preparedDocument
+    ? null
+    : buildPreparedHtmlDocument(
+        preparedDocument,
+        documentKey,
+        autoHeight ? "content" : "viewport",
+        props.pageType ?? "singlePage",
+        {
+          themeMode: props.themeMode ?? "light",
+          textColor: props.themeTextColor ?? "#111318",
+          linkColor: props.themeLinkColor ?? props.themeTextColor ?? "#111318",
+          fallbackBackgroundColor: props.themeFallbackBackgroundColor ?? "#ffffff",
+        },
+      )
 
   return {
     autoHeight,

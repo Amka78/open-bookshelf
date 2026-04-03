@@ -1,9 +1,9 @@
 import { Box } from "@/components/Box/Box"
-import { useEffect, useMemo, useRef, useState } from "react"
-import type { TextInput as RNTextInput } from "react-native"
+import { useEffect, useRef, useState } from "react"
 import { Controller, type ControllerProps, type FieldValues } from "react-hook-form"
-import { FormSuggestionPopover } from "./FormSuggestionPopover"
+import type { TextInput as RNTextInput } from "react-native"
 import { InputField, type InputFieldProps } from "../InputField/InputField"
+import { FormSuggestionPopover } from "./FormSuggestionPopover"
 
 const MAX_SUGGESTIONS = 5
 
@@ -47,7 +47,10 @@ export function FormInputField<T extends FieldValues>(props: FormInputFiledProps
 
   useEffect(() => {
     return () => {
-      clearCloseTimer()
+      if (closeTimerRef.current != null) {
+        clearTimeout(closeTimerRef.current)
+        closeTimerRef.current = null
+      }
     }
   }, [])
 
@@ -71,20 +74,18 @@ export function FormInputField<T extends FieldValues>(props: FormInputFiledProps
     })
   }, [onRegisterFocusChain, name])
 
-  const normalizedSuggestions = useMemo(() => {
-    const suggestionSet = new Set<string>()
-    ;(suggestions ?? []).forEach((suggestion) => {
-      const trimmed = suggestion?.trim()
-      if (trimmed) {
-        suggestionSet.add(trimmed)
-      }
-    })
+  const suggestionSet = new Set<string>()
+  ;(suggestions ?? []).forEach((suggestion) => {
+    const trimmed = suggestion?.trim()
+    if (trimmed) {
+      suggestionSet.add(trimmed)
+    }
+  })
 
-    return Array.from(suggestionSet).map((value) => ({
-      value,
-      lowerCaseValue: value.toLowerCase(),
-    }))
-  }, [suggestions])
+  const normalizedSuggestions = Array.from(suggestionSet).map((value) => ({
+    value,
+    lowerCaseValue: value.toLowerCase(),
+  }))
 
   return (
     <Controller
@@ -169,4 +170,3 @@ export function FormInputField<T extends FieldValues>(props: FormInputFiledProps
     />
   )
 }
-

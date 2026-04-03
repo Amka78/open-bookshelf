@@ -1,6 +1,6 @@
 import { useStores } from "@/models"
 import { api } from "@/services/api"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { Platform, useWindowDimensions } from "react-native"
 
 export function usePDFViewer() {
@@ -23,42 +23,32 @@ export function usePDFViewer() {
     : undefined
 
   // Get PDF source URL
-  const sourceUri = useMemo(() => {
-    if (!selectedBook || !selectedLibrary) return ""
-
-    if (Platform.OS !== "web" && cachedPdfPath) {
-      return cachedPdfPath
-    }
-
-    return api.getInlineBookUrl("PDF", selectedBook.id, selectedLibrary.id)
-  }, [cachedPdfPath, selectedBook, selectedLibrary])
+  const sourceUri =
+    !selectedBook || !selectedLibrary
+      ? ""
+      : Platform.OS !== "web" && cachedPdfPath
+        ? cachedPdfPath
+        : api.getInlineBookUrl("PDF", selectedBook.id, selectedLibrary.id)
 
   // Create authentication header for the current source URI
-  const header: Record<string, string> | undefined = useMemo(() => {
-    if (authenticationStore.isAuthenticated && sourceUri) {
-      return api.getAuthHeaders(sourceUri)
-    }
-    return undefined
-  }, [authenticationStore.isAuthenticated, authenticationStore.token, sourceUri])
+  const header: Record<string, string> | undefined =
+    authenticationStore.isAuthenticated && sourceUri ? api.getAuthHeaders(sourceUri) : undefined
 
   // Remote API URL (always HTTP, never a local file path).
   // Used as a fallback when a cached native PDF file is no longer available.
-  const remoteUri = useMemo(() => {
-    if (!selectedBook || !selectedLibrary) return ""
-    return api.getInlineBookUrl("PDF", selectedBook.id, selectedLibrary.id)
-  }, [selectedBook, selectedLibrary])
+  const remoteUri =
+    !selectedBook || !selectedLibrary
+      ? ""
+      : api.getInlineBookUrl("PDF", selectedBook.id, selectedLibrary.id)
 
   // Create document file object for react-pdf (web)
   // rangeChunkSize を 512KB に拡大し、大きな画像ページでの Range Request 往復回数を削減する
-  const documentFile = useMemo(
-    () => ({
-      url: sourceUri,
-      httpHeaders: header,
-      withCredentials: false,
-      rangeChunkSize: 524288,
-    }),
-    [header, sourceUri],
-  )
+  const documentFile = {
+    url: sourceUri,
+    httpHeaders: header,
+    withCredentials: false,
+    rangeChunkSize: 524288,
+  }
 
   const calculatePageWidth = (isFacingPage: boolean, windowWidth: number): number => {
     if (isFacingPage) {

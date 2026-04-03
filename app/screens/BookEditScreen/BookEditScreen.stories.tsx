@@ -4,7 +4,7 @@ import type { ApppNavigationProp } from "@/navigators/types"
 import { BookEditScreen } from "@/screens/BookEditScreen/BookEditScreen"
 import { useNavigation } from "@react-navigation/native"
 import type { Meta, StoryObj } from "@storybook/react"
-import { type ReactElement, useLayoutEffect, useMemo } from "react"
+import { type ReactElement, useLayoutEffect } from "react"
 
 import { defaultBookImageUrl } from "../../../.storybook/stories/defaultBookImageUrl"
 import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
@@ -36,7 +36,7 @@ function createBookEditModalProps(imageUrl: string) {
 function ResponsiveBookEditStory({ imageUrl }: { imageUrl: string }) {
   const { isLarge } = useConvergence()
   const navigation = useNavigation<ApppNavigationProp>()
-  const modalProp = useMemo(() => createBookEditModalProps(imageUrl), [imageUrl])
+  const modalProp = createBookEditModalProps(imageUrl)
 
   useLayoutEffect(() => {
     navigation.setOptions({

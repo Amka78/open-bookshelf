@@ -1,7 +1,7 @@
 import type { BookReadingStyleType } from "@/type/types"
 import { goToNextPage } from "@/utils/pageTurnning"
 import type { FlashListRef } from "@shopify/flash-list"
-import { type RefObject, useEffect, useMemo, useRef, useState } from "react"
+import { type RefObject, useEffect, useRef, useState } from "react"
 
 export type FacingPageType = { page1?: number; page2?: number }
 export type PageStyles = Record<BookReadingStyleType, number[] | FacingPageType[]>
@@ -211,10 +211,7 @@ export function useBookViewerState({
     initialPageAppliedRef.current = true
   }, [pages, initialPage, totalPage, readingStyle, flashListRef])
 
-  const data = useMemo(() => {
-    if (!pages) return []
-    return pages[readingStyle]
-  }, [pages, readingStyle])
+  const data = pages ? pages[readingStyle] : []
 
   const onViewableItemsChanged = useRef(
     (info: { viewableItems: { index?: number | null; isViewable?: boolean }[] }) => {
@@ -229,20 +226,14 @@ export function useBookViewerState({
     },
   ).current
 
-  const currentPage = useMemo(() => {
-    if (!pages) return 0
-
-    if (scrollIndex !== 0) {
-      if (readingStyle === "singlePage" || readingStyle === "verticalScroll") {
-        return scrollIndex
-      }
-      if (isFacingPageStyle(readingStyle)) {
-        return (pages[readingStyle][scrollIndex] as FacingPageType).page1 ?? 0
-      }
+  let currentPage = 0
+  if (pages && scrollIndex !== 0) {
+    if (readingStyle === "singlePage" || readingStyle === "verticalScroll") {
+      currentPage = scrollIndex
+    } else if (isFacingPageStyle(readingStyle)) {
+      currentPage = (pages[readingStyle][scrollIndex] as FacingPageType).page1 ?? 0
     }
-
-    return 0
-  }, [pages, scrollIndex, readingStyle])
+  }
 
   useEffect(() => {
     onPageChange?.(currentPage)

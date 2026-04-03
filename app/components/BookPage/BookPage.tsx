@@ -1,5 +1,5 @@
 import { Image, type ImageProps } from "@/components"
-import React, { useMemo, useState } from "react"
+import React, { useState } from "react"
 import { useWindowDimensions } from "react-native"
 
 export type BookImageProps = ImageProps & {
@@ -34,19 +34,15 @@ export function BookPage(props: BookImageProps) {
   const { width: windowWidth, height: windowHeight } = useWindowDimensions()
   const viewportWidth = props.availableWidth ?? windowWidth
   const viewportHeight = props.availableHeight ?? windowHeight
-  const dimension = useMemo(() => {
-    if (!sourceDimension) {
-      return {
+  const dimension = sourceDimension
+    ? getContainedDimension(sourceDimension, {
+        width: viewportWidth,
+        height: viewportHeight,
+      })
+    : {
         width: viewportWidth,
         height: viewportHeight,
       }
-    }
-
-    return getContainedDimension(sourceDimension, {
-      width: viewportWidth,
-      height: viewportHeight,
-    })
-  }, [sourceDimension, viewportHeight, viewportWidth])
 
   return (
     <Image

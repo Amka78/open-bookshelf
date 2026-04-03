@@ -1,7 +1,7 @@
 import { RootStoreModel } from "@/models"
 import { ViewerScreen } from "@/screens/ViewerScreen/ViewerScreen"
 import type { Meta, StoryObj } from "@storybook/react"
-import { useMemo, type ReactNode } from "react"
+import type { ReactNode } from "react"
 import { useWindowDimensions } from "react-native"
 import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
 
@@ -87,9 +87,7 @@ function ViewerStoryContainer({ children }: { children: ReactNode }) {
   const safeWidth = Math.max(1, Math.round(width))
   const safeHeight = Math.max(1, Math.round(height))
 
-  const rootStore = useMemo(() => {
-    return createViewerRootStore(createCachedPath(safeWidth, safeHeight))
-  }, [safeWidth, safeHeight])
+  const rootStore = createViewerRootStore(createCachedPath(safeWidth, safeHeight))
 
   return (
     <ScreenContainer

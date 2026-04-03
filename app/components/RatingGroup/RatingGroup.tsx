@@ -1,17 +1,17 @@
 import { HStack, Rating } from "@/components"
 import { styled } from "@gluestack-style/react"
-import { type ComponentProps, forwardRef } from "react"
+import { type ComponentProps, type Ref } from "react"
 
 export type RatingGroupProps = {
   max: number
   ticks?: number
   onSelectRating(rating: number)
   selectedValue: number
+  ref?: Ref<React.ElementRef<typeof HStack>>
 } & ComponentProps<typeof HStack>
 
-const RatingGroupCore = forwardRef<React.ElementRef<typeof HStack>, RatingGroupProps>(
-  ({ ticks = 2, ...restProps }, ref) => {
-    const props = { ticks, ...restProps }
+const RatingGroupCore = ({ ticks = 2, ref, ...restProps }: RatingGroupProps) => {
+  const props = { ticks, ...restProps }
     const ratingList: Array<number | null> = []
 
     const onSelectRating = (rating: number) => {
@@ -42,8 +42,7 @@ const RatingGroupCore = forwardRef<React.ElementRef<typeof HStack>, RatingGroupP
         })}
       </HStack>
     )
-  },
-)
+}
 
 export const RatingGroup = styled(
   RatingGroupCore,

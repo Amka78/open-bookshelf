@@ -6,20 +6,19 @@ import {
   CheckboxLabel,
   Checkbox as Template,
 } from "@gluestack-ui/themed"
-import { type ComponentProps, forwardRef } from "react"
+import type { ComponentProps, Ref } from "react"
 
 export type ICheckboxProps = ComponentProps<typeof Template> & {
   tx?: MessageKey
+  ref?: Ref<React.ElementRef<typeof Template>>
 }
-export const Checkbox = forwardRef<React.ElementRef<typeof Template>, ICheckboxProps>(
-  (props, ref) => {
-    return (
-      <Template {...props} ref={ref}>
-        <CheckboxLabel>{props.tx ? translate(props.tx) : props.children}</CheckboxLabel>
-        <CheckboxIndicator marginLeft={"$0.5"}>
-          <CheckboxIcon as={CheckIcon} />
-        </CheckboxIndicator>
-      </Template>
-    )
-  },
-)
+export const Checkbox = ({ ref, ...props }: ICheckboxProps) => {
+  return (
+    <Template {...props} ref={ref}>
+      <CheckboxLabel>{props.tx ? translate(props.tx) : props.children}</CheckboxLabel>
+      <CheckboxIndicator marginLeft={"$0.5"}>
+        <CheckboxIcon as={CheckIcon} />
+      </CheckboxIndicator>
+    </Template>
+  )
+}

@@ -1,17 +1,17 @@
 import { BookEditFieldList } from "@/components/BookEditFieldList/BookEditFieldList"
 import { Button } from "@/components/Button/Button"
 import { FormImageUploader } from "@/components/Forms/FormImageUploader"
+import type { ModalStackParams } from "@/components/Modals/Types"
 import { RootContainer } from "@/components/RootContainer/RootContainer"
 import { ScrollView } from "@/components/ScrollView/ScrollView"
 import { VStack } from "@/components/VStack/VStack"
-import type { ModalStackParams } from "@/components/Modals/Types"
 import { useConvergence } from "@/hooks/useConvergence"
 import { useKeyboardVisibility } from "@/hooks/useKeyboardVisibility"
-import type { ApppNavigationProp, AppStackParamList } from "@/navigators/types"
+import type { AppStackParamList, ApppNavigationProp } from "@/navigators/types"
 import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import type { FC } from "react"
-import { useCallback, useEffect, useLayoutEffect, useRef } from "react"
+import { useEffect, useLayoutEffect, useRef } from "react"
 import { KeyboardAvoidingView, Platform, TextInput, UIManager, findNodeHandle } from "react-native"
 import { useModal } from "react-native-modalfy"
 import { useBookEdit } from "./useBookEdit"
@@ -36,71 +36,71 @@ export const BookEditScreen: FC = observer(() => {
   } | null>(null)
   const focusScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const clearFocusScrollTimer = useCallback(() => {
+  const clearFocusScrollTimer = () => {
     if (focusScrollTimerRef.current != null) {
       clearTimeout(focusScrollTimerRef.current)
       focusScrollTimerRef.current = null
     }
-  }, [])
+  }
 
-  const handleTextInputFocus = useCallback(
-    (getContainerHandle?: () => number | null) => {
-      clearFocusScrollTimer()
-      focusScrollTimerRef.current = setTimeout(() => {
-        focusScrollTimerRef.current = null
+  const handleTextInputFocus = (getContainerHandle?: () => number | null) => {
+    clearFocusScrollTimer()
+    focusScrollTimerRef.current = setTimeout(() => {
+      focusScrollTimerRef.current = null
 
-        if (Platform.OS === "web") {
-          scrollViewRef.current?.scrollToEnd?.({ animated: true })
-          return
-        }
+      if (Platform.OS === "web") {
+        scrollViewRef.current?.scrollToEnd?.({ animated: true })
+        return
+      }
 
-        const scrollNode = findNodeHandle(scrollViewRef.current as any)
+      const scrollNode = findNodeHandle(scrollViewRef.current as any)
 
-        // コンテナハンドルがある場合はラベルの先頭（container top）を基準にスクロール
-        const containerHandle = getContainerHandle?.() ?? null
-        if (containerHandle != null && scrollNode != null) {
-          UIManager.measureLayout(
-            containerHandle,
-            scrollNode,
-            () => {
-              scrollViewRef.current?.scrollToEnd?.({ animated: true })
-            },
-            (_x: number, y: number) => {
-              // ラベルが見えるよう少し余裕を持たせてスクロール（ラベル上部から50px上）
-              const scrollY = Math.max(0, y - 50)
-              scrollViewRef.current?.scrollTo?.({ y: scrollY, animated: true })
-            },
-          )
-          return
-        }
+      // コンテナハンドルがある場合はラベルの先頭（container top）を基準にスクロール
+      const containerHandle = getContainerHandle?.() ?? null
+      if (containerHandle != null && scrollNode != null) {
+        UIManager.measureLayout(
+          containerHandle,
+          scrollNode,
+          () => {
+            scrollViewRef.current?.scrollToEnd?.({ animated: true })
+          },
+          (_x: number, y: number) => {
+            // ラベルが見えるよう少し余裕を持たせてスクロール（ラベル上部から50px上）
+            const scrollY = Math.max(0, y - 50)
+            scrollViewRef.current?.scrollTo?.({ y: scrollY, animated: true })
+          },
+        )
+        return
+      }
 
-        // コンテナなし: フォーカス中の TextInput から位置を測定
-        const focusedInput = TextInput.State.currentlyFocusedInput?.()
-        if (focusedInput != null && scrollNode != null) {
-          focusedInput.measureLayout(
-            scrollNode as any,
-            (_x: number, y: number) => {
-              // ドロップダウンがある場合は上に SUGGESTION_AREA_CLEARANCE 分スペースを確保
-              const scrollY = Math.max(0, y - SUGGESTION_AREA_CLEARANCE)
-              scrollViewRef.current?.scrollTo?.({ y: scrollY, animated: true })
-            },
-            () => {
-              scrollViewRef.current?.scrollToEnd?.({ animated: true })
-            },
-          )
-        } else {
-          scrollViewRef.current?.scrollToEnd?.({ animated: true })
-        }
-      }, 80)
-    },
-    [clearFocusScrollTimer],
-  )
+      // コンテナなし: フォーカス中の TextInput から位置を測定
+      const focusedInput = TextInput.State.currentlyFocusedInput?.()
+      if (focusedInput != null && scrollNode != null) {
+        focusedInput.measureLayout(
+          scrollNode as any,
+          (_x: number, y: number) => {
+            // ドロップダウンがある場合は上に SUGGESTION_AREA_CLEARANCE 分スペースを確保
+            const scrollY = Math.max(0, y - SUGGESTION_AREA_CLEARANCE)
+            scrollViewRef.current?.scrollTo?.({ y: scrollY, animated: true })
+          },
+          () => {
+            scrollViewRef.current?.scrollToEnd?.({ animated: true })
+          },
+        )
+      } else {
+        scrollViewRef.current?.scrollToEnd?.({ animated: true })
+      }
+    }, 80)
+  }
 
   useEffect(() => {
     return () => {
-      clearFocusScrollTimer()
+      if (focusScrollTimerRef.current != null) {
+        clearTimeout(focusScrollTimerRef.current)
+        focusScrollTimerRef.current = null
+      }
     }
-  }, [clearFocusScrollTimer])
+  }, [])
 
   useLayoutEffect(() => {
     navigation.setOptions({

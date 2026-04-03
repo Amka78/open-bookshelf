@@ -1,8 +1,8 @@
 import { Box, HStack, IconButton, Input, VStack } from "@/components"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Controller, type ControllerProps, type FieldValues } from "react-hook-form"
-import { FormSuggestionPopover } from "./FormSuggestionPopover"
 import { InputField, type InputFieldProps } from "../InputField/InputField"
+import { FormSuggestionPopover } from "./FormSuggestionPopover"
 
 const MAX_SUGGESTIONS = 5
 
@@ -49,7 +49,10 @@ export function FormMultipleInputField<T extends FieldValues>(
 
   useEffect(() => {
     return () => {
-      clearCloseTimer()
+      if (closeTimerRef.current != null) {
+        clearTimeout(closeTimerRef.current)
+        closeTimerRef.current = null
+      }
     }
   }, [])
 
@@ -66,20 +69,18 @@ export function FormMultipleInputField<T extends FieldValues>(
     ...inputProps
   } = props
 
-  const normalizedSuggestions = useMemo(() => {
-    const suggestionSet = new Set<string>()
-    ;(suggestions ?? []).forEach((suggestion) => {
-      const trimmed = typeof suggestion === "string" ? suggestion.trim() : ""
-      if (trimmed) {
-        suggestionSet.add(trimmed)
-      }
-    })
+  const suggestionSet = new Set<string>()
+  ;(suggestions ?? []).forEach((suggestion) => {
+    const trimmed = typeof suggestion === "string" ? suggestion.trim() : ""
+    if (trimmed) {
+      suggestionSet.add(trimmed)
+    }
+  })
 
-    return Array.from(suggestionSet).map((value) => ({
-      value,
-      lowerCaseValue: value.toLowerCase(),
-    }))
-  }, [suggestions])
+  const normalizedSuggestions = Array.from(suggestionSet).map((value) => ({
+    value,
+    lowerCaseValue: value.toLowerCase(),
+  }))
 
   return (
     <Controller
@@ -181,7 +182,9 @@ export function FormMultipleInputField<T extends FieldValues>(
                               scheduleCloseSuggestion(100)
                             }}
                             value={rowValue}
-                            testID={`${inputProps.testID ?? `form-multiple-input-${String(name)}`}-row-${index}`}
+                            testID={`${
+                              inputProps.testID ?? `form-multiple-input-${String(name)}`
+                            }-row-${index}`}
                             ref={index === 0 ? renderProps.field.ref : undefined}
                           />
                         </Input>
