@@ -65,7 +65,17 @@ export default {
       "@config-plugins/react-native-blob-util",
       "@config-plugins/react-native-pdf",
       "@react-native-community/datetimepicker",
-      "expo-font",
+      [
+        "expo-font",
+        {
+          fonts: [
+            "./node_modules/@expo-google-fonts/noto-serif-jp/NotoSerifJP_400Regular.ttf",
+            "./node_modules/@expo-google-fonts/noto-serif-jp/NotoSerifJP_700Bold.ttf",
+            "./node_modules/@expo-google-fonts/space-grotesk/SpaceGrotesk_400Regular.ttf",
+            "./node_modules/@expo-google-fonts/space-grotesk/SpaceGrotesk_700Bold.ttf",
+          ],
+        },
+      ],
       "expo-localization",
       "./withAndroidMainActivityAttributes.js",
       [
@@ -84,6 +94,7 @@ export default {
         "expo-build-properties",
         {
           android: {
+            newArchEnabled: true,
             usesCleartextTraffic: true,
             enableMinifyInReleaseBuilds: true,
             enableShrinkResourcesInReleaseBuilds: true,
@@ -93,6 +104,9 @@ export default {
                   buildArchs: ["arm64-v8a"],
                 }
               : {}),
+          },
+          ios: {
+            newArchEnabled: true,
           },
         },
       ],
