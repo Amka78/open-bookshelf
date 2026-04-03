@@ -1,5 +1,6 @@
 import { Box } from "@/components/Box/Box"
 import { useEffect, useMemo, useRef, useState } from "react"
+import type { TextInput as RNTextInput } from "react-native"
 import { Controller, type ControllerProps, type FieldValues } from "react-hook-form"
 import { FormSuggestionPopover } from "./FormSuggestionPopover"
 import { InputField, type InputFieldProps } from "../InputField/InputField"
@@ -10,11 +11,14 @@ export type FormInputFiledProps<T> = Omit<InputFieldProps, "onChangeText"> &
   Omit<ControllerProps<T>, "render"> & {
     suggestions?: string[]
     onInputFocus?: () => void
+    /** キーボード「次へ」ナビゲーション用フォーカスチェーンへの登録コールバック */
+    onRegisterFocusChain?: (id: string, focus: () => void) => () => void
   }
 
 export function FormInputField<T extends FieldValues>(props: FormInputFiledProps<T>) {
   const [isSuggestionOpen, setIsSuggestionOpen] = useState(false)
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const inputInstanceRef = useRef<RNTextInput | null>(null)
 
   const clearCloseTimer = () => {
     if (closeTimerRef.current != null) {
@@ -56,8 +60,16 @@ export function FormInputField<T extends FieldValues>(props: FormInputFiledProps
     disabled,
     suggestions,
     onInputFocus,
+    onRegisterFocusChain,
     ...inputProps
   } = props
+
+  useEffect(() => {
+    if (!onRegisterFocusChain) return undefined
+    return onRegisterFocusChain(String(name), () => {
+      inputInstanceRef.current?.focus()
+    })
+  }, [onRegisterFocusChain, name])
 
   const normalizedSuggestions = useMemo(() => {
     const suggestionSet = new Set<string>()
@@ -130,7 +142,10 @@ export function FormInputField<T extends FieldValues>(props: FormInputFiledProps
                       scheduleCloseSuggestion(100)
                     }}
                     value={textValue}
-                    ref={renderProps.field.ref}
+                    ref={(ref) => {
+                      renderProps.field.ref(ref)
+                      inputInstanceRef.current = ref as unknown as RNTextInput | null
+                    }}
                     testID={inputTestID}
                   />
                 </Box>

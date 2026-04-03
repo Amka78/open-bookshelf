@@ -12,11 +12,15 @@ import { type RouteProp, useNavigation, useRoute } from "@react-navigation/nativ
 import { observer } from "mobx-react-lite"
 import type { FC } from "react"
 import { useCallback, useEffect, useLayoutEffect, useRef } from "react"
-import { KeyboardAvoidingView, Platform } from "react-native"
+import { KeyboardAvoidingView, Platform, TextInput, UIManager, findNodeHandle } from "react-native"
 import { useModal } from "react-native-modalfy"
 import { useBookEdit } from "./useBookEdit"
 
 type BookEditScreenRouteProp = RouteProp<AppStackParamList, "BookEdit">
+
+// Height clearance above the focused field for the suggestion dropdown.
+// MAX_SUGGESTIONS=5 items (~32px each) + container padding → ~220px
+const SUGGESTION_AREA_CLEARANCE = 220
 
 export const BookEditScreen: FC = observer(() => {
   const route = useRoute<BookEditScreenRouteProp>()
@@ -26,9 +30,10 @@ export const BookEditScreen: FC = observer(() => {
   const { isKeyboardVisible, keyboardHeight } = useKeyboardVisibility()
   const { form, selectedBook, selectedLibrary, onSubmit, onUploadFormat, onDeleteFormat } =
     useBookEdit()
-  const scrollViewRef = useRef<{ scrollToEnd?: (options?: { animated?: boolean }) => void } | null>(
-    null,
-  )
+  const scrollViewRef = useRef<{
+    scrollTo?: (options: { x?: number; y?: number; animated?: boolean }) => void
+    scrollToEnd?: (options?: { animated?: boolean }) => void
+  } | null>(null)
   const focusScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const clearFocusScrollTimer = useCallback(() => {
@@ -38,13 +43,58 @@ export const BookEditScreen: FC = observer(() => {
     }
   }, [])
 
-  const handleTextInputFocus = useCallback(() => {
-    clearFocusScrollTimer()
-    focusScrollTimerRef.current = setTimeout(() => {
-      focusScrollTimerRef.current = null
-      scrollViewRef.current?.scrollToEnd?.({ animated: true })
-    }, 80)
-  }, [clearFocusScrollTimer])
+  const handleTextInputFocus = useCallback(
+    (getContainerHandle?: () => number | null) => {
+      clearFocusScrollTimer()
+      focusScrollTimerRef.current = setTimeout(() => {
+        focusScrollTimerRef.current = null
+
+        if (Platform.OS === "web") {
+          scrollViewRef.current?.scrollToEnd?.({ animated: true })
+          return
+        }
+
+        const scrollNode = findNodeHandle(scrollViewRef.current as any)
+
+        // コンテナハンドルがある場合はラベルの先頭（container top）を基準にスクロール
+        const containerHandle = getContainerHandle?.() ?? null
+        if (containerHandle != null && scrollNode != null) {
+          UIManager.measureLayout(
+            containerHandle,
+            scrollNode,
+            () => {
+              scrollViewRef.current?.scrollToEnd?.({ animated: true })
+            },
+            (_x: number, y: number) => {
+              // ラベルが見えるよう少し余裕を持たせてスクロール（ラベル上部から50px上）
+              const scrollY = Math.max(0, y - 50)
+              scrollViewRef.current?.scrollTo?.({ y: scrollY, animated: true })
+            },
+          )
+          return
+        }
+
+        // コンテナなし: フォーカス中の TextInput から位置を測定
+        const focusedInput = TextInput.State.currentlyFocusedInput?.()
+        if (focusedInput != null && scrollNode != null) {
+          focusedInput.measureLayout(
+            scrollNode as any,
+            (_x: number, y: number) => {
+              // ドロップダウンがある場合は上に SUGGESTION_AREA_CLEARANCE 分スペースを確保
+              const scrollY = Math.max(0, y - SUGGESTION_AREA_CLEARANCE)
+              scrollViewRef.current?.scrollTo?.({ y: scrollY, animated: true })
+            },
+            () => {
+              scrollViewRef.current?.scrollToEnd?.({ animated: true })
+            },
+          )
+        } else {
+          scrollViewRef.current?.scrollToEnd?.({ animated: true })
+        }
+      }, 80)
+    },
+    [clearFocusScrollTimer],
+  )
 
   useEffect(() => {
     return () => {
@@ -68,7 +118,7 @@ export const BookEditScreen: FC = observer(() => {
         testID="book-edit-screen-keyboard-avoiding"
       >
         <ScrollView
-          ref={scrollViewRef}
+          ref={scrollViewRef as any}
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{
             paddingBottom: isKeyboardVisible ? keyboardHeight + 24 : 24,

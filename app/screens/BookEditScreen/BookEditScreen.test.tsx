@@ -7,7 +7,6 @@ import {
   test as baseTest,
 } from "bun:test"
 import { render } from "@testing-library/react"
-import React from "react"
 import { type ReactNode, forwardRef, useImperativeHandle, useRef } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 import {
@@ -27,6 +26,17 @@ const scrollToEndMock = jest.fn()
 const mockUpdate = jest.fn()
 const mockSetOptions = jest.fn()
 const mockGoBack = jest.fn()
+
+mock.module("react-native", () => ({
+  Platform: { OS: "web", select: (obj: Record<string, unknown>) => obj.web ?? obj.default },
+  KeyboardAvoidingView: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  TextInput: Object.assign(
+    (props: Record<string, unknown>) => <input {...(props as object)} />,
+    { State: { currentlyFocusedInput: null } },
+  ),
+  UIManager: { measureLayout: jest.fn() },
+  findNodeHandle: jest.fn().mockReturnValue(null),
+}))
 
 mock.module("@/hooks/useKeyboardVisibility", () => ({
   useKeyboardVisibility: () => useKeyboardVisibilityMock(),
@@ -275,7 +285,7 @@ describe("BookEditScreen keyboard handling", () => {
     render(<BookEditScreen />)
 
     const lastCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1]
-    const HeaderRight = lastCall[0].headerRight as () => React.ReactElement
+    const HeaderRight = lastCall[0].headerRight as () => JSX.Element
     expect(HeaderRight).toBeDefined()
 
     const { container } = render(<HeaderRight />)

@@ -14,6 +14,8 @@ import { useRomajiText } from "@/hooks/useRomajiText"
 import type { Book, FieldMetadata, MetadataSnapshotIn } from "@/models/calibre"
 import type { ComponentProps } from "react"
 import { type Control, type Path, useController } from "react-hook-form"
+import { useRef } from "react"
+import { View, findNodeHandle } from "react-native"
 
 export type BookEditFieldProps = {
   book: Book
@@ -22,13 +24,25 @@ export type BookEditFieldProps = {
   suggestions?: string[]
   onUploadFormat?: (params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>
   onDeleteFormat?: (format: string) => Promise<boolean>
-  onTextInputFocus?: () => void
+  /** フォーカス時にコンテナのnodeHandleを渡すコールバック */
+  onTextInputFocus?: (getContainerHandle: () => number | null) => void
+  /** キーボード「次へ」ナビゲーション用チェーン登録 */
+  onRegisterFocusChain?: (id: string, focus: () => void) => () => void
+  /** キーボード「次へ」押下時のコールバック */
+  onSubmitEditing?: () => void
   containerProps?: ComponentProps<typeof VStack>
 }
 
 export function BookEditField(props: BookEditFieldProps) {
   let field: React.ReactNode
   const { toSortValue, toAuthorSortValue } = useRomajiText()
+  const containerRef = useRef<View | null>(null)
+
+  const getContainerHandle = () => findNodeHandle(containerRef.current)
+
+  const handleInputFocus = () => {
+    props.onTextInputFocus?.(getContainerHandle)
+  }
 
   const toSeriesValues = (value: unknown) => {
     const title = String(value ?? "")
@@ -89,7 +103,10 @@ export function BookEditField(props: BookEditFieldProps) {
             control={props.control}
             name={label}
             inputMode="numeric"
-            onInputFocus={props.onTextInputFocus}
+            onInputFocus={handleInputFocus}
+            onRegisterFocusChain={props.onRegisterFocusChain}
+            onSubmitEditing={props.onSubmitEditing}
+            returnKeyType={props.onSubmitEditing ? "next" : "default"}
           />
         </Input>
       )
@@ -122,7 +139,7 @@ export function BookEditField(props: BookEditFieldProps) {
             textToValue={props.fieldMetadata.isMultiple.uiToList}
             valueToText={props.fieldMetadata.isMultiple.listToUi}
             suggestions={props.suggestions}
-            onInputFocus={props.onTextInputFocus}
+            onInputFocus={handleInputFocus}
             width={"$full"}
           />
         )
@@ -133,7 +150,10 @@ export function BookEditField(props: BookEditFieldProps) {
               control={props.control}
               name={label}
               suggestions={props.suggestions}
-              onInputFocus={props.onTextInputFocus}
+              onInputFocus={handleInputFocus}
+              onRegisterFocusChain={props.onRegisterFocusChain}
+              onSubmitEditing={props.onSubmitEditing}
+              returnKeyType={props.onSubmitEditing ? "next" : "default"}
               width={"$full"}
             />
           </Input>
@@ -144,7 +164,8 @@ export function BookEditField(props: BookEditFieldProps) {
       break
   }
   return (
-    <VStack alignItems="flex-start" space={"sm"} marginBottom={"$2.5"} {...props.containerProps}>
+    <View ref={containerRef}>
+      <VStack alignItems="flex-start" space={"sm"} marginBottom={"$2.5"} {...props.containerProps}>
       {props.fieldMetadata.label === "authors" ? (
         <HStack alignItems="center" space={"xs"}>
           <Text isTruncated={true} fontWeight="$bold">
@@ -191,6 +212,7 @@ export function BookEditField(props: BookEditFieldProps) {
         </Text>
       )}
       {field}
-    </VStack>
+      </VStack>
+    </View>
   )
 }
