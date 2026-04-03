@@ -13,6 +13,7 @@ import {
   playKeyboardShownHidesCover,
   playKeyboardShownKeepsFieldsVisible,
   playLargeScreenShowsSaveButton,
+  playSmallScreenHeaderSaveButton,
 } from "./bookEditScreenStoryPlay"
 
 const defaultImageUrl = defaultBookImageUrl
@@ -89,6 +90,17 @@ export const SmallMobile: Story = {
   },
   play: async ({ canvasElement }) => {
     await playKeyboardShownKeepsFieldsVisible({ canvasElement }).catch(() => {})
+  },
+}
+
+export const SmallMobileHeaderSave: Story = {
+  parameters: {
+    viewport: {
+      defaultViewport: "mobile1",
+    },
+  },
+  play: async ({ canvasElement }) => {
+    await playSmallScreenHeaderSaveButton({ canvasElement }).catch(() => {})
   },
 }
 

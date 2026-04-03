@@ -7,8 +7,8 @@ import { VStack } from "@/components/VStack/VStack"
 import type { ModalStackParams } from "@/components/Modals/Types"
 import { useConvergence } from "@/hooks/useConvergence"
 import { useKeyboardVisibility } from "@/hooks/useKeyboardVisibility"
-import type { AppStackParamList } from "@/navigators/types"
-import { type RouteProp, useRoute } from "@react-navigation/native"
+import type { ApppNavigationProp, AppStackParamList } from "@/navigators/types"
+import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import type { FC } from "react"
 import { useCallback, useEffect, useLayoutEffect, useRef } from "react"
@@ -21,6 +21,7 @@ type BookEditScreenRouteProp = RouteProp<AppStackParamList, "BookEdit">
 export const BookEditScreen: FC = observer(() => {
   const route = useRoute<BookEditScreenRouteProp>()
   const modal = useModal<ModalStackParams>()
+  const navigation = useNavigation<ApppNavigationProp>()
   const convergenceHook = useConvergence()
   const { isKeyboardVisible, keyboardHeight } = useKeyboardVisibility()
   const { form, selectedBook, selectedLibrary, onSubmit, onUploadFormat, onDeleteFormat } =
@@ -52,8 +53,12 @@ export const BookEditScreen: FC = observer(() => {
   }, [clearFocusScrollTimer])
 
   useLayoutEffect(() => {
-    // Note: header options would be set here if navigation context was available
-  }, [convergenceHook.isLarge, onSubmit])
+    navigation.setOptions({
+      headerRight: !convergenceHook.isLarge
+        ? () => <Button tx={"bookEditScreen.save"} onPress={onSubmit} />
+        : undefined,
+    })
+  }, [convergenceHook.isLarge, navigation, onSubmit])
 
   return (
     <RootContainer alignItems="center">

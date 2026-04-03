@@ -7,6 +7,7 @@ import {
   playLargeScreenShowsSaveButton,
   playPressingSaveTriggersSubmit,
   playSmallScreenHidesSaveButton,
+  playSmallScreenHeaderSaveButton,
 } from "./bookEditScreenStoryPlay"
 
 const describe = localizeTestRegistrar(baseDescribe)
@@ -67,5 +68,10 @@ describe("BookEditScreen story play", () => {
     const { container } = renderWithSave()
     await playPressingSaveTriggersSubmit({ canvasElement: container })
     expect(onSave).toHaveBeenCalledTimes(1)
+  })
+
+  test("small screen shows save button in header", async () => {
+    const { container } = renderWithSave()
+    await playSmallScreenHeaderSaveButton({ canvasElement: container })
   })
 })

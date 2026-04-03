@@ -7,6 +7,7 @@ import {
   test as baseTest,
 } from "bun:test"
 import { render } from "@testing-library/react"
+import React from "react"
 import { type ReactNode, forwardRef, useImperativeHandle, useRef } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 import {
@@ -24,6 +25,7 @@ const useStoresMock = jest.fn()
 const useNavigationMock = jest.fn()
 const scrollToEndMock = jest.fn()
 const mockUpdate = jest.fn()
+const mockSetOptions = jest.fn()
 const mockGoBack = jest.fn()
 
 mock.module("@/hooks/useKeyboardVisibility", () => ({
@@ -133,7 +135,7 @@ beforeEach(async () => {
     },
   })
 
-  useNavigationMock.mockReturnValue({ goBack: mockGoBack })
+  useNavigationMock.mockReturnValue({ goBack: mockGoBack, setOptions: mockSetOptions })
   useConvergenceMock.mockReturnValue({ isLarge: false })
   useStoresMock.mockReturnValue({
     calibreRootStore: {
@@ -244,6 +246,40 @@ describe("BookEditScreen keyboard handling", () => {
     await playPressingSaveTriggersSubmit({
       canvasElement: container,
     })
+
+    expect(mockUpdate).toHaveBeenCalledTimes(1)
+    expect(mockGoBack).toHaveBeenCalledTimes(1)
+  })
+
+  test("sets save button in header on small screens", async () => {
+    useKeyboardVisibilityMock.mockReturnValue({
+      isKeyboardVisible: false,
+      keyboardHeight: 0,
+    })
+    useConvergenceMock.mockReturnValue({ isLarge: false })
+
+    render(<BookEditScreen />)
+
+    const lastCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1]
+    expect(lastCall).toBeDefined()
+    expect(lastCall[0].headerRight).toBeDefined()
+  })
+
+  test("pressing the header save button on small screens triggers submit", async () => {
+    useKeyboardVisibilityMock.mockReturnValue({
+      isKeyboardVisible: false,
+      keyboardHeight: 0,
+    })
+    useConvergenceMock.mockReturnValue({ isLarge: false })
+
+    render(<BookEditScreen />)
+
+    const lastCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1]
+    const HeaderRight = lastCall[0].headerRight as () => React.ReactElement
+    expect(HeaderRight).toBeDefined()
+
+    const { container } = render(<HeaderRight />)
+    await playPressingSaveTriggersSubmit({ canvasElement: container })
 
     expect(mockUpdate).toHaveBeenCalledTimes(1)
     expect(mockGoBack).toHaveBeenCalledTimes(1)

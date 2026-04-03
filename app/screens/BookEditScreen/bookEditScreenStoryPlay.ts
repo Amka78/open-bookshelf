@@ -81,6 +81,14 @@ export async function playFocusTriggersAutoScroll({
   throw new Error("Expected auto-scroll to be triggered when input is focused.")
 }
 
+export async function playSmallScreenHeaderSaveButton({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  await findButtonByText(canvasElement, "Save")
+}
+
 export async function playLargeScreenShowsSaveButton({
   canvasElement,
 }: {
