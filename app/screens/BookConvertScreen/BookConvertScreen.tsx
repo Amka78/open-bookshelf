@@ -1,4 +1,4 @@
-import { Heading, RootContainer } from "@/components"
+import { Button, Heading, RootContainer } from "@/components"
 import { BookConvertForm } from "@/components/BookConvertForm/BookConvertForm"
 import type { ConvertStatus } from "@/components/BookConvertForm/BookConvertForm"
 import type { ConvertOptions } from "@/components/BookConvertForm/ConvertOptions"
@@ -13,14 +13,27 @@ import { useBookConvert } from "./useBookConvert"
 
 export const BookConvertScreen: FC = observer(() => {
   const navigation = useNavigation<ApppNavigationProp>()
-  const { selectedBook, inputFormats, outputFormats, form, convertStatus, errorMessage } =
-    useBookConvert()
+  const {
+    selectedBook,
+    inputFormats,
+    outputFormats,
+    form,
+    convertStatus,
+    errorMessage,
+    handleConvert,
+  } = useBookConvert()
+
+  const outputFormat = form.watch("outputFormat")
 
   useLayoutEffect(() => {
+    const isDisabled = convertStatus === "converting" || !outputFormat
     navigation.setOptions({
       headerTitle: translate("modal.bookConvertModal.title"),
+      headerRight: () => (
+        <Button tx="bookConvertScreen.convert" onPress={handleConvert} isDisabled={isDisabled} />
+      ),
     })
-  }, [navigation])
+  }, [navigation, handleConvert, convertStatus, outputFormat])
 
   return (
     <RootContainer padding={"$4"}>
