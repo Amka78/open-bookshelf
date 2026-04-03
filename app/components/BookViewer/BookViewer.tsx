@@ -588,6 +588,11 @@ export function BookViewer(props: BookViewerProps) {
           viewerHook.readingStyle === "facingPage" ||
           viewerHook.readingStyle === "facingPageWithTitle"
         }
+        facingSecondPageExists={
+          pages !== undefined &&
+          (pages[viewerHook.readingStyle][scrollIndex] as FacingPageType | undefined)?.page2 !==
+            undefined
+        }
         totalPage={props.totalPage}
         onPageChange={(page) => {
           const index = getScrollIndexForPage(page)

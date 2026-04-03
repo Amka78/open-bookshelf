@@ -13,6 +13,7 @@ export type PageManagerProps = {
   visible?: boolean
   variant?: "fix" | "free"
   facingPage: boolean
+  facingSecondPageExists?: boolean
 } & ComponentProps<typeof VStack>
 
 function PageManagerCore({
@@ -25,7 +26,12 @@ function PageManagerCore({
   const palette = usePalette()
 
   const lastPageIndex = Math.max(props.totalPage - 1, 0)
-  const pageIndicator = formatPageIndicator(props.currentPage, props.totalPage, props.facingPage)
+  const pageIndicator = formatPageIndicator(
+    props.currentPage,
+    props.totalPage,
+    props.facingPage,
+    props.facingSecondPageExists,
+  )
 
   const onPageFastMoveButtonPress = (forward: boolean) => {
     if (forward) {

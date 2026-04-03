@@ -15,4 +15,14 @@ describe("formatPageIndicator", () => {
   test("falls back to a single page when the spread has no next page", () => {
     expect(formatPageIndicator(4, 5, true)).toBe("5/5")
   })
+
+  test("shows single page when facingSecondPageExists is false", () => {
+    expect(formatPageIndicator(0, 10, true, false)).toBe("1/10")
+    expect(formatPageIndicator(2, 10, true, false)).toBe("3/10")
+  })
+
+  test("shows page range when facingSecondPageExists is true", () => {
+    expect(formatPageIndicator(0, 10, true, true)).toBe("1-2/10")
+    expect(formatPageIndicator(2, 10, true, true)).toBe("3-4/10")
+  })
 })

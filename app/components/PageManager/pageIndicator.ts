@@ -1,7 +1,12 @@
-export function formatPageIndicator(currentPage: number, totalPage: number, facingPage: boolean) {
+export function formatPageIndicator(
+  currentPage: number,
+  totalPage: number,
+  facingPage: boolean,
+  facingSecondPageExists = true,
+) {
   const firstPage = Math.max(currentPage, 0) + 1
 
-  if (!facingPage) {
+  if (!facingPage || !facingSecondPageExists) {
     return `${firstPage}/${totalPage}`
   }
 
