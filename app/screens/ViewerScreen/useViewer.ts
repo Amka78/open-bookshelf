@@ -5,12 +5,42 @@ import { type ClientSetting, ClientSettingModel } from "@/models/calibre"
 import type { MetadataSnapshotIn } from "@/models/calibre"
 import { api } from "@/services/api"
 import type { BookReadingStyleType } from "@/type/types"
-import { isCalibreHtmlViewerFormat } from "@/utils/calibreHtmlViewer"
+import {
+  isCalibreHtmlViewerFormat,
+  isCalibreSerializedHtmlPath,
+} from "@/utils/calibreHtmlViewer"
 import { logger } from "@/utils/logger"
 import { useEffect, useRef, useState } from "react"
 import { useConvergence } from "../../hooks/useConvergence"
 
 const SYNC_DEBOUNCE_MS = 1000
+
+/**
+ * Convert a Blob to a data URL string.
+ * Uses FileReader when available (browser), falls back to manual btoa for
+ * test environments (bun).
+ */
+export async function blobToDataUrl(blob: Blob): Promise<string> {
+  if (typeof FileReader !== "undefined") {
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(reader.result as string)
+      reader.onerror = reject
+      reader.readAsDataURL(blob)
+    })
+  }
+
+  // Fallback for environments without FileReader (e.g., bun tests)
+  const buffer = await blob.arrayBuffer()
+  const bytes = new Uint8Array(buffer)
+  const chunkSize = 8192
+  let binary = ""
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length))
+    binary += String.fromCharCode.apply(null, Array.from(chunk))
+  }
+  return `data:${blob.type || "application/octet-stream"};base64,${btoa(binary)}`
+}
 
 const runOnNextFrame = (callback: () => void) => {
   if (typeof requestAnimationFrame === "function") {
@@ -246,12 +276,26 @@ export function useViewer() {
 
   const onSetCoverByPage = async (page: number) => {
     if (!selectedBook || !selectedLibrary) {
+      logger.warn("[onSetCoverByPage] No selectedBook or selectedLibrary")
       return false
     }
 
-    const coverPath = cachedPathList?.[page] ?? selectedBook.path?.[page]
+    const selectedFormat = selectedBook.metaData?.selectedFormat
+    const hash = selectedBook.hash
+    const size = selectedBook.metaData?.size ?? 0
 
-    if (!coverPath) {
+    // Use the same source path resolution as ViewerScreen:
+    // selectedBook.path first, then cachedPathList as fallback for image-based formats.
+    const sourcePath = selectedBook.path?.[page] ?? cachedPathList?.[page]
+
+    if (!sourcePath || !selectedFormat || hash === null || hash === undefined) {
+      logger.warn("[onSetCoverByPage] Missing sourcePath/format/hash", {
+        sourcePath,
+        selectedFormat,
+        hash,
+        bookPathLength: selectedBook.path?.length,
+        cachedPathListLength: cachedPathList?.length,
+      })
       modal.openModal("ErrorModal", {
         titleTx: "common.error",
         messageTx: "viewerMenu.failedToUpdateCover",
@@ -259,20 +303,128 @@ export function useViewer() {
       return false
     }
 
-    const result = await selectedBook.update(
-      selectedLibrary.id,
-      { cover: coverPath } as Partial<MetadataSnapshotIn>,
-      ["cover"],
-    )
-
-    if (!result) {
+    // HTML spine paths (AZW3 / KF8 / text-based formats) are not images — cannot use as cover
+    if (isCalibreSerializedHtmlPath(sourcePath)) {
+      logger.warn("[onSetCoverByPage] Page is HTML, not an image", { sourcePath })
       modal.openModal("ErrorModal", {
         titleTx: "common.error",
         messageTx: "viewerMenu.failedToUpdateCover",
       })
+      return false
     }
 
-    return result
+    try {
+      // Determine the fetch URL.
+      // cachedPathList entries on web are already full URLs (http://…); use them directly.
+      // selectedBook.path entries are relative paths that need getBookFileUrl.
+      const isFullUrl = sourcePath.startsWith("http://") || sourcePath.startsWith("https://")
+      const coverSourceUrl = isFullUrl
+        ? sourcePath
+        : api.getBookFileUrl(
+            selectedBook.id,
+            selectedFormat,
+            size,
+            hash,
+            sourcePath,
+            selectedLibrary.id,
+          )
+      logger.debug("[onSetCoverByPage] Fetching image", { coverSourceUrl })
+
+      const sourceResponse = await api.fetchWithAuth(coverSourceUrl, { method: "GET" })
+      logger.debug("[onSetCoverByPage] Fetch response", {
+        ok: sourceResponse.ok,
+        status: sourceResponse.status,
+        contentType: sourceResponse.headers.get("content-type"),
+      })
+
+      if (!sourceResponse.ok) {
+        logger.warn("[onSetCoverByPage] Image fetch failed", {
+          status: sourceResponse.status,
+        })
+        modal.openModal("ErrorModal", {
+          titleTx: "common.error",
+          messageTx: "viewerMenu.failedToUpdateCover",
+        })
+        return false
+      }
+
+      const blob = await sourceResponse.blob()
+      const blobType = (blob.type || "").toLowerCase()
+      logger.debug("[onSetCoverByPage] Blob obtained", {
+        size: blob.size,
+        type: blobType,
+      })
+
+      if (blob.size === 0) {
+        logger.warn("[onSetCoverByPage] Empty blob")
+        modal.openModal("ErrorModal", {
+          titleTx: "common.error",
+          messageTx: "viewerMenu.failedToUpdateCover",
+        })
+        return false
+      }
+
+      // Verify the response is actually an image
+      if (
+        !blobType.includes("image/png") &&
+        !blobType.includes("image/jpeg") &&
+        !blobType.includes("image/jpg")
+      ) {
+        logger.warn("[onSetCoverByPage] Not an image", { blobType })
+        modal.openModal("ErrorModal", {
+          titleTx: "common.error",
+          messageTx: "viewerMenu.failedToUpdateCover",
+        })
+        return false
+      }
+
+      // 2) Try binary upload via cdb/set-cover (uses apisauce/axios auth)
+      logger.debug("[onSetCoverByPage] Trying setCoverBinary (cdb/set-cover)")
+      const binaryResult = await api.setCoverBinary(
+        selectedLibrary.id,
+        selectedBook.id,
+        blob,
+      )
+      if (binaryResult.kind === "ok") {
+        logger.debug("[onSetCoverByPage] setCoverBinary succeeded")
+        return true
+      }
+      logger.warn("[onSetCoverByPage] setCoverBinary failed, trying data URL fallback", {
+        kind: binaryResult.kind,
+      })
+
+      // 3) Fallback: convert to data URL and use cdb/set-fields (same path as BookEditScreen)
+      const dataUrl = await blobToDataUrl(blob)
+      logger.debug("[onSetCoverByPage] Data URL ready", {
+        length: dataUrl.length,
+        prefix: dataUrl.slice(0, 40),
+      })
+
+      const updateSuccess: boolean = await selectedBook.update(
+        selectedLibrary.id,
+        { cover: dataUrl } as MetadataSnapshotIn,
+        ["cover"],
+      )
+
+      if (updateSuccess) {
+        logger.debug("[onSetCoverByPage] update via set-fields succeeded")
+        return true
+      }
+
+      logger.warn("[onSetCoverByPage] Both approaches failed")
+      modal.openModal("ErrorModal", {
+        titleTx: "common.error",
+        messageTx: "viewerMenu.failedToUpdateCover",
+      })
+      return false
+    } catch (error) {
+      logger.error("[onSetCoverByPage] Unexpected error", error)
+      modal.openModal("ErrorModal", {
+        titleTx: "common.error",
+        messageTx: "viewerMenu.failedToUpdateCover",
+      })
+      return false
+    }
   }
 
   const onManageMenu = () => {

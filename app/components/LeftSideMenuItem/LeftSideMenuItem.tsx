@@ -2,7 +2,7 @@ import { Box, HStack, MaterialCommunityIcon, Text } from "@/components"
 import { usePalette } from "@/theme"
 import { logger } from "@/utils/logger"
 import { Pressable } from "@gluestack-ui/themed"
-import { Children, memo, useMemo, useState } from "react"
+import { Children, useState } from "react"
 import type { ReactNode } from "react"
 
 export type LeftSideMenuItemProps = {
@@ -18,44 +18,38 @@ export type LeftSideMenuItemProps = {
   calibreOperator?: string
   onCalibreOperatorToggle?: () => void
 }
-export const LeftSideMenuItem = memo(function LeftSideMenuItem({
+export function LeftSideMenuItem({
   mode = "category",
   ...restProps
 }: LeftSideMenuItemProps) {
   const props = { mode, ...restProps }
   const palette = usePalette()
   const [isOpen, setIsOpen] = useState(false)
-  const childCount = useMemo(() => Children.count(props.children), [props.children])
+  const childCount = Children.count(props.children)
 
-  const isParentNode = useMemo(
-    () => (childCount > 0 && mode === "subCategory") || mode === "category",
-    [childCount, mode],
-  )
+  const isParentNode = (childCount > 0 && mode === "subCategory") || mode === "category"
 
-  const icon = useMemo(() => {
+  const icon = (() => {
     if (isParentNode) {
       return isOpen ? "menu-down" : "menu-right"
     }
     return props.selected ? "check" : "bookshelf"
-  }, [isParentNode, isOpen, props.selected])
+  })()
 
-  const handlePress = useMemo(
-    () => () => {
-      if (isParentNode) {
-        setIsOpen(!isOpen)
-      } else {
-        logger.debug("LeftSideMenuItem leaf pressed", { name: props.name })
-        props.onLastNodePress?.()
-      }
-    },
-    [isParentNode, isOpen, props.name, props.onLastNodePress],
-  )
+  const handlePress = () => {
+    if (isParentNode) {
+      setIsOpen(!isOpen)
+    } else {
+      logger.debug("LeftSideMenuItem leaf pressed", { name: props.name })
+      props.onLastNodePress?.()
+    }
+  }
 
-  const paddingLeft = useMemo(() => {
+  const paddingLeft = (() => {
     const depthValue = props.depth ?? 0
     if (depthValue === 0) return "$0"
     return `$${depthValue * 3}` as "$0" | "$3" | "$6" | "$9"
-  }, [props.depth])
+  })()
 
   return (
     <>
@@ -103,4 +97,4 @@ export const LeftSideMenuItem = memo(function LeftSideMenuItem({
       {isOpen && props.children}
     </>
   )
-})
+}

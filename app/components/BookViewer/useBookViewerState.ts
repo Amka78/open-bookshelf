@@ -1,7 +1,7 @@
 import type { BookReadingStyleType } from "@/type/types"
 import { goToNextPage } from "@/utils/pageTurnning"
 import type { FlashListRef } from "@shopify/flash-list"
-import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { type RefObject, useEffect, useMemo, useRef, useState } from "react"
 
 export type FacingPageType = { page1?: number; page2?: number }
 export type PageStyles = Record<BookReadingStyleType, number[] | FacingPageType[]>
@@ -104,31 +104,16 @@ export function useBookViewerState({
   // readingStyle 変化前の scrollIndex を stale closure なしで参照するための ref
   const scrollIndexRef = useRef(0)
 
-  const scrollToIndex = useCallback(
-    (index: number, animated = true, viewPosition?: number) => {
-      setScrollIndex(index)
-      flashListRef.current?.scrollToIndex({ index, animated, viewPosition })
-    },
-    [flashListRef],
-  )
+  const scrollToIndex = (index: number, animated = true, viewPosition?: number) => {
+    setScrollIndex(index)
+    flashListRef.current?.scrollToIndex({ index, animated, viewPosition })
+  }
 
-  const syncScrollIndex = useCallback((index: number) => {
+  const syncScrollIndex = (index: number) => {
     setScrollIndex((prev) => {
       return prev === index ? prev : index
     })
-  }, [])
-
-  const onAutoPageTurning = useCallback(() => {
-    if (!pages) return
-    const totalPages = pages[readingStyle].length
-    if (totalPages <= 1) return
-
-    setScrollIndex((prevIndex) => {
-      const nextIndex = goToNextPage(prevIndex, totalPages, 1)
-      flashListRef.current?.scrollToIndex({ index: nextIndex })
-      return nextIndex
-    })
-  }, [pages, readingStyle, flashListRef])
+  }
 
   useEffect(() => {
     if (!autoPageTurning) {
@@ -136,13 +121,21 @@ export function useBookViewerState({
     }
 
     const intervalId = setInterval(() => {
-      onAutoPageTurning()
+      if (!pages) return
+      const totalPages = pages[readingStyle].length
+      if (totalPages <= 1) return
+
+      setScrollIndex((prevIndex) => {
+        const nextIndex = goToNextPage(prevIndex, totalPages, 1)
+        flashListRef.current?.scrollToIndex({ index: nextIndex })
+        return nextIndex
+      })
     }, autoPageTurnIntervalMs)
 
     return () => {
       clearInterval(intervalId)
     }
-  }, [autoPageTurning, autoPageTurnIntervalMs, onAutoPageTurning])
+  }, [autoPageTurning, autoPageTurnIntervalMs, pages, readingStyle, flashListRef])
 
   useEffect(() => {
     setPages(createPageStyles(totalPage))
@@ -182,9 +175,10 @@ export function useBookViewerState({
     // FlashList のデータ更新後に scrollToIndex を呼ぶため RAF を挟む
     const raf = getSafeRaf()
     raf(() => {
-      scrollToIndex(nextIndex, false)
+      setScrollIndex(nextIndex)
+      flashListRef.current?.scrollToIndex({ index: nextIndex, animated: false })
     })
-  }, [readingStyle, pages, scrollToIndex])
+  }, [readingStyle, pages, flashListRef])
 
   useEffect(() => {
     if (initialPage !== undefined) {
@@ -208,13 +202,14 @@ export function useBookViewerState({
       initialIndex = foundIndex >= 0 ? foundIndex : 0
     }
 
-    scrollToIndex(initialIndex, false)
+    setScrollIndex(initialIndex)
+    flashListRef.current?.scrollToIndex({ index: initialIndex, animated: false })
     const raf = getSafeRaf()
     raf(() => {
       flashListRef.current?.scrollToIndex({ index: initialIndex, animated: false })
     })
     initialPageAppliedRef.current = true
-  }, [pages, initialPage, totalPage, readingStyle, scrollToIndex, flashListRef])
+  }, [pages, initialPage, totalPage, readingStyle, flashListRef])
 
   const data = useMemo(() => {
     if (!pages) return []
@@ -273,54 +268,48 @@ export function useBookViewerState({
     lastPageNotifiedKeyRef.current = undefined
   }, [pages, onLastPage, scrollIndex, readingStyle])
 
-  const getScrollIndexForPage = useCallback(
-    (page: number) => {
-      if (!pages) return page
+  const getScrollIndexForPage = (page: number) => {
+    if (!pages) return page
 
-      if (isFacingPageStyle(readingStyle) && page !== 0) {
-        const index = (pages[readingStyle] as FacingPageType[]).findIndex((value) => {
-          return value.page1 === page || value.page2 === page
-        })
-        return index >= 0 ? index : 0
+    if (isFacingPageStyle(readingStyle) && page !== 0) {
+      const index = (pages[readingStyle] as FacingPageType[]).findIndex((value) => {
+        return value.page1 === page || value.page2 === page
+      })
+      return index >= 0 ? index : 0
+    }
+
+    return page
+  }
+
+  const getIndexForReadingStyleChange = (newReadingStyle: BookReadingStyleType) => {
+    if (!pages) return undefined
+    if (newReadingStyle === readingStyle) return scrollIndex
+
+    const isFacingCurrent = isFacingPageStyle(readingStyle)
+    const isFacingNext = isFacingPageStyle(newReadingStyle)
+
+    if (isFacingCurrent) {
+      const currentPage = (pages[readingStyle][scrollIndex] as FacingPageType).page1 ?? 0
+
+      if (!isFacingNext) {
+        return currentPage
       }
 
-      return page
-    },
-    [pages, readingStyle],
-  )
+      const nextIndex = (pages[newReadingStyle] as FacingPageType[]).findIndex((value) => {
+        return value.page1 === currentPage || value.page2 === currentPage
+      })
+      return nextIndex >= 0 ? nextIndex : 0
+    }
 
-  const getIndexForReadingStyleChange = useCallback(
-    (newReadingStyle: BookReadingStyleType) => {
-      if (!pages) return undefined
-      if (newReadingStyle === readingStyle) return scrollIndex
+    if (isFacingNext) {
+      const nextIndex = (pages[newReadingStyle] as FacingPageType[]).findIndex((value) => {
+        return value.page1 === scrollIndex || value.page2 === scrollIndex
+      })
+      return nextIndex >= 0 ? nextIndex : 0
+    }
 
-      const isFacingCurrent = isFacingPageStyle(readingStyle)
-      const isFacingNext = isFacingPageStyle(newReadingStyle)
-
-      if (isFacingCurrent) {
-        const currentPage = (pages[readingStyle][scrollIndex] as FacingPageType).page1 ?? 0
-
-        if (!isFacingNext) {
-          return currentPage
-        }
-
-        const nextIndex = (pages[newReadingStyle] as FacingPageType[]).findIndex((value) => {
-          return value.page1 === currentPage || value.page2 === currentPage
-        })
-        return nextIndex >= 0 ? nextIndex : 0
-      }
-
-      if (isFacingNext) {
-        const nextIndex = (pages[newReadingStyle] as FacingPageType[]).findIndex((value) => {
-          return value.page1 === scrollIndex || value.page2 === scrollIndex
-        })
-        return nextIndex >= 0 ? nextIndex : 0
-      }
-
-      return scrollIndex
-    },
-    [pages, readingStyle, scrollIndex],
-  )
+    return scrollIndex
+  }
 
   return {
     pages,

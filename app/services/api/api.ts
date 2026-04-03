@@ -491,6 +491,63 @@ export class Api {
   }
 
   /**
+   * Upload a cover image to Calibre using the cdb/set-cover binary endpoint.
+   * Uses apisauce (axios) so that auth interceptors handle authentication
+   * identically to editBook / other API calls.
+   */
+  async setCoverBinary(
+    libraryId: string,
+    bookId: number,
+    imageBlob: Blob,
+  ): Promise<{ kind: "ok" } | GeneralApiProblem> {
+    const endpoint = `cdb/set-cover/${bookId}/${libraryId}`
+    logger.debug("[Api] setCoverBinary", {
+      endpoint,
+      blobSize: imageBlob.size,
+      blobType: imageBlob.type,
+    })
+
+    try {
+      // Axios default transformRequest passes Uint8Array.buffer (ArrayBuffer)
+      // as-is, which is exactly what Calibre's set-cover handler expects
+      // (raw image bytes via request_body_file).
+      const arrayBuffer = await imageBlob.arrayBuffer()
+      const body = new Uint8Array(arrayBuffer)
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- apisauce types data as {},
+      // but axios supports ArrayBufferView natively without JSON serialisation.
+      const response: ApiResponse<unknown> = await this.apisauce.post(
+        endpoint,
+        body as unknown as Record<string, never>,
+        {
+          headers: { "Content-Type": imageBlob.type || "application/octet-stream" },
+        },
+      )
+
+      logger.debug("[Api] setCoverBinary response", {
+        ok: response.ok,
+        status: response.status,
+        problem: response.problem,
+      })
+
+      if (!response.ok) {
+        logger.warn("[Api] setCoverBinary failed", {
+          status: response.status,
+          data: response.data,
+        })
+        const problem = getGeneralApiProblem(response)
+        if (problem) return problem
+        return { kind: "rejected" }
+      }
+
+      return { kind: "ok" }
+    } catch (error) {
+      logger.error("[Api] setCoverBinary unexpected error", error)
+      return { kind: "rejected" }
+    }
+  }
+
+  /**
    * Connnect OPDS Server
    *
    * @returns {(Promise<{ kind: "ok"; data: any } | GeneralApiProblem>)}
@@ -770,10 +827,25 @@ export class Api {
    * @returns
    */
   async editBook(libraryId: string, bookId: number, bookData: SetBookMetadata) {
+    const fieldNames = Object.keys(bookData.changes ?? {})
+    logger.debug("[Api] editBook request", {
+      url: `cdb/set-fields/${bookId}/${libraryId}`,
+      fieldNames,
+      coverLength:
+        typeof bookData.changes?.cover === "string"
+          ? (bookData.changes.cover as string).length
+          : undefined,
+    })
     const response: ApiResponse<SetBookResult> = await this.apisauce.post(
       `cdb/set-fields/${bookId}/${libraryId}`,
       bookData,
     )
+    logger.debug("[Api] editBook response", {
+      ok: response.ok,
+      status: response.status,
+      problem: response.problem,
+      data: response.data,
+    })
 
     if (!response.ok) {
       const problem = getGeneralApiProblem(response)

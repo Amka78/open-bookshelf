@@ -16,5 +16,6 @@ export async function playViewerMenuShowsActionsTrigger({
 }: {
   canvasElement: HTMLElement
 }) {
-  await findByTestId(canvasElement, "viewer-display-settings-trigger")
+  await findByTestId(canvasElement, "viewer-book-settings-trigger")
+  await findByTestId(canvasElement, "viewer-cover-settings-trigger")
 }

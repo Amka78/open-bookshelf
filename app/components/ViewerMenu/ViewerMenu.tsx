@@ -66,7 +66,7 @@ export function ViewerMenu(props: ViewerMenuProps) {
         placement="bottom right"
         trigger={(triggerProps) => {
           return (
-            <Pressable {...triggerProps} testID="viewer-display-settings-trigger">
+            <Pressable {...triggerProps} testID="viewer-book-settings-trigger">
               <IconButton
                 iconSize="md-"
                 name="book-settings"
@@ -116,6 +116,7 @@ export function ViewerMenu(props: ViewerMenuProps) {
           />
         </MenuItem>
       </Menu>
+
       {props.readingStyle !== "verticalScroll" ? (
         <TooltipIconButton
           name={`arrow-${pageDirectionState}-bold`}
@@ -160,8 +161,8 @@ export function ViewerMenu(props: ViewerMenuProps) {
         placement="bottom right"
         trigger={(triggerProps) => {
           return (
-            <Pressable {...triggerProps} testID="viewer-display-settings-trigger">
-              <IconButton iconSize="md-" name="settings" pressable={false} />
+            <Pressable {...triggerProps} testID="viewer-cover-settings-trigger">
+              <IconButton iconSize="md-" name="image" pressable={false} />
             </Pressable>
           )
         }}

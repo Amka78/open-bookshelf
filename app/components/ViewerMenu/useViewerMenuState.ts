@@ -1,5 +1,5 @@
 import type { BookReadingStyleType } from "@/type/types"
-import { useCallback, useState } from "react"
+import { useState } from "react"
 
 type UseViewerMenuStateParams = {
   pageDirection: "left" | "right"
@@ -24,20 +24,17 @@ export function useViewerMenuState({
   const [pageDirectionState, setPageDirectionState] = useState(pageDirection)
   const [readingStyleState, setReadingStyleState] = useState(readingStyle)
 
-  const onUpdateReadingStyle = useCallback(
-    (nextReadingStyle: BookReadingStyleType) => {
-      onSelectReadingStyle(nextReadingStyle)
-      setReadingStyleState(nextReadingStyle)
-    },
-    [onSelectReadingStyle],
-  )
+  const onUpdateReadingStyle = (nextReadingStyle: BookReadingStyleType) => {
+    onSelectReadingStyle(nextReadingStyle)
+    setReadingStyleState(nextReadingStyle)
+  }
 
-  const onTogglePageDirection = useCallback(() => {
+  const onTogglePageDirection = () => {
     const direction = pageDirectionState === "left" ? "right" : "left"
     onSelectPageDirection(direction)
     setPageDirectionState(direction)
     return direction
-  }, [onSelectPageDirection, pageDirectionState])
+  }
 
   return {
     pageDirectionState,

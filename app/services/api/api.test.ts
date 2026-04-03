@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, jest, test } from "bun:test"
+import type { ApiResponse } from "apisauce"
 import { Api } from "./api"
 
 describe("Api.startConversion", () => {
@@ -140,5 +141,57 @@ describe("Api.fetchWithAuth", () => {
       "http://calibrelocal/cdb/add-format/12/EPUB/config",
       expect.objectContaining({ method: "POST" }),
     )
+  })
+
+  test("setCoverBinary posts image blob via apisauce to cdb/set-cover", async () => {
+    const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
+    // biome-ignore lint/complexity/useLiteralKeys: accessing private apisauce for test spy
+    const postSpy = jest
+      .spyOn(api["apisauce"], "post")
+      .mockResolvedValueOnce({ ok: true, status: 200, data: null } as ApiResponse<unknown>)
+
+    const imageBlob = new Blob([new Uint8Array([137, 80, 78, 71])], { type: "image/png" })
+    const result = await api.setCoverBinary("config", 8578, imageBlob)
+
+    expect(result).toEqual({ kind: "ok" })
+    expect(postSpy).toHaveBeenCalledWith(
+      "cdb/set-cover/8578/config",
+      expect.any(Uint8Array),
+      expect.objectContaining({
+        headers: { "Content-Type": "image/png" },
+      }),
+    )
+  })
+
+  test("setCoverBinary returns server error when server responds with 500", async () => {
+    const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
+    // biome-ignore lint/complexity/useLiteralKeys: accessing private apisauce for test spy
+    jest.spyOn(api["apisauce"], "post").mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      problem: "SERVER_ERROR",
+      data: "Internal Server Error",
+    } as ApiResponse<unknown>)
+
+    const imageBlob = new Blob([new Uint8Array([255, 216, 255])], { type: "image/jpeg" })
+    const result = await api.setCoverBinary("config", 8578, imageBlob)
+
+    expect(result).toEqual({ kind: "server" })
+  })
+
+  test("setCoverBinary returns unauthorized on 401", async () => {
+    const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
+    // biome-ignore lint/complexity/useLiteralKeys: accessing private apisauce for test spy
+    jest.spyOn(api["apisauce"], "post").mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      problem: "CLIENT_ERROR",
+      data: "Unauthorized",
+    } as ApiResponse<unknown>)
+
+    const imageBlob = new Blob([new Uint8Array([137, 80, 78, 71])], { type: "image/png" })
+    const result = await api.setCoverBinary("config", 8578, imageBlob)
+
+    expect(result).toEqual({ kind: "unauthorized" })
   })
 })

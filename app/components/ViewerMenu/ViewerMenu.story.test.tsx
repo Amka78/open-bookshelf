@@ -9,7 +9,10 @@ const test = localizeTestRegistrar(baseTest)
 describe("ViewerMenu story play", () => {
   test("shows actions trigger", async () => {
     const { container } = render(
-      <button data-testid="viewer-display-settings-trigger" type="button" />,
+      <div>
+        <button data-testid="viewer-book-settings-trigger" type="button" />
+        <button data-testid="viewer-cover-settings-trigger" type="button" />
+      </div>,
     )
     await playViewerMenuShowsActionsTrigger({ canvasElement: container })
   })

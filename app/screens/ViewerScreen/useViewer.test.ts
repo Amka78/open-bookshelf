@@ -68,6 +68,17 @@ async function playResumeReadingPromptDeclines({
 const useStoresMock = jest.fn()
 const useModalMock = jest.fn()
 const mockSyncReadingPosition = jest.fn().mockResolvedValue({ kind: "ok" })
+const mockGetBookFileUrl = jest.fn(
+  (bookId: number, format: string, size: number, hash: number, path: string, libraryId: string) =>
+    `http://calibrelocal/book-file/${bookId}/${format}/${size}/${hash}/${path}?library_id=${libraryId}`,
+)
+const mockFetchWithAuth = jest.fn().mockResolvedValue({
+  ok: true,
+  status: 200,
+  headers: { get: () => "image/png" },
+  blob: async () => new Blob([new Uint8Array([137, 80, 78, 71])], { type: "image/png" }),
+})
+const mockSetCoverBinary = jest.fn().mockResolvedValue({ kind: "ok" })
 
 mock.module("@/models", () => ({
   useStores: () => useStoresMock(),
@@ -78,11 +89,23 @@ mock.module("/home/amka78/open-bookshelf/app/models/index.ts", () => ({
 }))
 
 mock.module("@/services/api", () => ({
-  api: { syncReadingPosition: mockSyncReadingPosition },
+  api: {
+    syncReadingPosition: mockSyncReadingPosition,
+    getBookFileUrl: (...args: Parameters<typeof mockGetBookFileUrl>) => mockGetBookFileUrl(...args),
+    fetchWithAuth: (...args: Parameters<typeof mockFetchWithAuth>) => mockFetchWithAuth(...args),
+    setCoverBinary: (...args: Parameters<typeof mockSetCoverBinary>) =>
+      mockSetCoverBinary(...args),
+  },
 }))
 
 mock.module("/home/amka78/open-bookshelf/app/services/api/index.ts", () => ({
-  api: { syncReadingPosition: mockSyncReadingPosition },
+  api: {
+    syncReadingPosition: mockSyncReadingPosition,
+    getBookFileUrl: (...args: Parameters<typeof mockGetBookFileUrl>) => mockGetBookFileUrl(...args),
+    fetchWithAuth: (...args: Parameters<typeof mockFetchWithAuth>) => mockFetchWithAuth(...args),
+    setCoverBinary: (...args: Parameters<typeof mockSetCoverBinary>) =>
+      mockSetCoverBinary(...args),
+  },
 }))
 
 mock.module("../../hooks/useConvergence", () => ({
@@ -123,8 +146,10 @@ describe("useViewer", () => {
   const mockSelectedBook = {
     id: 1,
     path: ["page1.png", "page2.png", "page3.png", "page4.png", "page5.png"],
+    hash: 123,
     metaData: {
       selectedFormat: "pdf",
+      size: 100,
       title: "Test Book",
       rating: 0,
       setProp: jest.fn(),
@@ -618,32 +643,34 @@ describe("useViewer", () => {
     )
   })
 
-  test("sets the cover using the cached page path when available", async () => {
+  test("sets the cover when source page path is available", async () => {
     const { result } = renderHook(() => useViewer())
 
     await act(async () => {
       await result.current.onSetCoverByPage(1)
     })
 
-    expect(mockUpdate).toHaveBeenCalledWith("lib-1", { cover: "cached2.png" }, ["cover"])
+    expect(mockGetBookFileUrl).toHaveBeenCalledWith(1, "pdf", 100, 123, "page2.png", "lib-1")
+    expect(mockFetchWithAuth).toHaveBeenCalledWith(
+      "http://calibrelocal/book-file/1/pdf/100/123/page2.png?library_id=lib-1",
+      expect.objectContaining({ method: "GET" }),
+    )
+    expect(mockSetCoverBinary).toHaveBeenCalledWith("lib-1", 1, expect.any(Blob))
   })
 
-  test("falls back to the source page path when cached page path is unavailable", async () => {
+  test("opens an error modal when source page path is unavailable", async () => {
     useStoresMock.mockReturnValue({
       calibreRootStore: {
         selectedLibrary: {
           ...mockSelectedLibrary,
           selectedBook: {
             ...mockSelectedBook,
-            path: ["page1.png", "page2.png", "page3.png", "page4.png", "page5.png"],
+            path: [],
             update: mockUpdate,
           },
         },
         readingHistories: [
-          {
-            ...mockHistory,
-            cachedPath: [],
-          },
+          { ...mockHistory, cachedPath: [] },
         ],
       },
     })
@@ -654,10 +681,55 @@ describe("useViewer", () => {
       await result.current.onSetCoverByPage(2)
     })
 
-    expect(mockUpdate).toHaveBeenCalledWith("lib-1", { cover: "page3.png" }, ["cover"])
+    expect(mockOpenModal).toHaveBeenCalledWith(
+      "ErrorModal",
+      expect.objectContaining({
+        titleTx: "common.error",
+        messageTx: "viewerMenu.failedToUpdateCover",
+      }),
+    )
+  })
+
+  test("uses cachedPathList when selectedBook.path is empty", async () => {
+    useStoresMock.mockReturnValue({
+      calibreRootStore: {
+        selectedLibrary: {
+          ...mockSelectedLibrary,
+          selectedBook: {
+            ...mockSelectedBook,
+            path: [],
+            update: mockUpdate,
+          },
+        },
+        readingHistories: [
+          {
+            ...mockHistory,
+            cachedPath: [
+              "http://calibrelocal/book-file/1/pdf/100/123/page1.png?library_id=lib-1",
+              "http://calibrelocal/book-file/1/pdf/100/123/page2.png?library_id=lib-1",
+            ],
+          },
+        ],
+      },
+    })
+
+    const { result } = renderHook(() => useViewer())
+
+    await act(async () => {
+      await result.current.onSetCoverByPage(0)
+    })
+
+    // Should fetch the full URL directly from cachedPathList (no getBookFileUrl needed)
+    expect(mockFetchWithAuth).toHaveBeenCalledWith(
+      "http://calibrelocal/book-file/1/pdf/100/123/page1.png?library_id=lib-1",
+      expect.objectContaining({ method: "GET" }),
+    )
+    expect(mockSetCoverBinary).toHaveBeenCalledWith("lib-1", 1, expect.any(Blob))
   })
 
   test("opens an error modal when cover update fails", async () => {
+    // Both setCoverBinary and the data URL fallback (selectedBook.update) must fail
+    mockSetCoverBinary.mockResolvedValueOnce({ kind: "rejected" })
     mockUpdate.mockResolvedValueOnce(false)
 
     const { result } = renderHook(() => useViewer())
@@ -666,6 +738,81 @@ describe("useViewer", () => {
       await result.current.onSetCoverByPage(1)
     })
 
+    expect(mockOpenModal).toHaveBeenCalledWith(
+      "ErrorModal",
+      expect.objectContaining({
+        titleTx: "common.error",
+        messageTx: "viewerMenu.failedToUpdateCover",
+      }),
+    )
+  })
+
+  test("falls back to data URL update when setCoverBinary fails", async () => {
+    mockSetCoverBinary.mockResolvedValueOnce({ kind: "rejected" })
+    mockUpdate.mockResolvedValueOnce(true)
+
+    const { result } = renderHook(() => useViewer())
+
+    let returnValue: boolean | undefined
+    await act(async () => {
+      returnValue = await result.current.onSetCoverByPage(1)
+    })
+
+    expect(mockSetCoverBinary).toHaveBeenCalled()
+    expect(mockUpdate).toHaveBeenCalledWith(
+      "lib-1",
+      expect.objectContaining({ cover: expect.stringContaining("data:") }),
+      ["cover"],
+    )
+    expect(returnValue).toBe(true)
+  })
+
+  test("opens an error modal when source page is not an image", async () => {
+    mockFetchWithAuth.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: { get: () => "text/html" },
+      blob: async () =>
+        new Blob([new TextEncoder().encode("<html></html>")], { type: "text/html" }),
+    })
+
+    const { result } = renderHook(() => useViewer())
+
+    await act(async () => {
+      await result.current.onSetCoverByPage(1)
+    })
+
+    expect(mockOpenModal).toHaveBeenCalledWith(
+      "ErrorModal",
+      expect.objectContaining({
+        titleTx: "common.error",
+        messageTx: "viewerMenu.failedToUpdateCover",
+      }),
+    )
+  })
+
+  test("rejects HTML spine paths (AZW3/KF8) for cover", async () => {
+    useStoresMock.mockReturnValue({
+      calibreRootStore: {
+        selectedLibrary: {
+          ...mockSelectedLibrary,
+          selectedBook: {
+            ...mockSelectedBook,
+            path: ["Text/chapter-1.xhtml", "Text/chapter-2.xhtml"],
+            update: mockUpdate,
+          },
+        },
+        readingHistories: [mockHistory],
+      },
+    })
+
+    const { result } = renderHook(() => useViewer())
+
+    await act(async () => {
+      await result.current.onSetCoverByPage(0)
+    })
+
+    expect(mockFetchWithAuth).not.toHaveBeenCalled()
     expect(mockOpenModal).toHaveBeenCalledWith(
       "ErrorModal",
       expect.objectContaining({

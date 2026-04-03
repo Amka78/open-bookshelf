@@ -49,6 +49,9 @@ export function ViewerHeader(props: ViewerHeaderProps) {
             autoPageTurnIntervalMs={props.autoPageTurnIntervalMs}
             onToggleAutoPageTurning={props.onToggleAutoPageTurning}
             onAutoPageTurnIntervalChange={props.onAutoPageTurnIntervalChange}
+            onSelectCurrentPageAsCover={props.onSelectCurrentPageAsCover}
+            onSelectLeftPageAsCover={props.onSelectLeftPageAsCover}
+            onSelectRightPageAsCover={props.onSelectRightPageAsCover}
           />
         </HStack>
       </HStack>
