@@ -1,6 +1,71 @@
 import { beforeEach, describe, expect, jest, test } from "bun:test"
 import { Api } from "./api"
 
+describe("Api.startConversion", () => {
+  test("sends options as a nested object under the 'options' key", async () => {
+    const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
+    const postSpy = jest.spyOn(api.apisauce, "post").mockResolvedValue({
+      ok: true,
+      status: 200,
+      data: 42,
+      problem: null,
+    } as never)
+
+    await api.startConversion("config", 8618, "EPUB", "AZW3", { margin_top: 5 })
+
+    expect(postSpy).toHaveBeenCalledTimes(1)
+    const [url, body] = postSpy.mock.calls[0] as [string, unknown]
+    expect(url).toBe("conversion/start/8618?library_id=config")
+    expect(body).toEqual({
+      input_fmt: "EPUB",
+      output_fmt: "AZW3",
+      options: { margin_top: 5 },
+    })
+  })
+
+  test("sends empty options object when no convertParams provided", async () => {
+    const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
+    const postSpy = jest.spyOn(api.apisauce, "post").mockResolvedValue({
+      ok: true,
+      status: 200,
+      data: 99,
+      problem: null,
+    } as never)
+
+    await api.startConversion("mylib", 100, "PDF", "EPUB")
+
+    const [url, body] = postSpy.mock.calls[0] as [string, unknown]
+    expect(url).toBe("conversion/start/100?library_id=mylib")
+    expect(body).toEqual({ input_fmt: "PDF", output_fmt: "EPUB", options: {} })
+  })
+
+  test("returns job id from response data", async () => {
+    const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
+    jest.spyOn(api.apisauce, "post").mockResolvedValue({
+      ok: true,
+      status: 200,
+      data: 42,
+      problem: null,
+    } as never)
+
+    const result = await api.startConversion("config", 8618, "EPUB", "AZW3")
+    expect(result).toEqual({ kind: "ok", data: 42 })
+  })
+
+  test("returns not-found problem on 404", async () => {
+    const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
+    jest.spyOn(api.apisauce, "post").mockResolvedValue({
+      ok: false,
+      status: 404,
+      data: "Book not found",
+      problem: "CLIENT_ERROR",
+    } as never)
+
+    const result = await api.startConversion("config", 9999, "EPUB", "AZW3")
+    expect(result).toEqual({ kind: "not-found", message: "Book not found" })
+  })
+})
+
 describe("Api.fetchWithAuth", () => {
   beforeEach(() => {
     jest.restoreAllMocks()

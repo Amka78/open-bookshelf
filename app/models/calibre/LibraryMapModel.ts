@@ -28,7 +28,8 @@ export const LibraryMapModel = types
   .actions(withSetPropAction)
   .actions((root) => ({
     setBook: (bookId?: number) => {
-      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+      // MST resolves references by identifier at runtime; TS types don't allow direct ID assignment
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       root.selectedBook = bookId as any
     },
     deleteBook: flow(function* (bookId: number) {

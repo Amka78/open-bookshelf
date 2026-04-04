@@ -55,11 +55,9 @@ export const Rating = styled(
   RatingCore,
   {
     _dark: {
-      // @ts-ignore
       borderColor: "$white",
     },
     _light: {
-      // @ts-ignore
       borderColor: "$coolGray800",
     },
     variants: {
@@ -84,7 +82,6 @@ export const Rating = styled(
           },
         },
         selected: {
-          // @ts-ignore
           borderWidth: "$2",
           borderRadius: "$full",
           backgroundColor: "$blue500",

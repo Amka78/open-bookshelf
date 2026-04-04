@@ -1,4 +1,5 @@
-import i18n from "i18n-js"
+import type { TranslateOptions } from "i18n-js"
+import { i18n } from "./i18n"
 import type { TxKeyPath } from "./i18n"
 
 export type MessageKey =
@@ -28,7 +29,7 @@ export type MessageKey =
  * // => "Hello world!"
  * ```
  */
-export function translate(message: MessageKey, options?: i18n.TranslateOptions) {
+export function translate(message: MessageKey, options?: TranslateOptions) {
   let currentLocaleValue = null
 
   if (typeof message === "string") {
@@ -37,7 +38,7 @@ export function translate(message: MessageKey, options?: i18n.TranslateOptions) 
     currentLocaleValue = i18n.t(message.key, options)
     if (currentLocaleValue && message.restParam) {
       for (let i = 0; message.restParam.length > i; i++) {
-        let settingValue
+        let settingValue: string
 
         if (typeof message.restParam[i] === "string") {
           const key = message.restParam[i] as string
@@ -50,7 +51,7 @@ export function translate(message: MessageKey, options?: i18n.TranslateOptions) 
             settingValue = object.key
           }
         }
-        currentLocaleValue = currentLocaleValue.replace("{" + i + "}", settingValue)
+        currentLocaleValue = currentLocaleValue.replace(`{${i}}`, settingValue)
       }
     }
   }

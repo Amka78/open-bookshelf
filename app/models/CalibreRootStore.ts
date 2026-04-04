@@ -168,7 +168,8 @@ export const CalibreRootStore = types
       return false
     }),
     setLibrary: (libraryId?: string) => {
-      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+      // MST resolves references by identifier at runtime; TS types don't allow direct ID assignment
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       root.selectedLibrary = libraryId as any
     },
     addReadingHistory: (model: ReadingHistory) => {

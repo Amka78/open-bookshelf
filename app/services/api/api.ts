@@ -8,6 +8,7 @@
 import Config from "@/config"
 import { logger } from "@/utils/logger"
 import { type ApiResponse, type ApisauceInstance, create } from "apisauce"
+import type { AxiosError } from "axios"
 import { type Directory, type DownloadOptions, File as FileSystemFile } from "expo-file-system"
 import { Platform } from "react-native"
 import { type GeneralApiProblem, getGeneralApiProblem } from "./apiProblem"
@@ -345,8 +346,8 @@ export class Api {
               this.notifyAuthStateChanged()
               return retryResponse
             } catch (basicError) {
-              const basicStatus = (basicError as any)?.response?.status
-              const basicData = (basicError as any)?.response?.data
+              const basicStatus = (basicError as AxiosError)?.response?.status
+              const basicData = (basicError as AxiosError)?.response?.data
               if (
                 basicStatus === 400 &&
                 typeof basicData === "string" &&
@@ -645,8 +646,11 @@ export class Api {
   /**
    * Start book conversion via Calibre Content Server.
    *
-   * Calls `POST conversion/start/{bookId}?library_id={libraryId}&sort=timestamp.desc`
+   * Calls `POST conversion/start/{bookId}?library_id={libraryId}`
    * and passes conversion settings in the JSON body.
+   *
+   * Calibre's `queue_job` reads `conversion_data['options']` for conversion
+   * parameters, so they must be nested under the `options` key.
    */
   async startConversion(
     libraryId: string,
@@ -658,10 +662,10 @@ export class Api {
     const requestBody = {
       input_fmt: inputFmt,
       output_fmt: outputFmt,
-      ...(convertParams ?? {}),
+      options: convertParams ?? {},
     }
     const response: ApiResponse<ApiConversionStart> = await this.apisauce.post(
-      `conversion/start/${bookId}?library_id=${encodeURIComponent(libraryId)}&sort=timestamp.desc`,
+      `conversion/start/${bookId}?library_id=${encodeURIComponent(libraryId)}`,
       requestBody,
     )
 

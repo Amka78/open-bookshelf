@@ -97,6 +97,7 @@ const AppStack = observer(function AppStack() {
 
   return (
     <Stack.Navigator
+      id="AppStack"
       screenOptions={{
         headerShown: true,
         headerStyle: { backgroundColor: palette.surfaceStrong },

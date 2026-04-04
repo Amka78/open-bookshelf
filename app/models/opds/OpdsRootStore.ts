@@ -1,5 +1,5 @@
 import { flow, type Instance, type SnapshotIn, type SnapshotOut, types } from "mobx-state-tree"
-import * as xmldom from "xmldom"
+import { DOMParser } from "@xmldom/xmldom"
 
 import { api } from "@/services/api"
 import { withSetPropAction } from "../helpers/withSetPropAction"
@@ -38,11 +38,11 @@ export const OpdsModel = types
         if (initialize) {
           opds.reset()
         }
-        const xmlDom = new xmldom.DOMParser().parseFromString(response.data)
+        const xmlDom = new DOMParser().parseFromString(response.data, "text/xml")
 
         const feedChildren = xmlDom.getElementsByTagName("feed").item(0).childNodes
         for (let index = 0; index < feedChildren.length; index++) {
-          const node = feedChildren.item(index) as Element
+          const node = feedChildren.item(index) as unknown as Element
           const nodeName = node.nodeName
           if (opds[nodeName] !== undefined) {
             setState(nodeName, node, opds)

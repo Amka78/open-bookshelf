@@ -1,5 +1,5 @@
 import * as Localization from "expo-localization"
-import i18n from "i18n-js"
+import { I18n } from "i18n-js"
 import { I18nManager } from "react-native"
 
 import ar from "./ar"
@@ -8,17 +8,17 @@ import en, { type Translations } from "./en"
 import ja from "./ja"
 import ko from "./ko"
 
-i18n.fallbacks = true
-
 const [deviceLocale] = Localization.getLocales()
 const locale = deviceLocale?.languageTag ?? "en"
+
 /**
  * we need always include "*-US" for some valid language codes because when you change the system language,
  * the language code is the suffixed with "-US". i.e. if a device is set to English ("en"),
  * if you change to another language and then return to English language code is now "en-US".
  */
-i18n.translations = { ar, en, "en-US": en, ja, "ja-JP": ja, ko }
+export const i18n = new I18n({ ar, en, "en-US": en, ja, "ja-JP": ja, ko })
 
+i18n.enableFallback = true
 i18n.locale = locale
 
 // handle RTL languages
