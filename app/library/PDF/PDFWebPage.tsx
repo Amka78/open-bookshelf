@@ -1,4 +1,4 @@
-import React, { useCallback } from "react"
+import React from "react"
 import { StyleSheet, type StyleProp, type ViewStyle } from "react-native"
 import { WebView, type WebViewMessageEvent } from "react-native-webview"
 import { PDF_IIFE_BUNDLE, WORKER_IIFE_BUNDLE } from "./pdfjsBundle"
@@ -139,19 +139,16 @@ export function PDFWebPage({
   onTotalPages,
   onError,
 }: PDFWebPageProps) {
-  const handleMessage = useCallback(
-    (event: WebViewMessageEvent) => {
-      try {
-        const msg = JSON.parse(event.nativeEvent.data)
-        if (msg.type === "totalPages") {
-          onTotalPages?.(msg.totalPages)
-        } else if (msg.type === "error") {
-          onError?.(msg.message)
-        }
-      } catch {}
-    },
-    [onError, onTotalPages],
-  )
+  const handleMessage = (event: WebViewMessageEvent) => {
+    try {
+      const msg = JSON.parse(event.nativeEvent.data)
+      if (msg.type === "totalPages") {
+        onTotalPages?.(msg.totalPages)
+      } else if (msg.type === "error") {
+        onError?.(msg.message)
+      }
+    } catch {}
+  }
 
   const html = buildPageHtml(uri, pageNumber, headers, pdfBase64)
 

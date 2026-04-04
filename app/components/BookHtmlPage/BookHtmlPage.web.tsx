@@ -1,7 +1,7 @@
 import { Text } from "@/components"
 import { usePalette } from "@/theme"
 import { logger } from "@/utils/logger"
-import React, { useEffect, useMemo, useState, type CSSProperties } from "react"
+import React, { useEffect, useState, type CSSProperties } from "react"
 import { ActivityIndicator, useColorScheme } from "react-native"
 import {
   type BookHtmlPageProps,
@@ -73,7 +73,7 @@ export function BookHtmlPage(props: BookHtmlPageProps) {
 
   const height = autoHeight ? Math.max(contentHeight, 1) : props.availableHeight ?? 1
 
-  const containerStyle = useMemo<CSSProperties>(() => {
+  const containerStyle: CSSProperties = (() => {
     const alignSelf =
       props.pageType === "leftPage"
         ? "flex-end"
@@ -81,12 +81,12 @@ export function BookHtmlPage(props: BookHtmlPageProps) {
           ? "flex-start"
           : undefined
     return {
-      overflow: "hidden",
+      overflow: "hidden" as const,
       height,
       alignSelf,
       ...(typeof props.availableWidth === "number" ? { width: props.availableWidth } : {}),
     }
-  }, [height, props.availableWidth, props.pageType])
+  })()
 
   if (error) {
     return (

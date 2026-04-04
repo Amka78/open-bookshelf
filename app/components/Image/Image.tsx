@@ -6,6 +6,8 @@ export type ImageProps = OriginalProps
 export function Image(props: ImageProps) {
   return (
     <Original
+      cachePolicy="memory-disk"
+      transition={{ duration: 200 }}
       {...props}
       // Prevent iOS Smart Invert / forced dark mode from inverting image colors
       accessibilityIgnoresInvertColors

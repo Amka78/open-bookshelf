@@ -10,10 +10,9 @@ import { isCalibreHtmlViewerFormat, isCalibreSerializedHtmlPath } from "@/utils/
 import { logger } from "@/utils/logger"
 import { useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
-import React, { type FC, useLayoutEffect } from "react"
+import React, { type FC, useEffect, useLayoutEffect } from "react"
 
 export const ViewerScreen: FC = observer(() => {
-  logger.debug("Rendering ViewerScreen")
   const { authenticationStore } = useStores()
   const navigation = useNavigation<ApppNavigationProp>()
 
@@ -98,12 +97,14 @@ export const ViewerScreen: FC = observer(() => {
 
   const totalPages = sourcePathList.length
 
-  logger.debug("ViewerScreen: Rendering viewer with", {
-    bookId: selectedBook.id,
-    format: selectedBook.metaData.selectedFormat,
-    initialPage,
-    totalPages,
-  })
+  useEffect(() => {
+    logger.debug("ViewerScreen: Rendering viewer with", {
+      bookId: selectedBook.id,
+      format: selectedBook.metaData.selectedFormat,
+      initialPage,
+      totalPages,
+    })
+  }, [selectedBook.id, selectedBook.metaData.selectedFormat, initialPage, totalPages])
 
   return (
     <BookViewer

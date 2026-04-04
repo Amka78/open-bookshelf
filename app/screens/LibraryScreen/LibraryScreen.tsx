@@ -38,7 +38,7 @@ import { deleteCachedBookImages } from "@/utils/bookImageCache"
 import { useIsFocused, useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import type React from "react"
-import { type FC, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { type FC, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { Platform, useWindowDimensions } from "react-native"
 import type { SearchBarCommands } from "react-native-screens"
 import { useLibrary } from "./useLibrary"
@@ -91,10 +91,20 @@ export const LibraryScreen: FC = observer(() => {
     >
   >(new Map())
 
-  const rawBookList = selectedLibrary?.books ? Array.from(selectedLibrary.books.values()) : []
-  const bookList = rawBookList
+  const bookList = selectedLibrary?.books ? Array.from(selectedLibrary.books.values()) : []
 
-  const thumbnailSourceById = useMemo(() => {
+  // O(1) lookup for cached books instead of O(n) scan per renderItem
+  const cachedBookIds = (() => {
+    const set = new Set<number>()
+    for (const h of calibreRootStore.readingHistories) {
+      if (h.libraryId === selectedLibrary?.id && h.cachedPath.length > 0) {
+        set.add(h.bookId)
+      }
+    }
+    return set
+  })()
+
+  const thumbnailSourceById = (() => {
     const nextCache = new Map<
       Book["id"],
       {
@@ -118,9 +128,12 @@ export const LibraryScreen: FC = observer(() => {
       nextCache.set(book.id, cacheEntry)
     }
 
-    thumbnailSourceCacheRef.current = nextCache
     return nextCache
-  }, [authStateVersion, bookList, selectedLibrary.id])
+  })()
+
+  useEffect(() => {
+    thumbnailSourceCacheRef.current = thumbnailSourceById
+  }, [thumbnailSourceById])
 
   const libraryActions = (
     <>
@@ -260,13 +273,7 @@ export const LibraryScreen: FC = observer(() => {
     }
 
     let listItem: React.JSX.Element
-    const hasReadingHistory = calibreRootStore.readingHistories.some((value) => {
-      return (
-        value.bookId === item.id &&
-        value.libraryId === selectedLibrary.id &&
-        value.cachedPath.length > 0
-      )
-    })
+    const hasReadingHistory = cachedBookIds.has(item.id)
 
     const thumbnailUri = encodeURI(api.getBookThumbnailUrl(item.id, selectedLibrary.id))
     const imageSource = thumbnailSourceById.get(item.id)?.source ?? {
