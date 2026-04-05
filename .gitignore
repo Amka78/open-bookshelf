@@ -103,3 +103,5 @@ npm-debug.*
 
 # @end expo-cli
 build/
+# Local Docker overrides
+.env

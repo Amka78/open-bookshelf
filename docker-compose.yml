@@ -1,0 +1,30 @@
+services:
+  open-bookshelf:
+    image: ghcr.io/amka78/open-bookshelf:latest
+    container_name: open-bookshelf
+    ports:
+      - "${PORT:-3000}:80"
+    restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.scope=open-bookshelf"
+
+  # Watchtower: GHCR の新イメージを検知して自動で pull & 再起動
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # ホストの Docker 認証情報を引き継ぐ（ghcr.io の認証に使用）
+      - ${HOME}/.docker/config.json:/config.json:ro
+    environment:
+      DOCKER_CONFIG: /
+      # 5分ごとに新イメージを確認
+      WATCHTOWER_POLL_INTERVAL: 300
+      # 古いイメージを自動削除
+      WATCHTOWER_CLEANUP: true
+      # 監視対象をこの compose のコンテナのみに限定
+      WATCHTOWER_SCOPE: open-bookshelf
+    command: --scope open-bookshelf
+    restart: unless-stopped
+
+
