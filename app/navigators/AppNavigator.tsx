@@ -374,6 +374,8 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
                 libraryId: selectedLibrary.id,
                 cachedPath: bookImageList,
                 format: format,
+                serverPosFrac: selectedBook.manifestServerPosFrac ?? null,
+                serverEpoch: selectedBook.manifestServerEpoch ?? null,
               })
               calibreRootStore.addReadingHistory(historyModel)
             })

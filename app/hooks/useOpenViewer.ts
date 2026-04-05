@@ -89,6 +89,8 @@ export function useOpenViewer() {
             libraryId: selectedLibraryId,
             cachedPath: bookImageList,
             format: format,
+            serverPosFrac: book.manifestServerPosFrac ?? null,
+            serverEpoch: book.manifestServerEpoch ?? null,
           })
           calibreRootStore.addReadingHistory(historyModel)
           navigation.navigate("Viewer")

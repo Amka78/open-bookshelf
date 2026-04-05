@@ -87,6 +87,8 @@ const ko: Translations = {
     setLeftPageAsCover: "왼쪽 페이지를 표지로 설정",
     setRightPageAsCover: "오른쪽 페이지를 표지로 설정",
     failedToUpdateCover: "표지 업데이트에 실패했습니다.",
+    addBookmark: "책갈피 추가",
+    showAnnotations: "주석",
   },
   bookImage: {
     loading: "책을 읽을 준비 중입니다.",
@@ -134,6 +136,16 @@ const ko: Translations = {
       title: "일괄 편집",
       bookCount: "{{count}}권 선택됨",
     },
+    annotationModal: {
+      title: "주석 추가",
+      colorLabel: "하이라이트 색상",
+      notesLabel: "메모 (선택)",
+      notesPlaceholder: "메모를 입력하세요...",
+    },
+  },
+  annotationPanel: {
+    empty: "주석이 없습니다.",
+    title: "주석",
   },
   multiSelectBar: {
     selectedCount: "{{count}}개 선택됨",

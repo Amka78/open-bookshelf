@@ -86,6 +86,8 @@ const en = {
     setLeftPageAsCover: "Set left page as cover",
     setRightPageAsCover: "Set right page as cover",
     failedToUpdateCover: "Failed to update cover.",
+    addBookmark: "Add bookmark",
+    showAnnotations: "Annotations",
   },
   bookImage: {
     loading: "Preparing to read the book.",
@@ -133,6 +135,16 @@ const en = {
       title: "Bulk Edit",
       bookCount: "{{count}} books selected",
     },
+    annotationModal: {
+      title: "Add annotation",
+      colorLabel: "Highlight color",
+      notesLabel: "Note (optional)",
+      notesPlaceholder: "Enter a note...",
+    },
+  },
+  annotationPanel: {
+    empty: "No annotations yet.",
+    title: "Annotations",
   },
   multiSelectBar: {
     selectedCount: "{{count}} selected",

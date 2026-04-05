@@ -7,6 +7,7 @@ import {
   type BookHtmlPageProps,
   calibreHtmlPageInteractionMessageType,
   calibreHtmlPageLongPressAction,
+  calibreHtmlPageSelectionMessageType,
   calibreHtmlPageSizeMessageType,
   calibreHtmlPageTapAction,
   useCalibreHtmlDocument,
@@ -14,7 +15,7 @@ import {
 
 const FALLBACK_AUTO_HEIGHT = 320
 
-export function BookHtmlPage(props: BookHtmlPageProps) {
+export function BookHtmlPage(props: BookHtmlPageProps & { onTextSelect?: (text: string) => void }) {
   const palette = usePalette()
   const colorScheme = useColorScheme()
   const { autoHeight, documentKey, error, html, loading } = useCalibreHtmlDocument({
@@ -25,7 +26,7 @@ export function BookHtmlPage(props: BookHtmlPageProps) {
     themeFallbackBackgroundColor: palette.bg0,
   })
   const [contentHeight, setContentHeight] = useState(FALLBACK_AUTO_HEIGHT)
-  const { onLongPress, onPress } = props
+  const { onLongPress, onPress, onTextSelect } = props
 
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
@@ -59,6 +60,16 @@ export function BookHtmlPage(props: BookHtmlPageProps) {
           payload?.action === calibreHtmlPageLongPressAction
         ) {
           onLongPress?.()
+          return
+        }
+
+        if (
+          payload?.type === calibreHtmlPageSelectionMessageType &&
+          payload?.key === documentKey &&
+          typeof payload?.text === "string"
+        ) {
+          onTextSelect?.(payload.text)
+          return
         }
       } catch {
         // Ignore unrelated messages.
@@ -69,7 +80,7 @@ export function BookHtmlPage(props: BookHtmlPageProps) {
     return () => {
       window.removeEventListener("message", onMessage)
     }
-  }, [documentKey, onLongPress, onPress])
+  }, [documentKey, onLongPress, onPress, onTextSelect])
 
   const height = autoHeight ? Math.max(contentHeight, 1) : props.availableHeight ?? 1
 

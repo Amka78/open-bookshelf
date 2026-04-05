@@ -15,6 +15,7 @@ export type BookHtmlPageProps = {
   pageType?: "singlePage" | "leftPage" | "rightPage"
   onPress?: () => void
   onLongPress?: () => void
+  annotations?: Array<{ uuid: string; highlightedText: string | null; styleWhich: string | null }>
   themeMode?: "light" | "dark"
   themeTextColor?: string
   themeLinkColor?: string
@@ -57,6 +58,7 @@ const CALIBRE_VIRTUAL_RESOURCE_PATTERN = /(?:^|\/)[^/|?#]+\|([^|]+)\|$/
 const CALIBRE_VIRTUAL_RESOURCE_TOKEN_PATTERN = /[^/|?#]+\|([^|]+)\|/g
 export const calibreHtmlPageSizeMessageType = "open-bookshelf:calibre-html-size"
 export const calibreHtmlPageInteractionMessageType = "open-bookshelf:calibre-html-interaction"
+export const calibreHtmlPageSelectionMessageType = "open-bookshelf:calibre-html-selection"
 export const calibreHtmlPageTapAction = "tap"
 export const calibreHtmlPageLongPressAction = "long-press"
 
@@ -758,6 +760,7 @@ const buildPreparedHtmlDocument = (
     linkColor: string
     fallbackBackgroundColor: string
   },
+  annotations: Array<{ uuid: string; highlightedText: string | null; styleWhich: string | null }>,
 ) => {
   const serializedData = serializeForScriptTag(documentData)
   const escapedDocumentKey = serializeForScriptTag(documentKey)
@@ -767,6 +770,7 @@ const buildPreparedHtmlDocument = (
   const escapedTextColor = serializeForScriptTag(appearance.textColor)
   const escapedLinkColor = serializeForScriptTag(appearance.linkColor)
   const escapedFallbackBackgroundColor = serializeForScriptTag(appearance.fallbackBackgroundColor)
+  const escapedAnnotations = serializeForScriptTag(annotations)
 
   return `<!DOCTYPE html>
 <html>
@@ -866,6 +870,7 @@ const buildPreparedHtmlDocument = (
     <div id="obs-root"></div>
     <script id="obs-serialized-data" type="application/json">${serializedData}</script>
     <script>
+      const pageAnnotations = ${escapedAnnotations}
       ;(() => {
         const serializedData = JSON.parse(document.getElementById("obs-serialized-data")?.textContent || "{}")
         const documentKey = ${escapedDocumentKey}
@@ -880,6 +885,7 @@ const buildPreparedHtmlDocument = (
         )}
         const tapAction = ${serializeForScriptTag(calibreHtmlPageTapAction)}
         const longPressAction = ${serializeForScriptTag(calibreHtmlPageLongPressAction)}
+        const selectionMessageType = ${serializeForScriptTag(calibreHtmlPageSelectionMessageType)}
         const themeMode = ${escapedThemeMode}
         const themeTextColor = ${escapedTextColor}
         const themeLinkColor = ${escapedLinkColor}
@@ -1404,10 +1410,62 @@ const buildPreparedHtmlDocument = (
           )
         }
 
+        const installSelectionHandler = () => {
+          document.addEventListener('mouseup', () => {
+            const sel = window.getSelection()
+            const text = sel ? sel.toString().trim() : ''
+            if (text.length > 0) {
+              parent.postMessage({
+                type: selectionMessageType,
+                key: documentKey,
+                text,
+              }, '*')
+            }
+          })
+        }
+
+        const applyHighlights = () => {
+          if (!pageAnnotations || pageAnnotations.length === 0) return
+          const colorMap = {
+            yellow: 'rgba(255,220,0,0.4)',
+            green: 'rgba(100,220,100,0.4)',
+            blue: 'rgba(100,180,255,0.4)',
+            pink: 'rgba(255,150,180,0.4)',
+            purple: 'rgba(200,130,255,0.4)',
+          }
+          const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
+          const textNodes = []
+          let node
+          while ((node = walker.nextNode())) { textNodes.push(node) }
+          for (const ann of pageAnnotations) {
+            if (!ann.highlightedText) continue
+            const color = colorMap[ann.styleWhich] || colorMap.yellow
+            for (const tn of textNodes) {
+              const idx = tn.nodeValue ? tn.nodeValue.indexOf(ann.highlightedText) : -1
+              if (idx === -1) continue
+              const range = document.createRange()
+              range.setStart(tn, idx)
+              range.setEnd(tn, idx + ann.highlightedText.length)
+              const mark = document.createElement('mark')
+              mark.setAttribute('data-obs-ann-uuid', ann.uuid)
+              mark.style.backgroundColor = color
+              mark.style.color = 'inherit'
+              try {
+                range.surroundContents(mark)
+              } catch {
+                // skip if range spans multiple elements
+              }
+              break
+            }
+          }
+        }
+
         render()
         applyThemeOverrides()
 
         installLongPressHandler()
+        installSelectionHandler()
+        applyHighlights()
         notifySize()
         window.setTimeout(() => {
           applyThemeOverrides()
@@ -1523,6 +1581,7 @@ export const useCalibreHtmlDocument = (props: BookHtmlPageProps): UseCalibreHtml
           linkColor: props.themeLinkColor ?? props.themeTextColor ?? "#111318",
           fallbackBackgroundColor: props.themeFallbackBackgroundColor ?? "#ffffff",
         },
+        props.annotations ?? [],
       )
 
   return {

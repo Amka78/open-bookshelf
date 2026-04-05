@@ -52,20 +52,35 @@ export const CalibreRootStore = types
         })
 
         data.recently_read_by_user?.forEach((readingInfo) => {
-          let readingHistory = root.readingHistories.find((readingHistory) => {
+          const posFrac = typeof readingInfo.pos_frac === "number" ? readingInfo.pos_frac : null
+          const epoch = typeof readingInfo.epoch === "number" ? readingInfo.epoch : null
+
+          let readingHistory = root.readingHistories.find((h) => {
             return (
-              readingHistory.libraryId === readingInfo.library_id &&
-              readingHistory.bookId === readingInfo.book_id &&
-              readingHistory.format === readingInfo.format
+              h.libraryId === readingInfo.library_id &&
+              h.bookId === readingInfo.book_id &&
+              h.format === readingInfo.format
             )
           })
           if (readingHistory) {
+            // Update server-side position if the server epoch is newer than what we have.
+            if (
+              posFrac !== null &&
+              epoch !== null &&
+              (readingHistory.serverEpoch === null ||
+                readingHistory.serverEpoch === undefined ||
+                epoch > readingHistory.serverEpoch)
+            ) {
+              readingHistory.setServerPosition(posFrac, epoch)
+            }
           } else {
             readingHistory = ReadingHistoryModel.create({
               bookId: readingInfo.book_id,
               currentPage: 0,
               libraryId: readingInfo.library_id,
               format: readingInfo.format,
+              serverPosFrac: posFrac,
+              serverEpoch: epoch,
             })
             root.readingHistories.push(readingHistory)
           }

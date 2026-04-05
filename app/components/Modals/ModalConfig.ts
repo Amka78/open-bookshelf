@@ -1,4 +1,5 @@
 import type { ModalStackConfig } from "react-native-modalfy"
+import { AnnotationModal } from "./AnnotationModal"
 import { BookConvertModal } from "./BookConvertModal"
 import { BulkEditModal } from "./BulkEditModal"
 import { BookDetailModal } from "./BookDetailModal"
@@ -11,6 +12,7 @@ import { ViewerAutoPageTurnSettingModal } from "./ViewerAutoPageTurnSettingModal
 import { ViewerRatingModal } from "./ViewerRatingModal"
 
 export const modalConfig: ModalStackConfig = {
+  AnnotationModal,
   BookConvertModal,
   BookDetailModal,
   BookEditModal,

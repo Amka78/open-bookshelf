@@ -6,15 +6,18 @@ import {
   PagePressable,
   ViewerHeader,
 } from "@/components"
+import { AnnotationPanel } from "@/components/AnnotationPanel"
 import { useStores } from "@/models"
 import type { ApppNavigationProp } from "@/navigators/types"
+import { useAnnotations } from "@/screens/ViewerScreen/useAnnotations"
 import { useViewer } from "@/screens/ViewerScreen/useViewer"
 import { usePalette } from "@/theme"
 import { goToNextPage, goToPreviousPage } from "@/utils/pageTurnning"
+import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import { useNavigation } from "@react-navigation/native"
 import { FlashList, type FlashListRef, type ListRenderItem } from "@shopify/flash-list"
 import React from "react"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import {
   type FlexAlignType,
   type NativeScrollEvent,
@@ -57,6 +60,8 @@ export type RenderPageProps = {
   availableHeight?: number
   onPress?: () => void
   onLongPress?: () => void
+  annotations?: Array<{ uuid: string; highlightedText: string | null; styleWhich: string | null }>
+  onTextSelect?: (text: string) => void
 }
 export type BookViewerProps = {
   totalPage: number
@@ -110,6 +115,10 @@ export function BookViewer(props: BookViewerProps) {
   const palette = usePalette()
   const viewerHook = useViewer()
   const { settingStore } = useStores()
+  const modal = useElectrobunModal()
+  const { annotations, addBookmark, addHighlight, deleteAnnotation, annotationsForPage } =
+    useAnnotations()
+  const [showAnnotationPanel, setShowAnnotationPanel] = useState(false)
 
   const flashListRef = useRef<FlashListRef<number | FacingPageType>>(null)
 
@@ -169,6 +178,17 @@ export function BookViewer(props: BookViewerProps) {
       ...renderProps,
       onPress: handlePagePress,
       onLongPress: viewerHook.onManageMenu,
+      annotations: annotationsForPage(renderProps.page)
+        .filter((a) => a.type === "highlight")
+        .map((a) => ({ uuid: a.uuid, highlightedText: a.highlightedText, styleWhich: a.styleWhich })),
+      onTextSelect: (text: string) => {
+        modal.openModal("AnnotationModal", {
+          selectedText: text,
+          onSave: async ({ text: selText, notes, styleWhich }) => {
+            await addHighlight(renderProps.page, selText ?? text, notes || undefined, styleWhich)
+          },
+        })
+      },
     }
 
     let alignItems: FlexAlignType = "center"
@@ -369,12 +389,13 @@ export function BookViewer(props: BookViewerProps) {
   }
 
   return (
-    <GradientBackground
-      colors={palette.gradient}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={[styles.viewerGradient, webViewportStyle]}
-    >
+    <View style={styles.viewerContainer}>
+      <GradientBackground
+        colors={palette.gradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.viewerGradient, webViewportStyle]}
+      >
       <ViewerHeader
         title={props.bookTitle}
         visible={viewerHook.showMenu}
@@ -424,6 +445,14 @@ export function BookViewer(props: BookViewerProps) {
               }
             : undefined
         }
+        onAddBookmark={() => {
+          modal.openModal("AnnotationModal", {
+            onSave: async ({ notes }) => {
+              await addBookmark(currentPage, notes || undefined)
+            },
+          })
+        }}
+        onToggleAnnotationPanel={() => setShowAnnotationPanel((prev) => !prev)}
       />
       {pages && isSinglePagePdfMode ? (
         <Box style={styles.viewerRoot} alignSelf="center" width={listViewportWidth}>
@@ -562,12 +591,37 @@ export function BookViewer(props: BookViewerProps) {
         visible={viewerHook.showMenu}
       />
     </GradientBackground>
+      {showAnnotationPanel ? (
+        <View style={styles.annotationPanelOverlay}>
+          <AnnotationPanel
+            annotations={annotations.slice()}
+            onAnnotationPress={(annotation) => {
+              setShowAnnotationPanel(false)
+              const targetIndex = getScrollIndexForPage(annotation.spineIndex)
+              scrollToIndex(targetIndex, true)
+            }}
+            onDeleteAnnotation={(uuid) => {
+              deleteAnnotation(uuid)
+            }}
+          />
+        </View>
+      ) : null}
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
+  viewerContainer: {
+    flex: 1,
+  },
   viewerGradient: {
     flex: 1,
+  },
+  annotationPanelOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    top: 50,
+    backgroundColor: "rgba(255,255,255,0.97)",
+    zIndex: 10,
   },
   pageRoot: {
     flex: 1,

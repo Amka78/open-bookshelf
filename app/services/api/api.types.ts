@@ -111,6 +111,17 @@ export type MetadataType = {
   rating: number
 }
 
+/**
+ * A single last-read position entry as returned by Calibre's book manifest.
+ * Calibre returns one entry per reading device/client.
+ */
+export type LastReadPosition = {
+  device: string
+  cfi: string
+  pos_frac: number
+  epoch: number
+}
+
 export type ApiBookManifestResultType = {
   version: number
   toc: {
@@ -139,8 +150,9 @@ export type ApiBookManifestResultType = {
   page_progression_direction: "rtl" | "ltr"
   files: Record<string, ImageFileType | HtmlFileType>
   metadata: MetadataType
-  last_read_positions: number[]
-  annotations_map: unknown
+  /** Last-read positions per device. May be a legacy integer array on older servers. */
+  last_read_positions: LastReadPosition[] | number[]
+  annotations_map: AnnotationsMap
 }
 
 export type ApiCalibreInterfaceType = {
@@ -370,6 +382,33 @@ export type ApiBookInfo = {
   fts_enabled: boolean
   library_id: string
 } & ApiBookInfoCore
+
+export type AnnotationStyle = {
+  kind: "color"
+  which: string
+}
+
+export type CalibreAnnotation = {
+  type: "highlight" | "bookmark"
+  uuid: string
+  spine_index: number
+  spine_name: string
+  start_cfi?: string
+  end_cfi?: string
+  highlighted_text?: string
+  notes?: string
+  style?: AnnotationStyle
+  timestamp: string
+  title?: string
+  pos_frac: number
+  removed?: boolean
+  annot_id?: number
+}
+
+export type AnnotationsMap = {
+  highlight?: CalibreAnnotation[]
+  bookmark?: CalibreAnnotation[]
+}
 
 export type SetBookMetadata = {
   changes: Record<CommonFieldName, unknown>

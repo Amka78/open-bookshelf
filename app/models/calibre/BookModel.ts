@@ -12,8 +12,15 @@ import { isCalibreHtmlViewerFormat } from "@/utils/calibreHtmlViewer"
 import { camelCaseToLowerCase, lowerCaseToCamelCase } from "@/utils/convert"
 import { convertOptionsToParams } from "@/utils/convertOptionsToParams"
 import { delay } from "@/utils/delay"
-import { type ApiBookManifestResultType, type CommonFieldName, api } from "../../services/api"
+import {
+  type ApiBookManifestResultType,
+  type CommonFieldName,
+  type LastReadPosition,
+  api,
+} from "../../services/api"
+import type { AnnotationsMap } from "../../services/api/api.types"
 import { type Metadata, MetadataModel, type ReadingHistory } from "../calibre"
+import { AnnotationModel, type Annotation } from "./AnnotationModel"
 import { handleCommonApiError } from "../errors/errors"
 import { withSetPropAction } from "../helpers/withSetPropAction"
 
@@ -78,9 +85,60 @@ export const BookModel = types
     pageProgressionDirection: types.maybeNull(
       types.union(types.literal("rtl"), types.literal("ltr")),
     ),
+    annotations: types.array(AnnotationModel),
+    /**
+     * Most recent server-side reading position (0–1) extracted from
+     * `last_read_positions` in the book manifest.  Reset on each manifest load.
+     */
+    manifestServerPosFrac: types.maybeNull(types.number),
+    manifestServerEpoch: types.maybeNull(types.number),
   })
   .actions(withSetPropAction)
   .actions((root) => ({
+    setAnnotations(map: AnnotationsMap) {
+      const all: Annotation[] = []
+      for (const ann of map.highlight ?? []) {
+        if (ann.removed) continue
+        all.push(
+          AnnotationModel.create({
+            uuid: ann.uuid,
+            type: "highlight",
+            spineIndex: ann.spine_index,
+            spineName: ann.spine_name,
+            startCfi: ann.start_cfi ?? null,
+            endCfi: ann.end_cfi ?? null,
+            highlightedText: ann.highlighted_text ?? null,
+            notes: ann.notes ?? null,
+            styleKind: ann.style?.kind ?? null,
+            styleWhich: ann.style?.which ?? "yellow",
+            timestamp: ann.timestamp,
+            title: null,
+            posFrac: ann.pos_frac,
+          }),
+        )
+      }
+      for (const ann of map.bookmark ?? []) {
+        if (ann.removed) continue
+        all.push(
+          AnnotationModel.create({
+            uuid: ann.uuid,
+            type: "bookmark",
+            spineIndex: ann.spine_index,
+            spineName: ann.spine_name,
+            startCfi: ann.start_cfi ?? null,
+            endCfi: null,
+            highlightedText: null,
+            notes: ann.notes ?? null,
+            styleKind: null,
+            styleWhich: null,
+            timestamp: ann.timestamp,
+            title: ann.title ?? null,
+            posFrac: ann.pos_frac,
+          }),
+        )
+      }
+      root.annotations.replace(all)
+    },
     convert: flow(function* (
       format: string,
       libraryId: string,
@@ -246,6 +304,20 @@ export const BookModel = types
       if (result.page_progression_direction) {
         root.setProp("pageProgressionDirection", result.page_progression_direction)
       }
+
+      root.setAnnotations(result.annotations_map ?? {})
+
+      // Extract the most recent server-side reading position from the manifest.
+      const positions = Array.isArray(result.last_read_positions)
+        ? (result.last_read_positions as Array<LastReadPosition | number>)
+        : []
+      const latestPosition = positions.reduce<LastReadPosition | null>((best, cur) => {
+        if (typeof cur === "number") return best
+        if (!best || cur.epoch > best.epoch) return cur
+        return best
+      }, null)
+      root.setProp("manifestServerPosFrac", latestPosition ? latestPosition.pos_frac : null)
+      root.setProp("manifestServerEpoch", latestPosition ? latestPosition.epoch : null)
 
       const postConvertResult = onPostConvert()
       if (postConvertResult) {

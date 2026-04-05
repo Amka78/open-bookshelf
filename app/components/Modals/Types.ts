@@ -61,4 +61,8 @@ export type ModalStackParams = {
     libraryId: string
     onComplete?: () => void
   }
+  AnnotationModal: {
+    selectedText?: string
+    onSave: (params: { text?: string; notes: string; styleWhich: string }) => void
+  }
 }

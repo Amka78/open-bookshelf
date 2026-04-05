@@ -67,6 +67,8 @@ export const ViewerScreen: FC = observer(() => {
           onLongPress={props.onLongPress}
           pagePath={sourcePagePath}
           size={selectedBook.metaData.formatSizes.get(selectedBook.metaData.selectedFormat) ?? 0}
+          annotations={props.annotations}
+          onTextSelect={props.onTextSelect}
         />
       )
     }

@@ -121,11 +121,24 @@ export function useViewer() {
       ? `${selectedLibrary.id}:${selectedBook.id}:${history?.format ?? ""}`
       : ""
 
+  // Compute the best resume page: prefer local currentPage, fall back to server pos_frac.
+  const serverEstimatedPage =
+    history &&
+    history.currentPage <= 0 &&
+    typeof history.serverPosFrac === "number" &&
+    history.serverPosFrac > 0 &&
+    availablePathLength > 1
+      ? Math.round(history.serverPosFrac * (availablePathLength - 1))
+      : -1
+
   // Handle resume reading prompt
   useEffect(() => {
     let cleanup = () => {}
 
-    if (!history || history.currentPage <= 0) {
+    const hasLocalProgress = !!(history && history.currentPage > 0)
+    const hasServerProgress = serverEstimatedPage >= 0
+
+    if (!hasLocalProgress && !hasServerProgress) {
       resolvedPromptKeyRef.current = promptKey
       pendingPromptKeyRef.current = undefined
       setInitialPage(0)
@@ -142,7 +155,9 @@ export function useViewer() {
       setViewerReady(false)
 
       const maxPage = Math.max(availablePathLength - 1, 0)
-      const resumePage = Math.max(0, Math.min(history.currentPage, maxPage))
+      const resumePage = hasLocalProgress
+        ? Math.max(0, Math.min(history!.currentPage, maxPage))
+        : Math.max(0, Math.min(serverEstimatedPage, maxPage))
 
       let secondFrame: number | undefined
       const firstFrame = runOnNextFrame(() => {
@@ -180,7 +195,7 @@ export function useViewer() {
     }
 
     return cleanup
-  }, [availablePathLength, history, modal, promptKey])
+  }, [availablePathLength, history, modal, promptKey, serverEstimatedPage])
 
   // Client setting management
   let tempClientSetting = selectedBook
@@ -230,13 +245,28 @@ export function useViewer() {
       history?.setCurrentPage(page)
 
       if (selectedBook && selectedLibraryId && history) {
+        const totalPages = selectedBook.path.length || 1
+        const posFrac = totalPages > 1 ? page / (totalPages - 1) : 0
+        const epoch = Math.floor(Date.now() / 1000)
+        history.setServerPosition(posFrac, epoch)
+
         clearTimeout(syncTimerRef.current)
         syncTimerRef.current = setTimeout(() => {
-          api
-            .syncReadingPosition(selectedLibraryId, selectedBook.id, history.format, page)
-            .catch((err) => {
-              logger.warn("Failed to sync reading position", err)
-            })
+          // Sync with the legacy endpoint (app-internal) and the standard Calibre endpoint.
+          Promise.all([
+            api
+              .syncReadingPosition(selectedLibraryId, selectedBook.id, history.format, page)
+              .catch((err) => logger.warn("Failed to sync reading position (legacy)", err)),
+            api
+              .syncReadingPositionFull(
+                selectedLibraryId,
+                selectedBook.id,
+                history.format,
+                posFrac,
+                epoch,
+              )
+              .catch((err) => logger.warn("Failed to sync reading position (standard)", err)),
+          ])
         }, SYNC_DEBOUNCE_MS)
       }
     }

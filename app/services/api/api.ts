@@ -32,6 +32,8 @@ import type {
   ApiConversionStatus,
   ApiFeedResponse,
   ApiTagBrowser,
+  CalibreAnnotation,
+  type LastReadPosition,
   SetBookMetadata,
   SetBookResult,
 } from "./api.types"
@@ -1197,6 +1199,68 @@ export class Api {
     }
 
     return { kind: "ok" }
+  }
+  async saveAnnotations(
+    libraryId: string,
+    bookId: number,
+    format: string,
+    annotations: CalibreAnnotation[],
+  ): Promise<{ kind: "ok" } | GeneralApiProblem> {
+    const response: ApiResponse<unknown> = await this.apisauce.post(
+      `ajax/update_annotations?book_id=${bookId}&library_id=${encodeURIComponent(libraryId)}&fmt=${encodeURIComponent(format)}`,
+      annotations,
+    )
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response)
+      if (problem) return problem
+    }
+    return { kind: "ok" }
+  }
+
+  /**
+   * Sync reading position using the standard Calibre ajax endpoint.
+   * This ensures compatibility with Calibre's own reader and other clients.
+   */
+  async syncReadingPositionFull(
+    libraryId: string,
+    bookId: number,
+    format: string,
+    posFrac: number,
+    epoch: number,
+  ): Promise<{ kind: "ok" } | GeneralApiProblem> {
+    const response: ApiResponse<unknown> = await this.apisauce.post(
+      `ajax/set-last-read-position?library_id=${encodeURIComponent(libraryId)}&book_id=${bookId}&fmt=${encodeURIComponent(format)}`,
+      { device_name: "open-bookshelf", cfi: "", pos_frac: posFrac, epoch },
+    )
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response)
+      if (problem) return problem
+    }
+    return { kind: "ok" }
+  }
+
+  /**
+   * Get the most recent last-read position for a book from the server.
+   * Returns the entry with the highest epoch (most recently read).
+   */
+  async getLastReadPosition(
+    libraryId: string,
+    bookId: number,
+    format: string,
+  ): Promise<{ kind: "ok"; data: LastReadPosition | null } | GeneralApiProblem> {
+    const response: ApiResponse<LastReadPosition[]> = await this.apisauce.get(
+      `ajax/get-last-read-position?library_id=${encodeURIComponent(libraryId)}&book_id=${bookId}&fmt=${encodeURIComponent(format)}`,
+    )
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response)
+      if (problem) return problem
+    }
+    const positions = Array.isArray(response.data) ? response.data : []
+    const latest = positions.reduce<LastReadPosition | null>((best, cur) => {
+      if (!best || cur.epoch > best.epoch) return cur
+      return best
+    }, null)
+    return { kind: "ok", data: latest }
   }
 }
 

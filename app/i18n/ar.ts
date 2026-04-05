@@ -87,6 +87,8 @@ const ar: Translations = {
     setLeftPageAsCover: "تعيين الصفحة اليسرى كغلاف",
     setRightPageAsCover: "تعيين الصفحة اليمنى كغلاف",
     failedToUpdateCover: "فشل تحديث الغلاف.",
+    addBookmark: "إضافة إشارة مرجعية",
+    showAnnotations: "التعليقات",
   },
   bookImage: {
     loading: "يتم تجهيز الكتاب للقراءة.",
@@ -134,6 +136,16 @@ const ar: Translations = {
       title: "تعديل جماعي",
       bookCount: "{{count}} كتب محددة",
     },
+    annotationModal: {
+      title: "إضافة تعليق",
+      colorLabel: "لون التمييز",
+      notesLabel: "ملاحظة (اختياري)",
+      notesPlaceholder: "أدخل ملاحظة...",
+    },
+  },
+  annotationPanel: {
+    empty: "لا توجد تعليقات بعد.",
+    title: "التعليقات",
   },
   multiSelectBar: {
     selectedCount: "{{count}} محدد",
