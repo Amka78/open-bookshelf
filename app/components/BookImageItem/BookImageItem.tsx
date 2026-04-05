@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react"
-import { StyleSheet } from "react-native"
+import { StyleSheet, View } from "react-native"
 
 import {
   BookDetailMenu,
@@ -8,9 +8,14 @@ import {
   type ImageProps,
   LabeledSpinner,
   MaterialCommunityIcon,
+  type MaterialCommunityIconProps,
 } from "@/components"
 import type { BookDetailMenuProps } from "@/components"
 import { Pressable } from "@gluestack-ui/themed"
+
+type IconName = MaterialCommunityIconProps["name"]
+
+export type ReadStatusValue = "want-to-read" | "reading" | "finished"
 
 export type BookImageprops = Pick<ImageProps, "source"> & {
   onPress?: () => Promise<void>
@@ -21,7 +26,16 @@ export type BookImageprops = Pick<ImageProps, "source"> & {
   showCachedIcon?: boolean
   selected?: boolean
   onSelectToggle?: () => void
+  readingProgress?: number | null
+  readStatus?: ReadStatusValue | null
 }
+
+const STATUS_ICON: Record<ReadStatusValue, { name: IconName; color: string }> = {
+  "want-to-read": { name: "bookmark-outline", color: "#3B82F6" },
+  reading: { name: "book-open-outline", color: "#F97316" },
+  finished: { name: "check-circle-outline", color: "#22C55E" },
+}
+
 export function BookImageItem({
   loading = false,
   selected,
@@ -61,6 +75,13 @@ export function BookImageItem({
     }
   }, [])
 
+  const showProgressBar =
+    typeof props.readingProgress === "number" &&
+    props.readingProgress > 0 &&
+    props.readingProgress < 1
+
+  const statusIconConfig = props.readStatus ? STATUS_ICON[props.readStatus] : null
+
   const image = <Image source={props.source} style={styles.imageSize} contentFit={"fill"} />
   const contentWithMenu = (
     <Box style={styles.imageContainer} onMouseEnter={handleHoverIn} onMouseLeave={handleHoverOut}>
@@ -74,6 +95,22 @@ export function BookImageItem({
         >
           <MaterialCommunityIcon name="cloud-check" iconSize="sm-" />
         </Pressable>
+      ) : null}
+      {statusIconConfig ? (
+        <View style={styles.statusBadge}>
+          <MaterialCommunityIcon
+            name={statusIconConfig.name}
+            iconSize="sm"
+            color={statusIconConfig.color}
+          />
+        </View>
+      ) : null}
+      {showProgressBar ? (
+        <View style={styles.progressBarBg}>
+          <View
+            style={[styles.progressBarFill, { width: `${props.readingProgress! * 100}%` as any }]}
+          />
+        </View>
       ) : null}
       {showDetailMenu ? (
         <Box style={styles.detailMenuOverlay}>
@@ -153,6 +190,28 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     borderWidth: 1,
     padding: 2,
+  },
+  statusBadge: {
+    position: "absolute",
+    top: 6,
+    right: 6,
+    backgroundColor: "rgba(0, 0, 0, 0.55)",
+    borderColor: "rgba(255, 255, 255, 0.35)",
+    borderRadius: 999,
+    borderWidth: 1,
+    padding: 2,
+  },
+  progressBarBg: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 4,
+    backgroundColor: "rgba(0,0,0,0.2)",
+  },
+  progressBarFill: {
+    height: 4,
+    backgroundColor: "#3B82F6",
   },
   detailMenuOverlay: {
     position: "absolute",

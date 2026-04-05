@@ -23,6 +23,7 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
   Platform,
+  Share,
   StyleSheet,
   View,
   useWindowDimensions,
@@ -116,8 +117,14 @@ export function BookViewer(props: BookViewerProps) {
   const viewerHook = useViewer()
   const { settingStore } = useStores()
   const modal = useElectrobunModal()
-  const { annotations, addBookmark, addHighlight, deleteAnnotation, annotationsForPage } =
-    useAnnotations()
+  const {
+    annotations,
+    addBookmark,
+    addHighlight,
+    deleteAnnotation,
+    annotationsForPage,
+    exportAnnotationsAsMarkdown,
+  } = useAnnotations()
   const [showAnnotationPanel, setShowAnnotationPanel] = useState(false)
   const [jumpRequest, setJumpRequest] = useState<{ page: number; id: number } | null>(null)
 
@@ -627,6 +634,10 @@ export function BookViewer(props: BookViewerProps) {
             }}
             onDeleteAnnotation={(uuid) => {
               deleteAnnotation(uuid)
+            }}
+            onExport={async () => {
+              const markdown = exportAnnotationsAsMarkdown(props.bookTitle)
+              await Share.share({ message: markdown })
             }}
           />
         </View>

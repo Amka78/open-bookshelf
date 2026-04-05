@@ -166,11 +166,30 @@ export function useAnnotations() {
     [selectedBook],
   )
 
+  const exportAnnotationsAsMarkdown = (bookTitle: string): string => {
+    const anns = selectedBook?.annotations ?? []
+    const lines = [`# Annotations: ${bookTitle}`, ""]
+    for (const ann of anns) {
+      if (ann.type === "bookmark") {
+        lines.push("## 🔖 Bookmark")
+        if (ann.notes) lines.push(`> ${ann.notes}`)
+        lines.push("")
+      } else {
+        lines.push("## 📝 Highlight")
+        if (ann.highlightedText) lines.push(`> ${ann.highlightedText}`)
+        if (ann.notes) lines.push(`*${ann.notes}*`)
+        lines.push("")
+      }
+    }
+    return lines.join("\n")
+  }
+
   return {
     annotations: selectedBook?.annotations ?? [],
     addBookmark,
     addHighlight,
     deleteAnnotation,
     annotationsForPage,
+    exportAnnotationsAsMarkdown,
   }
 }

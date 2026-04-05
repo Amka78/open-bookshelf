@@ -159,6 +159,13 @@ const en = {
   annotationPanel: {
     empty: "No annotations yet.",
     title: "Annotations",
+    export: "Export annotations",
+  },
+  readStatus: {
+    wantToRead: "Want to Read",
+    reading: "Currently Reading",
+    finished: "Finished",
+    clear: "Clear Status",
   },
   multiSelectBar: {
     selectedCount: "{{count}} selected",
@@ -189,6 +196,7 @@ const en = {
     editTooltip: "Edit book",
     deleteTooltip: "Delete book",
     shareLinkTooltip: "Share Link",
+    setStatusTooltip: "Set reading status",
   },
   userPreferences: {
     title: "User Preferences",

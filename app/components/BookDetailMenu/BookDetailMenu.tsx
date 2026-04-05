@@ -1,6 +1,18 @@
 import { HStack, IconButton, TooltipIconButton } from "@/components"
+import type { MaterialCommunityIconProps } from "@/components"
 import type { HStackProps, IconButtonProps } from "@/components"
 import { StyleSheet } from "react-native"
+
+type IconName = MaterialCommunityIconProps["name"]
+type ReadStatusValue = "want-to-read" | "reading" | "finished"
+
+const STATUS_CYCLE: (ReadStatusValue | null)[] = [null, "want-to-read", "reading", "finished"]
+
+const STATUS_ICON_MAP: Record<ReadStatusValue, IconName> = {
+  "want-to-read": "bookmark-outline",
+  reading: "book-open-outline",
+  finished: "check-circle-outline",
+}
 
 export type BookDetailMenuProps = {
   onOpenBook: () => Promise<void>
@@ -9,6 +21,8 @@ export type BookDetailMenuProps = {
   onEditBook: () => void
   onDeleteBook: () => void
   onShareLink?: () => void
+  readStatus?: ReadStatusValue | null
+  onSetStatus?: (status: ReadStatusValue | null) => void
   iconOpacity?: number
   containerProps?: HStackProps
   iconButtonProps?: Partial<IconButtonProps>
@@ -34,6 +48,18 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
     ...props.iconButtonProps,
     style: iconButtonStyle,
   }
+
+  const handleCycleStatus = () => {
+    if (!props.onSetStatus) return
+    const currentIdx = STATUS_CYCLE.indexOf(props.readStatus ?? null)
+    const nextIdx = (currentIdx + 1) % STATUS_CYCLE.length
+    props.onSetStatus(STATUS_CYCLE[nextIdx])
+  }
+
+  const statusIconName: IconName = props.readStatus
+    ? STATUS_ICON_MAP[props.readStatus]
+    : "bookmark-plus-outline"
+
   return (
     <HStack bgColor="transparent" {...props.containerProps}>
       <TooltipIconButton
@@ -60,6 +86,16 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
           onPress={props.onShareLink}
           testID="book-detail-share-button"
           tooltipTx="bookDetailMenu.shareLinkTooltip"
+        />
+      )}
+      {props.onSetStatus != null && (
+        <TooltipIconButton
+          {...sharedIconButtonProps}
+          name={statusIconName}
+          iconSize="md-"
+          onPress={handleCycleStatus}
+          testID="book-detail-status-button"
+          tooltipTx="bookDetailMenu.setStatusTooltip"
         />
       )}
       <TooltipIconButton

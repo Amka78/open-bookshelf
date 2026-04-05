@@ -16,6 +16,8 @@ export const BookDetailScreen: FC = observer(() => {
     handleDeleteBook,
     handleShareLink,
     handleFieldPress,
+    readStatus,
+    handleSetStatus,
   } = useBookDetail()
 
   const { hasSeries, prevBook, nextBook, currentIndex, seriesBooks, seriesName, navigateTo } =
@@ -23,7 +25,7 @@ export const BookDetailScreen: FC = observer(() => {
 
   return (
     <RootContainer alignItems="center">
-      <BookImageItem source={imageUrl} />
+      <BookImageItem source={imageUrl} readStatus={readStatus} />
       <BookDetailMenu
         onOpenBook={handleOpenBook}
         onDownloadBook={handleDownloadBook}
@@ -31,6 +33,8 @@ export const BookDetailScreen: FC = observer(() => {
         onEditBook={handleEditBook}
         onDeleteBook={handleDeleteBook}
         onShareLink={handleShareLink}
+        readStatus={readStatus ?? null}
+        onSetStatus={handleSetStatus}
       />
       <BookDetailFieldList
         book={selectedBook}

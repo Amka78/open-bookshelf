@@ -11,9 +11,10 @@ import { useDownloadBook } from "../../hooks/useDownloadBook"
 import { useOpenViewer } from "../../hooks/useOpenViewer"
 
 type BookDetailScreenRouteProp = RouteProp<AppStackParamList, "BookDetail">
+type ReadStatusValue = "want-to-read" | "reading" | "finished"
 
 export function useBookDetail() {
-  const { calibreRootStore } = useStores()
+  const { calibreRootStore, settingStore } = useStores()
   const navigation = useNavigation<ApppNavigationProp>()
   const route = useRoute<BookDetailScreenRouteProp>()
   const modal = useElectrobunModal()
@@ -116,6 +117,14 @@ export function useBookDetail() {
     navigation.goBack()
   }
 
+  const readStatus = settingStore.getReadStatus(selectedLibrary.id, selectedBook.id) as
+    | ReadStatusValue
+    | undefined
+
+  const handleSetStatus = (status: ReadStatusValue | null) => {
+    settingStore.setReadStatus(selectedLibrary.id, selectedBook.id, status)
+  }
+
   return {
     selectedLibrary,
     selectedBook,
@@ -127,5 +136,7 @@ export function useBookDetail() {
     handleDeleteBook,
     handleShareLink,
     handleFieldPress,
+    readStatus,
+    handleSetStatus,
   }
 }

@@ -161,6 +161,13 @@ const ja: Translations = {
   annotationPanel: {
     empty: "アノテーションはまだありません。",
     title: "アノテーション",
+    export: "アノテーションをエクスポート",
+  },
+  readStatus: {
+    wantToRead: "読みたい",
+    reading: "読書中",
+    finished: "読了",
+    clear: "ステータスをクリア",
   },
   multiSelectBar: {
     selectedCount: "{{count}}件選択中",
@@ -191,6 +198,7 @@ const ja: Translations = {
     editTooltip: "書籍を編集",
     deleteTooltip: "書籍を削除",
     shareLinkTooltip: "リンクを共有",
+    setStatusTooltip: "読書ステータスを設定",
   },
   userPreferences: {
     title: "ユーザー設定",

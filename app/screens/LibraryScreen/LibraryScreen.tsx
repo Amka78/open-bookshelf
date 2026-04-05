@@ -100,6 +100,24 @@ export const LibraryScreen: FC = observer(() => {
     return set
   })()
 
+  // Build readingProgress map (best serverPosFrac per book) for the progress bar
+  const readingProgressById = (() => {
+    const map = new Map<number, number>()
+    for (const h of calibreRootStore.readingHistories) {
+      if (
+        h.libraryId === selectedLibrary?.id &&
+        typeof h.serverPosFrac === "number" &&
+        h.serverPosFrac > 0
+      ) {
+        const existing = map.get(h.bookId)
+        if (existing === undefined || h.serverPosFrac > existing) {
+          map.set(h.bookId, h.serverPosFrac)
+        }
+      }
+    }
+    return map
+  })()
+
   const thumbnailSourceById = (() => {
     const nextCache = new Map<
       Book["id"],
@@ -266,6 +284,16 @@ export const LibraryScreen: FC = observer(() => {
 
     let listItem: React.JSX.Element
     const hasReadingHistory = cachedBookIds.has(item.id)
+    const readingProgress = readingProgressById.get(item.id) ?? null
+    const readStatus = settingStore.getReadStatus(selectedLibrary.id, item.id) as
+      | "want-to-read"
+      | "reading"
+      | "finished"
+      | undefined
+
+    const handleSetStatus = (status: "want-to-read" | "reading" | "finished" | null) => {
+      settingStore.setReadStatus(selectedLibrary.id, item.id, status)
+    }
 
     const thumbnailUri = encodeURI(api.getBookThumbnailUrl(item.id, selectedLibrary.id))
     const imageSource = thumbnailSourceById.get(item.id)?.source ?? {
@@ -366,6 +394,8 @@ export const LibraryScreen: FC = observer(() => {
           source={imageSource}
           showCachedIcon={hasReadingHistory}
           onCachedIconPress={onClearBookCache}
+          readingProgress={readingProgress}
+          readStatus={readStatus}
           onPress={
             libraryHook.isSelectionMode
               ? async () => libraryHook.toggleBookSelection(item.id)
@@ -381,6 +411,8 @@ export const LibraryScreen: FC = observer(() => {
                   onConvertBook: onConvertBook,
                   onEditBook: onEditBook,
                   onDeleteBook: onDeleteBook,
+                  readStatus: readStatus ?? null,
+                  onSetStatus: handleSetStatus,
                 }
           }
           selected={libraryHook.isBookSelected(item.id)}

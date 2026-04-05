@@ -160,6 +160,13 @@ const ko: Translations = {
   annotationPanel: {
     empty: "주석이 없습니다.",
     title: "주석",
+    export: "주석 내보내기",
+  },
+  readStatus: {
+    wantToRead: "읽고 싶어요",
+    reading: "읽는 중",
+    finished: "다 읽었어요",
+    clear: "상태 초기화",
   },
   multiSelectBar: {
     selectedCount: "{{count}}개 선택됨",
@@ -253,6 +260,7 @@ const ko: Translations = {
     editTooltip: "책 편집",
     deleteTooltip: "책 삭제",
     shareLinkTooltip: "링크 공유",
+    setStatusTooltip: "읽기 상태 설정",
   },
   userPreferences: {
     title: "사용자 환경설정",

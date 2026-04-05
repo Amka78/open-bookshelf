@@ -160,6 +160,13 @@ const ar: Translations = {
   annotationPanel: {
     empty: "لا توجد تعليقات بعد.",
     title: "التعليقات",
+    export: "تصدير التعليقات",
+  },
+  readStatus: {
+    wantToRead: "أريد القراءة",
+    reading: "أقرأ الآن",
+    finished: "انتهيت من القراءة",
+    clear: "مسح الحالة",
   },
   multiSelectBar: {
     selectedCount: "{{count}} محدد",
@@ -190,6 +197,7 @@ const ar: Translations = {
     editTooltip: "تعديل الكتاب",
     deleteTooltip: "حذف الكتاب",
     shareLinkTooltip: "مشاركة الرابط",
+    setStatusTooltip: "تعيين حالة القراءة",
   },
   userPreferences: {
     title: "تفضيلات المستخدم",

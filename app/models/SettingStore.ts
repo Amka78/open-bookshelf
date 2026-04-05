@@ -25,7 +25,13 @@ export const SettingStoreModel = types
       ),
       "default",
     ),
+    readStatuses: types.optional(types.map(types.string), {}),
   })
+  .views((store) => ({
+    getReadStatus(libraryId: string, bookId: number): string | undefined {
+      return store.readStatuses.get(`${libraryId}:${bookId}`)
+    },
+  }))
   .actions((store) => ({
     async setConnectionSetting(baseUrl: string, type: boolean) {
       if (type) {
@@ -61,6 +67,18 @@ export const SettingStoreModel = types
     },
     setViewerTheme(theme: "default" | "sepia" | "dark") {
       store.viewerTheme = theme
+    },
+    setReadStatus(
+      libraryId: string,
+      bookId: number,
+      status: "want-to-read" | "reading" | "finished" | null,
+    ) {
+      const key = `${libraryId}:${bookId}`
+      if (status === null) {
+        store.readStatuses.delete(key)
+      } else {
+        store.readStatuses.set(key, status)
+      }
     },
   }))
 
