@@ -275,6 +275,18 @@ const ja: Translations = {
     failed: "失敗",
     refresh: "更新",
   },
+  toc: {
+    title: "目次",
+    noChapters: "チャプターがありません",
+  },
+  readingSettings: {
+    title: "読書設定",
+    fontSize: "文字サイズ",
+    theme: "テーマ",
+    themeDefault: "デフォルト",
+    themeSepia: "セピア",
+    themeDark: "ダーク",
+  },
 }
 
 export default ja

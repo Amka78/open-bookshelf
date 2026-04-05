@@ -124,6 +124,9 @@ export function useLibrary() {
 
   const onSearch = async (searchCondition?: string) => {
     selectedLibrary.searchSetting.setProp("query", searchCondition ?? "")
+    if (searchCondition) {
+      settingStore.addRecentSearch(searchCondition)
+    }
     await search()
   }
 

@@ -119,6 +119,7 @@ export function BookViewer(props: BookViewerProps) {
   const { annotations, addBookmark, addHighlight, deleteAnnotation, annotationsForPage } =
     useAnnotations()
   const [showAnnotationPanel, setShowAnnotationPanel] = useState(false)
+  const [jumpRequest, setJumpRequest] = useState<{ page: number; id: number } | null>(null)
 
   const flashListRef = useRef<FlashListRef<number | FacingPageType>>(null)
 
@@ -163,6 +164,28 @@ export function BookViewer(props: BookViewerProps) {
     initialAutoPageTurnIntervalMs: settingStore.autoPageTurnIntervalMs,
     flashListRef,
   })
+
+  useEffect(() => {
+    if (jumpRequest == null || !data.length) return
+    const idx = getScrollIndexForPage(jumpRequest.page)
+    scrollToIndex(idx, true)
+  }, [jumpRequest?.id])
+
+  const handleShowToc = () => {
+    const toc = viewerHook.toc
+    if (!toc) return
+    modal.openModal("TocModal", {
+      toc,
+      onNavigate: (dest: string) => {
+        const page = viewerHook.goToTocEntry(dest)
+        setJumpRequest({ page, id: Date.now() })
+      },
+    })
+  }
+
+  const handleShowReadingSettings = () => {
+    modal.openModal("ReadingSettingsModal", {})
+  }
 
   const renderPage = (renderProps: RenderPageProps) => {
     const handlePagePress = () => {
@@ -453,6 +476,8 @@ export function BookViewer(props: BookViewerProps) {
           })
         }}
         onToggleAnnotationPanel={() => setShowAnnotationPanel((prev) => !prev)}
+        onShowToc={viewerHook.toc ? handleShowToc : undefined}
+        onShowReadingSettings={handleShowReadingSettings}
       />
       {pages && isSinglePagePdfMode ? (
         <Box style={styles.viewerRoot} alignSelf="center" width={listViewportWidth}>

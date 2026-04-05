@@ -1,6 +1,9 @@
 import type { MessageKey } from "@/i18n"
-import type { Book, Category, FieldMetadataMap, MetadataSnapshotIn } from "@/models/calibre"
+import type { Book, Category, FieldMetadataMap, MetadataSnapshotIn, TocItem } from "@/models/calibre"
 import type { LoginType } from "./LoginModal"
+
+export type { TocItem }
+
 export type ModalStackParams = {
   ConfirmModal: {
     title?: string
@@ -68,4 +71,9 @@ export type ModalStackParams = {
   ReadingStatsModal: Record<string, never>
   UserPreferencesModal: Record<string, never>
   JobQueueModal: Record<string, never>
+  ReadingSettingsModal: Record<string, never>
+  TocModal: {
+    toc: TocItem
+    onNavigate: (dest: string) => void
+  }
 }

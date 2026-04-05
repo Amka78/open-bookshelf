@@ -274,6 +274,18 @@ const ar: Translations = {
     failed: "فشل",
     refresh: "تحديث",
   },
+  toc: {
+    title: "جدول المحتويات",
+    noChapters: "لا توجد فصول متاحة",
+  },
+  readingSettings: {
+    title: "إعدادات القراءة",
+    fontSize: "حجم الخط",
+    theme: "المظهر",
+    themeDefault: "افتراضي",
+    themeSepia: "سيبيا",
+    themeDark: "داكن",
+  },
 }
 
 export default ar

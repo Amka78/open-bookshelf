@@ -21,6 +21,8 @@ export type BookHtmlPageProps = {
   themeTextColor?: string
   themeLinkColor?: string
   themeFallbackBackgroundColor?: string
+  viewerFontSizePt?: number
+  viewerTheme?: "default" | "sepia" | "dark"
 }
 
 type SerializedHtmlAttribute = [string, string, number?]
@@ -760,6 +762,8 @@ const buildPreparedHtmlDocument = (
     textColor: string
     linkColor: string
     fallbackBackgroundColor: string
+    viewerFontSizePt?: number
+    viewerTheme?: "default" | "sepia" | "dark"
   },
   annotations: Array<{ uuid: string; highlightedText: string | null; styleWhich: string | null }>,
 ) => {
@@ -772,6 +776,13 @@ const buildPreparedHtmlDocument = (
   const escapedLinkColor = serializeForScriptTag(appearance.linkColor)
   const escapedFallbackBackgroundColor = serializeForScriptTag(appearance.fallbackBackgroundColor)
   const escapedAnnotations = serializeForScriptTag(annotations)
+  const fontSizePt = appearance.viewerFontSizePt ?? 16
+  const fontSizeCss = `body, p, div, span, li, td, th { font-size: ${fontSizePt}pt !important; }`
+  const sepiaCss =
+    appearance.viewerTheme === "sepia"
+      ? `html, body { background-color: #f4ecd8 !important; color: #5b4636 !important; }
+      a, a * { color: #7a5c44 !important; }`
+      : ""
 
   return `<!DOCTYPE html>
 <html>
@@ -865,6 +876,8 @@ const buildPreparedHtmlDocument = (
         width: auto !important;
         max-width: 100% !important;
       }
+      ${fontSizeCss}
+      ${sepiaCss}
     </style>
   </head>
   <body>
@@ -1577,10 +1590,17 @@ export const useCalibreHtmlDocument = (props: BookHtmlPageProps): UseCalibreHtml
         autoHeight ? "content" : "viewport",
         props.pageType ?? "singlePage",
         {
-          themeMode: props.themeMode ?? "light",
+          themeMode:
+            props.viewerTheme === "dark"
+              ? "dark"
+              : props.viewerTheme === "sepia"
+                ? "light"
+                : (props.themeMode ?? "light"),
           textColor: props.themeTextColor ?? "#111318",
           linkColor: props.themeLinkColor ?? props.themeTextColor ?? "#111318",
           fallbackBackgroundColor: props.themeFallbackBackgroundColor ?? "#ffffff",
+          viewerFontSizePt: props.viewerFontSizePt,
+          viewerTheme: props.viewerTheme,
         },
         props.annotations ?? [],
       )

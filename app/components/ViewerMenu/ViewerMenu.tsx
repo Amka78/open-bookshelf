@@ -31,6 +31,8 @@ export type ViewerMenuProps = {
   onAutoPageTurnIntervalChange?: (intervalMs: number) => void
   onAddBookmark?: () => void
   onToggleAnnotationPanel?: () => void
+  onShowToc?: () => void
+  onShowReadingSettings?: () => void
 }
 
 type MenuItemLabelProps = ComponentProps<typeof MenuItemLabelOrigin> & {
@@ -201,6 +203,24 @@ export function ViewerMenu(props: ViewerMenuProps) {
           iconSize="md-"
           tooltipTx="viewerMenu.showAnnotations"
           onPress={props.onToggleAnnotationPanel}
+        />
+      ) : null}
+
+      {props.onShowToc ? (
+        <TooltipIconButton
+          name="table-of-contents"
+          iconSize="md-"
+          tooltipTx="toc.title"
+          onPress={props.onShowToc}
+        />
+      ) : null}
+
+      {props.onShowReadingSettings ? (
+        <TooltipIconButton
+          name="format-size"
+          iconSize="md-"
+          tooltipTx="readingSettings.title"
+          onPress={props.onShowReadingSettings}
         />
       ) : null}
     </HStack>

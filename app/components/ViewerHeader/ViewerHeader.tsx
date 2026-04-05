@@ -54,6 +54,8 @@ export function ViewerHeader(props: ViewerHeaderProps) {
             onSelectRightPageAsCover={props.onSelectRightPageAsCover}
             onAddBookmark={props.onAddBookmark}
             onToggleAnnotationPanel={props.onToggleAnnotationPanel}
+            onShowToc={props.onShowToc}
+            onShowReadingSettings={props.onShowReadingSettings}
           />
         </HStack>
       </HStack>

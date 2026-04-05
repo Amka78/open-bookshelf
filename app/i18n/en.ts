@@ -273,6 +273,18 @@ const en = {
     failed: "Failed",
     refresh: "Refresh",
   },
+  toc: {
+    title: "Table of Contents",
+    noChapters: "No chapters available",
+  },
+  readingSettings: {
+    title: "Reading Settings",
+    fontSize: "Font Size",
+    theme: "Theme",
+    themeDefault: "Default",
+    themeSepia: "Sepia",
+    themeDark: "Dark",
+  },
 }
 
 export default en

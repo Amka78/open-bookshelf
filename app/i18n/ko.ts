@@ -274,6 +274,18 @@ const ko: Translations = {
     failed: "실패",
     refresh: "새로 고침",
   },
+  toc: {
+    title: "목차",
+    noChapters: "챕터가 없습니다",
+  },
+  readingSettings: {
+    title: "읽기 설정",
+    fontSize: "글자 크기",
+    theme: "테마",
+    themeDefault: "기본",
+    themeSepia: "세피아",
+    themeDark: "다크",
+  },
 }
 
 export default ko

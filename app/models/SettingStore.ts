@@ -1,11 +1,11 @@
-import { type Instance, type SnapshotOut, types } from "mobx-state-tree";
-import { api } from "../services/api";
+import { type Instance, type SnapshotOut, types } from "mobx-state-tree"
+import { api } from "../services/api"
 
 const ApiModel = types.model("ApiModel").props({
   baseUrl: types.maybe(types.string),
   initialPath: types.maybeNull(types.string),
   isOpds: types.maybe(types.boolean),
-});
+})
 
 export const SettingStoreModel = types
   .model("SettingStore")
@@ -15,32 +15,54 @@ export const SettingStoreModel = types
     preferredFormat: types.optional(types.maybeNull(types.string), null),
     dateDisplayFormat: types.optional(types.string, "YYYY-MM-DD"),
     booksPerPage: types.optional(types.number, 50),
+    recentSearches: types.optional(types.array(types.string), []),
+    viewerFontSizePt: types.optional(types.number, 16),
+    viewerTheme: types.optional(
+      types.union(
+        types.literal("default"),
+        types.literal("sepia"),
+        types.literal("dark"),
+      ),
+      "default",
+    ),
   })
   .actions((store) => ({
     async setConnectionSetting(baseUrl: string, type: boolean) {
       if (type) {
-        store.api.baseUrl = baseUrl.replace("/opds", "");
-        store.api.initialPath = "/opds";
-        api.setUrl(store.api.baseUrl);
+        store.api.baseUrl = baseUrl.replace("/opds", "")
+        store.api.initialPath = "/opds"
+        api.setUrl(store.api.baseUrl)
       } else {
-        store.api.baseUrl = baseUrl;
-        api.setUrl(baseUrl);
+        store.api.baseUrl = baseUrl
+        api.setUrl(baseUrl)
       }
     },
     setAutoPageTurnIntervalMs(intervalMs: number) {
-      if (!Number.isFinite(intervalMs)) return;
-      store.autoPageTurnIntervalMs = Math.max(100, Math.floor(intervalMs));
+      if (!Number.isFinite(intervalMs)) return
+      store.autoPageTurnIntervalMs = Math.max(100, Math.floor(intervalMs))
     },
     setPreferredFormat(format: string | null) {
-      store.preferredFormat = format;
+      store.preferredFormat = format
     },
     setDateDisplayFormat(fmt: string) {
-      store.dateDisplayFormat = fmt;
+      store.dateDisplayFormat = fmt
     },
     setBooksPerPage(n: number) {
-      store.booksPerPage = Math.max(10, Math.min(200, n));
+      store.booksPerPage = Math.max(10, Math.min(200, n))
     },
-  }));
+    addRecentSearch(query: string) {
+      const trimmed = query.trim()
+      if (!trimmed || trimmed.length < 2) return
+      const filtered = store.recentSearches.filter((s) => s !== trimmed)
+      store.recentSearches.replace([trimmed, ...filtered].slice(0, 10))
+    },
+    setViewerFontSizePt(pt: number) {
+      store.viewerFontSizePt = Math.max(10, Math.min(28, pt))
+    },
+    setViewerTheme(theme: "default" | "sepia" | "dark") {
+      store.viewerTheme = theme
+    },
+  }))
 
-export type SettingStore = Instance<typeof SettingStoreModel>;
-export type SettingStoreSnapshot = SnapshotOut<typeof SettingStoreModel>;
+export type SettingStore = Instance<typeof SettingStoreModel>
+export type SettingStoreSnapshot = SnapshotOut<typeof SettingStoreModel>

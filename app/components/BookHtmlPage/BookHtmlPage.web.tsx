@@ -1,6 +1,8 @@
 import { Text } from "@/components"
+import { useStores } from "@/models"
 import { usePalette } from "@/theme"
 import { logger } from "@/utils/logger"
+import { observer } from "mobx-react-lite"
 import React, { useEffect, useState, type CSSProperties } from "react"
 import { ActivityIndicator, useColorScheme } from "react-native"
 import {
@@ -15,15 +17,21 @@ import {
 
 const FALLBACK_AUTO_HEIGHT = 320
 
-export function BookHtmlPage(props: BookHtmlPageProps) {
+export const BookHtmlPage = observer(function BookHtmlPage(props: BookHtmlPageProps) {
   const palette = usePalette()
   const colorScheme = useColorScheme()
+  const { settingStore } = useStores()
+  const viewerTheme = settingStore.viewerTheme
+  const computedThemeMode =
+    viewerTheme === "dark" ? "dark" : colorScheme === "dark" ? "dark" : "light"
   const { autoHeight, documentKey, error, html, loading } = useCalibreHtmlDocument({
     ...props,
-    themeMode: colorScheme === "dark" ? "dark" : "light",
+    themeMode: computedThemeMode,
     themeTextColor: palette.textPrimary,
     themeLinkColor: palette.textPrimary,
     themeFallbackBackgroundColor: palette.bg0,
+    viewerFontSizePt: settingStore.viewerFontSizePt,
+    viewerTheme,
   })
   const [contentHeight, setContentHeight] = useState(FALLBACK_AUTO_HEIGHT)
   const { onLongPress, onPress, onTextSelect } = props
@@ -131,10 +139,12 @@ export function BookHtmlPage(props: BookHtmlPageProps) {
 
   logger.debug("Rendering HTML content", { documentKey, height, html })
 
+  const iframeKey = `${documentKey}-${settingStore.viewerFontSizePt}-${viewerTheme}`
+
   return (
     <div style={containerStyle}>
       <iframe
-        key={documentKey}
+        key={iframeKey}
         srcDoc={html}
         sandbox="allow-same-origin allow-scripts"
         style={iframeStyle}
@@ -143,7 +153,7 @@ export function BookHtmlPage(props: BookHtmlPageProps) {
       />
     </div>
   )
-}
+})
 
 const iframeStyle: CSSProperties = {
   border: 0,

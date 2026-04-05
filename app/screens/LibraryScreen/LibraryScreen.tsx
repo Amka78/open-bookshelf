@@ -50,7 +50,7 @@ function parseQueryParts(query: string): string[] {
 }
 
 export const LibraryScreen: FC = observer(() => {
-  const { authenticationStore, calibreRootStore } = useStores()
+  const { authenticationStore, calibreRootStore, settingStore } = useStores()
 
   const selectedLibrary = calibreRootStore.selectedLibrary
   const navigation = useNavigation<ApppNavigationProp>()
@@ -240,6 +240,7 @@ export const LibraryScreen: FC = observer(() => {
               libraryHook.setHeaderSearchText(query)
               libraryHook.onSearch(query)
             }}
+            recentSearches={settingStore.recentSearches.slice()}
           />
         </HStack>
       ),

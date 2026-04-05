@@ -9,6 +9,7 @@ import type { TextInput as RNTextInput } from "react-native"
 
 const MAX_SUGGESTIONS = 8
 const SAVED_SEARCH_PREFIX = "🔖 "
+const RECENT_SEARCH_PREFIX = "🕐 "
 
 /** Extract the token currently being typed (the segment after the last whitespace). */
 function getCurrentToken(text: string): { prefix: string; token: string } {
@@ -33,6 +34,7 @@ type Props = {
   savedSearches?: Array<{ name: string; query: string }>
   onSaveSearch?: (name: string, query: string) => void
   onLoadSearch?: (query: string) => void
+  recentSearches?: string[]
 }
 
 /**
@@ -53,6 +55,7 @@ export function SearchInputField({
   savedSearches,
   onSaveSearch,
   onLoadSearch,
+  recentSearches,
 }: Props) {
   const [isSuggestionOpen, setIsSuggestionOpen] = useState(false)
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -100,7 +103,27 @@ export function SearchInputField({
     }
   }
 
-  const activeCandidates = candidates.length > 0 ? candidates : savedSearchCandidates
+  // Show recent searches when focused, input is empty, and no other candidates
+  const recentSearchCandidates: string[] = []
+  if (
+    isSuggestionOpen &&
+    candidates.length === 0 &&
+    savedSearchCandidates.length === 0 &&
+    recentSearches &&
+    recentSearches.length > 0 &&
+    lowerToken.length === 0
+  ) {
+    for (const s of recentSearches) {
+      recentSearchCandidates.push(`${RECENT_SEARCH_PREFIX}${s}`)
+    }
+  }
+
+  const activeCandidates =
+    candidates.length > 0
+      ? candidates
+      : savedSearchCandidates.length > 0
+        ? savedSearchCandidates
+        : recentSearchCandidates
   const isOpen = isSuggestionOpen && activeCandidates.length > 0
 
   const handleSaveSearch = () => {
@@ -161,6 +184,13 @@ export function SearchInputField({
                 onLoadSearch(saved.query)
                 setIsSuggestionOpen(false)
               }
+              return
+            }
+            if (candidate.startsWith(RECENT_SEARCH_PREFIX)) {
+              const query = candidate.slice(RECENT_SEARCH_PREFIX.length)
+              onChangeText(query)
+              onSubmit?.(query)
+              setIsSuggestionOpen(false)
               return
             }
             const newValue = `${prefix}${candidate} `

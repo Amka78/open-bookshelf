@@ -75,6 +75,14 @@ function isConversionFinishedResponse(response: ConversionStatusResponse): respo
   return response.kind === "ok" && response.data.running === false
 }
 
+export type TocItem = {
+  title?: string
+  dest?: string
+  flag?: string
+  children: TocItem[]
+  id?: number
+}
+
 export const BookModel = types
   .model("BookModel")
   .props({
@@ -92,6 +100,7 @@ export const BookModel = types
      */
     manifestServerPosFrac: types.maybeNull(types.number),
     manifestServerEpoch: types.maybeNull(types.number),
+    manifestToc: types.maybeNull(types.frozen<TocItem>()),
   })
   .actions(withSetPropAction)
   .actions((self) => ({
@@ -138,6 +147,9 @@ export const BookModel = types
         )
       }
       self.annotations.replace(all)
+    },
+    setManifestToc(toc: TocItem | null) {
+      self.setProp("manifestToc", toc)
     },
   }))
   .actions((root) => ({
@@ -308,6 +320,7 @@ export const BookModel = types
       }
 
       root.setAnnotations(result.annotations_map ?? {})
+      root.setManifestToc(result.toc ?? null)
 
       // Extract the most recent server-side reading position from the manifest.
       const positions = Array.isArray(result.last_read_positions)

@@ -3,6 +3,7 @@ import { useStores } from "@/models"
 import type { LibraryMap } from "@/models/CalibreRootStore"
 import { type ClientSetting, ClientSettingModel } from "@/models/calibre"
 import type { MetadataSnapshotIn } from "@/models/calibre"
+import type { TocItem } from "@/components/Modals/Types"
 import { api } from "@/services/api"
 import type { BookReadingStyleType } from "@/type/types"
 import { isCalibreHtmlViewerFormat, isCalibreSerializedHtmlPath } from "@/utils/calibreHtmlViewer"
@@ -454,6 +455,22 @@ export function useViewer() {
     setShowMenu(!showMenu)
   }
 
+  const toc: TocItem | null = (selectedBook?.manifestToc as TocItem | null | undefined) ?? null
+
+  const goToTocEntry = (dest: string): number => {
+    if (!selectedBook) return 0
+    const destPath = dest.split("#")[0]
+    const idx = selectedBook.path.findIndex(
+      (p) =>
+        p === dest ||
+        p === destPath ||
+        p.endsWith(`/${destPath}`) ||
+        p.endsWith(`/${dest}`) ||
+        p.includes(destPath),
+    )
+    return idx >= 0 ? idx : 0
+  }
+
   return {
     orientation,
     onSetBookReadingStyle,
@@ -470,6 +487,8 @@ export function useViewer() {
     onPageChange,
     onLastPage,
     onSetCoverByPage,
+    toc,
+    goToTocEntry,
   }
 }
 
