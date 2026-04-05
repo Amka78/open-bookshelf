@@ -22,6 +22,10 @@ const ar: Translations = {
     titleSortAutoTooltip: "إنشاء sort تلقائيًا من العنوان",
     titleSeriesAutoTooltip: "تقسيم الرقم الأخير من العنوان إلى series / series_index",
   },
+  identifierField: {
+    typeLabel: "النوع",
+    valueLabel: "القيمة",
+  },
   errorScreen: {
     title: "هناك خطأ ما",
     friendlySubtitle:
@@ -52,6 +56,7 @@ const ar: Translations = {
   libraryScreen: {
     dataSearching: "جارٍ البحث",
     searchPlaceholder: "البحث عن كتب...",
+    searchPlaceholderFts: "البحث النصي الكامل...",
   },
   sortMenu: {
     sort: "ترتيب",

@@ -22,6 +22,10 @@ const ko: Translations = {
     titleSortAutoTooltip: "제목에서 sort 자동 생성",
     titleSeriesAutoTooltip: "제목 끝 숫자를 series / series_index로 분리",
   },
+  identifierField: {
+    typeLabel: "유형",
+    valueLabel: "값",
+  },
   errorScreen: {
     title: "뭔가 잘못되었습니다!",
     friendlySubtitle:
@@ -52,6 +56,7 @@ const ko: Translations = {
   libraryScreen: {
     dataSearching: "검색 중",
     searchPlaceholder: "책 검색...",
+    searchPlaceholderFts: "전문 검색...",
   },
   sortMenu: {
     sort: "정렬",

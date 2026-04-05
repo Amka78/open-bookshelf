@@ -7,6 +7,8 @@ import { Keyboard, View, findNodeHandle } from "react-native"
 import { BookEditField } from "./BookEditField"
 import { useEditFieldSuggestions } from "./useEditFieldSuggestions"
 
+/** Standard field labels shown in the fixed sorted order */
+
 export type BookEditFieldListProps = {
   fieldMetadataList: FieldMetadataMap
   book: Book
@@ -77,7 +79,6 @@ export function BookEditFieldList(props: BookEditFieldListProps) {
       (value.linkColumn === "lamg_code" || value.linkColumn === "lang_code")
         ? languageCodeSuggestions
         : suggestionMap.get(value.label)
-
     if (label === "series") {
       const seriesIndexName = "seriesIndex" as Path<MetadataSnapshotIn>
       const seriesName = value.label as Path<MetadataSnapshotIn>
@@ -143,9 +144,35 @@ export function BookEditFieldList(props: BookEditFieldListProps) {
     )
   })
 
+  const customFields = Array.from(props.fieldMetadataList.values())
+    .filter((f) => f.isCustom && f.isEditable && f.name)
+    .map((f) => (
+      <BookEditField
+        key={f.label}
+        book={props.book}
+        control={props.control}
+        fieldMetadata={f}
+        suggestions={suggestionMap.get(f.label)}
+        onTextInputFocus={props.onTextInputFocus}
+        onRegisterFocusChain={registerFocusChain}
+        onSubmitEditing={() => focusNext(f.label)}
+      />
+    ))
+
   return (
     <Box {...props}>
-      <ScrollView>{fields}</ScrollView>
+      <ScrollView>
+        {fields}
+        {/* Custom columns section */}
+        {customFields.length > 0 && (
+          <VStack space="sm" mt="$4">
+            <Text fontWeight="$bold" fontSize="$sm" color="$textLight500">
+              Custom Fields
+            </Text>
+            {customFields}
+          </VStack>
+        )}
+      </ScrollView>
     </Box>
   )
 }

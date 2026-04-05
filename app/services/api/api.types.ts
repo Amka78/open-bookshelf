@@ -109,6 +109,9 @@ export type MetadataType = {
   lang_names: Record<string, string>
   tags: string[]
   rating: number
+  pubdate?: string
+  comments?: string
+  identifiers?: Record<string, string>
 }
 
 /**

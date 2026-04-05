@@ -236,6 +236,10 @@ function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap)
       languages: metadata.languages,
       langNames: metadata.lang_names,
       formatSizes: metadata.format_sizes,
+      publisher: metadata.publisher ?? null,
+      pubdate: metadata.pubdate ?? null,
+      comments: metadata.comments ?? null,
+      identifiers: metadata.identifiers ?? {},
     })
 
     selectedLibrary.books.set(bookId.toString(), {
@@ -261,6 +265,7 @@ function convertLibraryInformation(bookInfo: ApiBookInfo, libraryInfo: LibraryMa
   libraryInfo.bookDisplayFields.clear()
   libraryInfo.fieldMetadataList.clear()
   libraryInfo.virtualLibraries.clear()
+  libraryInfo.setProp("ftsEnabled", bookInfo.fts_enabled ?? false)
 
   Object.keys(bookInfo.virtual_libraries).forEach((key) => {
     libraryInfo.virtualLibraries.push({ name: key, path: bookInfo.virtual_libraries[key] })

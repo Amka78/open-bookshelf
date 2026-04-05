@@ -10,6 +10,7 @@ import {
   TooltipIconButton,
   VStack,
 } from "@/components"
+import { FormIdentifierField } from "@/components/Forms/FormIdentifierField"
 import { useRomajiText } from "@/hooks/useRomajiText"
 import type { Book, FieldMetadata, MetadataSnapshotIn } from "@/models/calibre"
 import type { ComponentProps } from "react"
@@ -91,6 +92,15 @@ export function BookEditField(props: BookEditFieldProps) {
     name: "seriesIndex" as Path<MetadataSnapshotIn>,
   })
 
+  // Special label-based cases that don't follow standard datatype routing
+  if (props.fieldMetadata.label === "identifiers") {
+    field = (
+      <FormIdentifierField
+        control={props.control}
+        name={"identifiers" as Path<MetadataSnapshotIn>}
+      />
+    )
+  } else {
   switch (props.fieldMetadata.datatype) {
     case "rating":
       field = <FormRatingGroup control={props.control} name={label} max={10} />
@@ -162,6 +172,7 @@ export function BookEditField(props: BookEditFieldProps) {
       break
     default:
       break
+  }
   }
   return (
     <View ref={containerRef}>

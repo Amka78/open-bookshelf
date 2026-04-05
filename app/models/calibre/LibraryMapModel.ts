@@ -24,6 +24,7 @@ export const LibraryMapModel = types
     fieldMetadataList: types.map(FieldMetadataModel),
     selectedBook: types.safeReference(types.late(() => BookModel)),
     virtualLibraries: types.array(VirtualLibraryModel),
+    ftsEnabled: types.optional(types.boolean, false),
   })
   .actions(withSetPropAction)
   .actions((root) => ({

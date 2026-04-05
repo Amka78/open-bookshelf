@@ -20,6 +20,10 @@ const en = {
     titleSortAutoTooltip: "Generate sort from title",
     titleSeriesAutoTooltip: "Split trailing number from title to series/series_index",
   },
+  identifierField: {
+    typeLabel: "Type",
+    valueLabel: "Value",
+  },
   errorScreen: {
     title: "Something went wrong!",
     friendlySubtitle:
@@ -51,6 +55,7 @@ const en = {
   libraryScreen: {
     dataSearching: "Searching",
     searchPlaceholder: "Search books...",
+    searchPlaceholderFts: "Full-text search...",
   },
   sortMenu: {
     sort: "Sort",

@@ -23,6 +23,11 @@ export const MetadataModel = types
     langNames: types.map(types.string),
     formatSizes: types.map(types.number),
     cover: types.maybe(types.string),
+    publisher: types.maybeNull(types.string),
+    pubdate: types.maybeNull(types.string),
+    comments: types.maybeNull(types.string),
+    /** Calibre identifiers stored as {type: value} e.g. {isbn: "9781234567890"} */
+    identifiers: types.map(types.string),
   })
   .actions(withSetPropAction)
 

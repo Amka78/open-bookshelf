@@ -203,7 +203,11 @@ export const LibraryScreen: FC = observer(() => {
               libraryHook.onSearch(text)
             }}
             suggestions={libraryHook.getSearchSuggestions()}
-            placeholderTx="libraryScreen.searchPlaceholder"
+            placeholderTx={
+              selectedLibrary?.ftsEnabled
+                ? "libraryScreen.searchPlaceholderFts"
+                : "libraryScreen.searchPlaceholder"
+            }
             size="sm"
             width={convergenceHook.isLarge ? 280 : "100%"}
             testID="library-search-input"
