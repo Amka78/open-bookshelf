@@ -1,0 +1,150 @@
+name: Release Mobile Builds
+
+on:
+  push:
+    # バージョンタグ（v1.2.3 形式）のみトリガー
+    tags:
+      - "v*"
+
+permissions:
+  contents: write  # GitHub Release の作成に必要
+
+jobs:
+  # ─────────────────────────────────────────────
+  # Android: EAS Cloud ビルド（ubuntu で実行）
+  # ─────────────────────────────────────────────
+  android:
+    name: Android Production Build
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-path: ${{ steps.download.outputs.path }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build Android (EAS Cloud)
+        id: build
+        run: |
+          BUILD_JSON=$(eas build \
+            --platform android \
+            --profile production \
+            --non-interactive \
+            --wait \
+            --json)
+          echo "$BUILD_JSON" > build-android.json
+          BUILD_URL=$(echo "$BUILD_JSON" | python3 -c \
+            "import json,sys; builds=json.load(sys.stdin); print(builds[0]['artifacts']['buildUrl'])")
+          echo "url=$BUILD_URL" >> $GITHUB_OUTPUT
+
+      - name: Download Android artifact
+        id: download
+        run: |
+          FILENAME="open-bookshelf-${{ github.ref_name }}-android.aab"
+          curl -L "${{ steps.build.outputs.url }}" -o "$FILENAME"
+          echo "path=$FILENAME" >> $GITHUB_OUTPUT
+
+      - name: Upload to workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-build
+          path: ${{ steps.download.outputs.path }}
+          retention-days: 7
+
+  # ─────────────────────────────────────────────
+  # iOS: EAS Cloud ビルド（署名は EAS 側で管理）
+  # ─────────────────────────────────────────────
+  ios:
+    name: iOS Production Build
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-path: ${{ steps.download.outputs.path }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build iOS (EAS Cloud)
+        id: build
+        run: |
+          BUILD_JSON=$(eas build \
+            --platform ios \
+            --profile production \
+            --non-interactive \
+            --wait \
+            --json)
+          echo "$BUILD_JSON" > build-ios.json
+          BUILD_URL=$(echo "$BUILD_JSON" | python3 -c \
+            "import json,sys; builds=json.load(sys.stdin); print(builds[0]['artifacts']['buildUrl'])")
+          echo "url=$BUILD_URL" >> $GITHUB_OUTPUT
+
+      - name: Download iOS artifact
+        id: download
+        run: |
+          FILENAME="open-bookshelf-${{ github.ref_name }}-ios.ipa"
+          curl -L "${{ steps.build.outputs.url }}" -o "$FILENAME"
+          echo "path=$FILENAME" >> $GITHUB_OUTPUT
+
+      - name: Upload to workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build
+          path: ${{ steps.download.outputs.path }}
+          retention-days: 7
+
+  # ─────────────────────────────────────────────
+  # GitHub Release: 両プラットフォームの完成後に作成
+  # ─────────────────────────────────────────────
+  create-release:
+    name: Create GitHub Release
+    needs: [android, ios]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Android artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: android-build
+
+      - name: Download iOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ios-build
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --title "OpenBookShelf ${{ github.ref_name }}" \
+            --generate-notes \
+            "open-bookshelf-${{ github.ref_name }}-android.aab" \
+            "open-bookshelf-${{ github.ref_name }}-ios.ipa"

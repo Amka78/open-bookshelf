@@ -2,10 +2,9 @@ name: Build and Push Docker Image
 
 on:
   push:
-    branches:
-      - main
+    # バージョンタグ（v1.2.3 形式）のみトリガー
     tags:
-      - "*"
+      - "v*"
 
 permissions:
   contents: read
@@ -34,12 +33,12 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            # main ブランチは :latest タグ
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
-            # コミット SHA タグ（例: sha-a1b2c3d）
-            type=sha,prefix=sha-
-            # git タグがある場合はそのままタグ名を使用
-            type=ref,event=tag
+            # セマバー完全バージョン（例: 1.2.3）
+            type=semver,pattern={{version}}
+            # メジャー.マイナー（例: 1.2）
+            type=semver,pattern={{major}}.{{minor}}
+            # 常に :latest を更新
+            type=raw,value=latest
 
       - name: Build and push
         uses: docker/build-push-action@v6
@@ -48,6 +47,5 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # GitHub Actions キャッシュでビルドを高速化
           cache-from: type=gha
           cache-to: type=gha,mode=max
