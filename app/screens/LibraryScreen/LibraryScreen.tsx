@@ -7,16 +7,14 @@ import {
   FlatList,
   HStack,
   IconButton,
-  Input,
   LeftSideMenu,
   LibraryViewButton,
   SelectionActionBar,
   SortMenu,
   StaggerContainer,
-  Text,
   VirtualLibraryButton,
 } from "@/components"
-import { InputField } from "@/components/InputField/InputField"
+import { SearchInputField } from "@/components/SearchInputField"
 import type { CalibreFieldOperator, QueryOperator } from "@/components/LeftSideMenu/LeftSideMenu"
 import {
   buildItemKey,
@@ -40,7 +38,6 @@ import { observer } from "mobx-react-lite"
 import type React from "react"
 import { type FC, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { Platform, useWindowDimensions } from "react-native"
-import type { SearchBarCommands } from "react-native-screens"
 import { useLibrary } from "./useLibrary"
 
 /** Split a query string by AND or OR, returning individual conditions. */
@@ -80,7 +77,6 @@ export const LibraryScreen: FC = observer(() => {
     })
   }, [])
 
-  const searchBar = useRef<SearchBarCommands | null>(null)
   const thumbnailSourceCacheRef = useRef<
     Map<
       Book["id"],
@@ -180,10 +176,6 @@ export const LibraryScreen: FC = observer(() => {
   )
 
   useLayoutEffect(() => {
-    const headerTitleText = selectedLibrary?.searchSetting?.query
-      ? selectedLibrary.searchSetting.query
-      : calibreRootStore.selectedLibrary?.id
-
     navigation.setOptions({
       headerLeft: (props) => {
         return (
@@ -200,70 +192,36 @@ export const LibraryScreen: FC = observer(() => {
           />
         )
       },
-      headerTitle: convergenceHook.isLarge
-        ? () => {
-            return (
-              <HStack alignItems="center">
-                <Box w={260} ml={8}>
-                  <Input size="sm">
-                    <InputField
-                      value={libraryHook.headerSearchText}
-                      onChangeText={(text) => {
-                        libraryHook.setHeaderSearchText(libraryHook.completeSearchParameter(text))
-                      }}
-                      textAlign="left"
-                      onSubmitEditing={() => {
-                        libraryHook.onSearch(libraryHook.headerSearchText)
-                      }}
-                      returnKeyType="search"
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      clearButtonMode="while-editing"
-                    />
-                  </Input>
-                </Box>
-              </HStack>
-            )
-          }
-        : headerTitleText,
+      headerTitle: () => (
+        <HStack alignItems="center" flex={1}>
+          <SearchInputField
+            value={libraryHook.headerSearchText}
+            onChangeText={(text) => {
+              libraryHook.setHeaderSearchText(libraryHook.completeSearchParameter(text))
+            }}
+            onSubmit={(text) => {
+              libraryHook.onSearch(text)
+            }}
+            suggestions={libraryHook.getSearchSuggestions()}
+            placeholderTx="libraryScreen.searchPlaceholder"
+            size="sm"
+            width={convergenceHook.isLarge ? 280 : "100%"}
+            testID="library-search-input"
+          />
+        </HStack>
+      ),
       headerRight: convergenceHook.isLarge
         ? () => {
             return <HStack space="sm">{libraryActions}</HStack>
           }
         : undefined,
-      headerSearchBarOptions: {
-        hideWhenScrolling: false,
-
-        ref: searchBar,
-        onSearchButtonPress: (e) => {
-          libraryHook.onSearch(e.nativeEvent.text)
-          searchBar.current?.blur()
-        },
-        onChangeText: (e) => {
-          const completedText = libraryHook.completeSearchParameter(e.nativeEvent.text)
-          if (completedText !== e.nativeEvent.text) {
-            searchBar.current?.setText(completedText)
-          }
-        },
-        onOpen: () => {
-          if (selectedLibrary.searchSetting?.query) {
-            searchBar.current?.setText(selectedLibrary.searchSetting.query)
-          }
-        },
-        onCancelButtonPress: () => {
-          searchBar.current?.toggleCancelButton(false)
-        },
-      },
     })
   }, [
-    calibreRootStore.selectedLibrary?.id,
     convergenceHook.isLarge,
     libraryHook,
     libraryActions,
     navigation,
     selectedLibrary,
-    selectedLibrary?.searchSetting,
-    selectedLibrary?.searchSetting?.query,
   ])
 
   const renderItem = ({ item }: { item: Book }) => {

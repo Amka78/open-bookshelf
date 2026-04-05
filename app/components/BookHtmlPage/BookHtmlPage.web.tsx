@@ -15,7 +15,7 @@ import {
 
 const FALLBACK_AUTO_HEIGHT = 320
 
-export function BookHtmlPage(props: BookHtmlPageProps & { onTextSelect?: (text: string) => void }) {
+export function BookHtmlPage(props: BookHtmlPageProps) {
   const palette = usePalette()
   const colorScheme = useColorScheme()
   const { autoHeight, documentKey, error, html, loading } = useCalibreHtmlDocument({

@@ -15,6 +15,7 @@ export type BookHtmlPageProps = {
   pageType?: "singlePage" | "leftPage" | "rightPage"
   onPress?: () => void
   onLongPress?: () => void
+  onTextSelect?: (text: string) => void
   annotations?: Array<{ uuid: string; highlightedText: string | null; styleWhich: string | null }>
   themeMode?: "light" | "dark"
   themeTextColor?: string

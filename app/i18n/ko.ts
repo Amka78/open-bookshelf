@@ -51,6 +51,7 @@ const ko: Translations = {
   },
   libraryScreen: {
     dataSearching: "검색 중",
+    searchPlaceholder: "책 검색...",
   },
   sortMenu: {
     sort: "정렬",

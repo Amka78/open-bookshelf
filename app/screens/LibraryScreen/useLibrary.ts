@@ -56,6 +56,15 @@ export function useLibrary() {
         ),
       )
 
+  /**
+   * Returns autocomplete suggestions for the current search input.
+   * Suggests Calibre field names (with `:=` suffix) and boolean keywords.
+   */
+  const getSearchSuggestions = (): string[] => {
+    const fieldSuggestions = searchParameterCandidates.map((f) => `${f}:=`)
+    return ["AND", "OR", "NOT", ...fieldSuggestions]
+  }
+
   const completeSearchParameter = (text: string) => {
     const lastSpaceIndex = text.lastIndexOf(" ")
     const prefixText = lastSpaceIndex >= 0 ? text.slice(0, lastSpaceIndex + 1) : ""
@@ -170,6 +179,7 @@ export function useLibrary() {
     setHeaderSearchText,
     searchParameterCandidates,
     completeSearchParameter,
+    getSearchSuggestions,
     selectedBookIds,
     isSelectionMode,
     toggleBookSelection,

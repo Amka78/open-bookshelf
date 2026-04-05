@@ -51,6 +51,7 @@ const ar: Translations = {
   },
   libraryScreen: {
     dataSearching: "جارٍ البحث",
+    searchPlaceholder: "البحث عن كتب...",
   },
   sortMenu: {
     sort: "ترتيب",

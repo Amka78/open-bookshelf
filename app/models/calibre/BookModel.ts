@@ -94,7 +94,7 @@ export const BookModel = types
     manifestServerEpoch: types.maybeNull(types.number),
   })
   .actions(withSetPropAction)
-  .actions((root) => ({
+  .actions((self) => ({
     setAnnotations(map: AnnotationsMap) {
       const all: Annotation[] = []
       for (const ann of map.highlight ?? []) {
@@ -137,8 +137,10 @@ export const BookModel = types
           }),
         )
       }
-      root.annotations.replace(all)
+      self.annotations.replace(all)
     },
+  }))
+  .actions((root) => ({
     convert: flow(function* (
       format: string,
       libraryId: string,

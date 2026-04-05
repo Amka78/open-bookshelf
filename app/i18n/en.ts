@@ -50,6 +50,7 @@ const en = {
   },
   libraryScreen: {
     dataSearching: "Searching",
+    searchPlaceholder: "Search books...",
   },
   sortMenu: {
     sort: "Sort",

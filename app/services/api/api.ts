@@ -33,7 +33,7 @@ import type {
   ApiFeedResponse,
   ApiTagBrowser,
   CalibreAnnotation,
-  type LastReadPosition,
+  LastReadPosition,
   SetBookMetadata,
   SetBookResult,
 } from "./api.types"
