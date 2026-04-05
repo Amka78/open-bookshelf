@@ -67,4 +67,5 @@ export type ModalStackParams = {
   }
   ReadingStatsModal: Record<string, never>
   UserPreferencesModal: Record<string, never>
+  JobQueueModal: Record<string, never>
 }

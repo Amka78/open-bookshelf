@@ -5,6 +5,7 @@ import { api } from "@/services/api"
 import { useNavigation } from "@react-navigation/native"
 import * as DocumentPicker from "expo-document-picker"
 import { getSnapshot } from "mobx-state-tree"
+import { useState } from "react"
 import { useForm } from "react-hook-form"
 
 type MetadataFormValues = MetadataSnapshotIn
@@ -139,6 +140,38 @@ export function useBookEdit() {
     return deleteResult.kind === "ok"
   }
 
+  const [coverUrlInput, setCoverUrlInput] = useState("")
+  const [isFetchingCover, setIsFetchingCover] = useState(false)
+  const [fetchCoverError, setFetchCoverError] = useState(false)
+
+  const fetchCoverFromUrl = async (): Promise<boolean> => {
+    const url = coverUrlInput.trim()
+    if (!url) return false
+    setIsFetchingCover(true)
+    setFetchCoverError(false)
+    try {
+      const fetchResponse = await fetch(url)
+      if (!fetchResponse.ok) {
+        setFetchCoverError(true)
+        return false
+      }
+      const blob = await fetchResponse.blob()
+      const result = await api.setCoverBinary(selectedLibrary.id, selectedBook.id, blob)
+      if (result.kind === "ok") {
+        form.setValue("cover" as any, url)
+        setCoverUrlInput("")
+        return true
+      }
+      setFetchCoverError(true)
+      return false
+    } catch {
+      setFetchCoverError(true)
+      return false
+    } finally {
+      setIsFetchingCover(false)
+    }
+  }
+
   return {
     form,
     selectedBook,
@@ -146,5 +179,10 @@ export function useBookEdit() {
     onSubmit,
     onUploadFormat,
     onDeleteFormat,
+    coverUrlInput,
+    setCoverUrlInput,
+    isFetchingCover,
+    fetchCoverError,
+    fetchCoverFromUrl,
   }
 }

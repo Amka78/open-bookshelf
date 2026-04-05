@@ -19,6 +19,10 @@ const en = {
     authorSortAutoTooltip: "Generate author sort from authors",
     titleSortAutoTooltip: "Generate sort from title",
     titleSeriesAutoTooltip: "Split trailing number from title to series/series_index",
+    fetchCoverFromUrl: "Fetch cover from URL",
+    fetchCoverUrlPlaceholder: "Enter image URL...",
+    fetchingCover: "Fetching...",
+    fetchCoverError: "Failed to fetch cover",
   },
   identifierField: {
     typeLabel: "Type",
@@ -255,6 +259,19 @@ const en = {
     pdfPortrait: "Portrait",
     pdfLandscape: "Landscape",
     pdfUnit: "Unit",
+  },
+  seriesNavigation: {
+    prevBook: "Previous",
+    nextBook: "Next",
+    bookOfTotal: "{{current}} / {{total}}",
+  },
+  jobQueue: {
+    title: "Background Jobs",
+    noJobs: "No active jobs",
+    running: "Running",
+    done: "Done",
+    failed: "Failed",
+    refresh: "Refresh",
   },
 }
 

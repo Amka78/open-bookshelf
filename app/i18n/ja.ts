@@ -21,6 +21,14 @@ const ja: Translations = {
     authorSortAutoTooltip: "著者から author_sort を自動生成",
     titleSortAutoTooltip: "タイトルから sort を自動生成",
     titleSeriesAutoTooltip: "タイトル末尾の数字を series / series_index に分割",
+    fetchCoverFromUrl: "URLから表紙を取得",
+    fetchCoverUrlPlaceholder: "画像URLを入力...",
+    fetchingCover: "取得中...",
+    fetchCoverError: "表紙の取得に失敗しました",
+  },
+  identifierField: {
+    typeLabel: "種別",
+    valueLabel: "値",
   },
   errorScreen: {
     title: "問題が発生しました",
@@ -253,6 +261,19 @@ const ja: Translations = {
     pdfPortrait: "縦",
     pdfLandscape: "横",
     pdfUnit: "単位",
+  },
+  seriesNavigation: {
+    prevBook: "前へ",
+    nextBook: "次へ",
+    bookOfTotal: "{{current}} / {{total}}",
+  },
+  jobQueue: {
+    title: "バックグラウンドジョブ",
+    noJobs: "アクティブなジョブはありません",
+    running: "実行中",
+    done: "完了",
+    failed: "失敗",
+    refresh: "更新",
   },
 }
 

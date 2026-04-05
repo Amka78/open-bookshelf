@@ -31,6 +31,15 @@ export const LibraryMapModel = types
     ),
   })
   .actions(withSetPropAction)
+  .views((self) => ({
+    seriesBooksFor(bookId: number) {
+      const series = self.books.get(bookId.toString())?.metaData?.series
+      if (!series) return []
+      return Array.from(self.books.values())
+        .filter((b) => b.metaData?.series === series)
+        .sort((a, b) => (a.metaData?.seriesIndex ?? 0) - (b.metaData?.seriesIndex ?? 0))
+    },
+  }))
   .actions((root) => ({
     setBook: (bookId?: number) => {
       // MST resolves references by identifier at runtime; TS types don't allow direct ID assignment

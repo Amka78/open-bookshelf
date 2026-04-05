@@ -21,6 +21,10 @@ const ko: Translations = {
     authorSortAutoTooltip: "저자에서 author_sort 자동 생성",
     titleSortAutoTooltip: "제목에서 sort 자동 생성",
     titleSeriesAutoTooltip: "제목 끝 숫자를 series / series_index로 분리",
+    fetchCoverFromUrl: "URL에서 표지 가져오기",
+    fetchCoverUrlPlaceholder: "이미지 URL 입력...",
+    fetchingCover: "가져오는 중...",
+    fetchCoverError: "표지 가져오기 실패",
   },
   identifierField: {
     typeLabel: "유형",
@@ -256,6 +260,19 @@ const ko: Translations = {
     preferredFormatAuto: "자동",
     dateDisplayFormat: "날짜 형식",
     booksPerPage: "페이지당 도서 수",
+  },
+  seriesNavigation: {
+    prevBook: "이전",
+    nextBook: "다음",
+    bookOfTotal: "{{current}} / {{total}}",
+  },
+  jobQueue: {
+    title: "백그라운드 작업",
+    noJobs: "활성 작업 없음",
+    running: "실행 중",
+    done: "완료",
+    failed: "실패",
+    refresh: "새로 고침",
   },
 }
 

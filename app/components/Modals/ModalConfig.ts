@@ -7,6 +7,7 @@ import { BookEditModal } from "./BookEditModal"
 import { ConfirmModal } from "./ConfirmModal"
 import { ErrorModal } from "./ErrorModal"
 import { FormatSelectModal } from "./FormatSelectModal"
+import { JobQueueModal } from "./JobQueueModal"
 import { LoginModal } from "./LoginModal"
 import { ReadingStatsModal } from "./ReadingStatsModal"
 import { UserPreferencesModal } from "./UserPreferencesModal"
@@ -22,6 +23,7 @@ export const modalConfig: ModalStackConfig = {
   ConfirmModal,
   ErrorModal,
   FormatSelectModal,
+  JobQueueModal,
   LoginModal,
   ReadingStatsModal,
   UserPreferencesModal,

@@ -33,6 +33,7 @@ import type {
   ApiFeedResponse,
   ApiTagBrowser,
   CalibreAnnotation,
+  CalibreJob,
   LastReadPosition,
   SetBookMetadata,
   SetBookResult,
@@ -1275,6 +1276,19 @@ export class Api {
       return best
     }, null)
     return { kind: "ok", data: latest }
+  }
+
+  async getJobs(
+    libraryId: string,
+  ): Promise<{ kind: "ok"; data: CalibreJob[] } | GeneralApiProblem> {
+    const response: ApiResponse<CalibreJob[]> = await this.apisauce.get(
+      `ajax/jobs?library_id=${encodeURIComponent(libraryId)}`,
+    )
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response)
+      if (problem) return problem
+    }
+    return { kind: "ok", data: response.data ?? [] }
   }
 }
 

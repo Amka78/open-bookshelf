@@ -419,3 +419,15 @@ export type SetBookMetadata = {
 }
 
 export type SetBookResult = Map<number, FieldMetadata>
+
+export type CalibreJob = {
+  id: number
+  name: string
+  running: boolean
+  percent: number
+  status: string | null
+  start_time: number
+  done: boolean
+  failed: boolean
+  log?: string
+}

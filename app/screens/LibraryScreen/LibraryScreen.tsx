@@ -141,6 +141,13 @@ export const LibraryScreen: FC = observer(() => {
         }}
       />
       <IconButton
+        name="progress-clock"
+        iconSize="md-"
+        onPress={() => {
+          modal.openModal("JobQueueModal", {})
+        }}
+      />
+      <IconButton
         name="chart-bar"
         onPress={() => {
           modal.openModal("ReadingStatsModal", {})

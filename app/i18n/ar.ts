@@ -21,6 +21,10 @@ const ar: Translations = {
     authorSortAutoTooltip: "إنشاء author_sort تلقائيًا من المؤلفين",
     titleSortAutoTooltip: "إنشاء sort تلقائيًا من العنوان",
     titleSeriesAutoTooltip: "تقسيم الرقم الأخير من العنوان إلى series / series_index",
+    fetchCoverFromUrl: "جلب الغلاف من رابط",
+    fetchCoverUrlPlaceholder: "أدخل رابط الصورة...",
+    fetchingCover: "جارٍ الجلب...",
+    fetchCoverError: "فشل جلب الغلاف",
   },
   identifierField: {
     typeLabel: "النوع",
@@ -256,6 +260,19 @@ const ar: Translations = {
     pdfPortrait: "عمودي",
     pdfLandscape: "أفقي",
     pdfUnit: "الوحدة",
+  },
+  seriesNavigation: {
+    prevBook: "السابق",
+    nextBook: "التالي",
+    bookOfTotal: "{{current}} / {{total}}",
+  },
+  jobQueue: {
+    title: "المهام في الخلفية",
+    noJobs: "لا توجد مهام نشطة",
+    running: "قيد التشغيل",
+    done: "مكتمل",
+    failed: "فشل",
+    refresh: "تحديث",
   },
 }
 
