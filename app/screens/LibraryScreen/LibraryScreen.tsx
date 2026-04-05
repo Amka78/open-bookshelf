@@ -133,6 +133,13 @@ export const LibraryScreen: FC = observer(() => {
 
   const libraryActions = (
     <>
+      <IconButton
+        name="chart-bar"
+        onPress={() => {
+          modal.openModal("ReadingStatsModal", {})
+        }}
+        iconSize="md-"
+      />
       <AuthButton
         mode={authenticationStore.isAuthenticated ? "logout" : "login"}
         onLoginPress={() => {
@@ -211,6 +218,14 @@ export const LibraryScreen: FC = observer(() => {
             size="sm"
             width={convergenceHook.isLarge ? 280 : "100%"}
             testID="library-search-input"
+            savedSearches={selectedLibrary?.savedSearches?.slice() ?? []}
+            onSaveSearch={(name, query) => {
+              selectedLibrary?.addSavedSearch(name, query)
+            }}
+            onLoadSearch={(query) => {
+              libraryHook.setHeaderSearchText(query)
+              libraryHook.onSearch(query)
+            }}
           />
         </HStack>
       ),
@@ -393,6 +408,27 @@ export const LibraryScreen: FC = observer(() => {
     await bulkDownloadHook.execute(libraryHook.selectedBooks, selectedLibrary.id, modal)
   }
 
+  const onBulkDelete = () => {
+    if (libraryHook.selectedBookIds.size === 0) return
+    modal.openModal("ConfirmModal", {
+      titleTx: "modal.bulkDeleteConfirmModal.title",
+      messageTx: "modal.bulkDeleteConfirmModal.message",
+      onOKPress: async () => {
+        try {
+          const bookIds = Array.from(libraryHook.selectedBookIds)
+          await api.deleteBooks(selectedLibrary.id, bookIds)
+          libraryHook.clearSelection()
+          await libraryHook.onSearch()
+        } catch (e) {
+          modal.openModal("ErrorModal", {
+            titleTx: "common.error",
+            message: e instanceof Error ? e.message : String(e),
+          })
+        }
+      },
+    })
+  }
+
   const LibraryCore = (
     <>
       {libraryHook.isSelectionMode && (
@@ -400,6 +436,7 @@ export const LibraryScreen: FC = observer(() => {
           selectedCount={libraryHook.selectedBookIds.size}
           onBulkEdit={onBulkEdit}
           onBulkDownload={onBulkDownload}
+          onBulkDelete={onBulkDelete}
           onClearSelection={libraryHook.clearSelection}
         />
       )}

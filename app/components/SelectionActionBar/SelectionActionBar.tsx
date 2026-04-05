@@ -6,6 +6,7 @@ export type SelectionActionBarProps = {
   selectedCount: number
   onBulkEdit: () => void
   onBulkDownload: () => void
+  onBulkDelete?: () => void
   onClearSelection: () => void
 }
 
@@ -13,6 +14,7 @@ export function SelectionActionBar({
   selectedCount,
   onBulkEdit,
   onBulkDownload,
+  onBulkDelete,
   onClearSelection,
 }: SelectionActionBarProps) {
   const palette = usePalette()
@@ -42,6 +44,15 @@ export function SelectionActionBar({
           onPress={onBulkDownload}
           testID="selection-action-bar-bulk-download"
         />
+        {onBulkDelete && (
+          <IconButton
+            name="trash-can"
+            iconSize="md-"
+            labelTx="multiSelectBar.bulkDelete"
+            onPress={onBulkDelete}
+            testID="selection-action-bar-bulk-delete"
+          />
+        )}
         <IconButton
           name="close"
           iconSize="md-"

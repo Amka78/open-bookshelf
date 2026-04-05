@@ -25,6 +25,10 @@ export const LibraryMapModel = types
     selectedBook: types.safeReference(types.late(() => BookModel)),
     virtualLibraries: types.array(VirtualLibraryModel),
     ftsEnabled: types.optional(types.boolean, false),
+    savedSearches: types.optional(
+      types.array(types.model({ name: types.string, query: types.string })),
+      [],
+    ),
   })
   .actions(withSetPropAction)
   .actions((root) => ({
@@ -43,6 +47,15 @@ export const LibraryMapModel = types
       handleCommonApiError(response)
       return false
     }),
+    addSavedSearch: (name: string, query: string) => {
+      if (!root.savedSearches.find((s) => s.name === name)) {
+        root.savedSearches.push({ name, query })
+      }
+    },
+    removeSavedSearch: (name: string) => {
+      const idx = root.savedSearches.findIndex((s) => s.name === name)
+      if (idx >= 0) root.savedSearches.splice(idx, 1)
+    },
   }))
 
 export type LibraryMap = Instance<typeof LibraryMapModel>

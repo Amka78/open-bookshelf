@@ -8,6 +8,7 @@ import { ConfirmModal } from "./ConfirmModal"
 import { ErrorModal } from "./ErrorModal"
 import { FormatSelectModal } from "./FormatSelectModal"
 import { LoginModal } from "./LoginModal"
+import { ReadingStatsModal } from "./ReadingStatsModal"
 import { ViewerAutoPageTurnSettingModal } from "./ViewerAutoPageTurnSettingModal"
 import { ViewerRatingModal } from "./ViewerRatingModal"
 
@@ -21,6 +22,7 @@ export const modalConfig: ModalStackConfig = {
   ErrorModal,
   FormatSelectModal,
   LoginModal,
+  ReadingStatsModal,
   ViewerAutoPageTurnSettingModal,
   ViewerRatingModal,
 }

@@ -822,6 +822,19 @@ export class Api {
 
     return { kind: "ok" }
   }
+
+  /**
+   * Delete multiple books in parallel.
+   * @param libraryId
+   * @param bookIds
+   */
+  async deleteBooks(libraryId: string, bookIds: number[]) {
+    const results = await Promise.all(bookIds.map((bookId) => this.deleteBook(libraryId, bookId)))
+    const failed = results.find((r) => r.kind !== "ok")
+    if (failed) return failed
+    return { kind: "ok" as const }
+  }
+
   /**
    * Delete the book with the specified ID.
    * @param libraryId

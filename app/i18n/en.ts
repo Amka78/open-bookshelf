@@ -129,6 +129,10 @@ const en = {
       title: "Clear cache",
       message: "Do you want to clear cache?",
     },
+    bulkDeleteConfirmModal: {
+      title: "Delete selected books",
+      message: "Are you sure you want to delete the selected books? This cannot be undone.",
+    },
     resumeReadingConfirmModal: {
       title: "Resume reading",
       message: "You have unfinished progress. Continue from where you left off?",
@@ -156,7 +160,20 @@ const en = {
     selectedCount: "{{count}} selected",
     bulkEdit: "Edit All",
     bulkDownload: "Download All",
+    bulkDelete: "Delete All",
     clearSelection: "Clear",
+  },
+  searchBar: {
+    saveSearch: "Save search",
+    savedSearches: "Saved searches",
+    noSavedSearches: "No saved searches",
+  },
+  readingStats: {
+    title: "Reading Stats",
+    booksInProgress: "Books in Progress",
+    cachedBooks: "Cached Books",
+    recentlyRead: "Recently Read",
+    noRecentBooks: "No reading history yet",
   },
   rating: {
     noRate: "No Rate",

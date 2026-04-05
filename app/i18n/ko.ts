@@ -130,6 +130,10 @@ const ko: Translations = {
       title: "캐시 삭제",
       message: "캐시를 삭제하시겠습니까?",
     },
+    bulkDeleteConfirmModal: {
+      title: "선택한 책 삭제",
+      message: "선택한 책을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+    },
     resumeReadingConfirmModal: {
       title: "이어 읽기",
       message: "읽던 페이지가 있습니다. 이어서 읽으시겠습니까?",
@@ -157,7 +161,20 @@ const ko: Translations = {
     selectedCount: "{{count}}개 선택됨",
     bulkEdit: "일괄 편집",
     bulkDownload: "일괄 다운로드",
+    bulkDelete: "전체 삭제",
     clearSelection: "선택 해제",
+  },
+  searchBar: {
+    saveSearch: "검색 저장",
+    savedSearches: "저장된 검색",
+    noSavedSearches: "저장된 검색 없음",
+  },
+  readingStats: {
+    title: "독서 통계",
+    booksInProgress: "읽는 중인 책",
+    cachedBooks: "캐시된 책",
+    recentlyRead: "최근 읽은 책",
+    noRecentBooks: "읽기 기록이 없습니다",
   },
   bookConvertScreen: {
     inputFormat: "현재 형식",

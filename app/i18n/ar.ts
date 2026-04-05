@@ -130,6 +130,10 @@ const ar: Translations = {
       title: "مسح التخزين المؤقت",
       message: "هل تريد مسح التخزين المؤقت؟",
     },
+    bulkDeleteConfirmModal: {
+      title: "حذف الكتب المحددة",
+      message: "هل أنت متأكد أنك تريد حذف الكتب المحددة؟ لا يمكن التراجع عن هذا الإجراء.",
+    },
     resumeReadingConfirmModal: {
       title: "متابعة القراءة",
       message: "لديك كتاب غير مكتمل. هل تريد المتابعة من حيث توقفت؟",
@@ -157,7 +161,20 @@ const ar: Translations = {
     selectedCount: "{{count}} محدد",
     bulkEdit: "تعديل الكل",
     bulkDownload: "تنزيل الكل",
+    bulkDelete: "حذف الكل",
     clearSelection: "إلغاء التحديد",
+  },
+  searchBar: {
+    saveSearch: "حفظ البحث",
+    savedSearches: "عمليات البحث المحفوظة",
+    noSavedSearches: "لا توجد عمليات بحث محفوظة",
+  },
+  readingStats: {
+    title: "إحصائيات القراءة",
+    booksInProgress: "الكتب قيد القراءة",
+    cachedBooks: "الكتب المخزنة مؤقتًا",
+    recentlyRead: "قرأت مؤخرًا",
+    noRecentBooks: "لا يوجد سجل قراءة بعد",
   },
   rating: {
     noRate: "بدون تقييم",

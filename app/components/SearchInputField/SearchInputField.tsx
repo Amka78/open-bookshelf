@@ -1,11 +1,14 @@
 import { Box } from "@/components/Box/Box"
 import { FormSuggestionPopover } from "@/components/Forms/FormSuggestionPopover"
+import { IconButton } from "@/components/IconButton/IconButton"
 import { InputField } from "@/components/InputField/InputField"
 import type { MessageKey } from "@/i18n"
+import { HStack } from "@gluestack-ui/themed"
 import { useEffect, useRef, useState } from "react"
 import type { TextInput as RNTextInput } from "react-native"
 
 const MAX_SUGGESTIONS = 8
+const SAVED_SEARCH_PREFIX = "🔖 "
 
 /** Extract the token currently being typed (the segment after the last whitespace). */
 function getCurrentToken(text: string): { prefix: string; token: string } {
@@ -27,6 +30,9 @@ type Props = {
   width?: number | string
   testID?: string
   autoFocus?: boolean
+  savedSearches?: Array<{ name: string; query: string }>
+  onSaveSearch?: (name: string, query: string) => void
+  onLoadSearch?: (query: string) => void
 }
 
 /**
@@ -44,6 +50,9 @@ export function SearchInputField({
   width,
   testID,
   autoFocus,
+  savedSearches,
+  onSaveSearch,
+  onLoadSearch,
 }: Props) {
   const [isSuggestionOpen, setIsSuggestionOpen] = useState(false)
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -83,56 +92,95 @@ export function SearchInputField({
     }
   }
 
-  const isOpen = isSuggestionOpen && candidates.length > 0
+  // Show saved searches when focused with no active autocomplete candidates
+  const savedSearchCandidates: string[] = []
+  if (isSuggestionOpen && candidates.length === 0 && savedSearches && savedSearches.length > 0) {
+    for (const s of savedSearches) {
+      savedSearchCandidates.push(`${SAVED_SEARCH_PREFIX}${s.name}`)
+    }
+  }
+
+  const activeCandidates = candidates.length > 0 ? candidates : savedSearchCandidates
+  const isOpen = isSuggestionOpen && activeCandidates.length > 0
+
+  const handleSaveSearch = () => {
+    if (onSaveSearch && value.trim().length > 0) {
+      onSaveSearch(value.trim(), value.trim())
+    }
+  }
+
+  const showSaveButton = Boolean(onSaveSearch)
+  const isSaved = Boolean(savedSearches?.find((s) => s.name === value.trim()))
 
   return (
-    <FormSuggestionPopover
-      trigger={(triggerProps) => {
-        const { onPress: _op, onPressIn: _opi, onPressOut: _opo, ...restProps } = triggerProps
-        return (
-          <Box {...restProps} width={width ?? "$full"}>
-            <InputField
-              value={value}
-              onChangeText={(text) => {
-                cancelClose()
-                setIsSuggestionOpen(true)
-                onChangeText(text)
-              }}
-              onFocus={() => {
-                cancelClose()
-                setIsSuggestionOpen(true)
-              }}
-              onBlur={scheduleClose}
-              onSubmitEditing={() => onSubmit?.(value)}
-              returnKeyType="search"
-              autoCapitalize="none"
-              autoCorrect={false}
-              clearButtonMode="while-editing"
-              placeholder={placeholder}
-              placeholderTx={placeholderTx}
-              size={size as never}
-              textAlign="left"
-              testID={testID ?? "search-input-field"}
-              autoFocus={autoFocus}
-              ref={(ref) => {
-                inputRef.current = ref as unknown as RNTextInput | null
-              }}
-            />
-          </Box>
-        )
-      }}
-      isOpen={isOpen}
-      onClose={() => setIsSuggestionOpen(false)}
-      candidates={candidates}
-      onSelect={(candidate) => {
-        const newValue = `${prefix}${candidate} `
-        onChangeText(newValue)
-        setIsSuggestionOpen(false)
-        // Return focus to the input after selection
-        inputRef.current?.focus()
-      }}
-      width={typeof width === "string" ? width : undefined}
-      testIdPrefix="search-input"
-    />
+    <HStack width={width ?? "$full"} alignItems="center" space="xs">
+      <Box flex={1}>
+        <FormSuggestionPopover
+          trigger={(triggerProps) => {
+            const { onPress: _op, onPressIn: _opi, onPressOut: _opo, ...restProps } = triggerProps
+            return (
+              <Box {...restProps} flex={1}>
+                <InputField
+                  value={value}
+                  onChangeText={(text) => {
+                    cancelClose()
+                    setIsSuggestionOpen(true)
+                    onChangeText(text)
+                  }}
+                  onFocus={() => {
+                    cancelClose()
+                    setIsSuggestionOpen(true)
+                  }}
+                  onBlur={scheduleClose}
+                  onSubmitEditing={() => onSubmit?.(value)}
+                  returnKeyType="search"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  clearButtonMode="while-editing"
+                  placeholder={placeholder}
+                  placeholderTx={placeholderTx}
+                  size={size as never}
+                  textAlign="left"
+                  testID={testID ?? "search-input-field"}
+                  autoFocus={autoFocus}
+                  ref={(ref) => {
+                    inputRef.current = ref as unknown as RNTextInput | null
+                  }}
+                />
+              </Box>
+            )
+          }}
+          isOpen={isOpen}
+          onClose={() => setIsSuggestionOpen(false)}
+          candidates={activeCandidates}
+          onSelect={(candidate) => {
+            if (candidate.startsWith(SAVED_SEARCH_PREFIX) && onLoadSearch) {
+              const name = candidate.slice(SAVED_SEARCH_PREFIX.length)
+              const saved = savedSearches?.find((s) => s.name === name)
+              if (saved) {
+                onLoadSearch(saved.query)
+                setIsSuggestionOpen(false)
+              }
+              return
+            }
+            const newValue = `${prefix}${candidate} `
+            onChangeText(newValue)
+            setIsSuggestionOpen(false)
+            inputRef.current?.focus()
+          }}
+          width="100%"
+          testIdPrefix="search-input"
+        />
+      </Box>
+      {showSaveButton && (
+        <IconButton
+          name={isSaved ? "bookmark" : "bookmark-plus-outline"}
+          iconSize="md-"
+          labelTx="searchBar.saveSearch"
+          onPress={handleSaveSearch}
+          testID="search-input-save-button"
+        />
+      )}
+    </HStack>
   )
 }
