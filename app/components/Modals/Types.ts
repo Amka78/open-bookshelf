@@ -66,4 +66,5 @@ export type ModalStackParams = {
     onSave: (params: { text?: string; notes: string; styleWhich: string }) => void
   }
   ReadingStatsModal: Record<string, never>
+  UserPreferencesModal: Record<string, never>
 }

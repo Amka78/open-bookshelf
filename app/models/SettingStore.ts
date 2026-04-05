@@ -12,6 +12,9 @@ export const SettingStoreModel = types
   .props({
     api: types.optional(ApiModel, {}),
     autoPageTurnIntervalMs: types.optional(types.number, 3000),
+    preferredFormat: types.optional(types.maybeNull(types.string), null),
+    dateDisplayFormat: types.optional(types.string, "YYYY-MM-DD"),
+    booksPerPage: types.optional(types.number, 50),
   })
   .actions((store) => ({
     async setConnectionSetting(baseUrl: string, type: boolean) {
@@ -27,6 +30,15 @@ export const SettingStoreModel = types
     setAutoPageTurnIntervalMs(intervalMs: number) {
       if (!Number.isFinite(intervalMs)) return;
       store.autoPageTurnIntervalMs = Math.max(100, Math.floor(intervalMs));
+    },
+    setPreferredFormat(format: string | null) {
+      store.preferredFormat = format;
+    },
+    setDateDisplayFormat(fmt: string) {
+      store.dateDisplayFormat = fmt;
+    },
+    setBooksPerPage(n: number) {
+      store.booksPerPage = Math.max(10, Math.min(200, n));
     },
   }));
 

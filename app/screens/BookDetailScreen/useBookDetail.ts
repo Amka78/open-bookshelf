@@ -1,8 +1,10 @@
 import { useConvergence } from "@/hooks/useConvergence"
 import { useStores } from "@/models"
 import type { AppStackParamList, ApppNavigationProp } from "@/navigators/types"
+import { api } from "@/services/api"
 import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { useLayoutEffect } from "react"
+import { Share } from "react-native"
 import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import { useDeleteBook } from "../../hooks/useDeleteBook"
 import { useDownloadBook } from "../../hooks/useDownloadBook"
@@ -88,6 +90,27 @@ export function useBookDetail() {
     await deleteBookHook.execute(modal)
   }
 
+  const handleShareLink = async () => {
+    const formats = selectedBook.metaData.formats
+    if (!formats || formats.length === 0) return
+
+    const shareForFormat = async (format: string) => {
+      const url = api.getBookDownloadUrl(format, selectedBook.id, selectedLibrary.id)
+      await Share.share({ url, message: `${selectedBook.metaData.title} - ${url}` })
+    }
+
+    if (formats.length === 1) {
+      await shareForFormat(formats[0])
+    } else {
+      modal.openModal("FormatSelectModal", {
+        formats: formats.slice(),
+        onSelectFormat: async (format) => {
+          await shareForFormat(format)
+        },
+      })
+    }
+  }
+
   const handleFieldPress = (query: string) => {
     route.params.onLinkPress(query)
     navigation.goBack()
@@ -102,6 +125,7 @@ export function useBookDetail() {
     handleConvertBook,
     handleEditBook,
     handleDeleteBook,
+    handleShareLink,
     handleFieldPress,
   }
 }

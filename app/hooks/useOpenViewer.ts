@@ -107,6 +107,11 @@ export function useOpenViewer() {
     const selectedLibraryId = calibreRootStore.selectedLibrary.id
     const book = calibreRootStore.selectedLibrary.selectedBook
     if (book.metaData.formats.length > 1) {
+      const preferredFormat = settingStore.preferredFormat
+      if (preferredFormat && book.metaData.formats.includes(preferredFormat)) {
+        await onItemPress(book, preferredFormat, selectedLibraryId, modal)
+        return
+      }
       modal.openModal("FormatSelectModal", {
         formats: book.metaData.formats,
         onSelectFormat: async (format) => {

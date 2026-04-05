@@ -7,7 +7,7 @@ import type { DocumentPickerAsset } from "expo-document-picker"
 import { useEffect, useState } from "react"
 export type LibraryViewStyle = "gridView" | "viewList"
 export function useLibrary() {
-  const { calibreRootStore } = useStores()
+  const { calibreRootStore, settingStore } = useStores()
   const selectedLibrary = calibreRootStore.selectedLibrary
 
   const [searching, setSearching] = useState(false)
@@ -92,7 +92,7 @@ export function useLibrary() {
   const search = async () => {
     setSearching(true)
     try {
-      await calibreRootStore.searchLibrary()
+      await calibreRootStore.searchLibrary(settingStore.booksPerPage)
     } finally {
       setSearching(false)
     }
@@ -106,7 +106,7 @@ export function useLibrary() {
     const initialize = async () => {
       setSearching(true)
       try {
-        await calibreRootStore.searchLibrary()
+        await calibreRootStore.searchLibrary(settingStore.booksPerPage)
       } finally {
         setSearching(false)
       }

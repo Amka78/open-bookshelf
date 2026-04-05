@@ -134,6 +134,13 @@ export const LibraryScreen: FC = observer(() => {
   const libraryActions = (
     <>
       <IconButton
+        name="cog"
+        iconSize="md-"
+        onPress={() => {
+          modal.openModal("UserPreferencesModal", {})
+        }}
+      />
+      <IconButton
         name="chart-bar"
         onPress={() => {
           modal.openModal("ReadingStatsModal", {})

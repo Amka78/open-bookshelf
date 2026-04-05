@@ -8,6 +8,7 @@ export type BookDetailMenuProps = {
   onConvertBook: () => void
   onEditBook: () => void
   onDeleteBook: () => void
+  onShareLink?: () => void
   iconOpacity?: number
   containerProps?: HStackProps
   iconButtonProps?: Partial<IconButtonProps>
@@ -51,6 +52,16 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
         testID="book-detail-download-button"
         tooltipTx="bookDetailMenu.downloadTooltip"
       />
+      {props.onShareLink != null && (
+        <TooltipIconButton
+          {...sharedIconButtonProps}
+          name={"share-variant"}
+          iconSize="md-"
+          onPress={props.onShareLink}
+          testID="book-detail-share-button"
+          tooltipTx="bookDetailMenu.shareLinkTooltip"
+        />
+      )}
       <TooltipIconButton
         {...sharedIconButtonProps}
         name={"sync-circle"}

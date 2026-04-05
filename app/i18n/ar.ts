@@ -185,6 +185,14 @@ const ar: Translations = {
     convertTooltip: "تحويل الكتاب",
     editTooltip: "تعديل الكتاب",
     deleteTooltip: "حذف الكتاب",
+    shareLinkTooltip: "مشاركة الرابط",
+  },
+  userPreferences: {
+    title: "تفضيلات المستخدم",
+    preferredFormat: "التنسيق المفضل",
+    preferredFormatAuto: "تلقائي",
+    dateDisplayFormat: "تنسيق التاريخ",
+    booksPerPage: "الكتب في الصفحة",
   },
   bookConvertScreen: {
     inputFormat: "التنسيقات الحالية",

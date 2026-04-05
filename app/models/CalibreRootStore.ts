@@ -146,13 +146,14 @@ export const CalibreRootStore = types
       handleCommonApiError(response)
       return false
     }),
-    searchLibrary: flow(function* () {
+    searchLibrary: flow(function* (num?: number) {
       const response = yield api.getLibrary(
         root.selectedLibrary.id,
         root.selectedLibrary.searchSetting ? root.selectedLibrary.searchSetting.query : "",
         root.selectedLibrary.searchSetting ? root.selectedLibrary.searchSetting.sort : "timestamp",
         root.selectedLibrary.searchSetting ? root.selectedLibrary.searchSetting.sortOrder : "desc",
         root.selectedLibrary.searchSetting?.vl,
+        num,
       )
 
       if (response.kind === "ok") {

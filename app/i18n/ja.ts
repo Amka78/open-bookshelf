@@ -52,6 +52,8 @@ const ja: Translations = {
   },
   libraryScreen: {
     dataSearching: "検索中",
+    searchPlaceholder: "書籍を検索...",
+    searchPlaceholderFts: "全文検索...",
   },
   sortMenu: {
     sort: "並び替え",
@@ -88,6 +90,8 @@ const ja: Translations = {
     setLeftPageAsCover: "左ページを表紙にする",
     setRightPageAsCover: "右ページを表紙にする",
     failedToUpdateCover: "表紙の更新に失敗しました。",
+    addBookmark: "ブックマークを追加",
+    showAnnotations: "アノテーション",
   },
   bookImage: {
     loading: "書籍を開く準備中です。",
@@ -135,12 +139,39 @@ const ja: Translations = {
       title: "一括編集",
       bookCount: "{{count}}冊選択中",
     },
+    bulkDeleteConfirmModal: {
+      title: "選択した書籍を削除",
+      message: "選択した書籍を削除しますか？この操作は元に戻せません。",
+    },
+    annotationModal: {
+      title: "アノテーションを追加",
+      colorLabel: "ハイライトカラー",
+      notesLabel: "メモ（任意）",
+      notesPlaceholder: "メモを入力...",
+    },
+  },
+  annotationPanel: {
+    empty: "アノテーションはまだありません。",
+    title: "アノテーション",
   },
   multiSelectBar: {
     selectedCount: "{{count}}件選択中",
     bulkEdit: "一括編集",
     bulkDownload: "一括ダウンロード",
+    bulkDelete: "一括削除",
     clearSelection: "選択解除",
+  },
+  searchBar: {
+    saveSearch: "検索を保存",
+    savedSearches: "保存済み検索",
+    noSavedSearches: "保存済み検索はありません",
+  },
+  readingStats: {
+    title: "読書統計",
+    booksInProgress: "読書中の書籍",
+    cachedBooks: "キャッシュ済み書籍",
+    recentlyRead: "最近読んだ本",
+    noRecentBooks: "読書履歴はまだありません",
   },
   rating: {
     noRate: "評価なし",
@@ -151,6 +182,14 @@ const ja: Translations = {
     convertTooltip: "書籍を変換",
     editTooltip: "書籍を編集",
     deleteTooltip: "書籍を削除",
+    shareLinkTooltip: "リンクを共有",
+  },
+  userPreferences: {
+    title: "ユーザー設定",
+    preferredFormat: "優先フォーマット",
+    preferredFormatAuto: "自動",
+    dateDisplayFormat: "日付フォーマット",
+    booksPerPage: "1ページあたりの書籍数",
   },
   bookConvertScreen: {
     inputFormat: "現在のフォーマット",

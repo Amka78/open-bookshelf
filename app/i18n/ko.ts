@@ -248,6 +248,14 @@ const ko: Translations = {
     convertTooltip: "책 변환",
     editTooltip: "책 편집",
     deleteTooltip: "책 삭제",
+    shareLinkTooltip: "링크 공유",
+  },
+  userPreferences: {
+    title: "사용자 환경설정",
+    preferredFormat: "선호 형식",
+    preferredFormatAuto: "자동",
+    dateDisplayFormat: "날짜 형식",
+    booksPerPage: "페이지당 도서 수",
   },
 }
 

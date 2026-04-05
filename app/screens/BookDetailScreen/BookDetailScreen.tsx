@@ -13,6 +13,7 @@ export const BookDetailScreen: FC = observer(() => {
     handleConvertBook,
     handleEditBook,
     handleDeleteBook,
+    handleShareLink,
     handleFieldPress,
   } = useBookDetail()
 
@@ -25,6 +26,7 @@ export const BookDetailScreen: FC = observer(() => {
         onConvertBook={handleConvertBook}
         onEditBook={handleEditBook}
         onDeleteBook={handleDeleteBook}
+        onShareLink={handleShareLink}
       />
       <BookDetailFieldList
         book={selectedBook}

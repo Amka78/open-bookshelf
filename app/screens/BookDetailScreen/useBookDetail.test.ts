@@ -21,6 +21,16 @@ const mockUseDeleteBook = jest.fn()
 const mockUseDownloadBook = jest.fn()
 const mockUseOpenViewer = jest.fn()
 const mockUseElectrobunModal = jest.fn()
+const mockShareShare = jest.fn()
+const mockGetBookDownloadUrl = jest.fn()
+
+mock.module("react-native", () => ({
+  Share: { share: mockShareShare },
+}))
+
+mock.module("@/services/api", () => ({
+  api: { getBookDownloadUrl: mockGetBookDownloadUrl },
+}))
 
 mock.module("@/hooks/useConvergence", () => ({
   useConvergence: mockUseConvergence,
@@ -63,6 +73,7 @@ describe("useBookDetail", () => {
     id: 1,
     metaData: {
       title: "Test Book",
+      formats: ["EPUB", "PDF"],
       setProp: jest.fn(),
     },
   }
@@ -117,6 +128,8 @@ describe("useBookDetail", () => {
     mockUseDownloadBook.mockReturnValue({
       execute: mockDownloadBookExecute,
     })
+    mockGetBookDownloadUrl.mockReturnValue("https://example.com/download/EPUB/1")
+    mockShareShare.mockResolvedValue(undefined)
   })
 
   test("should return hook successfully", () => {
@@ -133,6 +146,7 @@ describe("useBookDetail", () => {
     expect(result.current.handleDeleteBook).toBeDefined()
     expect(result.current.handleEditBook).toBeDefined()
     expect(result.current.handleConvertBook).toBeDefined()
+    expect(result.current.handleShareLink).toBeDefined()
   })
 
   test("should set header title on mount", () => {
@@ -312,6 +326,71 @@ describe("useBookDetail", () => {
         imageUrl: "https://example.com/image.jpg",
       })
       expect(mockNavigate).not.toHaveBeenCalled()
+    })
+  })
+
+  describe("handleShareLink", () => {
+    test("opens format select modal when book has multiple formats", async () => {
+      const { result } = renderHook(() => useBookDetail())
+
+      await act(async () => {
+        await result.current.handleShareLink()
+      })
+
+      expect(mockOpenModal).toHaveBeenCalledWith(
+        "FormatSelectModal",
+        expect.objectContaining({ formats: ["EPUB", "PDF"] }),
+      )
+    })
+
+    test("calls Share.share directly when book has a single format", async () => {
+      const singleFormatBook = {
+        ...mockSelectedBook,
+        metaData: { ...mockSelectedBook.metaData, formats: ["EPUB"] },
+      }
+      ;(useStores as jest.Mock).mockReturnValue({
+        calibreRootStore: {
+          selectedLibrary: {
+            ...mockSelectedLibrary,
+            selectedBook: singleFormatBook,
+          },
+        },
+      })
+
+      const { result } = renderHook(() => useBookDetail())
+
+      await act(async () => {
+        await result.current.handleShareLink()
+      })
+
+      expect(mockGetBookDownloadUrl).toHaveBeenCalledWith("EPUB", 1, undefined)
+      expect(mockShareShare).toHaveBeenCalledWith(
+        expect.objectContaining({ url: "https://example.com/download/EPUB/1" }),
+      )
+    })
+
+    test("does nothing when book has no formats", async () => {
+      const noFormatsBook = {
+        ...mockSelectedBook,
+        metaData: { ...mockSelectedBook.metaData, formats: [] },
+      }
+      ;(useStores as jest.Mock).mockReturnValue({
+        calibreRootStore: {
+          selectedLibrary: {
+            ...mockSelectedLibrary,
+            selectedBook: noFormatsBook,
+          },
+        },
+      })
+
+      const { result } = renderHook(() => useBookDetail())
+
+      await act(async () => {
+        await result.current.handleShareLink()
+      })
+
+      expect(mockShareShare).not.toHaveBeenCalled()
+      expect(mockOpenModal).not.toHaveBeenCalled()
     })
   })
 })

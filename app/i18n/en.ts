@@ -184,6 +184,14 @@ const en = {
     convertTooltip: "Convert book",
     editTooltip: "Edit book",
     deleteTooltip: "Delete book",
+    shareLinkTooltip: "Share Link",
+  },
+  userPreferences: {
+    title: "User Preferences",
+    preferredFormat: "Preferred Format",
+    preferredFormatAuto: "Auto",
+    dateDisplayFormat: "Date Format",
+    booksPerPage: "Books Per Page",
   },
   bookConvertScreen: {
     inputFormat: "Current formats",

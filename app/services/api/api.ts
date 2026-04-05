@@ -602,13 +602,14 @@ export class Api {
     sort: string,
     sortOrder: string,
     vl?: string | null,
+    num?: number,
   ): Promise<{ kind: "ok"; data: ApiBookInfo } | GeneralApiProblem> {
     const encodedSearchText = searchText ? encodeURIComponent(searchText) : ""
 
     const response: ApiResponse<ApiBookInfo> = await this.apisauce.get(
       `interface-data/books-init?library_id=${library}${
         encodedSearchText ? `&search=${encodedSearchText}` : ""
-      }${vl ? `&vl=${encodeURIComponent(vl)}` : ""}&sort=${sort}.${sortOrder}&${Date.now()}`,
+      }${vl ? `&vl=${encodeURIComponent(vl)}` : ""}${num != null ? `&num=${num}` : ""}&sort=${sort}.${sortOrder}&${Date.now()}`,
     )
 
     if (!response.ok) {
