@@ -36,17 +36,19 @@ export const initCrashReporting = () => {
 /**
  * Error classifications used to sort errors on error reporting services.
  */
-export enum ErrorType {
+export const ErrorType = {
   /**
    * An error that would normally cause a red screen in dev
    * and force the user to sign out and restart.
    */
-  FATAL = "Fatal",
+  FATAL: "Fatal",
   /**
    * An error caught by try/catch where defined using Reactotron.tron.error.
    */
-  HANDLED = "Handled",
-}
+  HANDLED: "Handled",
+} as const satisfies Record<string, string>
+
+export type ErrorType = (typeof ErrorType)[keyof typeof ErrorType]
 
 /**
  * Manually report a handled error.

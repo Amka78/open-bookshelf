@@ -6,7 +6,7 @@ import { api } from "@/services/api"
 import type { CalibreJob } from "@/services/api/api.types"
 import { HStack, ScrollView, VStack, View } from "@gluestack-ui/themed"
 import { observer } from "mobx-react-lite"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { StyleSheet } from "react-native"
 import type { ModalComponentProp } from "react-native-modalfy"
 import { Body } from "./Body"
@@ -25,7 +25,7 @@ export const JobQueueModal = observer((props: JobQueueModalProps) => {
   const [loading, setLoading] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  const fetchJobs = useCallback(async () => {
+  const fetchJobs = async () => {
     if (!selectedLibrary?.id) return
     setLoading(true)
     try {
@@ -36,7 +36,7 @@ export const JobQueueModal = observer((props: JobQueueModalProps) => {
     } finally {
       setLoading(false)
     }
-  }, [selectedLibrary?.id])
+  }
 
   useEffect(() => {
     fetchJobs()

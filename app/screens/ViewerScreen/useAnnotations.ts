@@ -3,7 +3,6 @@ import type { Annotation } from "@/models/calibre"
 import { api } from "@/services/api"
 import type { CalibreAnnotation } from "@/services/api/api.types"
 import { logger } from "@/utils/logger"
-import { useCallback } from "react"
 
 function generateUuid(): string {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -38,8 +37,7 @@ export function useAnnotations() {
   const selectedLibrary = calibreRootStore.selectedLibrary
   const selectedBook = selectedLibrary?.selectedBook
 
-  const addBookmark = useCallback(
-    async (page: number, title?: string): Promise<boolean> => {
+  const addBookmark = async (page: number, title?: string): Promise<boolean> => {
       if (!selectedBook || !selectedLibrary) return false
       const selectedFormat = selectedBook.metaData?.selectedFormat ?? ""
       const totalPages = selectedBook.path.length || 1
@@ -74,12 +72,9 @@ export function useAnnotations() {
         bookmark: allAnnotations.filter((a) => a.type === "bookmark" && !a.removed),
       })
       return true
-    },
-    [selectedBook, selectedLibrary],
-  )
+    }
 
-  const addHighlight = useCallback(
-    async (
+  const addHighlight = async (
       page: number,
       text: string,
       notes?: string,
@@ -121,12 +116,9 @@ export function useAnnotations() {
         bookmark: allAnnotations.filter((a) => a.type === "bookmark" && !a.removed),
       })
       return true
-    },
-    [selectedBook, selectedLibrary],
-  )
+    }
 
-  const deleteAnnotation = useCallback(
-    async (uuid: string): Promise<boolean> => {
+  const deleteAnnotation = async (uuid: string): Promise<boolean> => {
       if (!selectedBook || !selectedLibrary) return false
       const selectedFormat = selectedBook.metaData?.selectedFormat ?? ""
 
@@ -155,16 +147,11 @@ export function useAnnotations() {
         bookmark: remaining.filter((a) => a.type === "bookmark"),
       })
       return true
-    },
-    [selectedBook, selectedLibrary],
-  )
+    }
 
-  const annotationsForPage = useCallback(
-    (page: number) => {
-      return selectedBook?.annotations.filter((a) => a.spineIndex === page) ?? []
-    },
-    [selectedBook],
-  )
+  const annotationsForPage = (page: number) => {
+    return selectedBook?.annotations.filter((a) => a.spineIndex === page) ?? []
+  }
 
   const exportAnnotationsAsMarkdown = (bookTitle: string): string => {
     const anns = selectedBook?.annotations ?? []
