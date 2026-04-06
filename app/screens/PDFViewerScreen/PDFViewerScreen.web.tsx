@@ -111,11 +111,7 @@ export const PDFViewerScreen = observer(() => {
   }
 
   if (!selectedBook) {
-    return undefined
-  }
-
-  return (
-    <Document file={documentFile} loading={null} error={null} onLoadSuccess={onDocumentLoadSuccess}>
+    return null loading={null} error={null} onLoadSuccess={onDocumentLoadSuccess}>
       {/* 前後ページ先読み：画面外に保持してpdfjs側でキャンバスを事前生成させる */}
       <View style={styles.preloadContainer} pointerEvents="none" aria-hidden={true}>
         {preloadPageIndices.map((pageIdx) => (

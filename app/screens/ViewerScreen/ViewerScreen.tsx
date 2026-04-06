@@ -34,10 +34,7 @@ export const ViewerScreen: FC = observer(() => {
   }, [selectedBook, navigation])
 
   if (!selectedLibrary || !selectedBook) {
-    return undefined
-  }
-
-  const isHtmlViewerFormat = isCalibreHtmlViewerFormat(selectedBook.metaData.selectedFormat)
+    return null = isCalibreHtmlViewerFormat(selectedBook.metaData.selectedFormat)
   const sourcePathList =
     selectedBook.path.length > 0
       ? selectedBook.path
@@ -94,10 +91,7 @@ export const ViewerScreen: FC = observer(() => {
   }
 
   if (!viewerReady) {
-    return undefined
-  }
-
-  const totalPages = sourcePathList.length
+    return null = sourcePathList.length
 
   useEffect(() => {
     logger.debug("ViewerScreen: Rendering viewer with", {

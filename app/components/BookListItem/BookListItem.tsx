@@ -1,4 +1,4 @@
-import { Box, HStack, Image, type ImageProps, MaterialCommunityIcon, VStack } from "@/components"
+import { Box, HStack, Image, type ImageProps, MaterialCommunityIcon, type MaterialCommunityIconProps, VStack } from "@/components"
 import type { Book } from "@/models/calibre/BookModel"
 import { Pressable, Text } from "@gluestack-ui/themed"
 import { StyleSheet } from "react-native"
@@ -16,7 +16,7 @@ type BookListItemProps = {
 
 type ReadStatusValue = "want-to-read" | "reading" | "finished"
 
-const STATUS_ICON: Record<ReadStatusValue, { name: string; color: string }> = {
+const STATUS_ICON: Record<ReadStatusValue, { name: NonNullable<MaterialCommunityIconProps["name"]>; color: string }> = {
   "want-to-read": { name: "bookmark-outline", color: "#3B82F6" },
   reading: { name: "book-open-outline", color: "#F97316" },
   finished: { name: "check-circle-outline", color: "#22C55E" },
@@ -111,7 +111,7 @@ export function BookListItem({
           ) : null}
           {statusIconConfig ? (
             <MaterialCommunityIcon
-              name={statusIconConfig.name as any}
+              name={statusIconConfig.name}
               iconSize="sm"
               color={statusIconConfig.color}
             />

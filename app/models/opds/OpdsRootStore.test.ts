@@ -91,10 +91,7 @@ describe("OpdsRootStore test", () => {
   test("initialize OPDS", async () => {
     const store = OpdsModel.create()
 
-    // @ts-ignore
-    api.loadOPDS = async () => {
-      return { kind: "ok", data: sampleXml }
-    }
+    jest.spyOn(api, "loadOPDS").mockResolvedValue({ kind: "ok", data: sampleXml } as Awaited<ReturnType<typeof api.loadOPDS>>)
 
     await store.load()
 

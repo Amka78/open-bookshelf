@@ -108,7 +108,7 @@ export function BookImageItem({
       {showProgressBar ? (
         <View style={styles.progressBarBg}>
           <View
-            style={[styles.progressBarFill, { width: `${props.readingProgress! * 100}%` as any }]}
+            style={[styles.progressBarFill, { width: `${props.readingProgress! * 100}%` }]}
           />
         </View>
       ) : null}

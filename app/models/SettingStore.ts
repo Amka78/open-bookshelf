@@ -37,7 +37,7 @@ export const SettingStoreModel = types
     },
   }))
   .actions((store) => ({
-    async setConnectionSetting(baseUrl: string, type: boolean) {
+    setConnectionSetting(baseUrl: string, type: boolean) {
       if (type) {
         store.api.baseUrl = baseUrl.replace("/opds", "")
         store.api.initialPath = "/opds"

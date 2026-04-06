@@ -2,6 +2,7 @@ import { Button } from "@/components/Button/Button"
 import { Heading } from "@/components/Heading/Heading"
 import { Text } from "@/components/Text/Text"
 import { useStores } from "@/models"
+import type { MessageKey } from "@/i18n"
 import { api } from "@/services/api"
 import type { CalibreJob } from "@/services/api/api.types"
 import { HStack, ScrollView, VStack, View } from "@gluestack-ui/themed"
@@ -60,7 +61,7 @@ export const JobQueueModal = observer((props: JobQueueModalProps) => {
     }
   }, [jobs, fetchJobs])
 
-  const getStatusTx = (job: CalibreJob) => {
+  const getStatusTx = (job: CalibreJob): MessageKey => {
     if (job.failed) return "jobQueue.failed"
     if (job.done) return "jobQueue.done"
     return "jobQueue.running"
@@ -100,7 +101,7 @@ export const JobQueueModal = observer((props: JobQueueModalProps) => {
                       />
                     </View>
                     <Text
-                      tx={getStatusTx(job) as any}
+                      tx={getStatusTx(job)}
                       style={{ color: getStatusColor(job), flexShrink: 0 }}
                     />
                   </HStack>

@@ -43,8 +43,7 @@ export const LibraryMapModel = types
   .actions((root) => ({
     setBook: (bookId?: number) => {
       // MST resolves references by identifier at runtime; TS types don't allow direct ID assignment
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      root.selectedBook = bookId as any
+      root.selectedBook = bookId as unknown as typeof root.selectedBook
     },
     deleteBook: flow(function* (bookId: number) {
       const response = yield api.deleteBook(root.id, bookId)

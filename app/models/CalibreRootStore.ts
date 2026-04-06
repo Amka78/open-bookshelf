@@ -185,8 +185,7 @@ export const CalibreRootStore = types
     }),
     setLibrary: (libraryId?: string) => {
       // MST resolves references by identifier at runtime; TS types don't allow direct ID assignment
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      root.selectedLibrary = libraryId as any
+      root.selectedLibrary = libraryId as unknown as typeof root.selectedLibrary
     },
     addReadingHistory: (model: ReadingHistory) => {
       root.readingHistories.push(model)

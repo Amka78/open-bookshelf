@@ -80,7 +80,7 @@ mock.module("@/components", () => ({
   }) => (
     <div>
       {(data ?? []).map((item, index) => (
-        <div key={index}>{renderItem({ item })}</div>
+        <div key={String(index)}>{renderItem({ item })}</div>
       ))}
     </div>
   ),

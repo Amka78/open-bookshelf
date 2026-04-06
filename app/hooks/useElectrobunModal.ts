@@ -44,7 +44,7 @@ export function useElectrobunModal() {
       return
     }
 
-    modal.openModal(name as any, params as any)
+    modal.openModal(name, params)
   }
 
   return {

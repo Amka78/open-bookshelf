@@ -47,7 +47,7 @@ mock.module("@/components", () => ({
   }: {
     data: T[]
     renderItem: ({ item }: { item: T }) => ReactNode
-  }) => <div>{data.map((item, index) => <div key={index}>{renderItem({ item })}</div>)}</div>,
+  }) => <div>{data.map((item, index) => <div key={String(index)}>{renderItem({ item })}</div>)}</div>,
 }))
 
 let CalibreRootScreen: typeof import("./CalibreRootScreen").CalibreRootScreen
