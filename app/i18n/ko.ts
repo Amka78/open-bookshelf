@@ -294,6 +294,30 @@ const ko: Translations = {
     themeSepia: "세피아",
     themeDark: "다크",
   },
+  emailDelivery: {
+    buttonTooltip: "이메일로 보내기",
+    selectFormat: "형식 선택",
+    selectFormatMessage: "전송할 형식을 선택하세요",
+    confirmTitle: "책 전송",
+    confirmMessage: "{{title}}을(를) {{format}}으로 보내시겠습니까?",
+    send: "보내기",
+    sentTitle: "전송됨",
+    sentMessage: "책이 전송 대기열에 추가되었습니다",
+    errorMessage: "책 전송 실패",
+    noFormats: "사용 가능한 형식 없음",
+  },
+  bookFormatList: {
+    title: "형식",
+    downloadTooltip: "형식 다운로드",
+    deleteTooltip: "형식 삭제",
+    deleteConfirm: "이 형식을 삭제하시겠습니까?",
+    uploadFormat: "형식 추가",
+    uploadSuccess: "형식 업로드됨",
+    deleteSuccess: "형식 삭제됨",
+  },
+  libraryViewMode: {
+    toggleTooltip: "보기 모드 전환",
+  },
 }
 
 export default ko

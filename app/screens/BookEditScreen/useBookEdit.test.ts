@@ -1,10 +1,18 @@
 import { api } from "@/services/api"
 import { beforeAll, beforeEach, afterEach, describe, expect, jest, mock, test } from "bun:test"
+import { renderHook } from "@testing-library/react"
 import * as DocumentPicker from "expo-document-picker"
 import * as reactHookForm from "react-hook-form"
 
 const useStoresMock = jest.fn()
 const useNavigationMock = jest.fn()
+
+mock.module("@/services/api", () => ({
+  api: {
+    uploadBookFormat: jest.fn(),
+    deleteBookFormat: jest.fn(),
+  },
+}))
 
 mock.module("@/models", () => ({
   useStores: useStoresMock,
@@ -85,57 +93,57 @@ describe("useBookEdit", () => {
   })
 
   test("returns form object", () => {
-    const result = useBookEdit()
+    const { result } = renderHook(() => useBookEdit())
 
-    expect(result.form).toBeDefined()
-    expect(result.form).toBe(mockForm)
+    expect(result.current.form).toBeDefined()
+    expect(result.current.form).toBe(mockForm)
   })
 
   test("returns selectedBook from store", () => {
-    const result = useBookEdit()
+    const { result } = renderHook(() => useBookEdit())
 
-    expect(result.selectedBook).toBe(mockBook)
+    expect(result.current.selectedBook).toBe(mockBook)
   })
 
   test("returns selectedLibrary from store", () => {
-    const result = useBookEdit()
+    const { result } = renderHook(() => useBookEdit())
 
-    expect(result.selectedLibrary).toBe(mockSelectedLibrary)
+    expect(result.current.selectedLibrary).toBe(mockSelectedLibrary)
   })
 
   test("returns onSubmit function", () => {
-    const result = useBookEdit()
+    const { result } = renderHook(() => useBookEdit())
 
-    expect(result.onSubmit).toBeDefined()
-    expect(typeof result.onSubmit).toBe("function")
+    expect(result.current.onSubmit).toBeDefined()
+    expect(typeof result.current.onSubmit).toBe("function")
   })
 
   test("onSubmit calls selectedBook.update with correct params", () => {
-    const result = useBookEdit()
+    const { result } = renderHook(() => useBookEdit())
 
-    result.onSubmit()
+    result.current.onSubmit()
 
     expect(mockUpdate).toHaveBeenCalled()
   })
 
   test("onSubmit calls navigation.goBack after update", () => {
-    const result = useBookEdit()
+    const { result } = renderHook(() => useBookEdit())
 
-    result.onSubmit()
+    result.current.onSubmit()
 
     expect(mockGoBack).toHaveBeenCalled()
   })
 
   test("onSubmit uses form.handleSubmit", () => {
-    useBookEdit()
+    renderHook(() => useBookEdit())
 
     expect(mockHandleSubmit).toHaveBeenCalled()
   })
 
   test("update is called with library id and form values", () => {
-    const result = useBookEdit()
+    const { result } = renderHook(() => useBookEdit())
 
-    result.onSubmit()
+    result.current.onSubmit()
 
     expect(mockUpdate).toHaveBeenCalledWith(
       "lib1",
@@ -149,13 +157,13 @@ describe("useBookEdit", () => {
   })
 
   test("useForm is called with correct type parameters", () => {
-    useBookEdit()
+    renderHook(() => useBookEdit())
 
     expect(reactHookForm.useForm).toHaveBeenCalled()
   })
 
   test("useForm receives display-friendly language names as default values", () => {
-    useBookEdit()
+    renderHook(() => useBookEdit())
 
     expect(reactHookForm.useForm).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -167,21 +175,21 @@ describe("useBookEdit", () => {
   })
 
   test("selectedLibrary has required properties", () => {
-    const result = useBookEdit()
+    const { result } = renderHook(() => useBookEdit())
 
-    expect(result.selectedLibrary.id).toBe("lib1")
-    expect(result.selectedLibrary.selectedBook).toBe(mockBook)
-    expect(result.selectedLibrary.fieldMetadataList).toEqual([])
-    expect(result.selectedLibrary.tagBrowser).toEqual([])
+    expect(result.current.selectedLibrary.id).toBe("lib1")
+    expect(result.current.selectedLibrary.selectedBook).toBe(mockBook)
+    expect(result.current.selectedLibrary.fieldMetadataList).toEqual([])
+    expect(result.current.selectedLibrary.tagBrowser).toEqual([])
   })
 
   test("returns all required properties", () => {
-    const result = useBookEdit()
+    const { result } = renderHook(() => useBookEdit())
 
-    expect(result).toHaveProperty("form")
-    expect(result).toHaveProperty("selectedBook")
-    expect(result).toHaveProperty("selectedLibrary")
-    expect(result).toHaveProperty("onSubmit")
+    expect(result.current).toHaveProperty("form")
+    expect(result.current).toHaveProperty("selectedBook")
+    expect(result.current).toHaveProperty("selectedLibrary")
+    expect(result.current).toHaveProperty("onSubmit")
   })
 
   test("onUploadFormat calls uploadBookFormat API in runtime flow", async () => {
@@ -198,8 +206,8 @@ describe("useBookEdit", () => {
 
     const uploadSpy = jest.spyOn(api, "uploadBookFormat").mockResolvedValue({ kind: "ok" })
 
-    const result = useBookEdit()
-    const uploaded = await result.onUploadFormat({ targetFormat: "EPUB" })
+    const { result } = renderHook(() => useBookEdit())
+    const uploaded = await result.current.onUploadFormat({ targetFormat: "EPUB" })
 
     expect(getDocumentAsyncSpy).toHaveBeenCalled()
     expect(uploadSpy).toHaveBeenCalledWith(
@@ -226,8 +234,8 @@ describe("useBookEdit", () => {
 
     const uploadSpy = jest.spyOn(api, "uploadBookFormat").mockResolvedValue({ kind: "ok" })
 
-    const result = useBookEdit()
-    const uploaded = await result.onUploadFormat({})
+    const { result } = renderHook(() => useBookEdit())
+    const uploaded = await result.current.onUploadFormat({})
 
     expect(uploadSpy).toHaveBeenCalledWith(
       "lib1",
@@ -245,8 +253,8 @@ describe("useBookEdit", () => {
       assets: [],
     } as unknown as DocumentPicker.DocumentPickerResult)
 
-    const result = useBookEdit()
-    const uploaded = await result.onUploadFormat({ targetFormat: "EPUB" })
+    const { result } = renderHook(() => useBookEdit())
+    const uploaded = await result.current.onUploadFormat({ targetFormat: "EPUB" })
 
     expect(uploaded).toEqual({ success: false })
   })
@@ -265,8 +273,8 @@ describe("useBookEdit", () => {
 
     const uploadSpy = jest.spyOn(api, "uploadBookFormat")
 
-    const result = useBookEdit()
-    const uploaded = await result.onUploadFormat({ targetFormat: "EPUB" })
+    const { result } = renderHook(() => useBookEdit())
+    const uploaded = await result.current.onUploadFormat({ targetFormat: "EPUB" })
 
     expect(uploaded).toEqual({ success: false })
     expect(uploadSpy).not.toHaveBeenCalled()
@@ -286,8 +294,8 @@ describe("useBookEdit", () => {
 
     jest.spyOn(api, "uploadBookFormat").mockResolvedValue({ kind: "bad-data" } as any)
 
-    const result = useBookEdit()
-    const uploaded = await result.onUploadFormat({ targetFormat: "EPUB" })
+    const { result } = renderHook(() => useBookEdit())
+    const uploaded = await result.current.onUploadFormat({ targetFormat: "EPUB" })
 
     expect(uploaded).toEqual({ success: false })
   })
@@ -295,8 +303,8 @@ describe("useBookEdit", () => {
   test("onDeleteFormat calls deleteBookFormat API", async () => {
     const deleteSpy = jest.spyOn(api, "deleteBookFormat").mockResolvedValue({ kind: "ok" })
 
-    const result = useBookEdit()
-    const deleted = await result.onDeleteFormat("PDF")
+    const { result } = renderHook(() => useBookEdit())
+    const deleted = await result.current.onDeleteFormat("PDF")
 
     expect(deleteSpy).toHaveBeenCalledWith("lib1", 1, "PDF")
     expect(deleted).toBe(true)
@@ -305,8 +313,8 @@ describe("useBookEdit", () => {
   test("onDeleteFormat returns false when the format delete request fails", async () => {
     jest.spyOn(api, "deleteBookFormat").mockResolvedValue({ kind: "bad-data" } as any)
 
-    const result = useBookEdit()
-    const deleted = await result.onDeleteFormat("PDF")
+    const { result } = renderHook(() => useBookEdit())
+    const deleted = await result.current.onDeleteFormat("PDF")
 
     expect(deleted).toBe(false)
   })
@@ -322,9 +330,9 @@ describe("useBookEdit", () => {
       }
     })
 
-    const result = useBookEdit()
+    const { result } = renderHook(() => useBookEdit())
 
-    result.onSubmit()
+    result.current.onSubmit()
 
     expect(mockUpdate).toHaveBeenCalledWith(
       "lib1",

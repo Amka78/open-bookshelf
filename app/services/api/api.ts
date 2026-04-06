@@ -1278,6 +1278,20 @@ export class Api {
     return { kind: "ok", data: latest }
   }
 
+  async sendBookByEmail(
+    libraryId: string,
+    bookId: number,
+    format: string,
+  ): Promise<{ kind: "ok" } | GeneralApiProblem> {
+    const endpoint = `cdb/send-by-email/${bookId}/${encodeURIComponent(format)}/${libraryId}`
+    const response: ApiResponse<unknown> = await this.apisauce.post(endpoint)
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response)
+      if (problem) return problem
+    }
+    return { kind: "ok" }
+  }
+
   async getJobs(
     libraryId: string,
   ): Promise<{ kind: "ok"; data: CalibreJob[] } | GeneralApiProblem> {

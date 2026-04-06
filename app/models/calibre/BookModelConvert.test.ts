@@ -97,7 +97,7 @@ const createBook = () =>
       series: "",
       lastModified: "",
       selectedFormat: "EPUB",
-      identifiers: [],
+      identifiers: {},
     },
     path: [],
     hash: null,

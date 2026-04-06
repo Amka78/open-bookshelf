@@ -293,6 +293,30 @@ const en = {
     themeSepia: "Sepia",
     themeDark: "Dark",
   },
+  emailDelivery: {
+    buttonTooltip: "Send by email",
+    selectFormat: "Select format",
+    selectFormatMessage: "Choose a format to send",
+    confirmTitle: "Send book",
+    confirmMessage: "Send {{title}} as {{format}}?",
+    send: "Send",
+    sentTitle: "Sent",
+    sentMessage: "The book has been queued for sending",
+    errorMessage: "Failed to send book",
+    noFormats: "No formats available",
+  },
+  bookFormatList: {
+    title: "Formats",
+    downloadTooltip: "Download format",
+    deleteTooltip: "Delete format",
+    deleteConfirm: "Delete this format?",
+    uploadFormat: "Add format",
+    uploadSuccess: "Format uploaded",
+    deleteSuccess: "Format deleted",
+  },
+  libraryViewMode: {
+    toggleTooltip: "Toggle view mode",
+  },
 }
 
 export default en

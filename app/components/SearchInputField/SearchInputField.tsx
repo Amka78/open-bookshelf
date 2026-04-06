@@ -3,7 +3,7 @@ import { FormSuggestionPopover } from "@/components/Forms/FormSuggestionPopover"
 import { IconButton } from "@/components/IconButton/IconButton"
 import { InputField } from "@/components/InputField/InputField"
 import type { MessageKey } from "@/i18n"
-import { HStack } from "@gluestack-ui/themed"
+import { HStack, Input } from "@gluestack-ui/themed"
 import { useEffect, useRef, useState } from "react"
 import type { TextInput as RNTextInput } from "react-native"
 
@@ -143,33 +143,34 @@ export function SearchInputField({
             const { onPress: _op, onPressIn: _opi, onPressOut: _opo, ...restProps } = triggerProps
             return (
               <Box {...restProps} flex={1}>
-                <InputField
-                  value={value}
-                  onChangeText={(text) => {
-                    cancelClose()
-                    setIsSuggestionOpen(true)
-                    onChangeText(text)
-                  }}
-                  onFocus={() => {
-                    cancelClose()
-                    setIsSuggestionOpen(true)
-                  }}
-                  onBlur={scheduleClose}
-                  onSubmitEditing={() => onSubmit?.(value)}
-                  returnKeyType="search"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  clearButtonMode="while-editing"
-                  placeholder={placeholder}
-                  placeholderTx={placeholderTx}
-                  size={size as never}
-                  textAlign="left"
-                  testID={testID ?? "search-input-field"}
-                  autoFocus={autoFocus}
-                  ref={(ref) => {
-                    inputRef.current = ref as unknown as RNTextInput | null
-                  }}
-                />
+                <Input variant="underlined" size={size as never ?? "lg"}>
+                  <InputField
+                    value={value}
+                    onChangeText={(text) => {
+                      cancelClose()
+                      setIsSuggestionOpen(true)
+                      onChangeText(text)
+                    }}
+                    onFocus={() => {
+                      cancelClose()
+                      setIsSuggestionOpen(true)
+                    }}
+                    onBlur={scheduleClose}
+                    onSubmitEditing={() => onSubmit?.(value)}
+                    returnKeyType="search"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    clearButtonMode="while-editing"
+                    placeholder={placeholder}
+                    placeholderTx={placeholderTx}
+                    textAlign="left"
+                    testID={testID ?? "search-input-field"}
+                    autoFocus={autoFocus}
+                    ref={(ref) => {
+                      inputRef.current = ref as unknown as RNTextInput | null
+                    }}
+                  />
+                </Input>
               </Box>
             )
           }}

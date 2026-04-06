@@ -1,14 +1,16 @@
 import { useConvergence } from "@/hooks/useConvergence"
+import { translate } from "@/i18n"
 import { useStores } from "@/models"
 import type { AppStackParamList, ApppNavigationProp } from "@/navigators/types"
 import { api } from "@/services/api"
 import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { useLayoutEffect } from "react"
-import { Share } from "react-native"
+import { Alert, Linking, Share } from "react-native"
 import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import { useDeleteBook } from "../../hooks/useDeleteBook"
 import { useDownloadBook } from "../../hooks/useDownloadBook"
 import { useOpenViewer } from "../../hooks/useOpenViewer"
+import * as DocumentPicker from "expo-document-picker"
 
 type BookDetailScreenRouteProp = RouteProp<AppStackParamList, "BookDetail">
 type ReadStatusValue = "want-to-read" | "reading" | "finished"
@@ -112,6 +114,54 @@ export function useBookDetail() {
     }
   }
 
+  const handleSendByEmail = () => {
+    const book = calibreRootStore.selectedBook
+    const library = calibreRootStore.selectedLibrary
+    if (!book || !library) return
+
+    const formats = book.metaData?.formats ?? []
+    if (formats.length === 0) {
+      Alert.alert(translate("emailDelivery.noFormats"))
+      return
+    }
+
+    const formatOptions = formats.map((fmt) => ({
+      text: fmt,
+      onPress: () => {
+        Alert.alert(
+          translate("emailDelivery.confirmTitle"),
+          translate("emailDelivery.confirmMessage", {
+            format: fmt,
+            title: book.metaData?.title ?? "",
+          }),
+          [
+            { text: translate("common.cancel"), style: "cancel" as const },
+            {
+              text: translate("emailDelivery.send"),
+              onPress: async () => {
+                const result = await api.sendBookByEmail(library.id, book.id, fmt)
+                if (result.kind === "ok") {
+                  Alert.alert(
+                    translate("emailDelivery.sentTitle"),
+                    translate("emailDelivery.sentMessage"),
+                  )
+                } else {
+                  Alert.alert(translate("common.error"), translate("emailDelivery.errorMessage"))
+                }
+              },
+            },
+          ],
+        )
+      },
+    }))
+    formatOptions.push({ text: translate("common.cancel"), onPress: () => {} })
+    Alert.alert(
+      translate("emailDelivery.selectFormat"),
+      translate("emailDelivery.selectFormatMessage"),
+      formatOptions,
+    )
+  }
+
   const handleFieldPress = (query: string) => {
     route.params.onLinkPress(query)
     navigation.goBack()
@@ -125,6 +175,50 @@ export function useBookDetail() {
     settingStore.setReadStatus(selectedLibrary.id, selectedBook.id, status)
   }
 
+  const handleDownloadFormat = (format: string) => {
+    const url = api.getBookDownloadUrl(format, selectedBook.id, selectedLibrary.id)
+    Linking.openURL(url)
+  }
+
+  const handleDeleteFormat = async (format: string) => {
+    try {
+      const result = await api.deleteBookFormat(selectedLibrary.id, selectedBook.id, format)
+      if (result.kind === "ok") {
+        Alert.alert(translate("common.ok"), translate("bookFormatList.deleteSuccess"))
+      }
+    } catch (error) {
+      console.error("deleteFormat error", error)
+    }
+  }
+
+  const handleUploadFormat = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({ type: "*/*" })
+      if (result.canceled || result.assets.length === 0) return
+
+      const asset = result.assets[0]
+      const ext = asset.name.split(".").pop()
+      const format = ext ? ext.toUpperCase() : ""
+      if (!format) return
+
+      const filePayload = asset.file ?? asset.uri
+      if (!filePayload) return
+
+      const uploadResult = await api.uploadBookFormat(
+        selectedLibrary.id,
+        selectedBook.id,
+        format,
+        asset.name,
+        filePayload,
+      )
+      if (uploadResult.kind === "ok") {
+        Alert.alert(translate("common.ok"), translate("bookFormatList.uploadSuccess"))
+      }
+    } catch (error) {
+      console.error("uploadFormat error", error)
+    }
+  }
+
   return {
     selectedLibrary,
     selectedBook,
@@ -135,8 +229,12 @@ export function useBookDetail() {
     handleEditBook,
     handleDeleteBook,
     handleShareLink,
+    handleSendByEmail,
     handleFieldPress,
     readStatus,
     handleSetStatus,
+    handleDownloadFormat,
+    handleDeleteFormat,
+    handleUploadFormat,
   }
 }

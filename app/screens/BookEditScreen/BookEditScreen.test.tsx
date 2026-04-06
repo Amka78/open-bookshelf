@@ -36,6 +36,15 @@ mock.module("react-native", () => ({
   ),
   UIManager: { measureLayout: jest.fn() },
   findNodeHandle: jest.fn().mockReturnValue(null),
+  Touchable: {
+    Mixin: {
+      touchableHandlePress: jest.fn(),
+      touchableHandleActivePressIn: jest.fn(),
+      touchableHandleActivePressOut: jest.fn(),
+      touchableHandleLongPress: jest.fn(),
+      touchableGetPressRectOffset: jest.fn(() => ({ top: 0, left: 0, right: 0, bottom: 0 })),
+    },
+  },
 }))
 
 mock.module("@/hooks/useKeyboardVisibility", () => ({
@@ -47,7 +56,7 @@ mock.module("@/hooks/useConvergence", () => ({
 }))
 
 mock.module("@/models", () => ({
-  useStores: () => useStoresMock(),
+  useStores: useStoresMock,
 }))
 
 mock.module("mobx-state-tree", () => ({
@@ -56,7 +65,7 @@ mock.module("mobx-state-tree", () => ({
 
 mock.module("@react-navigation/native", () => ({
   useRoute: jest.fn(),
-  useNavigation: () => useNavigationMock(),
+  useNavigation: useNavigationMock,
 }))
 
 mock.module("@/components/RootContainer/RootContainer", () => ({

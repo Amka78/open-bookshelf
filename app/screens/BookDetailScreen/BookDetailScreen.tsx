@@ -1,4 +1,4 @@
-import { BookDetailFieldList, BookDetailMenu, BookImageItem, RootContainer, SeriesNavigationBar } from "@/components"
+import { BookDetailFieldList, BookDetailMenu, BookFormatList, BookImageItem, RootContainer, SeriesNavigationBar } from "@/components"
 import { useSeriesNavigation } from "@/hooks/useSeriesNavigation"
 import { useBookDetail } from "@/screens/BookDetailScreen/useBookDetail"
 import { observer } from "mobx-react-lite"
@@ -15,9 +15,13 @@ export const BookDetailScreen: FC = observer(() => {
     handleEditBook,
     handleDeleteBook,
     handleShareLink,
+    handleSendByEmail,
     handleFieldPress,
     readStatus,
     handleSetStatus,
+    handleDownloadFormat,
+    handleDeleteFormat,
+    handleUploadFormat,
   } = useBookDetail()
 
   const { hasSeries, prevBook, nextBook, currentIndex, seriesBooks, seriesName, navigateTo } =
@@ -33,6 +37,7 @@ export const BookDetailScreen: FC = observer(() => {
         onEditBook={handleEditBook}
         onDeleteBook={handleDeleteBook}
         onShareLink={handleShareLink}
+        onSendByEmail={handleSendByEmail}
         readStatus={readStatus ?? null}
         onSetStatus={handleSetStatus}
       />
@@ -42,6 +47,12 @@ export const BookDetailScreen: FC = observer(() => {
         fieldNameList={selectedLibrary.bookDisplayFields}
         onFieldPress={handleFieldPress}
         marginTop={"$3"}
+      />
+      <BookFormatList
+        formats={selectedBook?.metaData?.formats ?? []}
+        onDownload={handleDownloadFormat}
+        onDelete={handleDeleteFormat}
+        onUpload={handleUploadFormat}
       />
       {hasSeries ? (
         <SeriesNavigationBar

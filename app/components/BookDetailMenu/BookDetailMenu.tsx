@@ -21,6 +21,7 @@ export type BookDetailMenuProps = {
   onEditBook: () => void
   onDeleteBook: () => void
   onShareLink?: () => void
+  onSendByEmail?: () => void
   readStatus?: ReadStatusValue | null
   onSetStatus?: (status: ReadStatusValue | null) => void
   iconOpacity?: number
@@ -86,6 +87,16 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
           onPress={props.onShareLink}
           testID="book-detail-share-button"
           tooltipTx="bookDetailMenu.shareLinkTooltip"
+        />
+      )}
+      {props.onSendByEmail != null && (
+        <TooltipIconButton
+          {...sharedIconButtonProps}
+          name={"email-send-outline"}
+          iconSize="md-"
+          onPress={props.onSendByEmail}
+          testID="book-detail-send-email-button"
+          tooltipTx="emailDelivery.buttonTooltip"
         />
       )}
       {props.onSetStatus != null && (

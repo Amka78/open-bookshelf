@@ -12,11 +12,11 @@ const test = localizeTestRegistrar(baseTest)
 const useStoresMock = jest.fn()
 
 mock.module("@/models", () => ({
-  useStores: () => useStoresMock(),
+  useStores: useStoresMock,
 }))
 
 mock.module("/home/amka78/private/open-bookshelf/app/models/index.ts", () => ({
-  useStores: () => useStoresMock(),
+  useStores: useStoresMock,
 }))
 
 mock.module("@/services/api", () => ({

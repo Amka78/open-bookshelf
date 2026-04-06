@@ -25,8 +25,8 @@ mock.module("@/models", () => ({
 }))
 
 mock.module("@react-navigation/native", () => ({
-  useNavigation: () => useNavigationMock(),
-  useRoute: () => useRouteMock(),
+  useNavigation: useNavigationMock,
+  useRoute: useRouteMock,
 }))
 
 mock.module("@/components/Box/Box", () => ({

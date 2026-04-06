@@ -295,6 +295,30 @@ const ja: Translations = {
     themeSepia: "セピア",
     themeDark: "ダーク",
   },
+  emailDelivery: {
+    buttonTooltip: "メールで送信",
+    selectFormat: "フォーマットを選択",
+    selectFormatMessage: "送信するフォーマットを選択してください",
+    confirmTitle: "書籍を送信",
+    confirmMessage: "{{title}}を{{format}}で送信しますか？",
+    send: "送信",
+    sentTitle: "送信完了",
+    sentMessage: "書籍の送信をキューに追加しました",
+    errorMessage: "書籍の送信に失敗しました",
+    noFormats: "利用可能なフォーマットがありません",
+  },
+  bookFormatList: {
+    title: "フォーマット",
+    downloadTooltip: "フォーマットをダウンロード",
+    deleteTooltip: "フォーマットを削除",
+    deleteConfirm: "このフォーマットを削除しますか？",
+    uploadFormat: "フォーマットを追加",
+    uploadSuccess: "フォーマットをアップロードしました",
+    deleteSuccess: "フォーマットを削除しました",
+  },
+  libraryViewMode: {
+    toggleTooltip: "表示モード切替",
+  },
 }
 
 export default ja

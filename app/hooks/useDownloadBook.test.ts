@@ -1,7 +1,7 @@
 import type { ModalStackParams } from "@/components/Modals/Types"
 import { useStores } from "@/models"
 import { api } from "@/services/api"
-import { File, Paths } from "expo-file-system"
+import { Paths } from "expo-file-system"
 import * as Sharing from "expo-sharing"
 import { Platform } from "react-native"
 import type { UsableModalProp } from "react-native-modalfy"
@@ -61,9 +61,9 @@ describe("useDownloadBook", () => {
     }
     ;(useStores as jest.Mock).mockReturnValue(createStore(selectedBook))
     jest.spyOn(api, "getBookDownloadUrl").mockReturnValue("https://example/book")
-    ;(File.downloadFileAsync as jest.Mock).mockResolvedValue({
+    jest.spyOn(api, "downloadFileWithAuth").mockResolvedValue({
       uri: "file:///documents/book.epub",
-    })
+    } as any)
 
     const { execute } = useDownloadBook()
     const modal = createModal()
@@ -71,10 +71,10 @@ describe("useDownloadBook", () => {
     await execute(modal)
 
     expect(api.getBookDownloadUrl).toHaveBeenCalledWith("EPUB", 10, "main")
-    expect(File.downloadFileAsync).toHaveBeenCalledWith(
+    expect(api.downloadFileWithAuth).toHaveBeenCalledWith(
       "https://example/book",
       expect.objectContaining({ uri: `${Paths.document.uri}Single Format Book.EPUB` }),
-      { headers: { Authorization: "Basic token" }, idempotent: true },
+      { idempotent: true },
     )
     expect(Sharing.shareAsync).toHaveBeenCalledWith("file:///documents/book.epub")
   })
@@ -92,9 +92,9 @@ describe("useDownloadBook", () => {
     }
     ;(useStores as jest.Mock).mockReturnValue(createStore(selectedBook))
     jest.spyOn(api, "getBookDownloadUrl").mockReturnValue("https://example/book-pdf")
-    ;(File.downloadFileAsync as jest.Mock).mockResolvedValue({
+    jest.spyOn(api, "downloadFileWithAuth").mockResolvedValue({
       uri: "file:///documents/book.pdf",
-    })
+    } as any)
 
     const { execute } = useDownloadBook()
     await execute(createModal({ openModal: openModal as TestModal["openModal"] }))
@@ -126,7 +126,7 @@ describe("useDownloadBook", () => {
     }
     ;(useStores as jest.Mock).mockReturnValue(createStore(selectedBook))
     jest.spyOn(api, "getBookDownloadUrl").mockReturnValue("https://example/broken")
-    ;(File.downloadFileAsync as jest.Mock).mockRejectedValue(new Error("network failed"))
+    jest.spyOn(api, "downloadFileWithAuth").mockRejectedValue(new Error("network failed"))
 
     const { execute } = useDownloadBook()
 

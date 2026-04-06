@@ -19,7 +19,8 @@ import {
   api,
 } from "../../services/api"
 import type { AnnotationsMap } from "../../services/api/api.types"
-import { type Metadata, MetadataModel, type ReadingHistory } from "../calibre"
+import { type Metadata, MetadataModel } from "./MetadataModel"
+import type { ReadingHistory } from "./ReadingHistoryModel"
 import { AnnotationModel, type Annotation } from "./AnnotationModel"
 import { handleCommonApiError } from "../errors/errors"
 import { withSetPropAction } from "../helpers/withSetPropAction"

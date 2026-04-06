@@ -14,6 +14,8 @@ import {
   StaggerContainer,
   VirtualLibraryButton,
 } from "@/components"
+import { BookListItem } from "@/components/BookListItem"
+import { LibraryViewModeButton } from "@/components/LibraryViewModeButton"
 import { SearchInputField } from "@/components/SearchInputField"
 import type { CalibreFieldOperator, QueryOperator } from "@/components/LeftSideMenu/LeftSideMenu"
 import {
@@ -63,6 +65,11 @@ export const LibraryScreen: FC = observer(() => {
 
   const convergenceHook = useConvergence()
   const window = useWindowDimensions()
+
+  const viewMode = settingStore.libraryViewMode
+  const handleToggleViewMode = () => {
+    settingStore.setLibraryViewMode(viewMode === "grid" ? "list" : "grid")
+  }
 
   const openViewerHook = useOpenViewer()
   const deleteBookHook = useDeleteBook()
@@ -199,10 +206,7 @@ export const LibraryScreen: FC = observer(() => {
           await libraryHook.onUploadFile(documents)
         }}
       />
-      <LibraryViewButton
-        mode={libraryHook.currentListStyle}
-        onPress={libraryHook.onChangeListStyle}
-      />
+      <LibraryViewModeButton mode={viewMode} onToggle={handleToggleViewMode} />
       <SortMenu
         selectedSort={selectedLibrary?.searchSetting?.sort}
         selectedSortOrder={selectedLibrary?.searchSetting?.sortOrder}
@@ -274,6 +278,7 @@ export const LibraryScreen: FC = observer(() => {
     libraryActions,
     navigation,
     selectedLibrary,
+    viewMode,
   ])
 
   const renderItem = ({ item }: { item: Book }) => {
@@ -388,7 +393,22 @@ export const LibraryScreen: FC = observer(() => {
       })
     }
 
-    if (libraryHook.currentListStyle === "gridView") {
+    if (viewMode === "list") {
+      listItem = (
+        <BookListItem
+          book={item}
+          source={imageSource}
+          readStatus={readStatus}
+          readingProgress={readingProgress ?? undefined}
+          isCached={hasReadingHistory}
+          isSelected={libraryHook.isBookSelected(item.id)}
+          onPress={
+            libraryHook.isSelectionMode ? () => libraryHook.toggleBookSelection(item.id) : onPress
+          }
+          onLongPress={onLongPress}
+        />
+      )
+    } else if (libraryHook.currentListStyle === "gridView") {
       listItem = (
         <BookImageItem
           source={imageSource}
@@ -419,23 +439,7 @@ export const LibraryScreen: FC = observer(() => {
           onSelectToggle={() => libraryHook.toggleBookSelection(item.id)}
         />
       )
-    } else {
-      listItem = (
-        <BookDescriptionItem
-          source={imageSource}
-          showCachedIcon={hasReadingHistory}
-          onCachedIconPress={onClearBookCache}
-          onPress={onPress}
-          onLongPress={onLongPress}
-          authors={item.metaData.authors}
-          title={item.metaData.title}
-          onLinkPress={(link) => {
-            libraryHook.onSearch(`authors:=${link}`)
-          }}
-        />
-      )
     }
-
     return listItem
   }
 
@@ -489,11 +493,11 @@ export const LibraryScreen: FC = observer(() => {
       )}
       {selectedLibrary ? (
         <FlatList<Book>
-          key={libraryHook.currentListStyle} // to force re-render when list style change
+          key={`${libraryHook.currentListStyle}-${viewMode}`} // to force re-render when list style or view mode changes
           data={bookList}
           renderItem={renderItem}
           keyExtractor={(item) => `${item.id}`}
-          numColumns={Math.floor(window.width / 242)}
+          numColumns={viewMode === "list" ? 1 : Math.floor(window.width / 242)}
           onRefresh={
             convergenceHook.isLarge
               ? undefined

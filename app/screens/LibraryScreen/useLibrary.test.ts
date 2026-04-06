@@ -76,6 +76,10 @@ describe("useLibrary", () => {
     jest.clearAllMocks()
     ;(useStores as jest.Mock).mockReturnValue({
       calibreRootStore: mockCallibreRootStore,
+      settingStore: {
+        booksPerPage: 20,
+        addRecentSearch: jest.fn(),
+      },
     })
     mockUseConvergence.mockReturnValue({
       isLarge: false,
@@ -120,6 +124,10 @@ describe("useLibrary", () => {
       calibreRootStore: {
         ...mockCallibreRootStore,
         selectedLibrary: mockSelectedLibrary,
+      },
+      settingStore: {
+        booksPerPage: 20,
+        addRecentSearch: jest.fn(),
       },
     })
 
@@ -171,6 +179,10 @@ describe("useLibrary", () => {
       calibreRootStore: {
         ...mockCallibreRootStore,
         selectedLibrary: null,
+      },
+      settingStore: {
+        booksPerPage: 20,
+        addRecentSearch: jest.fn(),
       },
     })
 

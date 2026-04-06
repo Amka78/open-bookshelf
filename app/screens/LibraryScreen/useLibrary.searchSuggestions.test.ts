@@ -80,6 +80,10 @@ describe("getSearchSuggestions (useLibrary)", () => {
         getTagBrowser: mockGetTagBrowser,
         readingHistories: [],
       },
+      settingStore: {
+        booksPerPage: 20,
+        addRecentSearch: jest.fn(),
+      },
     }),
   }))
 

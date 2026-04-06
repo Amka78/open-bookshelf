@@ -238,6 +238,9 @@ mock.module("react-native", () => ({
       panHandlers: {},
     })),
   },
+  Share: {
+    share: jest.fn().mockResolvedValue({ action: "sharedAction" }),
+  },
 }))
 
 const createMockExpoFileSystemModule = () => {
@@ -356,13 +359,64 @@ mock.module("i18n-js", () => {
     locale: "en",
     translations: {},
   }
+  class I18n {
+    locale = "en"
+    enableFallback = true
+    translations: Record<string, unknown> = {}
+    t = jest.fn((key: string) => key)
+    currentLocale = jest.fn(() => "en")
+  }
   return {
     __esModule: true,
     default: mockI18n,
+    I18n,
     ...mockI18n,
   }
 })
 
 mock.module("reactotron-react-native", () => ({}))
+
+mock.module("@gluestack-ui/themed", () => {
+  const noop = () => null
+  return {
+    Box: "div",
+    HStack: "div",
+    VStack: "div",
+    View: "div",
+    Text: "span",
+    Heading: "h1",
+    ScrollView: "div",
+    Pressable: "button",
+    Input: "div",
+    InputField: "input",
+    Button: "button",
+    ButtonText: "span",
+    ButtonSpinner: "span",
+    Center: "div",
+    Spinner: "div",
+    Switch: "input",
+    Slider: "div",
+    SliderTrack: "div",
+    SliderFilledTrack: "div",
+    SliderThumb: "div",
+    Menu: "div",
+    MenuItem: "div",
+    MenuItemLabel: "span",
+    Modal: "div",
+    ModalContent: "div",
+    ModalHeader: "div",
+    ModalBody: "div",
+    ModalFooter: "div",
+    ModalCloseButton: "button",
+    Tooltip: "div",
+    TooltipContent: "div",
+    TooltipText: "span",
+    Image: "img",
+    GluestackUIProvider: ({ children }: { children: unknown }) => children,
+    ChevronDownIcon: "span",
+    styled: jest.fn((component: unknown) => component),
+    useBreakpointValue: jest.fn(),
+  }
+})
 
 declare const tron // eslint-disable-line @typescript-eslint/no-unused-vars

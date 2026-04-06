@@ -32,6 +32,8 @@ mock.module("@/screens/ViewerScreen/useViewer", () => ({
 
 mock.module("@/utils/logger", () => ({
   logger: {
+    debug: jest.fn(),
+    info: jest.fn(),
     warn: (...args: unknown[]) => loggerWarnMock(...args),
     error: (...args: unknown[]) => loggerErrorMock(...args),
   },

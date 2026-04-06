@@ -1,3 +1,11 @@
+import { afterEach, describe, expect, jest, mock, test } from "bun:test"
+
+mock.module("@/services/api", () => ({
+  api: {
+    deleteBook: jest.fn(),
+  },
+}))
+
 import { api } from "@/services/api"
 import {
   BookModel,

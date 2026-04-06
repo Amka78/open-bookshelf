@@ -294,6 +294,30 @@ const ar: Translations = {
     themeSepia: "سيبيا",
     themeDark: "داكن",
   },
+  emailDelivery: {
+    buttonTooltip: "إرسال بالبريد",
+    selectFormat: "اختر التنسيق",
+    selectFormatMessage: "اختر التنسيق للإرسال",
+    confirmTitle: "إرسال الكتاب",
+    confirmMessage: "إرسال {{title}} بتنسيق {{format}}؟",
+    send: "إرسال",
+    sentTitle: "تم الإرسال",
+    sentMessage: "تمت إضافة الكتاب إلى قائمة الانتظار",
+    errorMessage: "فشل إرسال الكتاب",
+    noFormats: "لا تتوفر تنسيقات",
+  },
+  bookFormatList: {
+    title: "التنسيقات",
+    downloadTooltip: "تنزيل التنسيق",
+    deleteTooltip: "حذف التنسيق",
+    deleteConfirm: "حذف هذا التنسيق؟",
+    uploadFormat: "إضافة تنسيق",
+    uploadSuccess: "تم رفع التنسيق",
+    deleteSuccess: "تم حذف التنسيق",
+  },
+  libraryViewMode: {
+    toggleTooltip: "تبديل وضع العرض",
+  },
 }
 
 export default ar

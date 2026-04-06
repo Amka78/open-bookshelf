@@ -83,15 +83,15 @@ const useConvergenceMock = jest.fn()
 const useModalMock = jest.fn()
 
 mock.module("@/models", () => ({
-  useStores: () => useStoresMock(),
+  useStores: useStoresMock,
 }))
 
 mock.module("/home/amka78/open-bookshelf/app/models/index.ts", () => ({
-  useStores: () => useStoresMock(),
+  useStores: useStoresMock,
 }))
 
 mock.module("@react-navigation/native", () => ({
-  useNavigation: () => useNavigationMock(),
+  useNavigation: useNavigationMock,
   createNavigationContainerRef: () => ({
     isReady: () => false,
     canGoBack: () => false,

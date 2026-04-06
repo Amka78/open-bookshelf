@@ -26,6 +26,10 @@ export const SettingStoreModel = types
       "default",
     ),
     readStatuses: types.optional(types.map(types.string), {}),
+    libraryViewMode: types.optional(
+      types.union(types.literal("grid"), types.literal("list")),
+      "grid",
+    ),
   })
   .views((store) => ({
     getReadStatus(libraryId: string, bookId: number): string | undefined {
@@ -79,6 +83,9 @@ export const SettingStoreModel = types
       } else {
         store.readStatuses.set(key, status)
       }
+    },
+    setLibraryViewMode(mode: "grid" | "list") {
+      store.libraryViewMode = mode
     },
   }))
 

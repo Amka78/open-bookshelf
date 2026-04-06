@@ -81,11 +81,11 @@ const mockFetchWithAuth = jest.fn().mockResolvedValue({
 const mockSetCoverBinary = jest.fn().mockResolvedValue({ kind: "ok" })
 
 mock.module("@/models", () => ({
-  useStores: () => useStoresMock(),
+  useStores: useStoresMock,
 }))
 
 mock.module("/home/amka78/open-bookshelf/app/models/index.ts", () => ({
-  useStores: () => useStoresMock(),
+  useStores: useStoresMock,
 }))
 
 mock.module("@/services/api", () => ({
