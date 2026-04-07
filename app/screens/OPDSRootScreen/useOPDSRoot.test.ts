@@ -15,6 +15,7 @@ function playODSRootReadsEntryTitles({ entries }: { entries: Array<{ title: stri
   return entries.map((entry) => entry.title)
 }
 mock.module("@/components", () => ({
+  ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
   Box: "div",
   Image: "img",
   Text: "span",

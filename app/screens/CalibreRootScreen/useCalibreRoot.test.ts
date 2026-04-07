@@ -1,7 +1,6 @@
 import { useStores } from "@/models"
 import { useNavigation } from "@react-navigation/native"
 import { act, renderHook } from "@testing-library/react"
-import { values } from "mobx"
 import { useCalibreRoot } from "./useCalibreRoot"
 
 type HookResultRef = {
@@ -32,10 +31,6 @@ async function playCalibreRootPressesLibrariesInOrder({
 function playCalibreRootReadsLibraryIds({ result }: { result: HookResultRef }) {
   return result.current.library.map((library) => library.id)
 }
-
-jest.mock("mobx", () => ({
-  values: jest.fn(),
-}))
 
 describe("useCalibreRoot", () => {
   type TestLibrary = { id: string; books: Map<string, unknown> }
@@ -72,7 +67,6 @@ describe("useCalibreRoot", () => {
     ;(useNavigation as jest.Mock).mockReturnValue({
       navigate: mockNavigate,
     })
-    ;(values as jest.Mock).mockReturnValue(mockLibraryMap.values())
   })
 
   const renderUseCalibreRoot = () => renderHook(() => useCalibreRoot())

@@ -1,5 +1,5 @@
 import { api } from "@/services/api"
-import { beforeAll, beforeEach, afterEach, describe, expect, jest, mock, test } from "bun:test"
+import { beforeAll, beforeEach, afterAll, afterEach, describe, expect, jest, mock, test } from "bun:test"
 import { renderHook } from "@testing-library/react"
 import * as DocumentPicker from "expo-document-picker"
 import * as reactHookForm from "react-hook-form"
@@ -19,12 +19,26 @@ mock.module("@/models", () => ({
 }))
 
 mock.module("@react-navigation/native", () => ({
+  ...(global as { __navMock?: Record<string, unknown> }).__navMock,
   useNavigation: useNavigationMock,
 }))
 
 mock.module("mobx-state-tree", () => ({
   getSnapshot: (value: unknown) => value,
 }))
+
+// Restore real mobx-state-tree after this file so subsequent test files that import
+// @/models/calibre (which uses MST models) don't encounter a broken partial mock.
+afterAll(() => {
+  mock.module(
+    "mobx-state-tree",
+    () => (global as { __realMST?: Record<string, unknown> }).__realMST ?? {},
+  )
+})
+
+afterEach(() => {
+  jest.clearAllMocks()
+})
 
 let useBookEdit: typeof import("./useBookEdit").useBookEdit
 

@@ -3,10 +3,18 @@ import { afterEach, jest, mock } from "bun:test"
 import { JSDOM } from "jsdom"
 import mockFile from "./mockFile"
 
-// Save real react-hook-form before any test-file-level mocks can override it
-// (Bun runs all test files in the same process; file-level jest.mock() is global)
+// Save real react-hook-form before any test-file-level mocks can override it.
+// IMPORTANT: use Object.assign to snapshot values into a plain object — the `import * as`
+// namespace is a live binding that Bun mutates in-place when mock.module() replaces the
+// module, so the stored value would otherwise reflect the mock instead of the originals.
 import * as _realReactHookForm from "react-hook-form"
-;(global as any).__realReactHookForm = _realReactHookForm
+;(global as any).__realReactHookForm = Object.assign({}, _realReactHookForm)
+// Save real mobx so test files that partially mock it can restore it in afterAll.
+import * as _realMobxNs from "mobx"
+;(global as any).__realMobx = Object.assign({}, _realMobxNs)
+// Save real mobx-state-tree so test files that partially mock it can restore it in afterAll.
+import * as _realMSTNs from "mobx-state-tree"
+;(global as any).__realMST = Object.assign({}, _realMSTNs)
 
 const dom = new JSDOM("<!doctype html><html><body></body></html>")
 global.window = dom.window as unknown as Window & typeof globalThis
@@ -17,6 +25,15 @@ global.navigator = {
 
 mock.module("@/models", () => ({
   useStores: jest.fn(),
+}))
+
+mock.module("@/utils/logger", () => ({
+  logger: {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  },
 }))
 
 mock.module("@react-navigation/native", () => ({
@@ -80,6 +97,13 @@ process.env.EXPO_OS = "web"
 process.env.NODE_ENV = "test"
 
 afterEach(() => {
+  // Reset rendered DOM to prevent element accumulation across tests and files.
+  // This replaces @testing-library/react's cleanup() which can't be imported here
+  // because @testing-library/dom evaluates document.body at module init time (before
+  // our JSDOM setup runs), making screen queries permanently broken if imported early.
+  if (typeof document !== "undefined" && document.body) {
+    document.body.innerHTML = ""
+  }
   jest.restoreAllMocks()
   jest.clearAllMocks()
 })
@@ -113,7 +137,7 @@ if (!globalThis.expo) {
 }
 
 // Mock react-native at preload time
-mock.module("react-native", () => ({
+const reactNativeMockFactory = () => ({
   View: "div",
   Text: "span",
   ScrollView: "div",
@@ -218,6 +242,24 @@ mock.module("react-native", () => ({
     removeAllListeners: jest.fn(),
   })),
   findNodeHandle: jest.fn(() => null),
+  Linking: {
+    openURL: jest.fn(),
+    canOpenURL: jest.fn(() => Promise.resolve(true)),
+    getInitialURL: jest.fn(() => Promise.resolve(null)),
+    addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+    removeEventListener: jest.fn(),
+  },
+  Alert: {
+    alert: jest.fn(),
+  },
+  Share: {
+    share: jest.fn(() => Promise.resolve({ action: "sharedAction" })),
+  },
+  UIManager: {
+    measureLayout: jest.fn(),
+    setLayoutAnimationEnabledExperimental: jest.fn(),
+    getViewManagerConfig: jest.fn(),
+  },
   TurboModuleRegistry: {
     get: jest.fn(() => null),
     getEnforcing: jest.fn(() => ({})),
@@ -241,7 +283,49 @@ mock.module("react-native", () => ({
   Share: {
     share: jest.fn().mockResolvedValue({ action: "sharedAction" }),
   },
-}))
+})
+mock.module("react-native", reactNativeMockFactory)
+;(global as { __reactNativeMock?: ReturnType<typeof reactNativeMockFactory> }).__reactNativeMock =
+  reactNativeMockFactory()
+
+// Base mock for @/components — covers all exports used across test files.
+// Test files that need custom behaviour should spread this via global.__componentsMock.
+const componentsMockFactory = () => ({
+  Box: "div",
+  BookPage: "div",
+  BookViewer: "div",
+  Button: "button",
+  FlatList: ({ data, renderItem }: any) =>
+    (data ?? []).map((item: unknown, i: number) => renderItem({ item, index: i })),
+  FormCheckbox: "input",
+  FormInputField: "input",
+  Heading: "h1",
+  HStack: "div",
+  IconButton: "button",
+  Image: "img",
+  Input: "div",
+  ListItem: ({ LeftComponent, children }: any) => LeftComponent ?? children ?? null,
+  MaterialCommunityIcon: "span",
+  RootContainer: "div",
+  ScrollView: "div",
+  Text: "span",
+  VStack: "div",
+})
+mock.module("@/components", componentsMockFactory)
+;(global as { __componentsMock?: ReturnType<typeof componentsMockFactory> }).__componentsMock =
+  componentsMockFactory()
+
+// Base mock for @react-navigation/native — covers all hooks used across test files.
+const navMockFactory = () => ({
+  useNavigation: jest.fn(),
+  useRoute: jest.fn(() => ({ params: {} })),
+  useIsFocused: jest.fn(() => true),
+  useFocusEffect: jest.fn(),
+  NavigationContainer: "div",
+  createNavigationContainerRef: jest.fn(() => ({ current: null })),
+})
+mock.module("@react-navigation/native", navMockFactory)
+;(global as { __navMock?: ReturnType<typeof navMockFactory> }).__navMock = navMockFactory()
 
 const createMockExpoFileSystemModule = () => {
   class MockDirectory {
@@ -418,5 +502,45 @@ mock.module("@gluestack-ui/themed", () => {
     useBreakpointValue: jest.fn(),
   }
 })
+// Store base gluestack mock for test files that need to extend it without losing exports.
+;(global as { __gluestackMock?: Record<string, unknown> }).__gluestackMock = {
+  Box: "div",
+  HStack: "div",
+  VStack: "div",
+  View: "div",
+  Text: "span",
+  Heading: "h1",
+  ScrollView: "div",
+  Pressable: "button",
+  Input: "div",
+  InputField: "input",
+  Button: "button",
+  ButtonText: "span",
+  ButtonSpinner: "span",
+  Center: "div",
+  Spinner: "div",
+  Switch: "input",
+  Slider: "div",
+  SliderTrack: "div",
+  SliderFilledTrack: "div",
+  SliderThumb: "div",
+  Menu: "div",
+  MenuItem: "div",
+  MenuItemLabel: "span",
+  Modal: "div",
+  ModalContent: "div",
+  ModalHeader: "div",
+  ModalBody: "div",
+  ModalFooter: "div",
+  ModalCloseButton: "button",
+  Tooltip: "div",
+  TooltipContent: "div",
+  TooltipText: "span",
+  Image: "img",
+  GluestackUIProvider: ({ children }: { children: unknown }) => children,
+  ChevronDownIcon: "span",
+  styled: jest.fn((component: unknown) => component),
+  useBreakpointValue: jest.fn(),
+}
 
 declare const tron // eslint-disable-line @typescript-eslint/no-unused-vars

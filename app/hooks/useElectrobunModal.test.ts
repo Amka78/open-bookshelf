@@ -8,6 +8,10 @@ mock.module("react-native-modalfy", () => ({
   modalfy: jest.fn(),
 }))
 
+mock.module("@/i18n", () => ({
+  translate: (key: string) => key,
+}))
+
 mock.module(
   "/home/amka78/open-bookshelf/node_modules/react-native-modalfy/lib/commonjs/index.js",
   () => ({

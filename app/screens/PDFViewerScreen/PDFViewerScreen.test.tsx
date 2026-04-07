@@ -1,4 +1,6 @@
 import {
+  afterAll,
+  afterEach,
   beforeAll,
   beforeEach,
   describe as baseDescribe,
@@ -7,9 +9,14 @@ import {
   mock,
   test as baseTest,
 } from "bun:test"
-import { act, render, screen } from "@testing-library/react"
+import { act, cleanup, render, screen } from "@testing-library/react"
 import type { ReactNode } from "react"
+import * as _realUsePDFViewerNs from "./usePDFViewer"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
+
+// Snapshot the real usePDFViewer BEFORE mocking (top-level imports are hoisted, so this
+// runs before mock.module calls which are also hoisted but after static imports in Bun).
+const _realUsePDFViewer = Object.assign({}, _realUsePDFViewerNs)
 
 const usePDFViewerMock = jest.fn()
 const useViewerMock = jest.fn()
@@ -76,6 +83,7 @@ mock.module("@/library/PDF/PDFWebPage", () => ({
 }))
 
 mock.module("@/components", () => ({
+  ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
   BookViewer: ({
     bookTitle,
     totalPage,
@@ -123,6 +131,10 @@ const test = localizeTestRegistrar(baseTest)
 describe("PDFViewerScreen", () => {
   beforeAll(async () => {
     ;({ PDFViewerScreen } = await import("./PDFViewerScreen"))
+  })
+
+  afterEach(() => {
+    cleanup()
   })
 
   beforeEach(() => {
@@ -198,4 +210,9 @@ describe("PDFViewerScreen", () => {
 
     expect(screen.getByTestId("pdf-page-count").getAttribute("data-uri")).toBe("file:///cache/book.pdf")
   })
+})
+
+afterAll(() => {
+  // Restore the real usePDFViewer so usePDFViewer.test.ts can use it
+  mock.module("@/screens/PDFViewerScreen/usePDFViewer", () => _realUsePDFViewer)
 })

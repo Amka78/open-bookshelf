@@ -14,6 +14,7 @@ mock.module("expo-image", () => ({
 }))
 
 mock.module("@/components", () => ({
+  ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
   Box: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   HStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   VStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
@@ -22,6 +23,7 @@ mock.module("@/components", () => ({
 }))
 
 mock.module("@gluestack-ui/themed", () => ({
+  ...(global as { __gluestackMock?: Record<string, unknown> }).__gluestackMock,
   Pressable: ({ children, onPress }: { children?: ReactNode; onPress?: () => void }) => (
     <div onClick={onPress}>{children}</div>
   ),

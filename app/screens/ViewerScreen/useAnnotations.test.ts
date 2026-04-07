@@ -7,6 +7,10 @@ const mockUseStores = jest.fn()
 mock.module("@/services/api", () => ({
   api: {
     saveAnnotations: mockSaveAnnotations,
+    // Keep stubs for methods fired by useViewer's 1s debounce timer
+    // which may still be pending when this file runs.
+    syncReadingPosition: jest.fn().mockResolvedValue(undefined),
+    syncReadingPositionFull: jest.fn().mockResolvedValue(undefined),
   },
 }))
 

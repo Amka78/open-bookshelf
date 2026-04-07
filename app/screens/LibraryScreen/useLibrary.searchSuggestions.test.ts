@@ -44,47 +44,10 @@ describe("getCurrentToken (internal logic)", () => {
 describe("getSearchSuggestions (useLibrary)", () => {
   const mockSearchLibrary = jest.fn().mockResolvedValue(undefined)
   const mockGetTagBrowser = jest.fn()
+  const useStoresMock = jest.fn()
 
   mock.module("@/models", () => ({
-    useStores: () => ({
-      calibreRootStore: {
-        selectedLibrary: {
-          searchSetting: { query: "", sort: "title", sortOrder: "desc" },
-          fieldMetadataList: new Map([
-            [
-              "authors",
-              {
-                searchTerms: ["authors", "author"],
-                isCustom: false,
-              },
-            ],
-            [
-              "title",
-              {
-                searchTerms: ["title"],
-                isCustom: false,
-              },
-            ],
-            [
-              "tags",
-              {
-                searchTerms: ["tags", "tag"],
-                isCustom: false,
-              },
-            ],
-          ]),
-          books: new Map(),
-          virtualLibraries: [],
-        },
-        searchLibrary: mockSearchLibrary,
-        getTagBrowser: mockGetTagBrowser,
-        readingHistories: [],
-      },
-      settingStore: {
-        booksPerPage: 20,
-        addRecentSearch: jest.fn(),
-      },
-    }),
+    useStores: useStoresMock,
   }))
 
   mock.module("@/services/api", () => ({
@@ -105,6 +68,27 @@ describe("getSearchSuggestions (useLibrary)", () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    useStoresMock.mockReturnValue({
+      calibreRootStore: {
+        selectedLibrary: {
+          searchSetting: { query: "", sort: "title", sortOrder: "desc" },
+          fieldMetadataList: new Map([
+            ["authors", { searchTerms: ["authors", "author"], isCustom: false }],
+            ["title", { searchTerms: ["title"], isCustom: false }],
+            ["tags", { searchTerms: ["tags", "tag"], isCustom: false }],
+          ]),
+          books: new Map(),
+          virtualLibraries: [],
+        },
+        searchLibrary: mockSearchLibrary,
+        getTagBrowser: mockGetTagBrowser,
+        readingHistories: [],
+      },
+      settingStore: {
+        booksPerPage: 20,
+        addRecentSearch: jest.fn(),
+      },
+    })
   })
 
   test("returns AND OR NOT plus all field:= suggestions", () => {

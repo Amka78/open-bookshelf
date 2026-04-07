@@ -12,6 +12,9 @@ mock.module("@/services/api", () => ({
   api: {
     fetchWithAuth: (...args: Parameters<typeof fetchWithAuthMock>) => fetchWithAuthMock(...args),
     getBookFileUrl: (...args: Parameters<typeof getBookFileUrlMock>) => getBookFileUrlMock(...args),
+    loadOPDS: jest.fn(),
+    syncReadingPosition: jest.fn().mockResolvedValue(undefined),
+    syncReadingPositionFull: jest.fn().mockResolvedValue(undefined),
   },
 }))
 
@@ -19,6 +22,9 @@ mock.module("/home/amka78/open-bookshelf/app/services/api/index.ts", () => ({
   api: {
     fetchWithAuth: (...args: Parameters<typeof fetchWithAuthMock>) => fetchWithAuthMock(...args),
     getBookFileUrl: (...args: Parameters<typeof getBookFileUrlMock>) => getBookFileUrlMock(...args),
+    loadOPDS: jest.fn(),
+    syncReadingPosition: jest.fn().mockResolvedValue(undefined),
+    syncReadingPositionFull: jest.fn().mockResolvedValue(undefined),
   },
 }))
 

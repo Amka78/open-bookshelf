@@ -23,12 +23,6 @@ mock.module("@/hooks/useConvergence", () => ({
   useConvergence: mockUseConvergence,
 }))
 
-jest.mock("@/utils/logger", () => ({
-  logger: {
-    debug: jest.fn(),
-  },
-}))
-
 let useLibrary: typeof import("./useLibrary").useLibrary
 
 describe("useLibrary", () => {

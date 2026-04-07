@@ -1,6 +1,7 @@
 import {
   beforeAll,
   describe as baseDescribe,
+  jest,
   mock,
   test as baseTest,
 } from "bun:test"
@@ -20,7 +21,7 @@ import {
 } from "./formInputFieldStoryPlay"
 
 mock.module("@/theme", () => ({
-  usePalette: () => ({
+  usePalette: jest.fn().mockReturnValue({
     surface: "#111",
     borderStrong: "#333",
     accent: "#999",

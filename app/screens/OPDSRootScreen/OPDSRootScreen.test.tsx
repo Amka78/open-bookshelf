@@ -16,10 +16,12 @@ mock.module("mobx-react-lite", () => ({
 }))
 
 mock.module("react-native", () => ({
+  ...(global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock,
   View: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
 mock.module("@/components", () => ({
+  ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
   RootContainer: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   Text: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
   ListItem: ({ LeftComponent, onPress }: { LeftComponent?: ReactNode; onPress?: () => void }) => (

@@ -91,6 +91,7 @@ mock.module("/home/amka78/open-bookshelf/app/models/index.ts", () => ({
 }))
 
 mock.module("@react-navigation/native", () => ({
+  ...(global as { __navMock?: Record<string, unknown> }).__navMock,
   useNavigation: useNavigationMock,
   createNavigationContainerRef: () => ({
     isReady: () => false,
@@ -113,6 +114,10 @@ mock.module(
   }),
 )
 
+mock.module("@/hooks/useElectrobunModal", () => ({
+  useElectrobunModal: () => useModalMock(),
+}))
+
 mock.module("../../hooks/useConvergence", () => ({
   useConvergence: () => useConvergenceMock(),
 }))
@@ -122,6 +127,7 @@ mock.module("mobx-react-lite", () => ({
 }))
 
 mock.module("@/components", () => ({
+  ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
   BookPage: ({ children }: { children?: ReactNode }) => (
     <div data-testid="viewer-screen-book-page">{children}</div>
   ),

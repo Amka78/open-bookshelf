@@ -25,6 +25,7 @@ const mockShareShare = jest.fn()
 const mockGetBookDownloadUrl = jest.fn()
 
 mock.module("react-native", () => ({
+  ...(global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock,
   Share: { share: mockShareShare },
 }))
 
@@ -78,6 +79,14 @@ describe("useBookDetail", () => {
     },
   }
 
+  const mockGetReadStatus = jest.fn().mockReturnValue(null)
+  const mockSetReadStatus = jest.fn()
+
+  const mockSettingStore = {
+    getReadStatus: mockGetReadStatus,
+    setReadStatus: mockSetReadStatus,
+  }
+
   const mockFieldMetadataList = {}
   const mockBookDisplayFields = ["title", "authors"]
 
@@ -108,6 +117,7 @@ describe("useBookDetail", () => {
     // Setup mocks
     ;(useStores as jest.Mock).mockReturnValue({
       calibreRootStore: mockCalibreRootStore,
+      settingStore: mockSettingStore,
     })
     ;(useNavigation as jest.Mock).mockReturnValue({
       navigate: mockNavigate,
@@ -355,6 +365,7 @@ describe("useBookDetail", () => {
             selectedBook: singleFormatBook,
           },
         },
+        settingStore: mockSettingStore,
       })
 
       const { result } = renderHook(() => useBookDetail())
@@ -381,6 +392,7 @@ describe("useBookDetail", () => {
             selectedBook: noFormatsBook,
           },
         },
+        settingStore: mockSettingStore,
       })
 
       const { result } = renderHook(() => useBookDetail())

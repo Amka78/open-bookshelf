@@ -8,11 +8,13 @@ import {
   test as baseTest,
 } from "bun:test"
 import { useStores } from "@/models"
+import { OpdsChildrenModel, OpdsModel } from "@/models/opds/OpdsRootStore"
 import { useNavigation, useRoute } from "@react-navigation/native"
 import { usePalette } from "@/theme"
 import { act, render, fireEvent, findByText, within } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
+
 
 async function playAcquisitionShowsEntries({
   canvasElement,
@@ -49,16 +51,8 @@ mock.module("expo-image", () => ({
   Image: () => <img alt="cover" />,
 }))
 
-mock.module("@/models/opds/OpdsRootStore", () => ({
-  OpdsModel: {
-    create: () => opdsCreateMock(),
-  },
-  OpdsChildrenModel: {
-    create: jest.fn(),
-  },
-}))
-
 mock.module("@/components", () => ({
+  ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
   RootContainer: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   Text: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
   Box: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
@@ -111,6 +105,9 @@ describe("AcquisitionScreen", () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+
+    jest.spyOn(OpdsModel, "create").mockImplementation(() => opdsCreateMock())
+    jest.spyOn(OpdsChildrenModel as { create: (...args: unknown[]) => unknown }, "create").mockReturnValue({})
 
     opdsLoadMock.mockResolvedValue(undefined)
     opdsCreateMock.mockReturnValue({

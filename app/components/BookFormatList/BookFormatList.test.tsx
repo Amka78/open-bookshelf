@@ -6,6 +6,7 @@ import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 const mockAlertFn = jest.fn()
 
 mock.module("@/components", () => ({
+  ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
   HStack: ({ children, ...props }: Record<string, unknown> & { children?: ReactNode }) => (
     <div {...(props as object)}>{children}</div>
   ),
@@ -58,7 +59,7 @@ mock.module("@/i18n", () => ({
 }))
 
 mock.module("@/theme", () => ({
-  usePalette: () => ({ $primary400: "#6b7cf6" }),
+  usePalette: jest.fn().mockReturnValue({ $primary400: "#6b7cf6" }),
 }))
 
 const describe = localizeTestRegistrar(baseDescribe)

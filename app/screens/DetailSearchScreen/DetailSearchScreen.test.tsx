@@ -25,6 +25,7 @@ mock.module("@/models", () => ({
 }))
 
 mock.module("@react-navigation/native", () => ({
+  ...(global as { __navMock?: Record<string, unknown> }).__navMock,
   useNavigation: useNavigationMock,
   useRoute: useRouteMock,
 }))

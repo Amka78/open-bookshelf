@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, jest, mock, test } from "bun:test"
+import { afterAll, afterEach, beforeEach, describe, expect, jest, mock, test } from "bun:test"
 import { useStores } from "@/models"
 import { useNavigation } from "@react-navigation/native"
 
@@ -119,4 +119,12 @@ describe("useConnect", () => {
     expect(initialize).toHaveBeenCalledTimes(1)
     expect(navigate).toHaveBeenCalledWith("CalibreRoot")
   })
+})
+
+afterAll(() => {
+  // Restore real react-hook-form so subsequent test files aren't contaminated
+  const realRHF = (global as { __realReactHookForm?: Record<string, unknown> }).__realReactHookForm
+  if (realRHF) {
+    mock.module("react-hook-form", () => realRHF)
+  }
 })

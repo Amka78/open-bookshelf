@@ -1,4 +1,5 @@
 import {
+  afterAll,
   beforeEach,
   describe as baseDescribe,
   expect,
@@ -22,12 +23,14 @@ const useKeyboardVisibilityMock = jest.fn()
 const useConvergenceMock = jest.fn()
 const useStoresMock = jest.fn()
 const useNavigationMock = jest.fn()
+const useRouteMock = jest.fn()
 const scrollToEndMock = jest.fn()
 const mockUpdate = jest.fn()
 const mockSetOptions = jest.fn()
 const mockGoBack = jest.fn()
 
 mock.module("react-native", () => ({
+  ...(global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock,
   Platform: { OS: "web", select: (obj: Record<string, unknown>) => obj.web ?? obj.default },
   KeyboardAvoidingView: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   TextInput: Object.assign(
@@ -36,15 +39,6 @@ mock.module("react-native", () => ({
   ),
   UIManager: { measureLayout: jest.fn() },
   findNodeHandle: jest.fn().mockReturnValue(null),
-  Touchable: {
-    Mixin: {
-      touchableHandlePress: jest.fn(),
-      touchableHandleActivePressIn: jest.fn(),
-      touchableHandleActivePressOut: jest.fn(),
-      touchableHandleLongPress: jest.fn(),
-      touchableGetPressRectOffset: jest.fn(() => ({ top: 0, left: 0, right: 0, bottom: 0 })),
-    },
-  },
 }))
 
 mock.module("@/hooks/useKeyboardVisibility", () => ({
@@ -63,8 +57,16 @@ mock.module("mobx-state-tree", () => ({
   getSnapshot: (value: unknown) => value,
 }))
 
+afterAll(() => {
+  mock.module(
+    "mobx-state-tree",
+    () => (global as { __realMST?: Record<string, unknown> }).__realMST ?? {},
+  )
+})
+
 mock.module("@react-navigation/native", () => ({
-  useRoute: jest.fn(),
+  ...(global as { __navMock?: Record<string, unknown> }).__navMock,
+  useRoute: useRouteMock,
   useNavigation: useNavigationMock,
 }))
 
@@ -141,14 +143,17 @@ mock.module("@/components/Button/Button", () => ({
   ),
 }))
 
+mock.module("@/theme", () => ({
+  usePalette: jest.fn(() => ({ textPrimary: "#111318" })),
+}))
+
 let BookEditScreen: typeof import("./BookEditScreen").BookEditScreen
 
 beforeEach(async () => {
   jest.clearAllMocks()
   scrollToEndMock.mockReset()
 
-  const nav = await import("@react-navigation/native")
-  ;(nav.useRoute as unknown as jest.Mock).mockReturnValue({
+  useRouteMock.mockReturnValue({
     params: {
       imageUrl: "https://example.com/cover.jpg",
     },

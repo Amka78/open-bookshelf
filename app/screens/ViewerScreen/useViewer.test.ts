@@ -68,6 +68,7 @@ async function playResumeReadingPromptDeclines({
 const useStoresMock = jest.fn()
 const useModalMock = jest.fn()
 const mockSyncReadingPosition = jest.fn().mockResolvedValue({ kind: "ok" })
+const mockSyncReadingPositionFull = jest.fn().mockResolvedValue({ kind: "ok" })
 const mockGetBookFileUrl = jest.fn(
   (bookId: number, format: string, size: number, hash: number, path: string, libraryId: string) =>
     `http://calibrelocal/book-file/${bookId}/${format}/${size}/${hash}/${path}?library_id=${libraryId}`,
@@ -91,6 +92,7 @@ mock.module("/home/amka78/open-bookshelf/app/models/index.ts", () => ({
 mock.module("@/services/api", () => ({
   api: {
     syncReadingPosition: mockSyncReadingPosition,
+    syncReadingPositionFull: mockSyncReadingPositionFull,
     getBookFileUrl: (...args: Parameters<typeof mockGetBookFileUrl>) => mockGetBookFileUrl(...args),
     fetchWithAuth: (...args: Parameters<typeof mockFetchWithAuth>) => mockFetchWithAuth(...args),
     setCoverBinary: (...args: Parameters<typeof mockSetCoverBinary>) => mockSetCoverBinary(...args),
@@ -100,6 +102,7 @@ mock.module("@/services/api", () => ({
 mock.module("/home/amka78/open-bookshelf/app/services/api/index.ts", () => ({
   api: {
     syncReadingPosition: mockSyncReadingPosition,
+    syncReadingPositionFull: mockSyncReadingPositionFull,
     getBookFileUrl: (...args: Parameters<typeof mockGetBookFileUrl>) => mockGetBookFileUrl(...args),
     fetchWithAuth: (...args: Parameters<typeof mockFetchWithAuth>) => mockFetchWithAuth(...args),
     setCoverBinary: (...args: Parameters<typeof mockSetCoverBinary>) => mockSetCoverBinary(...args),
@@ -122,6 +125,10 @@ mock.module(
     modalfy: jest.fn(),
   }),
 )
+
+mock.module("@/hooks/useElectrobunModal", () => ({
+  useElectrobunModal: () => useModalMock(),
+}))
 
 let useConvergence: typeof import("../../hooks/useConvergence").useConvergence
 let useViewer: typeof import("./useViewer").useViewer
@@ -155,6 +162,8 @@ describe("useViewer", () => {
     update: mockUpdate,
   }
 
+  const mockSetServerPosition = jest.fn()
+
   const mockHistory = {
     bookId: 1,
     libraryId: "lib-1",
@@ -162,6 +171,7 @@ describe("useViewer", () => {
     currentPage: 2,
     cachedPath: ["cached1.png", "cached2.png", "cached3.png"],
     setCurrentPage: mockSetCurrentPage,
+    setServerPosition: mockSetServerPosition,
   }
 
   const mockSelectedLibrary = {
@@ -296,21 +306,29 @@ describe("useViewer", () => {
   })
 
   test("onPageChange updates current page in history", async () => {
+    jest.useFakeTimers()
     const { result } = renderHook(() => useViewer())
 
-    await result.current.onPageChange(3)
+    await act(async () => {
+      await result.current.onPageChange(3)
+    })
 
     expect(mockSetCurrentPage).toHaveBeenCalledWith(3)
+    jest.useRealTimers()
   })
 
   test("onPageChange does not update if page is same as current", async () => {
+    jest.useFakeTimers()
     const { result } = renderHook(() => useViewer())
 
     mockSetCurrentPage.mockClear()
 
-    await result.current.onPageChange(2)
+    await act(async () => {
+      await result.current.onPageChange(2)
+    })
 
     expect(mockSetCurrentPage).not.toHaveBeenCalled()
+    jest.useRealTimers()
   })
 
   test("onPageChange calls syncReadingPosition after debounce", async () => {

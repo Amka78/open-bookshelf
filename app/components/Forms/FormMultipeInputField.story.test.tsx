@@ -1,6 +1,7 @@
 import {
   beforeAll,
   describe as baseDescribe,
+  jest,
   mock,
   test as baseTest,
 } from "bun:test"
@@ -20,7 +21,7 @@ import {
 } from "./formMultipleInputFieldStoryPlay"
 
 mock.module("@/theme", () => ({
-  usePalette: () => ({
+  usePalette: jest.fn().mockReturnValue({
     surface: "#111",
     borderStrong: "#333",
     accent: "#999",
@@ -28,6 +29,7 @@ mock.module("@/theme", () => ({
 }))
 
 mock.module("@/components", () => ({
+  ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
   Box: ({ children, testID, ...props }: Record<string, unknown> & { children?: ReactNode; testID?: string }) => (
     <div data-testid={testID} {...(props as object)}>{children}</div>
   ),
