@@ -1,4 +1,12 @@
-import { beforeAll, beforeEach, describe as baseDescribe, expect, jest, mock, test as baseTest } from "bun:test"
+import {
+  describe as baseDescribe,
+  test as baseTest,
+  beforeAll,
+  beforeEach,
+  expect,
+  jest,
+  mock,
+} from "bun:test"
 import { useStores } from "@/models"
 import { useNavigation } from "@react-navigation/native"
 import { act, render } from "@testing-library/react"
@@ -44,7 +52,11 @@ mock.module("@/components", () => ({
   }) => (
     <input
       defaultValue={defaultValue}
-      placeholder={placeholderTx === "connectScreen.placeHolder" ? "(http or https)://{Address}:{Port}" : placeholderTx}
+      placeholder={
+        placeholderTx === "connectScreen.placeHolder"
+          ? "(http or https)://{Address}:{Port}"
+          : placeholderTx
+      }
     />
   ),
   Button: ({
@@ -125,7 +137,9 @@ describe("ConnectScreen", () => {
   test("renders an enabled connect button when a saved URL is available", async () => {
     const { container } = await renderConnectScreen()
 
-    const button = container.querySelector('[data-testid="connect-button"]') as HTMLButtonElement | null
+    const button = container.querySelector(
+      '[data-testid="connect-button"]',
+    ) as HTMLButtonElement | null
 
     expect(button).not.toBeNull()
     expect(button?.disabled).toBe(false)

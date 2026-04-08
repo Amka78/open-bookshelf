@@ -9,7 +9,7 @@ import {
 } from "@gluestack-ui/themed"
 import type { ComponentProps } from "react"
 
-import { HStack, IconButton, MaterialCommunityIcon, Text, TooltipIconButton } from "@/components"
+import { HStack, IconButton, Text, TooltipIconButton } from "@/components"
 import { AutoPageTurningIconButton } from "@/components/AutoPageTurningIconButton"
 import type { ModalStackParams } from "@/components/Modals/Types"
 import { useConvergence } from "@/hooks/useConvergence"
@@ -21,7 +21,7 @@ export type ViewerMenuProps = {
   pageDirection: "left" | "right"
   readingStyle: BookReadingStyleType
   onSelectReadingStyle: (readingStyle: BookReadingStyleType) => void
-  onSelectPageDirection: (pageDirection) => void
+  onSelectPageDirection: (pageDirection: "left" | "right") => void
   onSelectCurrentPageAsCover?: () => void
   onSelectLeftPageAsCover?: () => void
   onSelectRightPageAsCover?: () => void

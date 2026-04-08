@@ -1,16 +1,16 @@
 import { useConvergence } from "@/hooks/useConvergence"
+import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import { translate } from "@/i18n"
 import { useStores } from "@/models"
 import type { AppStackParamList, ApppNavigationProp } from "@/navigators/types"
 import { api } from "@/services/api"
 import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
+import * as DocumentPicker from "expo-document-picker"
 import { useLayoutEffect } from "react"
 import { Alert, Linking, Share } from "react-native"
-import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import { useDeleteBook } from "../../hooks/useDeleteBook"
 import { useDownloadBook } from "../../hooks/useDownloadBook"
 import { useOpenViewer } from "../../hooks/useOpenViewer"
-import * as DocumentPicker from "expo-document-picker"
 
 type BookDetailScreenRouteProp = RouteProp<AppStackParamList, "BookDetail">
 type ReadStatusValue = "want-to-read" | "reading" | "finished"
@@ -115,17 +115,17 @@ export function useBookDetail() {
   }
 
   const handleSendByEmail = () => {
-    const book = calibreRootStore.selectedBook
+    const book = calibreRootStore.selectedLibrary?.selectedBook
     const library = calibreRootStore.selectedLibrary
     if (!book || !library) return
 
-    const formats = book.metaData?.formats ?? []
+    const formats: string[] = (book.metaData?.formats as string[] | undefined) ?? []
     if (formats.length === 0) {
       Alert.alert(translate("emailDelivery.noFormats"))
       return
     }
 
-    const formatOptions = formats.map((fmt) => ({
+    const formatOptions = formats.map((fmt: string) => ({
       text: fmt,
       onPress: () => {
         Alert.alert(

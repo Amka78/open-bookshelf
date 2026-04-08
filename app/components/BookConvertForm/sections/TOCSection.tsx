@@ -33,7 +33,7 @@ export function TOCSection({ control }: Props) {
               render={({ field }) => (
                 <Switch
                   testID={`switch-toc-${name}`}
-                  value={field.value}
+                  value={field.value as boolean}
                   onValueChange={field.onChange}
                 />
               )}

@@ -1,6 +1,6 @@
-import { isElectrobun, showNativeConfirm, showNativeError } from "@/utils/electrobunBridge"
-import { translate } from "@/i18n"
 import type { ModalStackParams } from "@/components/Modals/Types"
+import { translate } from "@/i18n"
+import { isElectrobun, showNativeConfirm, showNativeError } from "@/utils/electrobunBridge"
 import { useModal } from "react-native-modalfy"
 
 type OpenModalFn = ReturnType<typeof useModal<ModalStackParams>>["openModal"]

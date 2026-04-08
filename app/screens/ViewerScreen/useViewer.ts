@@ -1,9 +1,9 @@
+import type { TocItem } from "@/components/Modals/Types"
 import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import { useStores } from "@/models"
 import type { LibraryMap } from "@/models/CalibreRootStore"
 import { type ClientSetting, ClientSettingModel } from "@/models/calibre"
 import type { MetadataSnapshotIn } from "@/models/calibre"
-import type { TocItem } from "@/components/Modals/Types"
 import { api } from "@/services/api"
 import type { BookReadingStyleType } from "@/type/types"
 import { isCalibreHtmlViewerFormat, isCalibreSerializedHtmlPath } from "@/utils/calibreHtmlViewer"
@@ -157,7 +157,7 @@ export function useViewer() {
 
       const maxPage = Math.max(availablePathLength - 1, 0)
       const resumePage = hasLocalProgress
-        ? Math.max(0, Math.min(history!.currentPage, maxPage))
+        ? Math.max(0, Math.min(history?.currentPage, maxPage))
         : Math.max(0, Math.min(serverEstimatedPage, maxPage))
 
       let secondFrame: number | undefined

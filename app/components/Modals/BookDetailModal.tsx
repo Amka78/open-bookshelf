@@ -69,7 +69,7 @@ export const BookDetailModal = observer((props: BookDetailModalProps) => {
 
 export type BookDetailModalTemplateProps = ModalComponentProp<
   ModalStackParams,
-  void,
+  object,
   "BookDetailModal"
 >
 

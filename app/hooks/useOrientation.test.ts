@@ -1,11 +1,11 @@
 import { act, renderHook, waitFor } from "@testing-library/react"
-import useOrientation from "./useOrientation"
 import {
   Orientation,
   addOrientationChangeListener,
   getOrientationAsync,
   removeOrientationChangeListener,
 } from "expo-screen-orientation"
+import useOrientation from "./useOrientation"
 
 jest.mock("expo-screen-orientation", () => ({
   Orientation: {

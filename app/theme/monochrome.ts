@@ -1,17 +1,17 @@
-import { useColorScheme } from "react-native";
+import { useColorScheme } from "react-native"
 
 export type MonochromePalette = {
-  gradient: string[];
-  bg0: string;
-  surface: string;
-  surfaceMuted: string;
-  surfaceStrong: string;
-  textPrimary: string;
-  textSecondary: string;
-  borderSubtle: string;
-  borderStrong: string;
-  accent: string;
-};
+  gradient: string[]
+  bg0: string
+  surface: string
+  surfaceMuted: string
+  surfaceStrong: string
+  textPrimary: string
+  textSecondary: string
+  borderSubtle: string
+  borderStrong: string
+  accent: string
+}
 
 export const lightPalette: MonochromePalette = {
   gradient: ["#ffffff", "#f1f3f6", "#e7ebf1"],
@@ -24,7 +24,7 @@ export const lightPalette: MonochromePalette = {
   borderSubtle: "#d6dbe4",
   borderStrong: "#b6bdc9",
   accent: "#2b2f36",
-};
+}
 
 export const darkPalette: MonochromePalette = {
   gradient: ["#0b0c0f", "#141822", "#202632"],
@@ -37,12 +37,12 @@ export const darkPalette: MonochromePalette = {
   borderSubtle: "#2a2f3a",
   borderStrong: "#3a414f",
   accent: "#cfd3dc",
-};
+}
 
 export const getPalette = (mode?: "light" | "dark"): MonochromePalette =>
-  mode === "dark" ? darkPalette : lightPalette;
+  mode === "dark" ? darkPalette : lightPalette
 
 export const usePalette = (): MonochromePalette => {
-  const scheme = useColorScheme();
-  return getPalette(scheme === "dark" ? "dark" : "light");
-};
+  const scheme = useColorScheme()
+  return getPalette(scheme === "dark" ? "dark" : "light")
+}

@@ -34,7 +34,9 @@ async function waitForAbsence(canvasElement: HTMLElement, testId: string): Promi
   throw new Error(`Element with data-testid='${testId}' was expected to disappear.`)
 }
 
-export async function playMultipleFocusShowsSuggestions({ canvasElement }: { canvasElement: HTMLElement }) {
+export async function playMultipleFocusShowsSuggestions({
+  canvasElement,
+}: { canvasElement: HTMLElement }) {
   const input = await findByTestId(canvasElement, "form-multiple-input-story-row-0")
   input.focus()
 
@@ -54,7 +56,9 @@ export async function playMultipleSuggestionsStayVisibleAfterFocus({
   await findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha")
 }
 
-export async function playMultipleTypingFiltersSuggestions({ canvasElement }: { canvasElement: HTMLElement }) {
+export async function playMultipleTypingFiltersSuggestions({
+  canvasElement,
+}: { canvasElement: HTMLElement }) {
   const input = await findByTestId(canvasElement, "form-multiple-input-story-row-0")
   input.focus()
   typeInput(input, "ga")
@@ -77,8 +81,13 @@ export async function playMultipleTypingKeepsSuggestionsVisible({
   await findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Gamma")
 }
 
-export async function playMultipleSelectSuggestionUpdatesInput({ canvasElement }: { canvasElement: HTMLElement }) {
-  const input = (await findByTestId(canvasElement, "form-multiple-input-story-row-0")) as HTMLInputElement
+export async function playMultipleSelectSuggestionUpdatesInput({
+  canvasElement,
+}: { canvasElement: HTMLElement }) {
+  const input = (await findByTestId(
+    canvasElement,
+    "form-multiple-input-story-row-0",
+  )) as HTMLInputElement
   input.focus()
 
   const candidate = await findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Beta")
@@ -99,7 +108,10 @@ export async function playMultipleSelectSuggestionClosesSuggestionsAndUpdatesInp
 }: {
   canvasElement: HTMLElement
 }) {
-  const input = (await findByTestId(canvasElement, "form-multiple-input-story-row-0")) as HTMLInputElement
+  const input = (await findByTestId(
+    canvasElement,
+    "form-multiple-input-story-row-0",
+  )) as HTMLInputElement
   input.focus()
 
   const candidateTestId = "form-multiple-input-tags-0-suggestion-Beta"
@@ -120,8 +132,13 @@ export async function playMultipleSelectSuggestionClosesSuggestionsAndUpdatesInp
   await waitForAbsence(canvasElement, candidateTestId)
 }
 
-export async function playMultipleOutsideClickClosesSuggestions({ canvasElement }: { canvasElement: HTMLElement }) {
-  const input = (await findByTestId(canvasElement, "form-multiple-input-story-row-0")) as HTMLInputElement
+export async function playMultipleOutsideClickClosesSuggestions({
+  canvasElement,
+}: { canvasElement: HTMLElement }) {
+  const input = (await findByTestId(
+    canvasElement,
+    "form-multiple-input-story-row-0",
+  )) as HTMLInputElement
   input.focus()
   await findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha")
 

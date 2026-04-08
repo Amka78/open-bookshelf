@@ -1,3 +1,4 @@
+// biome-ignore lint/suspicious/noControlCharactersInRegex: intentionally excludes HTTP control characters per RFC 7230
 const token = /^[^\u0000-\u001F\u007F()<>@,;:\\"/?={}\[\]\u0020\u0009]+$/
 export const isToken = (str: string): boolean => typeof str === "string" && token.test(str)
 export const isScheme = isToken
@@ -14,7 +15,8 @@ const normalize = (prev: string | Array<string>, _cur: string): string | Array<s
   // Marshal
   if (Array.isArray(prev)) {
     return prev.concat(cur)
-  } else if (typeof prev === "string") {
+  }
+  if (typeof prev === "string") {
     return [prev, cur]
   }
   return cur
@@ -22,13 +24,13 @@ const normalize = (prev: string | Array<string>, _cur: string): string | Array<s
 
 type Result = {
   scheme: string
-  params: Record<string, string>
+  params: Record<string, string | Array<string>>
   token?: string | Array<string>
 }
 
-const parseProperties = (scheme, string): Result => {
+const parseProperties = (scheme: string, string: string): Result => {
   let token = null
-  const params = {}
+  const params: Record<string, string | Array<string>> = {}
 
   // eslint-disable-next-line no-constant-condition
   while (true) {

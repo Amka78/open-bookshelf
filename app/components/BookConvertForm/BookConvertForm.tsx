@@ -16,7 +16,7 @@ import { type Control, Controller, type UseFormWatch } from "react-hook-form"
 import type { ConvertOptions } from "./ConvertOptions"
 import { HeuristicsSection } from "./sections/HeuristicsSection"
 import { LookAndFeelSection } from "./sections/LookAndFeelSection"
-import { hasOutputFormatSpecificOptions, OutputSection } from "./sections/OutputSection"
+import { OutputSection, hasOutputFormatSpecificOptions } from "./sections/OutputSection"
 import { StructureSection } from "./sections/StructureSection"
 import { TOCSection } from "./sections/TOCSection"
 

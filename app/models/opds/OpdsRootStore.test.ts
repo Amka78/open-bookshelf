@@ -1,4 +1,4 @@
-import { jest, mock, beforeAll, afterAll, describe, test, expect } from "bun:test"
+import { afterAll, beforeAll, describe, expect, jest, mock, test } from "bun:test"
 
 const loadOPDSMock = jest.fn()
 
@@ -8,9 +8,8 @@ mock.module("@/services/api", () => ({
   },
 }))
 
-import { api } from "@/services/api"
+import type { api } from "@/services/api"
 import { OpdsModel } from "./OpdsRootStore"
-
 
 const sampleXml = `<?xml version='1.0' encoding='utf-8'?>
 <feed xmlns=\"http://www.w3.org/2005/Atom\" xmlns:dc=\"http://purl.org/dc/terms/\" xmlns:opds=\"http://opds-spec.org/2010/catalog\">
@@ -102,7 +101,9 @@ describe("OpdsRootStore test", () => {
   test("initialize OPDS", async () => {
     const store = OpdsModel.create()
 
-    loadOPDSMock.mockResolvedValue({ kind: "ok", data: sampleXml } as Awaited<ReturnType<typeof api.loadOPDS>>)
+    loadOPDSMock.mockResolvedValue({ kind: "ok", data: sampleXml } as Awaited<
+      ReturnType<typeof api.loadOPDS>
+    >)
 
     await store.load()
 

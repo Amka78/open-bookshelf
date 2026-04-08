@@ -9,7 +9,7 @@ import type { UsableModalProp } from "react-native-modalfy"
 
 export function useOpenViewer() {
   const navigation = useNavigation<ApppNavigationProp>()
-  const { authenticationStore, calibreRootStore, settingStore } = useStores()
+  const { calibreRootStore, settingStore } = useStores()
 
   const onItemPress = async (
     book: Book,

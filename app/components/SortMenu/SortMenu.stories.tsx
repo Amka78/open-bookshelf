@@ -16,7 +16,7 @@ export default {
     selectedSortOrder: "asc",
   },
   parameters: {
-    notes: `Enumerate sorting information.`,
+    notes: "Enumerate sorting information.",
   },
   decorators: [
     (Story) => (

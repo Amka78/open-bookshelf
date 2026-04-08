@@ -37,10 +37,9 @@ function TocEntry({ item, depth, onSelect }: TocEntryProps) {
           }}
         >
           <Text
-            text={item.title ?? item.dest ?? ""}
             numberOfLines={1}
             color={palette.textPrimary}
-          />
+          >{item.title ?? item.dest ?? ""}</Text>
         </Pressable>
       ) : null}
       {item.children.map((child, idx) => (

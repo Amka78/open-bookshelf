@@ -26,7 +26,7 @@ function SwitchRow({ control, name, labelTx, testID, disabled }: SwitchRowProps)
         render={({ field }) => (
           <Switch
             testID={testID ?? `switch-heuristics-${name}`}
-            value={field.value}
+            value={field.value as boolean}
             onValueChange={field.onChange}
             isDisabled={disabled}
           />

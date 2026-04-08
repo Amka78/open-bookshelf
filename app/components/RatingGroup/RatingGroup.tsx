@@ -1,47 +1,47 @@
 import { HStack, Rating } from "@/components"
 import { styled } from "@gluestack-style/react"
-import { type ComponentProps, type Ref } from "react"
+import type { ComponentProps, Ref } from "react"
 
 export type RatingGroupProps = {
   max: number
   ticks?: number
-  onSelectRating(rating: number)
+  onSelectRating(rating: number): void
   selectedValue: number
   ref?: Ref<React.ElementRef<typeof HStack>>
 } & ComponentProps<typeof HStack>
 
 const RatingGroupCore = ({ ticks = 2, ref, ...restProps }: RatingGroupProps) => {
   const props = { ticks, ...restProps }
-    const ratingList: Array<number | null> = []
+  const ratingList: Array<number | null> = []
 
-    const onSelectRating = (rating: number) => {
-      if (props.onSelectRating) {
-        props.onSelectRating(rating)
+  const onSelectRating = (rating: number) => {
+    if (props.onSelectRating) {
+      props.onSelectRating(rating)
+    }
+  }
+  for (let i = 0; i <= props.max; i++) {
+    if (i % props.ticks === 0) {
+      if (i === 0) {
+        ratingList.push(null)
+      } else {
+        ratingList.push(i)
       }
     }
-    for (let i = 0; i <= props.max; i++) {
-      if (i % props.ticks === 0) {
-        if (i === 0) {
-          ratingList.push(null)
-        } else {
-          ratingList.push(i)
-        }
-      }
-    }
-    return (
-      <HStack {...props} ref={ref as never}>
-        {ratingList.map((value) => {
-          return (
-            <Rating
-              key={`rating-option-${value ?? 0}`}
-              rating={value}
-              onPress={onSelectRating}
-              {...({ variant: value === props.selectedValue ? "selected" : "selectable" } as never)}
-            />
-          )
-        })}
-      </HStack>
-    )
+  }
+  return (
+    <HStack {...props} ref={ref as never}>
+      {ratingList.map((value) => {
+        return (
+          <Rating
+            key={`rating-option-${value ?? 0}`}
+            rating={value}
+            onPress={onSelectRating}
+            {...({ variant: value === props.selectedValue ? "selected" : "selectable" } as { variant: "selected" | "selectable" })}
+          />
+        )
+      })}
+    </HStack>
+  )
 }
 
 export const RatingGroup = styled(

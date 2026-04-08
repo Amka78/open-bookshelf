@@ -1,9 +1,9 @@
+import type { Category } from "@/models/calibre"
 import type { Meta, StoryObj } from "@storybook/react"
 import { useState } from "react"
-import type { Category } from "@/models/calibre"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
-import { LeftSideMenu, type CalibreFieldOperator, type QueryOperator } from "./LeftSideMenu"
+import { type CalibreFieldOperator, LeftSideMenu, type QueryOperator } from "./LeftSideMenu"
 import {
   playLeftSideMenuCalibreOperatorVisible,
   playLeftSideMenuExpandsCategory,
@@ -116,9 +116,7 @@ export const ExpandedAndSelectNode: StoryProps = {
 }
 
 export const WithMultipleSelectionAndOperator: StoryProps = {
-  render: () => (
-    <InteractiveMenu initialSelected={["formats:=EPUB", "formats:=PDF"]} />
-  ),
+  render: () => <InteractiveMenu initialSelected={["formats:=EPUB", "formats:=PDF"]} />,
   play: async ({ canvasElement }) => {
     await playLeftSideMenuExpandsCategory({ canvasElement, categoryName: "Formats" }).catch(
       () => {},

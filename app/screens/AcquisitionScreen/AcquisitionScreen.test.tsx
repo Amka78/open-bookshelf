@@ -1,20 +1,19 @@
 import {
+  describe as baseDescribe,
+  test as baseTest,
   beforeAll,
   beforeEach,
-  describe as baseDescribe,
   expect,
   jest,
   mock,
-  test as baseTest,
 } from "bun:test"
 import { useStores } from "@/models"
 import { OpdsChildrenModel, OpdsModel } from "@/models/opds/OpdsRootStore"
-import { useNavigation, useRoute } from "@react-navigation/native"
 import { usePalette } from "@/theme"
-import { act, render, fireEvent, findByText, within } from "@testing-library/react"
+import { useNavigation, useRoute } from "@react-navigation/native"
+import { act, findByText, fireEvent, render, within } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
-
 
 async function playAcquisitionShowsEntries({
   canvasElement,
@@ -107,7 +106,9 @@ describe("AcquisitionScreen", () => {
     jest.clearAllMocks()
 
     jest.spyOn(OpdsModel, "create").mockImplementation(() => opdsCreateMock())
-    jest.spyOn(OpdsChildrenModel as { create: (...args: unknown[]) => unknown }, "create").mockReturnValue({})
+    jest
+      .spyOn(OpdsChildrenModel as { create: (...args: unknown[]) => unknown }, "create")
+      .mockReturnValue({})
 
     opdsLoadMock.mockResolvedValue(undefined)
     opdsCreateMock.mockReturnValue({

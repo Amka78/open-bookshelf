@@ -1,4 +1,4 @@
-import { Button, type ButtonProps, HStack, Text, VStack } from "@/components"
+import { Button, type ButtonProps, HStack, Text } from "@/components"
 
 export type LinkInfo = {
   value: string

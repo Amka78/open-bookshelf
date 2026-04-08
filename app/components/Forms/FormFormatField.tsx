@@ -49,7 +49,7 @@ export function FormFormatField<T extends FieldValues>(props: FormFormatFieldPro
       render={(renderProps) => {
         const formats = Array.isArray(renderProps.field.value)
           ? renderProps.field.value
-              .map((value) => normalizeFormat(typeof value === "string" ? value : ""))
+              .map((value: unknown) => normalizeFormat(typeof value === "string" ? value : ""))
               .filter(Boolean)
           : []
 
@@ -128,7 +128,7 @@ export function FormFormatField<T extends FieldValues>(props: FormFormatFieldPro
 
         return (
           <VStack width="$full">
-            {formats.map((format, index) => (
+            {formats.map((format: string, index: number) => (
               <HStack
                 key={`${String(name)}-format-row-${format}`}
                 alignItems="center"

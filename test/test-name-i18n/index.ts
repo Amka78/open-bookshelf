@@ -1,4 +1,4 @@
-export function localizeTestRegistrar<T extends (...args: any[]) => any>(registrar: T): T {
+export function localizeTestRegistrar<T>(registrar: T): T {
   return registrar
 }
 

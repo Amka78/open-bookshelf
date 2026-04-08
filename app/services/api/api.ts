@@ -223,7 +223,7 @@ export class Api {
         const uri = this.getDigestUri(config.url, config.baseURL)
         const method = (config.method || "GET").toUpperCase()
 
-        config.headers["Authorization"] = computeDigestHeader(
+        config.headers.Authorization = computeDigestHeader(
           this.digestChallenge,
           this.credentials.username,
           this.credentials.password,
@@ -233,7 +233,7 @@ export class Api {
           cnonce,
         )
       } else if (this.authMethod === "basic") {
-        config.headers["Authorization"] = `Basic ${this.credentials.basicToken}`
+        config.headers.Authorization = `Basic ${this.credentials.basicToken}`
       }
       // If authMethod is null, no header is sent — the server will challenge us
       return config
@@ -291,7 +291,7 @@ export class Api {
               const uri = this.getDigestUri(originalRequest.url, originalRequest.baseURL)
               const method = (originalRequest.method || "GET").toUpperCase()
 
-              retryConfig.headers["Authorization"] = computeDigestHeader(
+              retryConfig.headers.Authorization = computeDigestHeader(
                 challenge,
                 this.credentials.username,
                 this.credentials.password,
@@ -317,7 +317,7 @@ export class Api {
               this.authMethod = "basic"
               this.apisauce.setHeader("Authorization", `Basic ${this.credentials.basicToken}`)
               this.notifyAuthStateChanged()
-              retryConfig.headers["Authorization"] = `Basic ${this.credentials.basicToken}`
+              retryConfig.headers.Authorization = `Basic ${this.credentials.basicToken}`
 
               try {
                 return await axiosInstance.request(retryConfig)
@@ -339,7 +339,7 @@ export class Api {
               "WWW-Authenticate header not available. Trying Basic auth.",
               "If using a CORS proxy, add: Access-Control-Expose-Headers: WWW-Authenticate",
             )
-            retryConfig.headers["Authorization"] = `Basic ${this.credentials.basicToken}`
+            retryConfig.headers.Authorization = `Basic ${this.credentials.basicToken}`
 
             try {
               const retryResponse = await axiosInstance.request(retryConfig)
@@ -610,7 +610,9 @@ export class Api {
     const response: ApiResponse<ApiBookInfo> = await this.apisauce.get(
       `interface-data/books-init?library_id=${library}${
         encodedSearchText ? `&search=${encodedSearchText}` : ""
-      }${vl ? `&vl=${encodeURIComponent(vl)}` : ""}${num != null ? `&num=${num}` : ""}&sort=${sort}.${sortOrder}&${Date.now()}`,
+      }${vl ? `&vl=${encodeURIComponent(vl)}` : ""}${
+        num != null ? `&num=${num}` : ""
+      }&sort=${sort}.${sortOrder}&${Date.now()}`,
     )
 
     if (!response.ok) {
@@ -629,7 +631,7 @@ export class Api {
    */
   async getMoreLibrary(
     library: string,
-    json,
+    json: Record<string, unknown>,
   ): Promise<{ kind: "ok"; data: ApiBookInfoCore } | GeneralApiProblem> {
     logger.debug("getMoreLibrary", library, json)
     const response: ApiResponse<ApiBookInfoCore> = await this.apisauce.post(
@@ -1222,7 +1224,9 @@ export class Api {
     annotations: CalibreAnnotation[],
   ): Promise<{ kind: "ok" } | GeneralApiProblem> {
     const response: ApiResponse<unknown> = await this.apisauce.post(
-      `ajax/update_annotations?book_id=${bookId}&library_id=${encodeURIComponent(libraryId)}&fmt=${encodeURIComponent(format)}`,
+      `ajax/update_annotations?book_id=${bookId}&library_id=${encodeURIComponent(
+        libraryId,
+      )}&fmt=${encodeURIComponent(format)}`,
       annotations,
     )
     if (!response.ok) {
@@ -1244,7 +1248,9 @@ export class Api {
     epoch: number,
   ): Promise<{ kind: "ok" } | GeneralApiProblem> {
     const response: ApiResponse<unknown> = await this.apisauce.post(
-      `ajax/set-last-read-position?library_id=${encodeURIComponent(libraryId)}&book_id=${bookId}&fmt=${encodeURIComponent(format)}`,
+      `ajax/set-last-read-position?library_id=${encodeURIComponent(
+        libraryId,
+      )}&book_id=${bookId}&fmt=${encodeURIComponent(format)}`,
       { device_name: "open-bookshelf", cfi: "", pos_frac: posFrac, epoch },
     )
     if (!response.ok) {
@@ -1264,7 +1270,9 @@ export class Api {
     format: string,
   ): Promise<{ kind: "ok"; data: LastReadPosition | null } | GeneralApiProblem> {
     const response: ApiResponse<LastReadPosition[]> = await this.apisauce.get(
-      `ajax/get-last-read-position?library_id=${encodeURIComponent(libraryId)}&book_id=${bookId}&fmt=${encodeURIComponent(format)}`,
+      `ajax/get-last-read-position?library_id=${encodeURIComponent(
+        libraryId,
+      )}&book_id=${bookId}&fmt=${encodeURIComponent(format)}`,
     )
     if (!response.ok) {
       const problem = getGeneralApiProblem(response)

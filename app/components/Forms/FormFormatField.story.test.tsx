@@ -1,4 +1,4 @@
-import { beforeAll, describe as baseDescribe, expect, jest, mock, test as baseTest } from "bun:test"
+import { describe as baseDescribe, test as baseTest, beforeAll, expect, jest, mock } from "bun:test"
 import { render } from "@testing-library/react"
 import type { ComponentType, ReactNode } from "react"
 import { useForm } from "react-hook-form"
@@ -58,7 +58,11 @@ mock.module("@/components/IconButton/IconButton", () => ({
   }: {
     onPress?: () => void
     testID?: string
-  }) => <button data-testid={testID} type="button" onClick={onPress}>icon</button>,
+  }) => (
+    <button data-testid={testID} type="button" onClick={onPress}>
+      icon
+    </button>
+  ),
 }))
 
 type StoryForm = {
@@ -69,7 +73,10 @@ let FormFormatField: ComponentType<{
   control: ReturnType<typeof useForm<StoryForm>>["control"]
   name: "formats"
   testID: string
-  onUploadFormat: (params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>
+  onUploadFormat: (params: { targetFormat?: string }) => Promise<{
+    success: boolean
+    format?: string
+  }>
   onDeleteFormat: (format: string) => Promise<boolean>
 }>
 
@@ -82,7 +89,10 @@ function TestHarness({
   onUploadFormat,
   onDeleteFormat,
 }: {
-  onUploadFormat: (params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>
+  onUploadFormat: (params: { targetFormat?: string }) => Promise<{
+    success: boolean
+    format?: string
+  }>
   onDeleteFormat: (format: string) => Promise<boolean>
 }) {
   const form = useForm<StoryForm>({
@@ -108,9 +118,7 @@ const test = localizeTestRegistrar(baseTest)
 describe("FormFormatField story play", () => {
   test("format text click triggers upload processing", async () => {
     const uploadMock = jest
-      .fn<
-        (params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>
-      >()
+      .fn<(params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>>()
       .mockResolvedValue({ success: true })
     const deleteMock = jest.fn<(format: string) => Promise<boolean>>().mockResolvedValue(true)
 
@@ -128,9 +136,7 @@ describe("FormFormatField story play", () => {
 
   test("displayed format string click triggers upload processing", async () => {
     const uploadMock = jest
-      .fn<
-        (params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>
-      >()
+      .fn<(params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>>()
       .mockResolvedValue({ success: true })
     const deleteMock = jest.fn<(format: string) => Promise<boolean>>().mockResolvedValue(true)
 
@@ -148,9 +154,7 @@ describe("FormFormatField story play", () => {
 
   test("plus triggers upload and adds row only on success", async () => {
     const uploadMock = jest
-      .fn<
-        (params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>
-      >()
+      .fn<(params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>>()
       .mockResolvedValue({ success: true, format: "AZW3" })
     const deleteMock = jest.fn<(format: string) => Promise<boolean>>().mockResolvedValue(true)
 
@@ -168,9 +172,7 @@ describe("FormFormatField story play", () => {
 
   test("minus deletes the format shown on that row", async () => {
     const uploadMock = jest
-      .fn<
-        (params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>
-      >()
+      .fn<(params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>>()
       .mockResolvedValue({ success: true })
     const deleteMock = jest.fn<(format: string) => Promise<boolean>>().mockResolvedValue(true)
 

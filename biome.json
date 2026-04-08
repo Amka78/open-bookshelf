@@ -16,6 +16,9 @@
       "ignite/ignite.json"
     ]
   },
+  "files": {
+    "ignore": ["app/library/PDF/pdfjsBundle.ts"]
+  },
   "linter": {
     "enabled": true,
     "rules": {

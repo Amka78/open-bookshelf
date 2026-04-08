@@ -25,14 +25,20 @@ function normalizeTagQuery(query: string): string | null {
   const boolMatch = val.match(/\s+(and|or)\s+/i)
   if (boolMatch?.index !== undefined) val = val.slice(0, boolMatch.index).trim()
   // strip calibre op prefix
-  val = val.replace(/^(!?[=~])/, "").trim().toLowerCase()
+  val = val
+    .replace(/^(!?[=~])/, "")
+    .trim()
+    .toLowerCase()
   if (!cat || !val) return null
   return `${cat}:=${val}`
 }
 
 function parseQueryParts(query: string): string[] {
   if (!query.trim()) return []
-  return query.split(/ AND | OR /i).map((q) => q.trim()).filter(Boolean)
+  return query
+    .split(/ AND | OR /i)
+    .map((q) => q.trim())
+    .filter(Boolean)
 }
 
 function playBuildTagQuery(
@@ -158,9 +164,9 @@ describe("LeftSideMenu multi-select", () => {
     })
 
     test("removes a query that is already selected (deselect)", () => {
-      expect(
-        playToggleQuery("authors:=Tolkien AND formats:=EPUB", "authors:=Tolkien", {}),
-      ).toBe("formats:=EPUB")
+      expect(playToggleQuery("authors:=Tolkien AND formats:=EPUB", "authors:=Tolkien", {})).toBe(
+        "formats:=EPUB",
+      )
     })
 
     test("deselects regardless of calibre operator difference", () => {
@@ -174,10 +180,13 @@ describe("LeftSideMenu multi-select", () => {
 
     test("adding a third item with per-item operators (itemKey keyed)", () => {
       // keys are "authors:tolkien" and "formats:epub"
-      const operators = { "authors:tolkien": "OR", "formats:epub": "AND" } as Record<string, "AND" | "OR">
-      expect(
-        playToggleQuery("authors:=Tolkien OR formats:=EPUB", "rating:=5", operators),
-      ).toBe("authors:=Tolkien OR formats:=EPUB AND rating:=5")
+      const operators = { "authors:tolkien": "OR", "formats:epub": "AND" } as Record<
+        string,
+        "AND" | "OR"
+      >
+      expect(playToggleQuery("authors:=Tolkien OR formats:=EPUB", "rating:=5", operators)).toBe(
+        "authors:=Tolkien OR formats:=EPUB AND rating:=5",
+      )
     })
   })
 
@@ -260,4 +269,3 @@ describe("LeftSideMenu multi-select", () => {
     })
   })
 })
-

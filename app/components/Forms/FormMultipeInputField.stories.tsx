@@ -4,14 +4,14 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { useForm } from "react-hook-form"
 import { FormMultipleInputField } from "./FormMultipeInputField"
 import {
-  playMultipleFocusShowsSuggestions,
   playMultipleBackdropPressClosesSuggestions,
+  playMultipleFocusShowsSuggestions,
   playMultipleOutsideClickClosesSuggestions,
   playMultipleSelectSuggestionClosesSuggestionsAndUpdatesInput,
   playMultipleSelectSuggestionUpdatesInput,
   playMultipleSuggestionsStayVisibleAfterFocus,
-  playMultipleTypingKeepsSuggestionsVisible,
   playMultipleTypingFiltersSuggestions,
+  playMultipleTypingKeepsSuggestionsVisible,
 } from "./formMultipleInputFieldStoryPlay"
 
 type StoryForm = {

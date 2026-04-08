@@ -53,9 +53,8 @@ function ChipRow<T extends string | number>({
             }}
           >
             <Text
-              text={label}
               style={{ color: isSelected ? "#ffffff" : undefined, fontSize: 13 }}
-            />
+            >{label}</Text>
           </Pressable>
         )
       })}
@@ -92,11 +91,7 @@ export const UserPreferencesModal = observer((props: UserPreferencesModalProps) 
         <VStack space="lg" padding="$2">
           <VStack space="sm">
             <Text tx="userPreferences.preferredFormat" fontWeight="$bold" />
-            <ChipRow
-              options={FORMAT_OPTIONS}
-              selected={selectedFormat}
-              onSelect={onSelectFormat}
-            />
+            <ChipRow options={FORMAT_OPTIONS} selected={selectedFormat} onSelect={onSelectFormat} />
           </VStack>
           <VStack space="sm">
             <Text tx="userPreferences.dateDisplayFormat" fontWeight="$bold" />

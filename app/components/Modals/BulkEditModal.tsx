@@ -26,14 +26,19 @@ const NON_EDITABLE_KEYS: (keyof MetadataSnapshotIn)[] = [
   "lastModified",
   "timestamp",
   "size",
-  "hash",
   "sharpFixed",
   "formatSizes",
   "langNames",
   "selectedFormat",
 ]
 
-function computeCommonValues(books: BulkEditModalProps["modal"]["params"]["books"]): Partial<MetadataSnapshotIn> {
+function assignSnapshotKey<T, K extends keyof T>(target: Partial<T>, key: K, value: T[K]): void {
+  target[key] = value
+}
+
+function computeCommonValues(
+  books: BulkEditModalProps["modal"]["params"]["books"],
+): Partial<MetadataSnapshotIn> {
   if (books.length === 0) return {}
 
   const snapshots = books.map((book) => {
@@ -49,7 +54,7 @@ function computeCommonValues(books: BulkEditModalProps["modal"]["params"]["books
     const firstVal = JSON.stringify(first[key])
     const allMatch = snapshots.every((snap) => JSON.stringify(snap[key]) === firstVal)
     if (allMatch) {
-      common[key] = first[key] as any
+      assignSnapshotKey(common, key, first[key])
     }
   }
 
@@ -73,7 +78,7 @@ export const BulkEditModal = observer((props: BulkEditModalProps) => {
     <Root>
       <Header>
         <Heading isTruncated={true} tx={"modal.bulkEditModal.title"} />
-        <Text text={translate("modal.bulkEditModal.bookCount", { count: books.length })} />
+        <Text>{translate("modal.bulkEditModal.bookCount", { count: books.length })}</Text>
         <CloseButton onPress={() => props.modal.closeModal()} />
       </Header>
       <Body>
@@ -110,11 +115,7 @@ export const BulkEditModal = observer((props: BulkEditModalProps) => {
           tx={"common.save"}
           disabled={Object.keys(form.formState.dirtyFields).length <= 0}
         />
-        <Button
-          onPress={() => props.modal.closeModal()}
-          tx={"common.cancel"}
-          marginLeft={"$1"}
-        />
+        <Button onPress={() => props.modal.closeModal()} tx={"common.cancel"} marginLeft={"$1"} />
       </Footer>
     </Root>
   )

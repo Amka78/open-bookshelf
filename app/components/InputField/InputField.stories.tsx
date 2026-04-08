@@ -8,7 +8,7 @@ export default {
   title: "InputField",
   component: InputField,
   parameters: {
-    notes: `InputField`,
+    notes: "InputField",
   },
   args: {
     placeholderTx: "connectScreen.placeHolder",

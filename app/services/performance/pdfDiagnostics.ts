@@ -31,7 +31,6 @@ declare global {
   }
 }
 
-let lastPageTransitionStart = 0
 let lastMetricKey = ""
 let lastMetricTimestamp = 0
 
@@ -75,7 +74,7 @@ const diagnostics: PDFDiagnostics = {
   logPageTransition(from: number, to: number) {
     if (!this.isEnabled) return
 
-    lastPageTransitionStart = performance.now()
+    performance.now()
     const direction = to > from ? "→" : "←"
     console.log(`[PDF-Transition] Page ${from} ${direction} ${to}`)
   },

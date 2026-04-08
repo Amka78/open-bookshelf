@@ -8,7 +8,7 @@ export default {
   title: "PagePressable",
   component: PagePressable,
   parameters: {
-    notes: `Manages the page press process.`,
+    notes: "Manages the page press process.",
   },
   args: {
     children: <BookImageItem source={require("../../../assets/images/sample-image-1.png")} />,

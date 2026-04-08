@@ -17,12 +17,15 @@ export function parseDigestChallenge(wwwAuthenticate: string): DigestChallenge |
     const qopRaw = parsed.params.qop
     const qop = typeof qopRaw === "string" ? qopRaw.split(",").map((s) => s.trim())[0] : undefined
 
+    const toStr = (v: string | string[] | undefined): string =>
+      Array.isArray(v) ? (v[0] ?? "") : (v ?? "")
+
     return {
-      realm: parsed.params.realm,
-      nonce: parsed.params.nonce,
+      realm: toStr(parsed.params.realm),
+      nonce: toStr(parsed.params.nonce),
       qop,
-      algorithm: parsed.params.algorithm || "MD5",
-      opaque: parsed.params.opaque,
+      algorithm: toStr(parsed.params.algorithm) || "MD5",
+      opaque: parsed.params.opaque ? toStr(parsed.params.opaque) : undefined,
     }
   } catch {
     return null

@@ -1,4 +1,4 @@
-import { beforeAll, describe as baseDescribe, expect, jest, mock, test as baseTest } from "bun:test"
+import { describe as baseDescribe, test as baseTest, beforeAll, expect, jest, mock } from "bun:test"
 import { fireEvent, render } from "@testing-library/react"
 import type { ComponentType, ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"

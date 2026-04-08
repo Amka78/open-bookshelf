@@ -1,7 +1,15 @@
-import { beforeAll, beforeEach, describe as baseDescribe, expect, jest, mock, test as baseTest } from "bun:test"
+import {
+  describe as baseDescribe,
+  test as baseTest,
+  beforeAll,
+  beforeEach,
+  expect,
+  jest,
+  mock,
+} from "bun:test"
 import { useStores } from "@/models"
-import { useNavigation } from "@react-navigation/native"
 import { usePalette } from "@/theme"
+import { useNavigation } from "@react-navigation/native"
 import { act, render } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
@@ -37,7 +45,13 @@ mock.module("@/components", () => ({
   }: {
     data: T[]
     renderItem: ({ item }: { item: T }) => ReactNode
-  }) => <div>{data.map((item, index) => <div key={String(index)}>{renderItem({ item })}</div>)}</div>,
+  }) => (
+    <div>
+      {data.map((item, index) => (
+        <div key={String(index)}>{renderItem({ item })}</div>
+      ))}
+    </div>
+  ),
   Box: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   Image: () => <img alt="opds-icon" />,
 }))

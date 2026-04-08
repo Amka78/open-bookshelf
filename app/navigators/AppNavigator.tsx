@@ -83,6 +83,7 @@ const AppStack = observer(function AppStack() {
   const { authenticationStore, settingStore } = useStores()
   const colorScheme = useColorScheme()
   const palette = getPalette(colorScheme === "dark" ? "dark" : "light")
+  // biome-ignore lint/correctness/useExhaustiveDependencies: MST observable properties (userId, password) are accessible via observer(); the effect tracks isAuthenticated and token as the change triggers
   useEffect(() => {
     if (settingStore.api.baseUrl) {
       api.setUrl(settingStore.api.baseUrl)
@@ -252,6 +253,7 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
 
   useBackButtonHandler((routeName) => exitRoutes.includes(routeName))
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: MST observable properties (userId, password) are accessible via observer(); pendingViewerInfo drives this effect
   useEffect(() => {
     if (!pendingViewerInfo || handlingViewerInfoRef.current) {
       return undefined

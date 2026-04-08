@@ -14,14 +14,18 @@ export function BookFormatList({ formats, onDownload, onDelete, onUpload }: Book
   const palette = usePalette()
 
   const handleDelete = (format: string) => {
-    Alert.alert(translate("bookFormatList.deleteTooltip"), translate("bookFormatList.deleteConfirm"), [
-      { text: translate("common.cancel"), style: "cancel" },
-      {
-        text: translate("common.ok"),
-        style: "destructive",
-        onPress: () => onDelete(format),
-      },
-    ])
+    Alert.alert(
+      translate("bookFormatList.deleteTooltip"),
+      translate("bookFormatList.deleteConfirm"),
+      [
+        { text: translate("common.cancel"), style: "cancel" },
+        {
+          text: translate("common.ok"),
+          style: "destructive",
+          onPress: () => onDelete(format),
+        },
+      ],
+    )
   }
 
   return (
@@ -31,7 +35,7 @@ export function BookFormatList({ formats, onDownload, onDelete, onUpload }: Book
       </View>
       {formats.map((format) => (
         <HStack key={format} style={styles.row}>
-          <View style={{ ...styles.badge, backgroundColor: palette.$primary400 }}>
+          <View style={{ ...styles.badge, backgroundColor: palette.accent }}>
             <Text style={styles.badgeText}>{format.toUpperCase()}</Text>
           </View>
           <HStack style={styles.actions}>

@@ -145,9 +145,8 @@ describe("Api.fetchWithAuth", () => {
 
   test("setCoverBinary posts image blob via apisauce to cdb/set-cover", async () => {
     const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
-    // biome-ignore lint/complexity/useLiteralKeys: accessing private apisauce for test spy
     const postSpy = jest
-      .spyOn(api["apisauce"], "post")
+      .spyOn(api.apisauce, "post")
       .mockResolvedValueOnce({ ok: true, status: 200, data: null } as ApiResponse<unknown>)
 
     const imageBlob = new Blob([new Uint8Array([137, 80, 78, 71])], { type: "image/png" })

@@ -158,6 +158,7 @@ export function useBookEdit() {
       const blob = await fetchResponse.blob()
       const result = await api.setCoverBinary(selectedLibrary.id, selectedBook.id, blob)
       if (result.kind === "ok") {
+        // biome-ignore lint/suspicious/noExplicitAny: react-hook-form setValue path requires any for dynamic field names not in the inferred form schema
         form.setValue("cover" as any, url)
         setCoverUrlInput("")
         return true

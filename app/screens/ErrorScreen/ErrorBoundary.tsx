@@ -23,7 +23,7 @@ interface State {
  * - [React Error Boundaries](https://reactjs.org/docs/error-boundaries.html)
  */
 export class ErrorBoundary extends Component<Props, State> {
-  state = { error: null, errorInfo: null }
+  state: State = { error: null, errorInfo: null }
 
   // If an error in a child is encountered, this will run
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -45,8 +45,8 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   // To avoid unnecessary re-renders
-  shouldComponentUpdate(nextProps: Readonly<any>, nextState: Readonly<any>): boolean {
-    return nextState.error !== nextProps.error
+  shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>): boolean {
+    return nextState.error !== this.state.error
   }
 
   // Only enable if we're catching errors in the right environment

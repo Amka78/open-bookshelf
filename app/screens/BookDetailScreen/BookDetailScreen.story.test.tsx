@@ -47,7 +47,11 @@ describe("BookDetailScreen story play", () => {
         >
           Edit
         </button>
-        <button data-testid="book-detail-delete-button" onClick={mockDeleteBookAction} type="button">
+        <button
+          data-testid="book-detail-delete-button"
+          onClick={mockDeleteBookAction}
+          type="button"
+        >
           Delete
         </button>
       </div>,
@@ -87,7 +91,9 @@ describe("BookDetailScreen story play", () => {
     })
 
     expect(mockConvertNavigationAction).toHaveBeenCalledTimes(1)
-    expect(mockConvertNavigationAction).toHaveBeenCalledWith({ imageUrl: "https://example.com/image.jpg" })
+    expect(mockConvertNavigationAction).toHaveBeenCalledWith({
+      imageUrl: "https://example.com/image.jpg",
+    })
   })
 
   test("pressing edit in the story play triggers edit navigation action", async () => {
@@ -100,7 +106,9 @@ describe("BookDetailScreen story play", () => {
     })
 
     expect(mockEditNavigationAction).toHaveBeenCalledTimes(1)
-    expect(mockEditNavigationAction).toHaveBeenCalledWith({ imageUrl: "https://example.com/image.jpg" })
+    expect(mockEditNavigationAction).toHaveBeenCalledWith({
+      imageUrl: "https://example.com/image.jpg",
+    })
   })
 
   test("pressing delete in the story play triggers delete action", async () => {

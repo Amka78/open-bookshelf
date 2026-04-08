@@ -13,7 +13,10 @@ async function findByTestId(canvasElement: HTMLElement, testId: string): Promise
   throw new Error(`Element with data-testid='${testId}' was not found.`)
 }
 
-async function findButtonByText(canvasElement: HTMLElement, text: string): Promise<HTMLButtonElement> {
+async function findButtonByText(
+  canvasElement: HTMLElement,
+  text: string,
+): Promise<HTMLButtonElement> {
   for (let retry = 0; retry < 15; retry += 1) {
     const buttons = Array.from(canvasElement.querySelectorAll("button")) as HTMLButtonElement[]
     const found = buttons.find((button) => button.textContent?.includes(text))

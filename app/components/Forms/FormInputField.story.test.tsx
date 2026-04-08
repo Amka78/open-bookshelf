@@ -1,10 +1,4 @@
-import {
-  beforeAll,
-  describe as baseDescribe,
-  jest,
-  mock,
-  test as baseTest,
-} from "bun:test"
+import { describe as baseDescribe, test as baseTest, beforeAll, jest, mock } from "bun:test"
 import { render } from "@testing-library/react"
 import type { ComponentType, ReactNode } from "react"
 import { useForm } from "react-hook-form"
@@ -16,8 +10,8 @@ import {
   playSelectSuggestionClosesSuggestionsAndUpdatesInput,
   playSelectSuggestionUpdatesInput,
   playSuggestionsStayVisibleAfterFocus,
-  playTypingKeepsSuggestionsVisible,
   playTypingFiltersSuggestions,
+  playTypingKeepsSuggestionsVisible,
 } from "./formInputFieldStoryPlay"
 
 mock.module("@/theme", () => ({

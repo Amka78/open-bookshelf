@@ -11,7 +11,7 @@ export default {
     style: { width: 200, height: 300 },
   },
   parameters: {
-    notes: `Image Core Component`,
+    notes: "Image Core Component",
   },
   decorators: [
     (Story) => (

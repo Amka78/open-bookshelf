@@ -46,7 +46,10 @@ describe("useOpenViewer", () => {
       convert: jest.fn(),
       metaData: {
         formats: ["EPUB"],
-        formatSizes: new Map([["EPUB", 100], ["PDF", 100]]),
+        formatSizes: new Map([
+          ["EPUB", 100],
+          ["PDF", 100],
+        ]),
         size: 100,
         setProp: jest.fn(),
       },
@@ -290,7 +293,9 @@ describe("useOpenViewer", () => {
       },
     })
     const addReadingHistory = jest.fn()
-    jest.spyOn(bookImageCache, "cacheBookImages").mockResolvedValue(["cache/cover.jpg", "cache/page001.jpg"])
+    jest
+      .spyOn(bookImageCache, "cacheBookImages")
+      .mockResolvedValue(["cache/cover.jpg", "cache/page001.jpg"])
     jest.spyOn(ReadingHistoryModel, "create").mockReturnValue({ history: true } as never)
 
     setupStore({ selectedBook, addReadingHistory })

@@ -1,5 +1,5 @@
-import { flow, type Instance, type SnapshotIn, type SnapshotOut, types } from "mobx-state-tree"
 import { DOMParser } from "@xmldom/xmldom"
+import { type Instance, type SnapshotIn, type SnapshotOut, flow, types } from "mobx-state-tree"
 
 import { api } from "@/services/api"
 import { withSetPropAction } from "../helpers/withSetPropAction"
@@ -44,8 +44,8 @@ export const OpdsModel = types
         for (let index = 0; index < feedChildren.length; index++) {
           const node = feedChildren.item(index) as unknown as Element
           const nodeName = node.nodeName
-          if (opds[nodeName] !== undefined) {
-            setState(nodeName, node, opds)
+          if ((opds as unknown as Record<string, unknown>)[nodeName] !== undefined) {
+            setState(nodeName, node, opds as unknown as Record<string, unknown>)
           }
         }
       }
@@ -56,13 +56,13 @@ export type OpdsRoot = Instance<typeof OpdsModel>
 export type OpdsRootSnapshotOut = SnapshotOut<typeof OpdsModel>
 export type OpdsRootSnapshotIn = SnapshotIn<typeof OpdsModel>
 
-function setState(nodeName: string, node: Element, opds) {
+function setState(nodeName: string, node: Element, opds: Record<string, unknown>) {
   if (nodeName === "link") {
-    setAttributes(node, opds.link, LinkModel)
+    setAttributes(node, opds.link as { push(item: object): void }, LinkModel as any)
   } else if (nodeName === "author") {
-    setElements(node, opds.author, AuthorModel)
+    setElements(node, opds.author as { push(item: object): void }, AuthorModel as any)
   } else if (nodeName === "entry") {
-    setElements(node, opds.entry, EntryModel)
+    setElements(node, opds.entry as { push(item: object): void }, EntryModel as any)
   } else if (nodeName === "updated" || nodeName === "published") {
     opds[nodeName] = new Date(node.firstChild.nodeValue)
   } else {
@@ -78,7 +78,11 @@ function setState(nodeName: string, node: Element, opds) {
   }
 }
 
-function setElements(xmlNode: Element, list, modelRef) {
+function setElements(
+  xmlNode: Element,
+  list: { push(item: object): void },
+  modelRef: { create(): Record<string, unknown> },
+) {
   const elements = xmlNode.childNodes
 
   const model = modelRef.create()
@@ -110,7 +114,11 @@ export const OpdsRootStore = types
     },
   }))
 
-function setAttributes(xmlNode: Element, list, modelRef) {
+function setAttributes(
+  xmlNode: Element,
+  list: { push(item: object): void },
+  modelRef: { create(): Record<string, unknown> },
+) {
   const attributes = xmlNode.attributes
 
   const model = modelRef.create()

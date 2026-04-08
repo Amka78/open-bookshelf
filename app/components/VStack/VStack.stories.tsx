@@ -7,7 +7,7 @@ export default {
   title: "VStack",
   component: VStack,
   parameters: {
-    notes: `Place component vertically`,
+    notes: "Place component vertically",
   },
 } as Meta<typeof VStack>
 

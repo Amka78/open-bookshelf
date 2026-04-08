@@ -102,6 +102,7 @@ export function useLibrary() {
     setHeaderSearchText(selectedLibrary?.searchSetting?.query ?? "")
   }, [selectedLibrary?.searchSetting?.query])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: MST observable (settingStore.booksPerPage) is tracked via observer(); adding it to deps would cause unnecessary re-fetches
   useEffect(() => {
     const initialize = async () => {
       setSearching(true)

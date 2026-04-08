@@ -34,7 +34,7 @@ export function useBookConvert() {
 
     if (!selectedBook?.id) {
       setOutputFormats(inputFormats)
-      return
+      return () => {}
     }
 
     let cancelled = false

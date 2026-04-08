@@ -18,41 +18,41 @@ export const IconButton = ({
   pressable = true,
   ...restProps
 }: IconButtonProps) => {
-    const palette = usePalette()
-    const [isPending, startTransition] = useTransition()
-    const props = restProps
-    const icon = (
-      <MaterialCommunityIcon
-        name={props.name}
-        iconSize={iconSize}
-        variant={variant}
-        rotate={props.rotate}
-      />
-    )
+  const palette = usePalette()
+  const [isPending, startTransition] = useTransition()
+  const props = restProps
+  const icon = (
+    <MaterialCommunityIcon
+      name={props.name}
+      iconSize={iconSize}
+      variant={variant}
+      rotate={props.rotate}
+    />
+  )
 
-    const content = props.labelTx ? (
-      <HStack>
-        {icon}
-        <Text tx={props.labelTx} fontSize={"$md"} />
-      </HStack>
-    ) : (
-      icon
-    )
-    return pressable ? (
-      <Pressable
-        {...props}
-        onPress={(event) => {
-          if (props.onPress) {
-            startTransition(async () => {
-              await props.onPress!(event)
-            })
-          }
-        }}
-        disabled={isPending}
-      >
-        {isPending ? <ButtonSpinner color={palette.textSecondary} size={35} /> : content}
-      </Pressable>
-    ) : (
-      content
-    )
+  const content = props.labelTx ? (
+    <HStack>
+      {icon}
+      <Text tx={props.labelTx} fontSize={"$md"} />
+    </HStack>
+  ) : (
+    icon
+  )
+  return pressable ? (
+    <Pressable
+      {...props}
+      onPress={(event) => {
+        if (props.onPress) {
+          startTransition(async () => {
+            await props.onPress(event)
+          })
+        }
+      }}
+      disabled={isPending}
+    >
+      {isPending ? <ButtonSpinner color={palette.textSecondary} size={35} /> : content}
+    </Pressable>
+  ) : (
+    content
+  )
 }

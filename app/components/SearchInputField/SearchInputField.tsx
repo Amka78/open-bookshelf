@@ -136,14 +136,14 @@ export function SearchInputField({
   const isSaved = Boolean(savedSearches?.find((s) => s.name === value.trim()))
 
   return (
-    <HStack width={width ?? "$full"} alignItems="center" space="xs">
+    <HStack width={(width ?? "$full") as any} alignItems="center" space="xs">
       <Box flex={1}>
         <FormSuggestionPopover
           trigger={(triggerProps) => {
             const { onPress: _op, onPressIn: _opi, onPressOut: _opo, ...restProps } = triggerProps
             return (
               <Box {...restProps} flex={1}>
-                <Input variant="underlined" size={size as never ?? "lg"}>
+                <Input variant="underlined" size={(size as never) ?? "lg"}>
                   <InputField
                     value={value}
                     onChangeText={(text) => {

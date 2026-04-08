@@ -1,6 +1,6 @@
+import { logger } from "@/utils/logger"
 import type { Meta, StoryObj } from "@storybook/react"
 import { PageManagerWithState } from "./PageManagerWithState"
-import { logger } from "@/utils/logger"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
@@ -8,7 +8,7 @@ export default {
   title: "PageManager",
   component: PageManagerWithState,
   parameters: {
-    notes: `Use the slider to move through the pages of the book.`,
+    notes: "Use the slider to move through the pages of the book.",
   },
   args: {
     initialPage: 0,

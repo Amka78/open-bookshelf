@@ -7,7 +7,7 @@ export default {
   title: "Input",
   component: Input,
   parameters: {
-    notes: `Input`,
+    notes: "Input",
   },
   decorators: [
     (Story) => (

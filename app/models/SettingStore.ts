@@ -18,11 +18,7 @@ export const SettingStoreModel = types
     recentSearches: types.optional(types.array(types.string), []),
     viewerFontSizePt: types.optional(types.number, 16),
     viewerTheme: types.optional(
-      types.union(
-        types.literal("default"),
-        types.literal("sepia"),
-        types.literal("dark"),
-      ),
+      types.union(types.literal("default"), types.literal("sepia"), types.literal("dark")),
       "default",
     ),
     readStatuses: types.optional(types.map(types.string), {}),

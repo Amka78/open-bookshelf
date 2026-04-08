@@ -1,6 +1,13 @@
-import { beforeEach, describe as baseDescribe, expect, jest, mock, test as baseTest } from "bun:test"
-import { render, fireEvent } from "@testing-library/react"
-import type { ReactNode } from "react"
+import {
+  describe as baseDescribe,
+  test as baseTest,
+  beforeEach,
+  expect,
+  jest,
+  mock,
+} from "bun:test"
+import { fireEvent, render } from "@testing-library/react"
+import type { ErrorInfo, ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 async function findByTestId(canvasElement: HTMLElement, testId: string): Promise<HTMLElement> {
@@ -79,7 +86,7 @@ describe("ErrorDetails", () => {
     const { container } = render(
       <ErrorDetails
         error={new Error("Something went wrong")}
-        errorInfo={{ componentStack: "at TestComponent" } as any}
+        errorInfo={{ componentStack: "at TestComponent" } as ErrorInfo}
         onReset={onReset}
       />,
     )
@@ -93,7 +100,7 @@ describe("ErrorDetails", () => {
     render(
       <ErrorDetails
         error={new Error("Something went wrong")}
-        errorInfo={{ componentStack: "at TestComponent" } as any}
+        errorInfo={{ componentStack: "at TestComponent" } as ErrorInfo}
         onReset={jest.fn()}
       />,
     )
@@ -113,7 +120,7 @@ describe("ErrorDetails", () => {
     const { container } = render(
       <ErrorDetails
         error={new Error("Something went wrong")}
-        errorInfo={{ componentStack: "at TestComponent" } as any}
+        errorInfo={{ componentStack: "at TestComponent" } as ErrorInfo}
         onReset={onReset}
       />,
     )

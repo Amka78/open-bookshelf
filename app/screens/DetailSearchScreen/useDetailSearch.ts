@@ -6,6 +6,7 @@ import {
   parseTagQuery,
 } from "@/components/LeftSideMenu/LeftSideMenu"
 import { useStores } from "@/models"
+import type { Category } from "@/models/calibre"
 import { useState } from "react"
 
 function parseQueryParts(query: string): string[] {
@@ -90,7 +91,7 @@ export function useDetailSearch(initialQuery: string) {
   }
 
   return {
-    tagBrowser: selectedLibrary?.tagBrowser ?? [],
+    tagBrowser: (selectedLibrary?.tagBrowser ?? []) as Category[],
     itemOperators,
     itemCalibreOperators,
     pendingQuery,

@@ -46,10 +46,7 @@ export function useDownloadBook() {
   }
 }
 
-async function executeSharing(
-  selectedLibrary: LibraryMap,
-  format: string,
-) {
+async function executeSharing(selectedLibrary: LibraryMap, format: string) {
   const selectedBook = selectedLibrary.selectedBook
   const fileName = `${selectedBook.metaData.title}.${format}`
   const downloadUrl = api.getBookDownloadUrl(format, selectedBook.id, selectedLibrary.id)

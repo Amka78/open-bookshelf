@@ -1,12 +1,12 @@
 import {
   afterEach,
+  describe as baseDescribe,
+  test as baseTest,
   beforeAll,
   beforeEach,
-  describe as baseDescribe,
   expect,
   jest,
   mock,
-  test as baseTest,
 } from "bun:test"
 import { act, renderHook } from "@testing-library/react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
@@ -22,10 +22,16 @@ mock.module("@/models", () => ({
 
 mock.module("@/components/LeftSideMenu/LeftSideMenu", () => {
   const CATEGORY_ALIASES: Record<string, string> = {
-    author: "authors", authors: "authors",
-    format: "formats", formats: "formats",
-    language: "languages", languages: "languages",
-    reward: "rating", rewards: "rating", rating: "rating", ratings: "rating",
+    author: "authors",
+    authors: "authors",
+    format: "formats",
+    formats: "formats",
+    language: "languages",
+    languages: "languages",
+    reward: "rating",
+    rewards: "rating",
+    rating: "rating",
+    ratings: "rating",
     series: "series",
   }
   const normalizeCategoryKey = (key: string) => {
@@ -151,9 +157,7 @@ describe("useDetailSearch", () => {
   })
 
   test("onItemOperatorChange rebuilds query with updated operator", async () => {
-    const { result } = renderHook(() =>
-      useDetailSearch("authors:=Stephen King AND tags:=Horror"),
-    )
+    const { result } = renderHook(() => useDetailSearch("authors:=Stephen King AND tags:=Horror"))
     act(() => {
       result.current.onItemOperatorChange("authors:stephen king", "OR")
     })

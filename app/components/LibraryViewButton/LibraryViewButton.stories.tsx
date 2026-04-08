@@ -7,7 +7,7 @@ export default {
   title: "LibraryViewButton",
   component: LibraryViewButton,
   parameters: {
-    notes: `Toggles the View display method.`,
+    notes: "Toggles the View display method.",
   },
   args: {
     mode: "gridView",

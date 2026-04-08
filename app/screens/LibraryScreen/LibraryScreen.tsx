@@ -1,22 +1,18 @@
 import {
   AddFileButton,
   AuthButton,
-  BookDescriptionItem,
   BookImageItem,
   Box,
   FlatList,
   HStack,
   IconButton,
   LeftSideMenu,
-  LibraryViewButton,
   SelectionActionBar,
   SortMenu,
   StaggerContainer,
   VirtualLibraryButton,
 } from "@/components"
 import { BookListItem } from "@/components/BookListItem"
-import { LibraryViewModeButton } from "@/components/LibraryViewModeButton"
-import { SearchInputField } from "@/components/SearchInputField"
 import type { CalibreFieldOperator, QueryOperator } from "@/components/LeftSideMenu/LeftSideMenu"
 import {
   buildItemKey,
@@ -24,6 +20,8 @@ import {
   normalizeTagQuery,
   parseTagQuery,
 } from "@/components/LeftSideMenu/LeftSideMenu"
+import { LibraryViewModeButton } from "@/components/LibraryViewModeButton"
+import { SearchInputField } from "@/components/SearchInputField"
 import { useBulkDownloadBooks } from "@/hooks/useBulkDownloadBooks"
 import { useConvergence } from "@/hooks/useConvergence"
 import { useDeleteBook } from "@/hooks/useDeleteBook"
@@ -218,6 +216,7 @@ export const LibraryScreen: FC = observer(() => {
     </>
   )
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: navigation.setOptions is stable; navigation prop is not a dep in React Navigation patterns
   useLayoutEffect(() => {
     navigation.setOptions({
       headerLeft: (props) => {
@@ -272,14 +271,7 @@ export const LibraryScreen: FC = observer(() => {
           }
         : undefined,
     })
-  }, [
-    convergenceHook.isLarge,
-    libraryHook,
-    libraryActions,
-    navigation,
-    selectedLibrary,
-    viewMode,
-  ])
+  }, [convergenceHook.isLarge, libraryHook, libraryActions, navigation, selectedLibrary, viewMode])
 
   const renderItem = ({ item }: { item: Book }) => {
     const onPress = async () => {

@@ -2,6 +2,7 @@ import {
   type NavigationAction,
   type NavigationState,
   type PartialState,
+  type Route,
   createNavigationContainerRef,
 } from "@react-navigation/native"
 import { useEffect, useRef, useState } from "react"
@@ -40,7 +41,7 @@ export const RootNavigation = {
 
 export const navigationRef = createNavigationContainerRef<AppStackParamList>()
 
-type NavigationStateLike = NavigationState | PartialState<NavigationState>
+export type NavigationStateLike = NavigationState | PartialState<NavigationState>
 
 /**
  * Gets the current screen from any navigation state.
@@ -214,7 +215,7 @@ export function isNavigationReady() {
   return navigationRef.isReady()
 }
 
-export function resetRoot(params = { index: 0, routes: [] }) {
+export function resetRoot(params = { index: 0, routes: [] as Route<string>[] }) {
   if (navigationRef.isReady()) {
     navigationRef.resetRoot(params)
   }

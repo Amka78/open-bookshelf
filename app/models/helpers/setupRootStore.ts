@@ -32,7 +32,9 @@ export async function setupRootStore(rootStore: RootStore): Promise<{
 
   try {
     // load the last known state from AsyncStorage
-    restoredState = (await storage.load(ROOT_STATE_STORAGE_KEY)) || {}
+    restoredState =
+      ((await storage.load(ROOT_STATE_STORAGE_KEY)) as RootStoreSnapshot | undefined) ||
+      ({} as RootStoreSnapshot)
     applySnapshot(rootStore, restoredState)
 
     // Re-apply API settings to the singleton — applySnapshot only updates MST

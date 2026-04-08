@@ -1,4 +1,4 @@
-import { HStack, IconButton, TooltipIconButton } from "@/components"
+import { HStack, TooltipIconButton } from "@/components"
 import type { MaterialCommunityIconProps } from "@/components"
 import type { HStackProps, IconButtonProps } from "@/components"
 import { StyleSheet } from "react-native"
@@ -92,7 +92,7 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
       {props.onSendByEmail != null && (
         <TooltipIconButton
           {...sharedIconButtonProps}
-          name={"email-send-outline"}
+          name={"email-edit-outline"}
           iconSize="md-"
           onPress={props.onSendByEmail}
           testID="book-detail-send-email-button"

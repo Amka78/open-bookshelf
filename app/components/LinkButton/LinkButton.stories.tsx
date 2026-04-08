@@ -7,7 +7,7 @@ export default {
   title: "Link Button",
   component: LinkButton,
   parameters: {
-    notes: `Search for books by the link you press.`,
+    notes: "Search for books by the link you press.",
   },
   args: {},
   decorators: [

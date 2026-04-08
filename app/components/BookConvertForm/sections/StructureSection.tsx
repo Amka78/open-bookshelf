@@ -58,7 +58,7 @@ export function StructureSection({ control }: Props) {
               render={({ field }) => (
                 <Switch
                   testID={`switch-structure-${name}`}
-                  value={field.value}
+                  value={field.value as boolean}
                   onValueChange={field.onChange}
                 />
               )}

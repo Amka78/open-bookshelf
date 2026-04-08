@@ -10,7 +10,7 @@ export default {
     source: require("../../../assets/images/sample-image-1.png"),
   },
   parameters: {
-    notes: `manage image uploads.`,
+    notes: "manage image uploads.",
   },
   decorators: [
     (Story) => (

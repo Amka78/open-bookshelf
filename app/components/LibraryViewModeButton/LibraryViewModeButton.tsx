@@ -1,5 +1,4 @@
 import { TooltipIconButton } from "@/components"
-import { translate } from "@/i18n"
 
 type LibraryViewModeButtonProps = {
   mode: "grid" | "list"

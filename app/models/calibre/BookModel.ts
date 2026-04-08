@@ -3,13 +3,12 @@ import {
   type SnapshotIn,
   type SnapshotOut,
   flow,
-  getParent,
   types,
 } from "mobx-state-tree"
 
 import type { ConvertOptions } from "@/components/BookConvertForm/ConvertOptions"
 import { isCalibreHtmlViewerFormat } from "@/utils/calibreHtmlViewer"
-import { camelCaseToLowerCase, lowerCaseToCamelCase } from "@/utils/convert"
+import { camelCaseToLowerCase } from "@/utils/convert"
 import { convertOptionsToParams } from "@/utils/convertOptionsToParams"
 import { delay } from "@/utils/delay"
 import {
@@ -19,11 +18,10 @@ import {
   api,
 } from "../../services/api"
 import type { AnnotationsMap } from "../../services/api/api.types"
-import { type Metadata, MetadataModel } from "./MetadataModel"
-import type { ReadingHistory } from "./ReadingHistoryModel"
-import { AnnotationModel, type Annotation } from "./AnnotationModel"
 import { handleCommonApiError } from "../errors/errors"
 import { withSetPropAction } from "../helpers/withSetPropAction"
+import { type Annotation, AnnotationModel } from "./AnnotationModel"
+import { MetadataModel } from "./MetadataModel"
 
 type BookManifestResponse = Awaited<ReturnType<typeof api.CheckBookConverting>>
 type ConversionStatusResponse = Awaited<ReturnType<typeof api.getConversionStatus>>
@@ -347,10 +345,12 @@ export const BookModel = types
     ) {
       const changes: Partial<Record<CommonFieldName, unknown>> = {}
 
-      const rootParent = getParent(root) as Array<Book>
       updateField.map((field: string) => {
-        const fieldValue = normalizeUpdateFieldValue(field, updateInfo[field])
-        root.metaData[field] = fieldValue
+        const fieldValue = normalizeUpdateFieldValue(
+          field,
+          updateInfo[field as keyof SnapshotIn<typeof MetadataModel>],
+        )
+        ;(root.metaData as unknown as Record<string, unknown>)[field] = fieldValue
         const apiField = camelCaseToLowerCase(field) as CommonFieldName
         changes[apiField] = Array.isArray(fieldValue)
           ? fieldValue
@@ -365,7 +365,10 @@ export const BookModel = types
       })
       if (response.kind === "ok") {
         updateField.map((field: string) => {
-          root.metaData[field] = normalizeUpdateFieldValue(field, updateInfo[field])
+          ;(root.metaData as unknown as Record<string, unknown>)[field] = normalizeUpdateFieldValue(
+            field,
+            updateInfo[field as keyof SnapshotIn<typeof MetadataModel>],
+          )
         })
         return true
       }

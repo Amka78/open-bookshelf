@@ -7,7 +7,7 @@ export default {
   title: "RootContainer",
   component: RootContainer,
   parameters: {
-    notes: `Convergence-enabled screen containers.`,
+    notes: "Convergence-enabled screen containers.",
   },
   decorators: [
     (Story) => (

@@ -1,12 +1,7 @@
-import {
-  beforeAll,
-  describe as baseDescribe,
-  expect,
-  mock,
-  test as baseTest,
-} from "bun:test"
-import type { ReactNode } from "react"
+import { describe as baseDescribe, test as baseTest, beforeAll, expect, mock } from "bun:test"
 import { render } from "@testing-library/react"
+import type { Book } from "@/models/calibre/BookModel"
+import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 mock.module("expo-image", () => ({
@@ -25,7 +20,7 @@ mock.module("@/components", () => ({
 mock.module("@gluestack-ui/themed", () => ({
   ...(global as { __gluestackMock?: Record<string, unknown> }).__gluestackMock,
   Pressable: ({ children, onPress }: { children?: ReactNode; onPress?: () => void }) => (
-    <div onClick={onPress}>{children}</div>
+    <div onClick={onPress} onKeyDown={onPress} role="button" tabIndex={0}>{children}</div>
   ),
   Text: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
 }))
@@ -56,7 +51,7 @@ function makeBook(
       tags: overrides.tags ?? [],
       pubdate: null,
     },
-  } as any
+  } as unknown as Book
 }
 
 describe("BookListItem", () => {

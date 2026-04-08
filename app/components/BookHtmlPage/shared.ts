@@ -345,13 +345,6 @@ const shouldIgnoreResourceValue = (value: string) => {
   )
 }
 
-const resolveBookRelativePath = (
-  basePath: string,
-  rawValue: string,
-): BookResourceDescriptor | undefined => {
-  return resolveBookRelativePathCandidates(basePath, rawValue)[0]
-}
-
 const isStylesheetAttribute = (
   tagName: string,
   attrName: string,
@@ -1595,7 +1588,7 @@ export const useCalibreHtmlDocument = (props: BookHtmlPageProps): UseCalibreHtml
               ? "dark"
               : props.viewerTheme === "sepia"
                 ? "light"
-                : (props.themeMode ?? "light"),
+                : props.themeMode ?? "light",
           textColor: props.themeTextColor ?? "#111318",
           linkColor: props.themeLinkColor ?? props.themeTextColor ?? "#111318",
           fallbackBackgroundColor: props.themeFallbackBackgroundColor ?? "#ffffff",

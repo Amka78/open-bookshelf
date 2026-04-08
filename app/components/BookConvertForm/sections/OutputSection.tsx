@@ -104,7 +104,7 @@ export function OutputSection({ control, outputFormat }: Props) {
                 render={({ field }) => (
                   <Switch
                     testID={`switch-epub-${name}`}
-                    value={field.value}
+                    value={field.value as boolean}
                     onValueChange={field.onChange}
                   />
                 )}

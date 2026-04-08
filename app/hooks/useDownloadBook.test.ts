@@ -63,7 +63,7 @@ describe("useDownloadBook", () => {
     jest.spyOn(api, "getBookDownloadUrl").mockReturnValue("https://example/book")
     jest.spyOn(api, "downloadFileWithAuth").mockResolvedValue({
       uri: "file:///documents/book.epub",
-    } as any)
+    } as unknown as Awaited<ReturnType<typeof api.downloadFileWithAuth>>)
 
     const { execute } = useDownloadBook()
     const modal = createModal()
@@ -94,7 +94,7 @@ describe("useDownloadBook", () => {
     jest.spyOn(api, "getBookDownloadUrl").mockReturnValue("https://example/book-pdf")
     jest.spyOn(api, "downloadFileWithAuth").mockResolvedValue({
       uri: "file:///documents/book.pdf",
-    } as any)
+    } as unknown as Awaited<ReturnType<typeof api.downloadFileWithAuth>>)
 
     const { execute } = useDownloadBook()
     await execute(createModal({ openModal: openModal as TestModal["openModal"] }))

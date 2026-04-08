@@ -11,7 +11,7 @@ export function useIncrementalRender(totalItems: number, batchSize = 50, enabled
   const [visibleCount, setVisibleCount] = useState(
     enabled ? Math.min(batchSize, totalItems) : totalItems,
   )
-  const [isPending, startTransition] = useTransition()
+  const [_isPending, startTransition] = useTransition()
 
   useEffect(() => {
     if (!enabled || visibleCount >= totalItems) {

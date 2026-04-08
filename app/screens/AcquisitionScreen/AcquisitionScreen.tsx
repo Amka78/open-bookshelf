@@ -1,7 +1,7 @@
 import { Box, FlatList, ListItem, MaterialCommunityIcon, RootContainer, Text } from "@/components"
 import { useStores } from "@/models"
 import type { Entry } from "@/models/opds"
-import { OpdsChildrenModel, OpdsModel, type OpdsRoot } from "@/models/opds/OpdsRootStore"
+import { OpdsModel, type OpdsRoot } from "@/models/opds/OpdsRootStore"
 import type { AppStackParamList, ApppNavigationProp } from "@/navigators/types"
 import { usePalette } from "@/theme"
 import { logger } from "@/utils/logger"
@@ -20,7 +20,7 @@ async function loadOpdsFromLink(href: string) {
 }
 
 export const AcquisitionScreen: FC = observer(() => {
-  const { opdsRootStore, settingStore } = useStores()
+  const { settingStore } = useStores()
   const palette = usePalette()
 
   const route = useRoute<AcquisitionScreenRouteProp>()
@@ -44,10 +44,6 @@ export const AcquisitionScreen: FC = observer(() => {
       if (canceled) return
 
       setCurrentOPDS(linkOopds)
-      const children = OpdsChildrenModel.create({
-        linkPath: linkHref,
-        opds: linkOopds,
-      })
       // opdsRootStore.add(children)
       // }
     })()

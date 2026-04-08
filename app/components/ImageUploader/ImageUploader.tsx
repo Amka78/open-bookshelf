@@ -1,7 +1,7 @@
 import { Image, type ImageProps } from "@/components"
 import { Pressable } from "@gluestack-ui/themed"
 import * as ImagePicker from "expo-image-picker"
-import { type Ref } from "react"
+import type { Ref } from "react"
 import { type ImageStyle, type StyleProp, StyleSheet } from "react-native"
 export type ImageUploaderProps = ImageProps & {
   onImageUpload: (url: string) => void

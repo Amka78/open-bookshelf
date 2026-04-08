@@ -7,13 +7,13 @@ import {
   ViewerHeader,
 } from "@/components"
 import { AnnotationPanel } from "@/components/AnnotationPanel"
+import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import { useStores } from "@/models"
 import type { ApppNavigationProp } from "@/navigators/types"
 import { useAnnotations } from "@/screens/ViewerScreen/useAnnotations"
 import { useViewer } from "@/screens/ViewerScreen/useViewer"
 import { usePalette } from "@/theme"
 import { goToNextPage, goToPreviousPage } from "@/utils/pageTurnning"
-import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import { useNavigation } from "@react-navigation/native"
 import { FlashList, type FlashListRef, type ListRenderItem } from "@shopify/flash-list"
 import React from "react"
@@ -172,6 +172,7 @@ export function BookViewer(props: BookViewerProps) {
     flashListRef,
   })
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: jumpRequest.id is the only meaningful change trigger; full object would cause infinite loops
   useEffect(() => {
     if (jumpRequest == null || !data.length) return
     const idx = getScrollIndexForPage(jumpRequest.page)
@@ -210,7 +211,11 @@ export function BookViewer(props: BookViewerProps) {
       onLongPress: viewerHook.onManageMenu,
       annotations: annotationsForPage(renderProps.page)
         .filter((a) => a.type === "highlight")
-        .map((a) => ({ uuid: a.uuid, highlightedText: a.highlightedText, styleWhich: a.styleWhich })),
+        .map((a) => ({
+          uuid: a.uuid,
+          highlightedText: a.highlightedText,
+          styleWhich: a.styleWhich,
+        })),
       onTextSelect: (text: string) => {
         modal.openModal("AnnotationModal", {
           selectedText: text,
@@ -426,203 +431,208 @@ export function BookViewer(props: BookViewerProps) {
         end={{ x: 1, y: 1 }}
         style={[styles.viewerGradient, webViewportStyle]}
       >
-      <ViewerHeader
-        title={props.bookTitle}
-        visible={viewerHook.showMenu}
-        autoPageTurning={autoPageTurning}
-        autoPageTurnIntervalMs={autoPageTurnIntervalMs}
-        onToggleAutoPageTurning={() => {
-          setAutoPageTurning((prev) => !prev)
-        }}
-        onAutoPageTurnIntervalChange={(intervalMs) => {
-          const normalizedIntervalMs = Math.max(100, Math.floor(intervalMs))
-          settingStore.setAutoPageTurnIntervalMs(normalizedIntervalMs)
-          setAutoPageTurnIntervalMs(normalizedIntervalMs)
-        }}
-        onLeftArrowPress={() => {
-          navigation.goBack()
-        }}
-        pageDirection={viewerHook.pageDirection}
-        readingStyle={viewerHook.readingStyle}
-        onSelectReadingStyle={(newReadingStyle) => {
-          const nextIndex = getIndexForReadingStyleChange(newReadingStyle)
-          if (nextIndex !== undefined) {
-            scrollToIndex(nextIndex, true, newReadingStyle === "verticalScroll" ? 0.5 : undefined)
+        <ViewerHeader
+          title={props.bookTitle}
+          visible={viewerHook.showMenu}
+          autoPageTurning={autoPageTurning}
+          autoPageTurnIntervalMs={autoPageTurnIntervalMs}
+          onToggleAutoPageTurning={() => {
+            setAutoPageTurning((prev) => !prev)
+          }}
+          onAutoPageTurnIntervalChange={(intervalMs) => {
+            const normalizedIntervalMs = Math.max(100, Math.floor(intervalMs))
+            settingStore.setAutoPageTurnIntervalMs(normalizedIntervalMs)
+            setAutoPageTurnIntervalMs(normalizedIntervalMs)
+          }}
+          onLeftArrowPress={() => {
+            navigation.goBack()
+          }}
+          pageDirection={viewerHook.pageDirection}
+          readingStyle={viewerHook.readingStyle}
+          onSelectReadingStyle={(newReadingStyle) => {
+            const nextIndex = getIndexForReadingStyleChange(newReadingStyle)
+            if (nextIndex !== undefined) {
+              scrollToIndex(nextIndex, true, newReadingStyle === "verticalScroll" ? 0.5 : undefined)
+            }
+            viewerHook.onSetBookReadingStyle(newReadingStyle)
+          }}
+          onSelectPageDirection={(pageDirection) => {
+            viewerHook.onSetPageDirection(pageDirection)
+          }}
+          onSelectCurrentPageAsCover={
+            currentCoverTargets.singlePage !== undefined
+              ? () => {
+                  viewerHook.onSetCoverByPage(currentCoverTargets.singlePage as number)
+                }
+              : undefined
           }
-          viewerHook.onSetBookReadingStyle(newReadingStyle)
-        }}
-        onSelectPageDirection={(pageDirection) => {
-          viewerHook.onSetPageDirection(pageDirection)
-        }}
-        onSelectCurrentPageAsCover={
-          currentCoverTargets.singlePage !== undefined
-            ? () => {
-                viewerHook.onSetCoverByPage(currentCoverTargets.singlePage as number)
-              }
-            : undefined
-        }
-        onSelectLeftPageAsCover={
-          currentCoverTargets.leftPage !== undefined
-            ? () => {
-                viewerHook.onSetCoverByPage(currentCoverTargets.leftPage as number)
-              }
-            : undefined
-        }
-        onSelectRightPageAsCover={
-          currentCoverTargets.rightPage !== undefined
-            ? () => {
-                viewerHook.onSetCoverByPage(currentCoverTargets.rightPage as number)
-              }
-            : undefined
-        }
-        onAddBookmark={() => {
-          modal.openModal("AnnotationModal", {
-            onSave: async ({ notes }) => {
-              await addBookmark(currentPage, notes || undefined)
-            },
-          })
-        }}
-        onToggleAnnotationPanel={() => setShowAnnotationPanel((prev) => !prev)}
-        onShowToc={viewerHook.toc ? handleShowToc : undefined}
-        onShowReadingSettings={handleShowReadingSettings}
-      />
-      {pages && isSinglePagePdfMode ? (
-        <Box style={styles.viewerRoot} alignSelf="center" width={listViewportWidth}>
-          <Box style={listContainerStyle}>
-            {data.length > 0
-              ? renderItemContent(data[currentRenderedIndex], currentRenderedIndex)
-              : null}
-            {data.length > 1 ? (
-              <View
-                style={styles.singlePageOverlay}
-                onStartShouldSetResponder={() => true}
-                onMoveShouldSetResponder={() => true}
-                onResponderGrant={(event) => {
-                  const { locationX, locationY } = event.nativeEvent
-                  singlePageTouchStartRef.current = {
-                    x: locationX,
-                    y: locationY,
-                    longPressTriggered: false,
-                  }
-
-                  clearSinglePageLongPressTimer()
-                  singlePageLongPressTimerRef.current = setTimeout(() => {
-                    if (singlePageTouchStartRef.current) {
-                      singlePageTouchStartRef.current.longPressTriggered = true
+          onSelectLeftPageAsCover={
+            currentCoverTargets.leftPage !== undefined
+              ? () => {
+                  viewerHook.onSetCoverByPage(currentCoverTargets.leftPage as number)
+                }
+              : undefined
+          }
+          onSelectRightPageAsCover={
+            currentCoverTargets.rightPage !== undefined
+              ? () => {
+                  viewerHook.onSetCoverByPage(currentCoverTargets.rightPage as number)
+                }
+              : undefined
+          }
+          onAddBookmark={() => {
+            modal.openModal("AnnotationModal", {
+              onSave: async ({ notes }) => {
+                await addBookmark(currentPage, notes || undefined)
+              },
+            })
+          }}
+          onToggleAnnotationPanel={() => setShowAnnotationPanel((prev) => !prev)}
+          onShowToc={viewerHook.toc ? handleShowToc : undefined}
+          onShowReadingSettings={handleShowReadingSettings}
+        />
+        {pages && isSinglePagePdfMode ? (
+          <Box style={styles.viewerRoot} alignSelf="center" width={listViewportWidth}>
+            <Box style={listContainerStyle}>
+              {data.length > 0
+                ? renderItemContent(data[currentRenderedIndex], currentRenderedIndex)
+                : null}
+              {data.length > 1 ? (
+                <View
+                  style={styles.singlePageOverlay}
+                  onStartShouldSetResponder={() => true}
+                  onMoveShouldSetResponder={() => true}
+                  onResponderGrant={(event) => {
+                    const { locationX, locationY } = event.nativeEvent
+                    singlePageTouchStartRef.current = {
+                      x: locationX,
+                      y: locationY,
+                      longPressTriggered: false,
                     }
-                    viewerHook.onManageMenu()
-                  }, 350)
-                }}
-                onResponderMove={(event) => {
-                  const start = singlePageTouchStartRef.current
-                  if (!start) return
 
-                  const dx = Math.abs(event.nativeEvent.locationX - start.x)
-                  const dy = Math.abs(event.nativeEvent.locationY - start.y)
-
-                  if (dx > SINGLE_PAGE_TAP_MOVE_THRESHOLD || dy > SINGLE_PAGE_TAP_MOVE_THRESHOLD) {
                     clearSinglePageLongPressTimer()
-                  }
-                }}
-                onResponderRelease={(event) => {
-                  const start = singlePageTouchStartRef.current
-                  clearSinglePageLongPressTimer()
-                  singlePageTouchStartRef.current = undefined
-
-                  if (!start || props.disableNavigation || start.longPressTriggered) {
-                    return
-                  }
-
-                  const direction = resolveSinglePageGesture({
-                    startX: start.x,
-                    endX: event.nativeEvent.locationX,
-                    startY: start.y,
-                    endY: event.nativeEvent.locationY,
-                    width: listViewportWidth,
-                    pageDirection: viewerHook.pageDirection,
-                    tapNavigationMode: currentSinglePageTapNavigationMode,
-                  })
-
-                  if (direction) {
-                    navigateSinglePageDirection(currentRenderedIndex, direction)
-                  }
-                }}
-                onResponderTerminate={() => {
-                  clearSinglePageLongPressTimer()
-                  singlePageTouchStartRef.current = undefined
-                }}
-              />
-            ) : null}
-          </Box>
-        </Box>
-      ) : pages ? (
-        <Box style={styles.viewerRoot} alignSelf="center" width={listViewportWidth}>
-          <Box style={listContainerStyle}>
-            <FlashListCompat
-              key={flashListAxisKey}
-              data={data}
-              extraData={flashListLayoutKey}
-              renderItem={renderItem}
-              horizontal={isHorizontalReading}
-              pagingEnabled={isHorizontalReading}
-              {...invertedProps}
-              ref={flashListRef}
-              keyExtractor={(_, index) => `${index}`}
-              onViewableItemsChanged={isHorizontalReading ? undefined : onViewableItemsChanged}
-              onMomentumScrollEnd={isHorizontalReading ? onListScrollSettled : undefined}
-              onScrollEndDrag={
-                isHorizontalReading && !isAndroidPdfMode && !isWeb ? onListScrollSettled : undefined
-              }
-              viewabilityConfig={{
-                itemVisiblePercentThreshold: isWeb ? 95 : 100,
-              }}
-              estimatedItemSize={estimatedItemSize}
-              estimatedListSize={{ width: listViewportWidth, height: dimension.height }}
-              drawDistance={drawDistance}
-              overrideItemLayout={
-                !useFixedItemLayout
-                  ? undefined
-                  : (layout, _, index) => {
-                      const mutableLayout = layout as {
-                        span?: number
-                        size?: number
-                        offset?: number
+                    singlePageLongPressTimerRef.current = setTimeout(() => {
+                      if (singlePageTouchStartRef.current) {
+                        singlePageTouchStartRef.current.longPressTriggered = true
                       }
-                      mutableLayout.size = estimatedItemSize
-                      mutableLayout.offset = estimatedItemSize * index
+                      viewerHook.onManageMenu()
+                    }, 350)
+                  }}
+                  onResponderMove={(event) => {
+                    const start = singlePageTouchStartRef.current
+                    if (!start) return
+
+                    const dx = Math.abs(event.nativeEvent.locationX - start.x)
+                    const dy = Math.abs(event.nativeEvent.locationY - start.y)
+
+                    if (
+                      dx > SINGLE_PAGE_TAP_MOVE_THRESHOLD ||
+                      dy > SINGLE_PAGE_TAP_MOVE_THRESHOLD
+                    ) {
+                      clearSinglePageLongPressTimer()
                     }
-              }
-              removeClippedSubviews={useFixedItemLayout}
-              windowSize={windowSize}
-              initialNumToRender={1}
-              maxToRenderPerBatch={maxToRenderPerBatch}
-            />
+                  }}
+                  onResponderRelease={(event) => {
+                    const start = singlePageTouchStartRef.current
+                    clearSinglePageLongPressTimer()
+                    singlePageTouchStartRef.current = undefined
+
+                    if (!start || props.disableNavigation || start.longPressTriggered) {
+                      return
+                    }
+
+                    const direction = resolveSinglePageGesture({
+                      startX: start.x,
+                      endX: event.nativeEvent.locationX,
+                      startY: start.y,
+                      endY: event.nativeEvent.locationY,
+                      width: listViewportWidth,
+                      pageDirection: viewerHook.pageDirection,
+                      tapNavigationMode: currentSinglePageTapNavigationMode,
+                    })
+
+                    if (direction) {
+                      navigateSinglePageDirection(currentRenderedIndex, direction)
+                    }
+                  }}
+                  onResponderTerminate={() => {
+                    clearSinglePageLongPressTimer()
+                    singlePageTouchStartRef.current = undefined
+                  }}
+                />
+              ) : null}
+            </Box>
           </Box>
-        </Box>
-      ) : null}
-      <PageManager
-        currentPage={currentPage}
-        variant="fix"
-        facingPage={
-          viewerHook.readingStyle === "facingPage" ||
-          viewerHook.readingStyle === "facingPageWithTitle"
-        }
-        facingSecondPageExists={
-          pages !== undefined &&
-          (pages[viewerHook.readingStyle][scrollIndex] as FacingPageType | undefined)?.page2 !==
-            undefined
-        }
-        totalPage={props.totalPage}
-        onPageChange={(page) => {
-          const index = getScrollIndexForPage(page)
-          scrollToIndex(index, true, isHorizontalReading ? undefined : 0.5)
-        }}
-        reverse={
-          viewerHook.pageDirection === "left" && viewerHook.readingStyle !== "verticalScroll"
-        }
-        visible={viewerHook.showMenu}
-      />
-    </GradientBackground>
+        ) : pages ? (
+          <Box style={styles.viewerRoot} alignSelf="center" width={listViewportWidth}>
+            <Box style={listContainerStyle}>
+              <FlashListCompat
+                key={flashListAxisKey}
+                data={data}
+                extraData={flashListLayoutKey}
+                renderItem={renderItem}
+                horizontal={isHorizontalReading}
+                pagingEnabled={isHorizontalReading}
+                {...invertedProps}
+                ref={flashListRef}
+                keyExtractor={(_, index) => `${index}`}
+                onViewableItemsChanged={isHorizontalReading ? undefined : onViewableItemsChanged}
+                onMomentumScrollEnd={isHorizontalReading ? onListScrollSettled : undefined}
+                onScrollEndDrag={
+                  isHorizontalReading && !isAndroidPdfMode && !isWeb
+                    ? onListScrollSettled
+                    : undefined
+                }
+                viewabilityConfig={{
+                  itemVisiblePercentThreshold: isWeb ? 95 : 100,
+                }}
+                estimatedItemSize={estimatedItemSize}
+                estimatedListSize={{ width: listViewportWidth, height: dimension.height }}
+                drawDistance={drawDistance}
+                overrideItemLayout={
+                  !useFixedItemLayout
+                    ? undefined
+                    : (layout, _, index) => {
+                        const mutableLayout = layout as {
+                          span?: number
+                          size?: number
+                          offset?: number
+                        }
+                        mutableLayout.size = estimatedItemSize
+                        mutableLayout.offset = estimatedItemSize * index
+                      }
+                }
+                removeClippedSubviews={useFixedItemLayout}
+                windowSize={windowSize}
+                initialNumToRender={1}
+                maxToRenderPerBatch={maxToRenderPerBatch}
+              />
+            </Box>
+          </Box>
+        ) : null}
+        <PageManager
+          currentPage={currentPage}
+          variant="fix"
+          facingPage={
+            viewerHook.readingStyle === "facingPage" ||
+            viewerHook.readingStyle === "facingPageWithTitle"
+          }
+          facingSecondPageExists={
+            pages !== undefined &&
+            (pages[viewerHook.readingStyle][scrollIndex] as FacingPageType | undefined)?.page2 !==
+              undefined
+          }
+          totalPage={props.totalPage}
+          onPageChange={(page) => {
+            const index = getScrollIndexForPage(page)
+            scrollToIndex(index, true, isHorizontalReading ? undefined : 0.5)
+          }}
+          reverse={
+            viewerHook.pageDirection === "left" && viewerHook.readingStyle !== "verticalScroll"
+          }
+          visible={viewerHook.showMenu}
+        />
+      </GradientBackground>
       {showAnnotationPanel ? (
         <View style={styles.annotationPanelOverlay}>
           <AnnotationPanel

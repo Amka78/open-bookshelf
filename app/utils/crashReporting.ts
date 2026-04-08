@@ -1,4 +1,4 @@
-import { logger } from "@/utils/logger";
+import { logger } from "@/utils/logger"
 
 /**
  * If you're using Sentry
@@ -31,7 +31,7 @@ export const initCrashReporting = () => {
   //   debug: true, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
   // })
   // Bugsnag.start("YOUR API KEY")
-};
+}
 
 /**
  * Error classifications used to sort errors on error reporting services.
@@ -53,13 +53,13 @@ export type ErrorType = (typeof ErrorType)[keyof typeof ErrorType]
 /**
  * Manually report a handled error.
  */
-export const reportCrash = (error: any, type: ErrorType = ErrorType.FATAL) => {
+export const reportCrash = (error: unknown, type: ErrorType = ErrorType.FATAL) => {
   if (__DEV__) {
     // Log to console and Reactotron in development
-    const message = error.message || "Unknown";
-    logger.error(error);
-    logger.debug(message, type);
-    console.tron.log(error);
+    const message = error instanceof Error ? error.message : "Unknown"
+    logger.error(error)
+    logger.debug(message, type)
+    console.tron.log(error)
   } else {
     // In production, utilize crash reporting service of choice below:
     // RN
@@ -69,4 +69,4 @@ export const reportCrash = (error: any, type: ErrorType = ErrorType.FATAL) => {
     // crashlytics().recordError(error)
     // Bugsnag.notify(error)
   }
-};
+}

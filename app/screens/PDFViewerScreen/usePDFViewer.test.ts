@@ -1,9 +1,6 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, jest, mock, test } from "bun:test"
+import { afterAll, beforeAll, beforeEach, expect, jest, mock } from "bun:test"
+import { describe as baseDescribe, test as baseTest } from "bun:test"
 import { act, renderHook } from "@testing-library/react"
-import {
-  describe as baseDescribe,
-  test as baseTest,
-} from "bun:test"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 const describe = localizeTestRegistrar(baseDescribe)

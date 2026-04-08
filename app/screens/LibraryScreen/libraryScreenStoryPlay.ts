@@ -1,4 +1,4 @@
-import { fireEvent, findByPlaceholderText, findByTestId, findByText } from "@testing-library/react"
+import { findByPlaceholderText, findByTestId, findByText, fireEvent } from "@testing-library/react"
 
 export async function playLibraryShowsSearchInput({
   canvasElement,

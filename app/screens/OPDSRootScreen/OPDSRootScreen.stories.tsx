@@ -1,10 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
 import { OPDSRootScreen } from "./OPDSRootScreen"
-import {
-  playOPDSRootPressesEntry,
-  playOPDSRootShowsEntries,
-} from "./opdsRootScreenStoryPlay"
+import { playOPDSRootPressesEntry, playOPDSRootShowsEntries } from "./opdsRootScreenStoryPlay"
 
 const meta: Meta<typeof OPDSRootScreen> = {
   title: "Screens/OPDSRootScreen",

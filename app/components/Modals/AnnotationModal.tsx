@@ -5,7 +5,6 @@ import { translate } from "@/i18n"
 import { HStack, Input, InputField, ScrollView, VStack } from "@gluestack-ui/themed"
 import React, { useState } from "react"
 import type { ModalComponentProp } from "react-native-modalfy"
-import { View } from "react-native"
 import { Body } from "./Body"
 import { CloseButton } from "./CloseButton"
 import { Header } from "./Header"
@@ -81,11 +80,7 @@ export function AnnotationModal(props: AnnotationModalProps) {
             props.modal.closeModal()
           }}
         />
-        <Button
-          tx="common.cancel"
-          marginLeft={"$1"}
-          onPress={() => props.modal.closeModal()}
-        />
+        <Button tx="common.cancel" marginLeft={"$1"} onPress={() => props.modal.closeModal()} />
       </Footer>
     </Root>
   )

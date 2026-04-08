@@ -1,5 +1,5 @@
 /** Do Nothing. */
-const noop = () => undefined
+const noop = (): void => undefined
 
 /**
  * Fake no-op version of Reactotron, so nothing breaks if a console.tron.*

@@ -22,7 +22,7 @@ import { GluestackUIProvider } from "@gluestack-ui/themed"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import Config from "./config"
 import { useInitialRootStore } from "./models"
-import { AppNavigator, useNavigationPersistence } from "./navigators"
+import { AppNavigator, type NavigationStateLike, useNavigationPersistence } from "./navigators"
 import { ErrorBoundary } from "./screens/ErrorScreen/ErrorBoundary"
 import { customFontsToLoad } from "./theme"
 import { logger } from "./utils/logger"
@@ -66,7 +66,7 @@ function App(props: AppProps) {
     isRestored: isNavigationStateRestored,
   } = useNavigationPersistence(
     {
-      load: storage.load,
+      load: (key: string) => storage.load(key) as Promise<NavigationStateLike | undefined>,
       save: async (key, value) => {
         await storage.save(key, value)
       },

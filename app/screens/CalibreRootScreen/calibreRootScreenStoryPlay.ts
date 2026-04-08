@@ -1,4 +1,4 @@
-import { fireEvent, findByText, within } from "@testing-library/react"
+import { findByText, fireEvent, within } from "@testing-library/react"
 
 export async function playCalibreRootShowsLibraryNames({
   canvasElement,
@@ -26,5 +26,5 @@ export async function playCalibreRootPressesLibrary({
     throw new Error(`Could not find pressable item for library ${libraryName}.`)
   }
 
-  fireEvent.click(within(pressable).getByRole("button"))
+  fireEvent.click(within(pressable as HTMLElement).getByRole("button"))
 }

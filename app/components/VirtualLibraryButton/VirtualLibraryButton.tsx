@@ -1,6 +1,6 @@
 import { MaterialCommunityIcon } from "@/components/MaterialCommunityIcon/MaterialCommunityIcon"
 import { translate } from "@/i18n"
-import type { VirtualLibrary, VirtualLibraryModel } from "@/models/calibre/VirtualLibraryModel"
+import type { VirtualLibrary } from "@/models/calibre/VirtualLibraryModel"
 import { Menu, MenuItem, MenuItemLabel, Pressable } from "@gluestack-ui/themed"
 import type { ComponentProps } from "react"
 

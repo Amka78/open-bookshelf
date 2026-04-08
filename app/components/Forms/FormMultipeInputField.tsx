@@ -93,11 +93,11 @@ export function FormMultipleInputField<T extends FieldValues>(
       render={(renderProps) => {
         const parsedSeparator = textToValue ?? ","
         const values = Array.isArray(renderProps.field.value)
-          ? renderProps.field.value.map((entry) => (typeof entry === "string" ? entry : ""))
+          ? renderProps.field.value.map((entry: unknown) => (typeof entry === "string" ? entry : ""))
           : []
         const displayRows = values.length > 0 ? values : [""]
         const selectedValueSet = new Set(
-          values.map((entry) => entry.trim()).filter((entry) => entry.length > 0),
+          values.map((entry: string) => entry.trim()).filter((entry: string) => entry.length > 0),
         )
         const focusedRowValue =
           activeRowIndex !== null && activeRowIndex >= 0 && activeRowIndex < displayRows.length
@@ -139,7 +139,7 @@ export function FormMultipleInputField<T extends FieldValues>(
 
         return (
           <VStack width={inputProps.width ?? "$full"}>
-            {displayRows.map((rowValue, index) => (
+            {displayRows.map((rowValue: string, index: number) => (
               <HStack
                 key={`${String(name)}-row-${index}`}
                 alignItems="center"

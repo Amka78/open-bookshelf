@@ -1,5 +1,15 @@
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  jest,
+  mock,
+  test,
+} from "bun:test"
 import { api } from "@/services/api"
-import { beforeAll, beforeEach, afterAll, afterEach, describe, expect, jest, mock, test } from "bun:test"
 import { renderHook } from "@testing-library/react"
 import * as DocumentPicker from "expo-document-picker"
 import * as reactHookForm from "react-hook-form"
@@ -69,7 +79,7 @@ describe("useBookEdit", () => {
   }
 
   const mockForm = {
-    control: {} as any,
+    control: {} as unknown as ReturnType<(typeof reactHookForm)["useForm"]>["control"],
     handleSubmit: mockHandleSubmit,
     formState: {
       isValid: true,
@@ -90,7 +100,7 @@ describe("useBookEdit", () => {
     useNavigationMock.mockReturnValue({
       goBack: mockGoBack,
     })
-    jest.spyOn(reactHookForm, "useForm").mockReturnValue(mockForm as any)
+    jest.spyOn(reactHookForm, "useForm").mockReturnValue(mockForm as unknown as ReturnType<(typeof reactHookForm)["useForm"]>)
     mockHandleSubmit.mockImplementation((fn) => {
       return () => {
         fn({
@@ -306,7 +316,7 @@ describe("useBookEdit", () => {
       ],
     } as unknown as DocumentPicker.DocumentPickerResult)
 
-    jest.spyOn(api, "uploadBookFormat").mockResolvedValue({ kind: "bad-data" } as any)
+    jest.spyOn(api, "uploadBookFormat").mockResolvedValue({ kind: "bad-data" } as unknown as Awaited<ReturnType<typeof api.uploadBookFormat>>)
 
     const { result } = renderHook(() => useBookEdit())
     const uploaded = await result.current.onUploadFormat({ targetFormat: "EPUB" })
@@ -325,7 +335,7 @@ describe("useBookEdit", () => {
   })
 
   test("onDeleteFormat returns false when the format delete request fails", async () => {
-    jest.spyOn(api, "deleteBookFormat").mockResolvedValue({ kind: "bad-data" } as any)
+    jest.spyOn(api, "deleteBookFormat").mockResolvedValue({ kind: "bad-data" } as unknown as Awaited<ReturnType<typeof api.deleteBookFormat>>)
 
     const { result } = renderHook(() => useBookEdit())
     const deleted = await result.current.onDeleteFormat("PDF")

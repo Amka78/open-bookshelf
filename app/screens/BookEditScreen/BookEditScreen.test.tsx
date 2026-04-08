@@ -1,20 +1,20 @@
 import {
   afterAll,
-  beforeEach,
   describe as baseDescribe,
+  test as baseTest,
+  beforeEach,
   expect,
   jest,
   mock,
-  test as baseTest,
 } from "bun:test"
 import { render } from "@testing-library/react"
 import { type ReactNode, forwardRef, useImperativeHandle, useRef } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 import {
   playFocusTriggersAutoScroll,
-  playLargeScreenShowsSaveButton,
   playKeyboardShownHidesCover,
   playKeyboardShownKeepsFieldsVisible,
+  playLargeScreenShowsSaveButton,
   playPressingSaveTriggersSubmit,
   playSmallScreenHidesSaveButton,
 } from "./bookEditScreenStoryPlay"
@@ -33,10 +33,9 @@ mock.module("react-native", () => ({
   ...(global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock,
   Platform: { OS: "web", select: (obj: Record<string, unknown>) => obj.web ?? obj.default },
   KeyboardAvoidingView: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  TextInput: Object.assign(
-    (props: Record<string, unknown>) => <input {...(props as object)} />,
-    { State: { currentlyFocusedInput: null } },
-  ),
+  TextInput: Object.assign((props: Record<string, unknown>) => <input {...(props as object)} />, {
+    State: { currentlyFocusedInput: null },
+  }),
   UIManager: { measureLayout: jest.fn() },
   findNodeHandle: jest.fn().mockReturnValue(null),
 }))

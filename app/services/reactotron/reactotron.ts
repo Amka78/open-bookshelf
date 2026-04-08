@@ -100,7 +100,6 @@ export function setReactotronRootStore(rootStore: RootStore, initialData: unknow
         Reactotron.display({ name, value: snapshot, preview: "New State" })
       })
     }
-
     // tracks the current MobX-State-Tree tree in Reactotron's "State" tab
     ;(Reactotron as typeof Reactotron & { trackMstNode: (store: RootStore) => void }).trackMstNode(
       rootStore,

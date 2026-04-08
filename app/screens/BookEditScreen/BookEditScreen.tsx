@@ -2,10 +2,9 @@ import { BookEditFieldList } from "@/components/BookEditFieldList/BookEditFieldL
 import { Button } from "@/components/Button/Button"
 import { FormImageUploader } from "@/components/Forms/FormImageUploader"
 import { HStack } from "@/components/HStack/HStack"
-import { Text } from "@/components/Text/Text"
-import type { ModalStackParams } from "@/components/Modals/Types"
 import { RootContainer } from "@/components/RootContainer/RootContainer"
 import { ScrollView } from "@/components/ScrollView/ScrollView"
+import { Text } from "@/components/Text/Text"
 import { VStack } from "@/components/VStack/VStack"
 import { useConvergence } from "@/hooks/useConvergence"
 import { useKeyboardVisibility } from "@/hooks/useKeyboardVisibility"
@@ -17,7 +16,6 @@ import { observer } from "mobx-react-lite"
 import type { FC } from "react"
 import { useEffect, useLayoutEffect, useRef } from "react"
 import { KeyboardAvoidingView, Platform, TextInput, UIManager, findNodeHandle } from "react-native"
-import { useModal } from "react-native-modalfy"
 import { useBookEdit } from "./useBookEdit"
 
 type BookEditScreenRouteProp = RouteProp<AppStackParamList, "BookEdit">
@@ -28,13 +26,22 @@ const SUGGESTION_AREA_CLEARANCE = 220
 
 export const BookEditScreen: FC = observer(() => {
   const route = useRoute<BookEditScreenRouteProp>()
-  const modal = useModal<ModalStackParams>()
   const navigation = useNavigation<ApppNavigationProp>()
   const convergenceHook = useConvergence()
   const { isKeyboardVisible, keyboardHeight } = useKeyboardVisibility()
-  const { form, selectedBook, selectedLibrary, onSubmit, onUploadFormat, onDeleteFormat,
-    coverUrlInput, setCoverUrlInput, isFetchingCover, fetchCoverError, fetchCoverFromUrl } =
-    useBookEdit()
+  const {
+    form,
+    selectedBook,
+    selectedLibrary,
+    onSubmit,
+    onUploadFormat,
+    onDeleteFormat,
+    coverUrlInput,
+    setCoverUrlInput,
+    isFetchingCover,
+    fetchCoverError,
+    fetchCoverFromUrl,
+  } = useBookEdit()
   const scrollViewRef = useRef<{
     scrollTo?: (options: { x?: number; y?: number; animated?: boolean }) => void
     scrollToEnd?: (options?: { animated?: boolean }) => void
@@ -58,6 +65,7 @@ export const BookEditScreen: FC = observer(() => {
         return
       }
 
+      // biome-ignore lint/suspicious/noExplicitAny: react-native findNodeHandle requires a component instance that ScrollView ref doesn't satisfy without this cast
       const scrollNode = findNodeHandle(scrollViewRef.current as any)
 
       // コンテナハンドルがある場合はラベルの先頭（container top）を基準にスクロール
@@ -82,7 +90,8 @@ export const BookEditScreen: FC = observer(() => {
       const focusedInput = TextInput.State.currentlyFocusedInput?.()
       if (focusedInput != null && scrollNode != null) {
         focusedInput.measureLayout(
-          scrollNode as any,
+        // biome-ignore lint/suspicious/noExplicitAny: measureLayout NodeHandle type requires cast for the scroll node returned by findNodeHandle
+        scrollNode as any,
           (_x: number, y: number) => {
             // ドロップダウンがある場合は上に SUGGESTION_AREA_CLEARANCE 分スペースを確保
             const scrollY = Math.max(0, y - SUGGESTION_AREA_CLEARANCE)
@@ -123,6 +132,7 @@ export const BookEditScreen: FC = observer(() => {
         testID="book-edit-screen-keyboard-avoiding"
       >
         <ScrollView
+          // biome-ignore lint/suspicious/noExplicitAny: react-native ScrollView ref type doesn't satisfy the expected ref type for this component wrapper
           ref={scrollViewRef as any}
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{
@@ -134,6 +144,7 @@ export const BookEditScreen: FC = observer(() => {
             {!isKeyboardVisible ? (
               <VStack testID="book-edit-screen-cover-container">
                 <FormImageUploader
+                  // biome-ignore lint/suspicious/noExplicitAny: react-hook-form Control generic parameter mismatch between form and component expectations
                   control={form.control as any}
                   name={"cover"}
                   defaultValue={route.params.imageUrl}
@@ -151,7 +162,11 @@ export const BookEditScreen: FC = observer(() => {
                       />
                     </Input>
                     <Button
-                      tx={isFetchingCover ? "bookEditScreen.fetchingCover" : "bookEditScreen.fetchCoverFromUrl"}
+                      tx={
+                        isFetchingCover
+                          ? "bookEditScreen.fetchingCover"
+                          : "bookEditScreen.fetchCoverFromUrl"
+                      }
                       onPress={fetchCoverFromUrl}
                       isDisabled={isFetchingCover || !coverUrlInput.trim()}
                       size="sm"
@@ -166,6 +181,7 @@ export const BookEditScreen: FC = observer(() => {
             <VStack testID="book-edit-screen-fields-container">
               <BookEditFieldList
                 book={selectedBook}
+                // biome-ignore lint/suspicious/noExplicitAny: react-hook-form Control generic parameter mismatch between form and component expectations
                 control={form.control as any}
                 fieldMetadataList={selectedLibrary.fieldMetadataList}
                 tagBrowser={selectedLibrary.tagBrowser}

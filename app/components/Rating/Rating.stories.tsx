@@ -7,7 +7,7 @@ export default {
   title: "Rating",
   component: Rating,
   parameters: {
-    notes: `The rating is indicated by stars.`,
+    notes: "The rating is indicated by stars.",
   },
   decorators: [
     (Story) => (

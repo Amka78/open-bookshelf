@@ -5,6 +5,7 @@ import {
   type ApiBookInfo,
   type ApiBookInfoCore,
   type ApiCalibreInterfaceType,
+  type FieldMetadata,
   api,
 } from "../services/api"
 import {
@@ -96,7 +97,7 @@ export const CalibreRootStore = types
         root.selectedLibrary.tagBrowser.clear()
 
         Object.values(response.data.root.children).forEach(
-          (value: { id; children: { id; children }[] }) => {
+          (value: { id: string; children: { id: string; children: { id: string }[] }[] }) => {
             const category = response.data.item_map[value.id]
 
             const categoryModel = CategoryModel.create({
@@ -109,7 +110,7 @@ export const CalibreRootStore = types
               tooltip: category.tooltip,
             })
 
-            const subCategoryArray = []
+            const subCategoryArray: Instance<typeof SubCategoryModel>[] = []
             Object.values(value.children).forEach((subValue) => {
               const subCateogy = response.data.item_map[subValue.id]
               const subCategoryModel = SubCategoryModel.create({
@@ -120,8 +121,8 @@ export const CalibreRootStore = types
                 name: subCateogy.name,
               })
 
-              const nodeArray = []
-              Object.values(subValue.children).forEach((nodeValue: { id }) => {
+              const nodeArray: Instance<typeof NodeModel>[] = []
+              Object.values(subValue.children).forEach((nodeValue: { id: string }) => {
                 const node = response.data.item_map[nodeValue.id]
 
                 const nodeModel = NodeModel.create({
@@ -225,7 +226,7 @@ function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap)
       lastModified: metadata.last_modified,
       series: metadata.series ?? null,
       seriesIndex: metadata.series_index,
-      sharpFixed: metadata["#fixed"],
+      sharpFixed: (metadata as Record<string, unknown>)["#fixed"] as boolean | null,
       size: metadata.size,
       sort: metadata.sort,
       tags: metadata.tags,
@@ -275,38 +276,40 @@ function convertLibraryInformation(bookInfo: ApiBookInfo, libraryInfo: LibraryMa
     libraryInfo.bookDisplayFields.push(value)
   })
 
-  Object.keys(bookInfo.field_metadata).forEach((key) => {
+  const fieldMetadataRecord = bookInfo.field_metadata as unknown as Record<string, FieldMetadata>
+  Object.keys(fieldMetadataRecord).forEach((key) => {
+    const fm = fieldMetadataRecord[key]
     let display = undefined
-    if (bookInfo.field_metadata[key].display.date_format) {
+    if (fm.display !== undefined && fm.display.date_format) {
       display = DateFormatModel.create({
-        dateFormat: bookInfo.field_metadata[key].display.date_format,
+        dateFormat: fm.display.date_format,
       })
     }
     let isMultiple = undefined
-    if (bookInfo.field_metadata[key].is_multiple.cache_to_list) {
+    if (fm.is_multiple !== undefined && fm.is_multiple.cache_to_list) {
       isMultiple = IsMultipleModel.create({
-        cacheToList: bookInfo.field_metadata[key].is_multiple.cache_to_list,
-        listToUi: bookInfo.field_metadata[key].is_multiple.list_to_ui,
-        uiToList: bookInfo.field_metadata[key].is_multiple.ui_to_list,
+        cacheToList: fm.is_multiple.cache_to_list as string,
+        listToUi: fm.is_multiple.list_to_ui as string | null,
+        uiToList: fm.is_multiple.ui_to_list as string | null,
       })
     }
     const fieldMetadata = FieldMetadataModel.create({
-      categorySort: bookInfo.field_metadata[key].category_sort,
-      column: bookInfo.field_metadata[key].column,
-      datatype: bookInfo.field_metadata[key].datatype,
+      categorySort: fm.category_sort,
+      column: fm.column,
+      datatype: fm.datatype,
       display: display,
       isMultiple: isMultiple,
-      isCategory: bookInfo.field_metadata[key].is_category,
-      isCsp: bookInfo.field_metadata[key].is_csp,
-      isCustom: bookInfo.field_metadata[key].is_custom,
-      isEditable: bookInfo.field_metadata[key].is_editable,
-      kind: bookInfo.field_metadata[key].kind,
-      label: lowerCaseToCamelCase(bookInfo.field_metadata[key].label),
-      linkColumn: bookInfo.field_metadata[key].link_column,
-      name: bookInfo.field_metadata[key].name,
-      recIndex: bookInfo.field_metadata[key].rec_index,
-      searchTerms: bookInfo.field_metadata[key].search_terms,
-      table: bookInfo.field_metadata[key].table,
+      isCategory: fm.is_category,
+      isCsp: fm.is_csp,
+      isCustom: fm.is_custom,
+      isEditable: fm.is_editable,
+      kind: fm.kind,
+      label: lowerCaseToCamelCase(fm.label),
+      linkColumn: fm.link_column,
+      name: fm.name,
+      recIndex: fm.rec_index,
+      searchTerms: fm.search_terms,
+      table: fm.table,
     })
     libraryInfo.fieldMetadataList.set(lowerCaseToCamelCase(key), fieldMetadata)
   })

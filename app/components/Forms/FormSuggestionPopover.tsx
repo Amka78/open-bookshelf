@@ -1,15 +1,11 @@
 import { Box } from "@/components/Box/Box"
+import { Popover, PopoverBackdrop, PopoverBody, PopoverContent } from "@/components/Popover/Popover"
 import { Pressable } from "@/components/Pressable/Pressable"
-import {
-  Popover,
-  PopoverBackdrop,
-  PopoverBody,
-  PopoverContent,
-} from "@/components/Popover/Popover"
 import { Text } from "@/components/Text/Text"
 import { useKeyboardVisibility } from "@/hooks/useKeyboardVisibility"
 import { usePalette } from "@/theme"
 import type { ReactNode } from "react"
+import type { DimensionValue } from "react-native"
 import { resolveSuggestionPopoverPlacement } from "./formSuggestionPlacement"
 
 type FormSuggestionPopoverProps = {
@@ -69,8 +65,8 @@ export function FormSuggestionPopover(props: FormSuggestionPopoverProps) {
       />
       <PopoverContent
         testID={suggestionsTestID ?? `${testIdPrefix}-suggestions`}
-        minWidth={width ?? "$full"}
-        width={width ?? "$full"}
+        minWidth={(width ?? "$full") as DimensionValue}
+        width={(width ?? "$full") as DimensionValue}
       >
         <PopoverBody>
           <Box
@@ -87,7 +83,9 @@ export function FormSuggestionPopover(props: FormSuggestionPopoverProps) {
             {candidates.map((candidate) => (
               <Pressable
                 key={`${testIdPrefix}-${candidate}`}
-                testID={`${candidateTestIDPrefix ?? `${testIdPrefix}-suggestion`}-${encodeURIComponent(candidate)}`}
+                testID={`${
+                  candidateTestIDPrefix ?? `${testIdPrefix}-suggestion`
+                }-${encodeURIComponent(candidate)}`}
                 onPress={() => {
                   onSelect(candidate)
                 }}
@@ -95,9 +93,9 @@ export function FormSuggestionPopover(props: FormSuggestionPopoverProps) {
                 <Box
                   borderWidth="$1"
                   borderRadius="$sm"
-                  paddingHorizontal={optionPaddingHorizontal}
-                  paddingVertical={optionPaddingVertical}
-                  marginBottom={optionMarginBottom}
+                  paddingHorizontal={optionPaddingHorizontal as DimensionValue}
+                  paddingVertical={optionPaddingVertical as DimensionValue}
+                  marginBottom={optionMarginBottom as DimensionValue}
                 >
                   <Text fontSize="$sm" isTruncated={true}>
                     {candidate}

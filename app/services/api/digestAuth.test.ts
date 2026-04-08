@@ -3,15 +3,14 @@ import { computeDigestHeader, generateCnonce, parseDigestChallenge } from "./dig
 
 describe("parseDigestChallenge", () => {
   test("parses a standard Digest challenge", () => {
-    const header =
-      'Digest realm="calibre", nonce="abc123", qop="auth", algorithm=MD5'
+    const header = 'Digest realm="calibre", nonce="abc123", qop="auth", algorithm=MD5'
     const result = parseDigestChallenge(header)
 
     expect(result).not.toBeNull()
-    expect(result!.realm).toBe("calibre")
-    expect(result!.nonce).toBe("abc123")
-    expect(result!.qop).toBe("auth")
-    expect(result!.algorithm).toBe("MD5")
+    expect(result?.realm).toBe("calibre")
+    expect(result?.nonce).toBe("abc123")
+    expect(result?.qop).toBe("auth")
+    expect(result?.algorithm).toBe("MD5")
   })
 
   test("parses challenge with opaque parameter", () => {
@@ -20,16 +19,15 @@ describe("parseDigestChallenge", () => {
     const result = parseDigestChallenge(header)
 
     expect(result).not.toBeNull()
-    expect(result!.opaque).toBe("xyz789")
+    expect(result?.opaque).toBe("xyz789")
   })
 
   test("picks the first qop option from a comma-separated list", () => {
-    const header =
-      'Digest realm="calibre", nonce="abc123", qop="auth,auth-int", algorithm=MD5'
+    const header = 'Digest realm="calibre", nonce="abc123", qop="auth,auth-int", algorithm=MD5'
     const result = parseDigestChallenge(header)
 
     expect(result).not.toBeNull()
-    expect(result!.qop).toBe("auth")
+    expect(result?.qop).toBe("auth")
   })
 
   test("defaults algorithm to MD5 when absent", () => {
@@ -37,7 +35,7 @@ describe("parseDigestChallenge", () => {
     const result = parseDigestChallenge(header)
 
     expect(result).not.toBeNull()
-    expect(result!.algorithm).toBe("MD5")
+    expect(result?.algorithm).toBe("MD5")
   })
 
   test("returns null for Basic scheme", () => {
@@ -91,12 +89,8 @@ describe("computeDigestHeader", () => {
       algorithm: "MD5",
     }
 
-    const h1 = computeDigestHeader(
-      challenge, "user", "pass", "GET", "/path", 1, "cnonce1",
-    )
-    const h2 = computeDigestHeader(
-      challenge, "user", "pass", "GET", "/path", 1, "cnonce1",
-    )
+    const h1 = computeDigestHeader(challenge, "user", "pass", "GET", "/path", 1, "cnonce1")
+    const h2 = computeDigestHeader(challenge, "user", "pass", "GET", "/path", 1, "cnonce1")
 
     expect(h1).toBe(h2)
   })
@@ -109,12 +103,8 @@ describe("computeDigestHeader", () => {
       algorithm: "MD5",
     }
 
-    const h1 = computeDigestHeader(
-      challenge, "user", "pass", "GET", "/path", 1, "cnonce1",
-    )
-    const h2 = computeDigestHeader(
-      challenge, "user", "pass", "GET", "/path", 2, "cnonce1",
-    )
+    const h1 = computeDigestHeader(challenge, "user", "pass", "GET", "/path", 1, "cnonce1")
+    const h2 = computeDigestHeader(challenge, "user", "pass", "GET", "/path", 2, "cnonce1")
 
     expect(h1).not.toBe(h2)
   })
@@ -126,9 +116,7 @@ describe("computeDigestHeader", () => {
       algorithm: "MD5",
     }
 
-    const header = computeDigestHeader(
-      challenge, "user", "pass", "GET", "/path", 1, "cnonce1",
-    )
+    const header = computeDigestHeader(challenge, "user", "pass", "GET", "/path", 1, "cnonce1")
 
     expect(header).not.toContain("qop=")
     expect(header).not.toContain("nc=")
@@ -144,9 +132,7 @@ describe("computeDigestHeader", () => {
       opaque: "opaque_value",
     }
 
-    const header = computeDigestHeader(
-      challenge, "user", "pass", "GET", "/path", 1, "cnonce1",
-    )
+    const header = computeDigestHeader(challenge, "user", "pass", "GET", "/path", 1, "cnonce1")
 
     expect(header).toContain('opaque="opaque_value"')
   })

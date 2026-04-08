@@ -1,5 +1,5 @@
 import { BookImageItem } from "@/components"
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryFn, StoryObj } from "@storybook/react"
 import React from "react"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
@@ -8,7 +8,7 @@ export default {
   title: "BookImageItem",
   component: BookImageItem,
   decorators: [
-    (Story) => (
+    (Story: StoryFn) => (
       <ComponentHolder>
         <Story />
       </ComponentHolder>

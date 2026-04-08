@@ -31,7 +31,7 @@ export default {
     ),
   ],
   parameters: {
-    notes: `standard string representation.`,
+    notes: "standard string representation.",
   },
 } as Meta<typeof StaggerContainer>
 

@@ -1,4 +1,4 @@
-import { describe as baseDescribe, expect, jest, test as baseTest } from "bun:test"
+import { describe as baseDescribe, test as baseTest, expect, jest } from "bun:test"
 import { render } from "@testing-library/react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 import {
@@ -37,7 +37,11 @@ describe("LibraryScreen story play", () => {
         </button>
 
         <label htmlFor="library-sort">Sort</label>
-        <select data-testid="library-sort" id="library-sort" onChange={(event) => onSort((event.target as HTMLSelectElement).value)}>
+        <select
+          data-testid="library-sort"
+          id="library-sort"
+          onChange={(event) => onSort((event.target as HTMLSelectElement).value)}
+        >
           <option value="title">Title</option>
           <option value="author">Author</option>
           <option value="rating">Rating</option>

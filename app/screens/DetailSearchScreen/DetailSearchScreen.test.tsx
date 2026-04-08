@@ -1,13 +1,13 @@
 import {
-  beforeEach,
   describe as baseDescribe,
+  test as baseTest,
+  beforeEach,
   expect,
   jest,
   mock,
-  test as baseTest,
 } from "bun:test"
 import { render } from "@testing-library/react"
-import { type ReactNode } from "react"
+import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 const describe = localizeTestRegistrar(baseDescribe)
@@ -52,10 +52,16 @@ mock.module("@/components/IconButton/IconButton", () => ({
 
 mock.module("@/components/LeftSideMenu/LeftSideMenu", () => {
   const CATEGORY_ALIASES: Record<string, string> = {
-    author: "authors", authors: "authors",
-    format: "formats", formats: "formats",
-    language: "languages", languages: "languages",
-    reward: "rating", rewards: "rating", rating: "rating", ratings: "rating",
+    author: "authors",
+    authors: "authors",
+    format: "formats",
+    formats: "formats",
+    language: "languages",
+    languages: "languages",
+    reward: "rating",
+    rewards: "rating",
+    rating: "rating",
+    ratings: "rating",
     series: "series",
   }
   const normalizeCategoryKey = (key: string) => {

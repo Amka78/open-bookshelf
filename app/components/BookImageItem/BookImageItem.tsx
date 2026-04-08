@@ -36,6 +36,12 @@ const STATUS_ICON: Record<ReadStatusValue, { name: IconName; color: string }> = 
   finished: { name: "check-circle-outline", color: "#22C55E" },
 }
 
+type BoxWithHoverProps = React.ComponentPropsWithRef<typeof Box> & {
+  onMouseEnter?: () => void
+  onMouseLeave?: () => void
+}
+const BoxWithHover = Box as React.ComponentType<BoxWithHoverProps>
+
 export function BookImageItem({
   loading = false,
   selected,
@@ -83,8 +89,9 @@ export function BookImageItem({
   const statusIconConfig = props.readStatus ? STATUS_ICON[props.readStatus] : null
 
   const image = <Image source={props.source} style={styles.imageSize} contentFit={"fill"} />
+  const shouldUsePressable = Boolean(props.onPress || props.onLongPress || props.detailMenuProps)
   const contentWithMenu = (
-    <Box style={styles.imageContainer} onMouseEnter={handleHoverIn} onMouseLeave={handleHoverOut}>
+    <BoxWithHover style={styles.imageContainer} onMouseEnter={handleHoverIn} onMouseLeave={handleHoverOut}>
       {image}
       {props.showCachedIcon ? (
         <Pressable
@@ -107,9 +114,7 @@ export function BookImageItem({
       ) : null}
       {showProgressBar ? (
         <View style={styles.progressBarBg}>
-          <View
-            style={[styles.progressBarFill, { width: `${props.readingProgress! * 100}%` }]}
-          />
+          <View style={[styles.progressBarFill, { width: `${(props.readingProgress ?? 0) * 100}%` }]} />
         </View>
       ) : null}
       {showDetailMenu ? (
@@ -122,9 +127,8 @@ export function BookImageItem({
           />
         </Box>
       ) : null}
-    </Box>
+    </BoxWithHover>
   )
-  const shouldUsePressable = Boolean(props.onPress || props.onLongPress || props.detailMenuProps)
   const content = shouldUsePressable ? (
     <Pressable
       onPress={

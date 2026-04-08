@@ -60,8 +60,7 @@ export function AnnotationPanel({
                   style={[
                     styles.colorDot,
                     {
-                      backgroundColor:
-                        COLOR_MAP[item.styleWhich ?? "yellow"] ?? COLOR_MAP.yellow,
+                      backgroundColor: COLOR_MAP[item.styleWhich ?? "yellow"] ?? COLOR_MAP.yellow,
                     },
                   ]}
                 />

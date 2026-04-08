@@ -38,13 +38,6 @@ const ratingTestField = FieldMetadataModel.create({
   label: "rating",
 })
 
-const sizeTestField = FieldMetadataModel.create({
-  name: "Size",
-  datatype: "float",
-  ...commonField,
-  label: "size",
-})
-
 const titleTestField = FieldMetadataModel.create({
   name: "Title",
   datatype: "text",

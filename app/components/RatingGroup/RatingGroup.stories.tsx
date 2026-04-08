@@ -1,6 +1,6 @@
+import { logger } from "@/utils/logger"
 import type { Meta, StoryObj } from "@storybook/react"
 import { RatingGroup } from "./RatingGroup"
-import { logger } from "@/utils/logger"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
@@ -8,7 +8,7 @@ export default {
   title: "RatingGroup",
   component: RatingGroup,
   parameters: {
-    notes: `Allows multiple choices of evaluation.`,
+    notes: "Allows multiple choices of evaluation.",
   },
   decorators: [
     (Story) => (

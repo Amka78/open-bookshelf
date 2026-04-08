@@ -14,7 +14,7 @@ export default {
     ),
   ],
   parameters: {
-    notes: `String display for text highlighting.`,
+    notes: "String display for text highlighting.",
   },
 } as Meta<typeof Heading>
 

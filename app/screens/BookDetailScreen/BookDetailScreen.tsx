@@ -1,4 +1,11 @@
-import { BookDetailFieldList, BookDetailMenu, BookFormatList, BookImageItem, RootContainer, SeriesNavigationBar } from "@/components"
+import {
+  BookDetailFieldList,
+  BookDetailMenu,
+  BookFormatList,
+  BookImageItem,
+  RootContainer,
+  SeriesNavigationBar,
+} from "@/components"
 import { useSeriesNavigation } from "@/hooks/useSeriesNavigation"
 import { useBookDetail } from "@/screens/BookDetailScreen/useBookDetail"
 import { observer } from "mobx-react-lite"

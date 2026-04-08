@@ -8,13 +8,13 @@ import mockFile from "./mockFile"
 // namespace is a live binding that Bun mutates in-place when mock.module() replaces the
 // module, so the stored value would otherwise reflect the mock instead of the originals.
 import * as _realReactHookForm from "react-hook-form"
-;(global as any).__realReactHookForm = Object.assign({}, _realReactHookForm)
+;(global as { __realReactHookForm?: object }).__realReactHookForm = Object.assign({}, _realReactHookForm)
 // Save real mobx so test files that partially mock it can restore it in afterAll.
 import * as _realMobxNs from "mobx"
-;(global as any).__realMobx = Object.assign({}, _realMobxNs)
+;(global as { __realMobx?: object }).__realMobx = Object.assign({}, _realMobxNs)
 // Save real mobx-state-tree so test files that partially mock it can restore it in afterAll.
 import * as _realMSTNs from "mobx-state-tree"
-;(global as any).__realMST = Object.assign({}, _realMSTNs)
+;(global as { __realMST?: object }).__realMST = Object.assign({}, _realMSTNs)
 
 const dom = new JSDOM("<!doctype html><html><body></body></html>")
 global.window = dom.window as unknown as Window & typeof globalThis
@@ -133,7 +133,7 @@ if (!globalThis.expo) {
         cacheDirectory: "/mock/cache/",
       },
     },
-  } as any
+  } as unknown
 }
 
 // Mock react-native at preload time
@@ -179,10 +179,10 @@ const reactNativeMockFactory = () => ({
     ease: (t: number) => t,
     quad: (t: number) => t * t,
     cubic: (t: number) => t * t * t,
-    poly: (n: number) => (t: number) => Math.pow(t, n),
+    poly: (n: number) => (t: number) => t ** n,
     sin: (t: number) => 1 - Math.cos((t * Math.PI) / 2),
     circle: (t: number) => 1 - Math.sqrt(1 - t * t),
-    exp: (t: number) => Math.pow(2, 10 * (t - 1)),
+    exp: (t: number) => 2 ** (10 * (t - 1)),
     elastic:
       (bounciness = 1) =>
       (t: number) =>
@@ -252,9 +252,6 @@ const reactNativeMockFactory = () => ({
   Alert: {
     alert: jest.fn(),
   },
-  Share: {
-    share: jest.fn(() => Promise.resolve({ action: "sharedAction" })),
-  },
   UIManager: {
     measureLayout: jest.fn(),
     setLayoutAnimationEnabledExperimental: jest.fn(),
@@ -295,8 +292,13 @@ const componentsMockFactory = () => ({
   BookPage: "div",
   BookViewer: "div",
   Button: "button",
-  FlatList: ({ data, renderItem }: any) =>
-    (data ?? []).map((item: unknown, i: number) => renderItem({ item, index: i })),
+  FlatList: ({
+    data,
+    renderItem,
+  }: {
+    data?: unknown[]
+    renderItem?: (arg: { item: unknown; index: number }) => unknown
+  }) => (data ?? []).map((item: unknown, i: number) => renderItem?.({ item, index: i })),
   FormCheckbox: "input",
   FormInputField: "input",
   Heading: "h1",
@@ -304,7 +306,13 @@ const componentsMockFactory = () => ({
   IconButton: "button",
   Image: "img",
   Input: "div",
-  ListItem: ({ LeftComponent, children }: any) => LeftComponent ?? children ?? null,
+  ListItem: ({
+    LeftComponent,
+    children,
+  }: {
+    LeftComponent?: unknown
+    children?: unknown
+  }) => LeftComponent ?? children ?? null,
   MaterialCommunityIcon: "span",
   RootContainer: "div",
   ScrollView: "div",

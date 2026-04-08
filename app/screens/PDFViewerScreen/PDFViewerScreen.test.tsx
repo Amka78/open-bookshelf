@@ -1,18 +1,18 @@
 import {
   afterAll,
   afterEach,
+  describe as baseDescribe,
+  test as baseTest,
   beforeAll,
   beforeEach,
-  describe as baseDescribe,
   expect,
   jest,
   mock,
-  test as baseTest,
 } from "bun:test"
 import { act, cleanup, render, screen } from "@testing-library/react"
 import type { ReactNode } from "react"
-import * as _realUsePDFViewerNs from "./usePDFViewer"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
+import * as _realUsePDFViewerNs from "./usePDFViewer"
 
 // Snapshot the real usePDFViewer BEFORE mocking (top-level imports are hoisted, so this
 // runs before mock.module calls which are also hoisted but after static imports in Bun).
@@ -208,7 +208,9 @@ describe("PDFViewerScreen", () => {
       render(<PDFViewerScreen />)
     })
 
-    expect(screen.getByTestId("pdf-page-count").getAttribute("data-uri")).toBe("file:///cache/book.pdf")
+    expect(screen.getByTestId("pdf-page-count").getAttribute("data-uri")).toBe(
+      "file:///cache/book.pdf",
+    )
   })
 })
 

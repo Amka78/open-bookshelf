@@ -1,4 +1,4 @@
-import i18n from "i18n-js"
+import { i18n } from "@/i18n"
 import * as transliterationModule from "transliteration"
 import { toRomaji } from "wanakana"
 
@@ -35,7 +35,7 @@ function resolveTransliterate() {
 const transliterate = resolveTransliterate()
 
 function isJapaneseLocale() {
-  return i18n.currentLocale().toLowerCase().startsWith(japaneseLocalePrefix)
+  return i18n.locale.toLowerCase().startsWith(japaneseLocalePrefix)
 }
 
 function transliterateWithoutKanji(value: string) {

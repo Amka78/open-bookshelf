@@ -13,7 +13,7 @@ export default {
     onPress: { action: "Press IconButton." },
   },
   parameters: {
-    notes: `Pressable icon`,
+    notes: "Pressable icon",
   },
   decorators: [
     (Story) => (

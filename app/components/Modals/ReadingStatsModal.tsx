@@ -34,11 +34,11 @@ export const ReadingStatsModal = observer((props: ReadingStatsModalProps) => {
         <VStack space="md" padding="$2">
           <HStack justifyContent="space-between">
             <Text tx="readingStats.booksInProgress" />
-            <Text text={String(inProgressHistories.length)} />
+            <Text>{String(inProgressHistories.length)}</Text>
           </HStack>
           <HStack justifyContent="space-between">
             <Text tx="readingStats.cachedBooks" />
-            <Text text={String(cachedHistories.length)} />
+            <Text>{String(cachedHistories.length)}</Text>
           </HStack>
           <Text tx="readingStats.recentlyRead" fontWeight="$bold" />
           <ScrollView>
@@ -52,9 +52,8 @@ export const ReadingStatsModal = observer((props: ReadingStatsModalProps) => {
                   return (
                     <Text
                       key={`${h.libraryId}-${h.bookId}-${h.format}`}
-                      text={title}
                       numberOfLines={1}
-                    />
+                    >{title}</Text>
                   )
                 })}
               </VStack>

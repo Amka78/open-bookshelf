@@ -158,9 +158,7 @@ export function ListItem(props: ListItemProps) {
 }
 
 function ListItemAction(props: ListItemActionProps) {
-  const { Component, iconColor, size, side } = props
-
-  const $iconContainerStyles = [$iconContainer]
+  const { Component, iconColor: _iconColor, size: _size, side: _side } = props
 
   if (Component) return Component
 
@@ -179,15 +177,3 @@ const $touchableStyle: ViewStyle = {
   alignItems: "flex-start",
 }
 
-const $iconContainer: ViewStyle = {
-  justifyContent: "center",
-  alignItems: "center",
-  flexGrow: 0,
-}
-const $iconContainerLeft: ViewStyle = {
-  marginEnd: 16,
-}
-
-const $iconContainerRight: ViewStyle = {
-  marginStart: 16,
-}

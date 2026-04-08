@@ -26,10 +26,7 @@ describe("ConnectScreen story play", () => {
       <div>
         <h1 data-testid="connect-heading">Welcome!!</h1>
         <input aria-label="isOPDS" type="checkbox" />
-        <input
-          defaultValue={baseUrl}
-          placeholder="(http or https)://{Address}:{Port}"
-        />
+        <input defaultValue={baseUrl} placeholder="(http or https)://{Address}:{Port}" />
         <button
           data-testid="connect-button"
           disabled={buttonDisabled}

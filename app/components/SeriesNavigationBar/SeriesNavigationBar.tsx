@@ -50,12 +50,15 @@ export function SeriesNavigationBar({
         <View style={styles.sideContainer} />
       )}
 
-      {centerLabel ? (
-        <Text style={styles.centerText}>{centerLabel}</Text>
-      ) : null}
+      {centerLabel ? <Text style={styles.centerText}>{centerLabel}</Text> : null}
 
       {nextBook ? (
-        <HStack alignItems="center" justifyContent="flex-end" space="xs" style={styles.sideContainer}>
+        <HStack
+          alignItems="center"
+          justifyContent="flex-end"
+          space="xs"
+          style={styles.sideContainer}
+        >
           <View style={styles.titleContainer}>
             <Text numberOfLines={1} style={[styles.sideText, styles.rightText]}>
               {nextBook.metaData?.title ?? translate("seriesNavigation.nextBook")}

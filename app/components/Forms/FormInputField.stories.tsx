@@ -1,17 +1,17 @@
 import { Box } from "@/components/Box/Box"
 import { Pressable } from "@/components/Pressable/Pressable"
-import { FormInputField } from "./FormInputField"
 import type { Meta, StoryObj } from "@storybook/react"
 import { useForm } from "react-hook-form"
+import { FormInputField } from "./FormInputField"
 import {
   playBackdropPressClosesSuggestions,
+  playFocusShowsSuggestions,
   playOutsideClickClosesSuggestions,
   playSelectSuggestionClosesSuggestionsAndUpdatesInput,
-  playFocusShowsSuggestions,
   playSelectSuggestionUpdatesInput,
   playSuggestionsStayVisibleAfterFocus,
-  playTypingKeepsSuggestionsVisible,
   playTypingFiltersSuggestions,
+  playTypingKeepsSuggestionsVisible,
 } from "./formInputFieldStoryPlay"
 
 type StoryForm = {

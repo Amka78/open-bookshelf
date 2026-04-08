@@ -1,4 +1,12 @@
-import { Box, HStack, Image, type ImageProps, MaterialCommunityIcon, type MaterialCommunityIconProps, VStack } from "@/components"
+import {
+  Box,
+  HStack,
+  Image,
+  type ImageProps,
+  MaterialCommunityIcon,
+  type MaterialCommunityIconProps,
+  VStack,
+} from "@/components"
 import type { Book } from "@/models/calibre/BookModel"
 import { Pressable, Text } from "@gluestack-ui/themed"
 import { StyleSheet } from "react-native"
@@ -16,7 +24,10 @@ type BookListItemProps = {
 
 type ReadStatusValue = "want-to-read" | "reading" | "finished"
 
-const STATUS_ICON: Record<ReadStatusValue, { name: NonNullable<MaterialCommunityIconProps["name"]>; color: string }> = {
+const STATUS_ICON: Record<
+  ReadStatusValue,
+  { name: NonNullable<MaterialCommunityIconProps["name"]>; color: string }
+> = {
   "want-to-read": { name: "bookmark-outline", color: "#3B82F6" },
   reading: { name: "book-open-outline", color: "#F97316" },
   finished: { name: "check-circle-outline", color: "#22C55E" },
@@ -44,15 +55,13 @@ export function BookListItem({
   const meta = book.metaData
   const title = meta?.title ?? ""
   const authors = meta?.authors?.join(", ") ?? ""
-  const formats = meta?.formats ?? []
+  const formats: string[] = meta?.formats ? [...meta.formats] : []
   const progressPct =
     typeof readingProgress === "number" && readingProgress > 0
       ? `${Math.round(readingProgress * 100)}%`
       : null
   const statusIconConfig =
-    readStatus && readStatus in STATUS_ICON
-      ? STATUS_ICON[readStatus as ReadStatusValue]
-      : null
+    readStatus && readStatus in STATUS_ICON ? STATUS_ICON[readStatus as ReadStatusValue] : null
 
   return (
     <Pressable onPress={onPress} onLongPress={onLongPress}>
@@ -74,12 +83,7 @@ export function BookListItem({
 
         {/* Book info */}
         <VStack flex={1} space="xs">
-          <Text
-            fontWeight="$bold"
-            fontSize="$sm"
-            numberOfLines={2}
-            lineBreakMode="tail"
-          >
+          <Text fontWeight="$bold" fontSize="$sm" numberOfLines={2} lineBreakMode="tail">
             {title}
           </Text>
           {authors ? (

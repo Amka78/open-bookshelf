@@ -3,8 +3,8 @@ import { Heading } from "@/components/Heading/Heading"
 import { IconButton } from "@/components/IconButton/IconButton"
 import { Text } from "@/components/Text/Text"
 import { useStores } from "@/models"
-import { HStack, Pressable, VStack } from "@gluestack-ui/themed"
 import { usePalette } from "@/theme"
+import { HStack, Pressable, VStack } from "@gluestack-ui/themed"
 import { observer } from "mobx-react-lite"
 import type { ModalComponentProp } from "react-native-modalfy"
 import { Body } from "./Body"
@@ -60,7 +60,7 @@ export const ReadingSettingsModal = observer((props: ReadingSettingsModalProps) 
                 onPress={() => settingStore.setViewerFontSizePt(fontSize - 1)}
                 testID="reading-settings-font-decrease"
               />
-              <Text text={`${fontSize}pt`} minWidth={48} textAlign="center" />
+              <Text minWidth={48} textAlign="center">{`${fontSize}pt`}</Text>
               <IconButton
                 name="plus"
                 iconSize="md-"

@@ -23,7 +23,7 @@ export type LoginModalProps = ModalComponentProp<ModalStackParams, void, "LoginM
 export const LoginModal = observer((props: LoginModalProps) => {
   const { authenticationStore, calibreRootStore } = useStores()
   const navigation = useNavigation<ApppNavigationProp>()
-  const onLoginPress = async (data) => {
+  const onLoginPress = async (data: LoginType) => {
     authenticationStore.login(data.userId, data.password)
     await calibreRootStore.initialize()
     navigation.navigate("CalibreRoot")

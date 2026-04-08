@@ -1,4 +1,4 @@
-import { fireEvent, findByText, within } from "@testing-library/react"
+import { findByText, fireEvent, within } from "@testing-library/react"
 
 export async function playOPDSRootShowsEntries({
   canvasElement,
@@ -26,5 +26,5 @@ export async function playOPDSRootPressesEntry({
     throw new Error(`Could not find list item for entry ${entryTitle}.`)
   }
 
-  fireEvent.click(within(item).getByRole("button"))
+  fireEvent.click(within(item as HTMLElement).getByRole("button"))
 }

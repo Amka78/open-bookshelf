@@ -1,5 +1,11 @@
 import type { MessageKey } from "@/i18n"
-import type { Book, Category, FieldMetadataMap, MetadataSnapshotIn, TocItem } from "@/models/calibre"
+import type {
+  Book,
+  Category,
+  FieldMetadataMap,
+  MetadataSnapshotIn,
+  TocItem,
+} from "@/models/calibre"
 import type { LoginType } from "./LoginModal"
 
 export type { TocItem }

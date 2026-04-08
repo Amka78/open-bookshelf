@@ -7,7 +7,7 @@ export default {
   title: "ScrollView",
   component: ScrollView,
   parameters: {
-    notes: `Place Component in scrollable format.`,
+    notes: "Place Component in scrollable format.",
   },
   decorators: [
     (Story) => (

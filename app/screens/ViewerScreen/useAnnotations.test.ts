@@ -84,7 +84,7 @@ describe("useAnnotations", () => {
     const store = makeStore([])
     mockUseStores.mockReturnValue(store)
     const { result } = renderHook(() => useAnnotations())
-    let ok: boolean = false
+    let ok = false
     await act(async () => {
       ok = await result.current.addBookmark(2, "My bookmark")
     })
@@ -132,7 +132,7 @@ describe("useAnnotations", () => {
     const store = makeStore([existing])
     mockUseStores.mockReturnValue(store)
     const { result } = renderHook(() => useAnnotations())
-    let ok: boolean = false
+    let ok = false
     await act(async () => {
       ok = await result.current.deleteAnnotation("uuid-1")
     })
@@ -146,7 +146,7 @@ describe("useAnnotations", () => {
     const store = makeStore([])
     mockUseStores.mockReturnValue(store)
     const { result } = renderHook(() => useAnnotations())
-    let ok: boolean = true
+    let ok = true
     await act(async () => {
       ok = await result.current.deleteAnnotation("nonexistent-uuid")
     })
@@ -171,7 +171,7 @@ describe("useAnnotations", () => {
       calibreRootStore: { selectedLibrary: null },
     })
     const { result } = renderHook(() => useAnnotations())
-    let ok: boolean = true
+    let ok = true
     await act(async () => {
       ok = await result.current.addBookmark(0)
     })
@@ -184,7 +184,7 @@ describe("useAnnotations", () => {
     mockUseStores.mockReturnValue(store)
     mockSaveAnnotations.mockResolvedValue({ kind: "server" })
     const { result } = renderHook(() => useAnnotations())
-    let ok: boolean = true
+    let ok = true
     await act(async () => {
       ok = await result.current.addBookmark(0)
     })

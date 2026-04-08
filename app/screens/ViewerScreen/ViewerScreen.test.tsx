@@ -1,15 +1,15 @@
 import {
-  afterEach,
   afterAll,
+  afterEach,
+  describe as baseDescribe,
+  test as baseTest,
   beforeAll,
   beforeEach,
-  describe as baseDescribe,
   expect,
   jest,
   mock,
-  test as baseTest,
 } from "bun:test"
-import { render, screen, act, cleanup } from "@testing-library/react"
+import { act, cleanup, render, screen } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 

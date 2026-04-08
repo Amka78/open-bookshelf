@@ -7,7 +7,7 @@ export default {
   title: "HStack",
   component: HStack,
   parameters: {
-    notes: `Place component horizontally`,
+    notes: "Place component horizontally",
   },
 } as Meta<typeof HStack>
 

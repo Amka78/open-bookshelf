@@ -1,4 +1,11 @@
-import { beforeEach, describe as baseDescribe, expect, jest, mock, test as baseTest } from "bun:test"
+import {
+  describe as baseDescribe,
+  test as baseTest,
+  beforeEach,
+  expect,
+  jest,
+  mock,
+} from "bun:test"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 async function playKeyboardShownPlacesSuggestionsAbove({ placement }: { placement: string }) {

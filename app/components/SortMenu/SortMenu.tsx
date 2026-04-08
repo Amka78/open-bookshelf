@@ -1,9 +1,8 @@
-import { IconButton, MaterialCommunityIcon } from "@/components"
+import { MaterialCommunityIcon } from "@/components"
 import { translate } from "@/i18n"
 import type { SortField } from "@/models/calibre"
 import { Menu, MenuItem, MenuItemLabel, Pressable } from "@gluestack-ui/themed"
 import type { ComponentProps } from "react"
-import { useWindowDimensions } from "react-native"
 
 export type SortMenuProps = {
   selectedSort?: string
@@ -12,8 +11,6 @@ export type SortMenuProps = {
   onSortChange?: (sortId: string) => void
 } & Omit<ComponentProps<typeof Menu>, "trigger">
 export function SortMenu(props: SortMenuProps) {
-  const dimension = useWindowDimensions()
-
   return (
     <Menu
       placement="left bottom"

@@ -1,7 +1,6 @@
 import { Box, HStack, IconButton, Input, VStack } from "@/components"
 import { Text } from "@/components/Text/Text"
 import { translate } from "@/i18n"
-import { useEffect, useRef, useState } from "react"
 import { Controller, type ControllerProps, type FieldValues, type Path } from "react-hook-form"
 import { InputField } from "../InputField/InputField"
 
@@ -16,7 +15,9 @@ type IdentifierRow = { type: string; value: string }
 function mapToRows(map: Record<string, string> | null | undefined): IdentifierRow[] {
   if (!map) return [{ type: "", value: "" }]
   const entries = Object.entries(map)
-  return entries.length > 0 ? entries.map(([type, value]) => ({ type, value })) : [{ type: "", value: "" }]
+  return entries.length > 0
+    ? entries.map(([type, value]) => ({ type, value }))
+    : [{ type: "", value: "" }]
 }
 
 /**
@@ -32,10 +33,7 @@ function rowsToMap(rows: IdentifierRow[]): Record<string, string> {
   return result
 }
 
-export type FormIdentifierFieldProps<T extends FieldValues> = Omit<
-  ControllerProps<T>,
-  "render"
-> & {
+export type FormIdentifierFieldProps<T extends FieldValues> = Omit<ControllerProps<T>, "render"> & {
   name: Path<T>
 }
 
@@ -90,20 +88,21 @@ export function FormIdentifierField<T extends FieldValues>({
             {/* Column headers */}
             <HStack space="xs">
               <Box flex={1}>
-                <Text fontSize="$xs" color="$textLight500">{translate("identifierField.typeLabel")}</Text>
+                <Text fontSize="$xs" color="$textLight500">
+                  {translate("identifierField.typeLabel")}
+                </Text>
               </Box>
               <Box flex={2}>
-                <Text fontSize="$xs" color="$textLight500">{translate("identifierField.valueLabel")}</Text>
+                <Text fontSize="$xs" color="$textLight500">
+                  {translate("identifierField.valueLabel")}
+                </Text>
               </Box>
               <Box w={72} />
             </HStack>
 
             {rows.map((row, index) => (
-              <HStack
-                key={`identifier-row-${index}`}
-                alignItems="center"
-                space="xs"
-              >
+      // biome-ignore lint/suspicious/noArrayIndexKey: identifier rows have no stable IDs; index is the only available key
+      <HStack key={`identifier-row-${index}`} alignItems="center" space="xs">
                 {/* Type input */}
                 <Box flex={1}>
                   <Input size="sm">
@@ -133,17 +132,9 @@ export function FormIdentifierField<T extends FieldValues>({
                 </Box>
                 {/* Add/remove buttons */}
                 <HStack space="xs" w={72}>
-                  <IconButton
-                    name="plus"
-                    iconSize="sm"
-                    onPress={async () => addRow(index)}
-                  />
-                  {rows.length > 1 || (row.type || row.value) ? (
-                    <IconButton
-                      name="minus"
-                      iconSize="sm"
-                      onPress={async () => removeRow(index)}
-                    />
+                  <IconButton name="plus" iconSize="sm" onPress={async () => addRow(index)} />
+                  {rows.length > 1 || row.type || row.value ? (
+                    <IconButton name="minus" iconSize="sm" onPress={async () => removeRow(index)} />
                   ) : null}
                 </HStack>
               </HStack>

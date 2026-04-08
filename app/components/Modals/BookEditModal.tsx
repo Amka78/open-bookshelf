@@ -21,8 +21,11 @@ import { Root } from "./Root"
 import type { ModalStackParams } from "./Types"
 
 export type BookEditModalProps = ModalComponentProp<ModalStackParams, void, "BookEditModal">
-type BookEditModalTemplateProps = BookEditModalProps & {
-  onUploadFormat?: (params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>
+type BookEditModalTemplateProps = ModalComponentProp<ModalStackParams, object, "BookEditModal"> & {
+  onUploadFormat?: (params: { targetFormat?: string }) => Promise<{
+    success: boolean
+    format?: string
+  }>
   onDeleteFormat?: (format: string) => Promise<boolean>
 }
 

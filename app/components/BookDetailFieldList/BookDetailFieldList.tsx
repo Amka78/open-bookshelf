@@ -18,15 +18,21 @@ export function BookDetailFieldList(props: BookDetailFieldListProps) {
       <ScrollView>
         {props.fieldNameList.map((fieldName) => {
           const fieldMetadata = props.fieldMetadataList.get(fieldName)
-          const value = props.book.metaData[fieldName]
+          const value = (props.book.metaData as unknown as Record<string, unknown>)[fieldName]
+          const isNonEmpty =
+            value !== null &&
+            value !== undefined &&
+            (typeof value === "number" ||
+              value instanceof Date ||
+              (typeof value === "string" && value.length !== 0) ||
+              (Array.isArray(value) && value.length !== 0))
 
           return fieldMetadata?.name &&
-            value &&
-            value?.length !== 0 &&
+            isNonEmpty &&
             !ExcludeFields.includes(fieldName) ? (
             <BookDetailField
               key={fieldName}
-              value={value}
+              value={value as string | string[] | number | Date}
               fieldMetadata={fieldMetadata}
               onLinkPress={props.onFieldPress}
             />

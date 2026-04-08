@@ -1,16 +1,16 @@
 import {
+  describe as baseDescribe,
+  test as baseTest,
   beforeAll,
   beforeEach,
-  describe as baseDescribe,
   expect,
   jest,
   mock,
-  test as baseTest,
 } from "bun:test"
-import { render } from "@testing-library/react"
-import type { ReactNode } from "react"
 import { api } from "@/services/api"
+import { render } from "@testing-library/react"
 import * as DocumentPicker from "expo-document-picker"
+import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 import { playBookEditModalFormatClickRunsUpload } from "./bookEditModalStoryPlay"
 
@@ -18,7 +18,10 @@ mock.module("@/components/BookEditFieldList/BookEditFieldList", () => ({
   BookEditFieldList: ({
     onUploadFormat,
   }: {
-    onUploadFormat?: (params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>
+    onUploadFormat?: (params: { targetFormat?: string }) => Promise<{
+      success: boolean
+      format?: string
+    }>
   }) => (
     <button
       data-testid="book-edit-modal-format-upload"
@@ -42,7 +45,9 @@ mock.module("mobx-state-tree", () => ({
 
 mock.module("@/components/Button/Button", () => ({
   Button: ({ children, ...props }: Record<string, unknown> & { children?: ReactNode }) => (
-    <button type="button" {...(props as object)}>{children}</button>
+    <button type="button" {...(props as object)}>
+      {children}
+    </button>
   ),
 }))
 
@@ -70,7 +75,9 @@ mock.module("./Body", () => ({
 
 mock.module("./CloseButton", () => ({
   CloseButton: ({ onPress }: { onPress?: () => void }) => (
-    <button type="button" onClick={onPress}>close</button>
+    <button type="button" onClick={onPress}>
+      close
+    </button>
   ),
 }))
 
@@ -145,15 +152,17 @@ describe("BookEditModal format upload wiring", () => {
 
     const { container } = render(
       <BookEditModal
-        modal={{
-          closeModal,
-          params: {
-            imageUrl: "",
-            selectedBook: mockSelectedBook as never,
-            fieldMetadataList: new Map() as never,
-            tagBrowser: [],
-          },
-        } as never}
+        modal={
+          {
+            closeModal,
+            params: {
+              imageUrl: "",
+              selectedBook: mockSelectedBook as never,
+              fieldMetadataList: new Map() as never,
+              tagBrowser: [],
+            },
+          } as never
+        }
       />,
     )
 

@@ -40,24 +40,6 @@ export function ErrorDetails(props: ErrorDetailsProps) {
   )
 }
 
-
-const $topSection: ViewStyle = {
-  flex: 1,
-  alignItems: "center",
-}
-
-const $heading: TextStyle = {
-  //color: colors.error,
-  //marginBottom: spacing.medium,
-}
-
-const $errorSection: ViewStyle = {
-  flex: 2,
-  //backgroundColor: colors.separator,
-  //marginVertical: spacing.medium,
-  borderRadius: 6,
-}
-
 const $errorSectionContentContainer: ViewStyle = {
   paddingBottom: 12,
 }
@@ -71,7 +53,4 @@ const $errorBacktrace: TextStyle = {
   //color: colors.textDim,
 }
 
-const $resetButton: ViewStyle = {
-  //backgroundColor: colors.error,
-  //paddingHorizontal: spacing.huge,
-}
+

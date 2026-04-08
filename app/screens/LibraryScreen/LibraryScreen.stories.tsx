@@ -2,10 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { LibraryScreen } from "./LibraryScreen"
 
 import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
-import {
-  playLibraryChangesListStyle,
-  playLibraryShowsSearchInput,
-} from "./libraryScreenStoryPlay"
+import { playLibraryChangesListStyle, playLibraryShowsSearchInput } from "./libraryScreenStoryPlay"
 
 export default {
   component: LibraryScreen,

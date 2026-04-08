@@ -17,7 +17,9 @@ describe("CalibreRootStore test", () => {
       data: initializeData,
     }
     const mockInitializeCalibre = jest.spyOn(api, "initializeCalibre")
-    mockInitializeCalibre.mockResolvedValue(resp as Awaited<ReturnType<typeof api.initializeCalibre>>)
+    mockInitializeCalibre.mockResolvedValue(
+      resp as Awaited<ReturnType<typeof api.initializeCalibre>>,
+    )
     const model = CalibreRootStore.create({})
 
     return model.initialize().then((result) => {

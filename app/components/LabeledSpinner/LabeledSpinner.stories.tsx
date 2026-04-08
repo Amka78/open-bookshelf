@@ -7,7 +7,7 @@ export default {
   title: "LabeledSpinner",
   component: LabeledSpinner,
   parameters: {
-    notes: `Spinner with label.`,
+    notes: "Spinner with label.",
   },
   args: {
     labelTx: "bookImage.loading",

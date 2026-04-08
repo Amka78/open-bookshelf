@@ -115,7 +115,10 @@ describe("BookModel.convert", () => {
 
   test("AZW3 pushes spine HTML paths", async () => {
     mockCheckBookConverting.mockResolvedValue(
-      createManifest({ book_format: "AZW3", spine: ["xhtml/part0000.xhtml", "xhtml/part0001.xhtml"] }),
+      createManifest({
+        book_format: "AZW3",
+        spine: ["xhtml/part0000.xhtml", "xhtml/part0001.xhtml"],
+      }),
     )
     const book = createBook()
 
@@ -151,7 +154,11 @@ describe("BookModel.convert", () => {
 
   test("MOBI (old, non-KF8) pushes spine HTML paths", async () => {
     mockCheckBookConverting.mockResolvedValue(
-      createManifest({ book_format: "MOBI", is_comic: false, spine: ["content.html", "content-2.html"] }),
+      createManifest({
+        book_format: "MOBI",
+        is_comic: false,
+        spine: ["content.html", "content-2.html"],
+      }),
     )
     const book = createBook()
 

@@ -1,9 +1,9 @@
 import {
+  afterEach,
   describe as baseDescribe,
   test as baseTest,
   beforeAll,
   beforeEach,
-  afterEach,
   expect,
   jest,
   mock,

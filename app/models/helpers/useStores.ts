@@ -53,8 +53,9 @@ export const useInitialRootStore = (callback: () => void | Promise<void>) => {
   const [rehydrated, setRehydrated] = useState(false)
 
   // Kick off initial async loading actions, like loading fonts and rehydrating RootStore
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally runs once on mount; callback is captured at mount time
   useEffect(() => {
-    let _unsubscribe
+    let _unsubscribe: (() => void) | undefined
     ;(async () => {
       // set up the RootStore (returns the state restored from AsyncStorage)
       const { restoredState, unsubscribe } = await setupRootStore(rootStore)

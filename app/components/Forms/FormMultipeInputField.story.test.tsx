@@ -1,23 +1,17 @@
-import {
-  beforeAll,
-  describe as baseDescribe,
-  jest,
-  mock,
-  test as baseTest,
-} from "bun:test"
+import { describe as baseDescribe, test as baseTest, beforeAll, jest, mock } from "bun:test"
 import { render } from "@testing-library/react"
 import type { ComponentType, ReactNode } from "react"
 import { useForm } from "react-hook-form"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 import {
-  playMultipleFocusShowsSuggestions,
   playMultipleBackdropPressClosesSuggestions,
+  playMultipleFocusShowsSuggestions,
   playMultipleOutsideClickClosesSuggestions,
   playMultipleSelectSuggestionClosesSuggestionsAndUpdatesInput,
   playMultipleSelectSuggestionUpdatesInput,
   playMultipleSuggestionsStayVisibleAfterFocus,
-  playMultipleTypingKeepsSuggestionsVisible,
   playMultipleTypingFiltersSuggestions,
+  playMultipleTypingKeepsSuggestionsVisible,
 } from "./formMultipleInputFieldStoryPlay"
 
 mock.module("@/theme", () => ({
@@ -30,44 +24,84 @@ mock.module("@/theme", () => ({
 
 mock.module("@/components", () => ({
   ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
-  Box: ({ children, testID, ...props }: Record<string, unknown> & { children?: ReactNode; testID?: string }) => (
-    <div data-testid={testID} {...(props as object)}>{children}</div>
+  Box: ({
+    children,
+    testID,
+    ...props
+  }: Record<string, unknown> & { children?: ReactNode; testID?: string }) => (
+    <div data-testid={testID} {...(props as object)}>
+      {children}
+    </div>
   ),
-  Image: ({ testID, ...props }: Record<string, unknown> & { testID?: string }) => (
-    <img data-testid={testID} {...(props as object)} />
+  Image: ({ testID, ...props }: Record<string, unknown> & { testID?: string; alt?: string }) => (
+    // biome-ignore lint/a11y/useAltText: test mock; alt passes through via spread and explicit prop
+    <img data-testid={testID} {...(props as object)} alt={(props as { alt?: string }).alt ?? ""} />
   ),
-  Text: ({ children, testID, ...props }: Record<string, unknown> & { children?: ReactNode; testID?: string }) => (
-    <span data-testid={testID} {...(props as object)}>{children}</span>
+  Text: ({
+    children,
+    testID,
+    ...props
+  }: Record<string, unknown> & { children?: ReactNode; testID?: string }) => (
+    <span data-testid={testID} {...(props as object)}>
+      {children}
+    </span>
   ),
   HStack: ({ children, ...props }: Record<string, unknown> & { children?: ReactNode }) => (
     <div {...(props as object)}>{children}</div>
   ),
-  VStack: ({ children, testID, ...props }: Record<string, unknown> & { children?: ReactNode; testID?: string }) => (
-    <div data-testid={testID} {...(props as object)}>{children}</div>
+  VStack: ({
+    children,
+    testID,
+    ...props
+  }: Record<string, unknown> & { children?: ReactNode; testID?: string }) => (
+    <div data-testid={testID} {...(props as object)}>
+      {children}
+    </div>
   ),
   Input: ({ children, ...props }: Record<string, unknown> & { children?: ReactNode }) => (
     <div {...(props as object)}>{children}</div>
   ),
   IconButton: ({ testID, onPress }: { testID?: string; onPress?: () => void }) => (
-    <button data-testid={testID} type="button" onClick={onPress}>icon</button>
+    <button data-testid={testID} type="button" onClick={onPress}>
+      icon
+    </button>
   ),
 }))
 
 mock.module("@/components/Box/Box", () => ({
-  Box: ({ children, testID, ...props }: Record<string, unknown> & { children?: ReactNode; testID?: string }) => (
-    <div data-testid={testID} {...(props as object)}>{children}</div>
+  Box: ({
+    children,
+    testID,
+    ...props
+  }: Record<string, unknown> & { children?: ReactNode; testID?: string }) => (
+    <div data-testid={testID} {...(props as object)}>
+      {children}
+    </div>
   ),
 }))
 
 mock.module("@/components/Text/Text", () => ({
-  Text: ({ children, testID, ...props }: Record<string, unknown> & { children?: ReactNode; testID?: string }) => (
-    <span data-testid={testID} {...(props as object)}>{children}</span>
+  Text: ({
+    children,
+    testID,
+    ...props
+  }: Record<string, unknown> & { children?: ReactNode; testID?: string }) => (
+    <span data-testid={testID} {...(props as object)}>
+      {children}
+    </span>
   ),
 }))
 
 mock.module("@/components/Pressable/Pressable", () => ({
-  Pressable: ({ children, onPress, testID, ...props }: { children?: ReactNode; onPress?: () => void; testID?: string }) => (
-    <button data-testid={testID} {...(props as object)} type="button" onClick={onPress}>{children}</button>
+  Pressable: ({
+    children,
+    onPress,
+    testID,
+    ...props
+  }: { children?: ReactNode; onPress?: () => void; testID?: string }) => (
+    <button data-testid={testID} {...(props as object)} type="button" onClick={onPress}>
+      {children}
+    </button>
   ),
 }))
 
@@ -91,7 +125,9 @@ mock.module("./FormSuggestionPopover", () => ({
       {trigger({})}
       {isOpen ? (
         <div>
-          <button data-testid={`${testIdPrefix}-backdrop`} type="button" onClick={onClose}>backdrop</button>
+          <button data-testid={`${testIdPrefix}-backdrop`} type="button" onClick={onClose}>
+            backdrop
+          </button>
           <div data-testid={`${testIdPrefix}-suggestions`}>
             {candidates.map((candidate) => (
               <button

@@ -1,8 +1,8 @@
 import { Button } from "@/components/Button/Button"
 import { Heading } from "@/components/Heading/Heading"
 import { Text } from "@/components/Text/Text"
-import { useStores } from "@/models"
 import type { MessageKey } from "@/i18n"
+import { useStores } from "@/models"
 import { api } from "@/services/api"
 import type { CalibreJob } from "@/services/api/api.types"
 import { HStack, ScrollView, VStack, View } from "@gluestack-ui/themed"
@@ -87,9 +87,16 @@ export const JobQueueModal = observer((props: JobQueueModalProps) => {
             ) : (
               jobs.map((job) => (
                 <VStack key={job.id} space="xs" padding="$2" borderRadius="$md">
-                  <Text numberOfLines={2} style={styles.jobName}>{job.name}</Text>
+                  <Text numberOfLines={2} style={styles.jobName}>
+                    {job.name}
+                  </Text>
                   <HStack alignItems="center" space="sm">
-                    <View flex={1} height={6} borderRadius="$full" backgroundColor="$backgroundLight300">
+                    <View
+                      flex={1}
+                      height={6}
+                      borderRadius="$full"
+                      backgroundColor="$backgroundLight300"
+                    >
                       <View
                         style={[
                           styles.progressFill,
@@ -113,11 +120,7 @@ export const JobQueueModal = observer((props: JobQueueModalProps) => {
       </Body>
       <Footer>
         <HStack space="sm">
-          <Button
-            onPress={fetchJobs}
-            tx="jobQueue.refresh"
-            isDisabled={loading}
-          />
+          <Button onPress={fetchJobs} tx="jobQueue.refresh" isDisabled={loading} />
           <Button onPress={() => props.modal.closeModal()} tx="common.ok" />
         </HStack>
       </Footer>

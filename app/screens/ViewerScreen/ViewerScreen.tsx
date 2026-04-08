@@ -1,7 +1,5 @@
 import { BookPage, BookViewer, type RenderPageProps } from "@/components"
 import { BookHtmlPage } from "@/components/BookHtmlPage"
-import type { ModalStackParams } from "@/components/Modals/Types"
-import useOrientation from "@/hooks/useOrientation"
 import { useStores } from "@/models"
 import type { ApppNavigationProp } from "@/navigators/types"
 import { useViewer } from "@/screens/ViewerScreen/useViewer"
