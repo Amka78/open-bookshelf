@@ -1,5 +1,6 @@
 import { BookViewer, type RenderPageProps } from "@/components"
 import { usePDFViewer } from "@/screens/PDFViewerScreen/usePDFViewer"
+import { useViewer } from "@/screens/ViewerScreen/useViewer"
 import { observer } from "mobx-react-lite"
 import React, { useState } from "react"
 import { StyleSheet, View } from "react-native"
@@ -10,11 +11,11 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 
 export const PDFViewerScreen = observer(() => {
   const pdfHook = usePDFViewer()
+  const { initialPage, onPageChange } = useViewer()
   // PDFページのアスペクト比 (width / height)。最初のページロード時に取得する
   const [pageAspectRatio, setPageAspectRatio] = useState<number | undefined>(undefined)
   // totalPages と pageAspectRatio が両方確定するまでページ操作を無効にする
   const [pdfReady, setPdfReady] = useState(false)
-  const [activePage, setActivePage] = useState(0)
   const {
     selectedBook,
     totalPages,
@@ -76,7 +77,7 @@ export const PDFViewerScreen = observer(() => {
   const preloadPageIndices =
     !pdfReady || totalPages == null
       ? []
-      : [-2, -1, 1, 2].map((offset) => activePage + offset).filter((p) => p >= 0 && p < totalPages)
+      : [-2, -1, 1, 2].map((offset) => initialPage + offset).filter((p) => p >= 0 && p < totalPages)
 
   // 先読みページの描画幅（単ページ幅・アスペクト比考慮）
   const preloadPageWidth = (() => {
@@ -135,7 +136,8 @@ export const PDFViewerScreen = observer(() => {
         bookTitle={selectedBook.metaData.title}
         renderPage={renderPage}
         totalPage={totalPages ?? 1}
-        onPageChange={setActivePage}
+        initialPage={initialPage}
+        onPageChange={onPageChange}
         performanceMode="pdf-single-page"
         disableNavigation={!pdfReady}
       />
