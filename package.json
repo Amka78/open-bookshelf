@@ -43,7 +43,8 @@
     "build-storybook": "build-storybook",
     "build:web": "bunx expo export --platform web --output-dir dist",
     "deploy:pages": "gh-pages -d dist -b gh-pages",
-    "bundle-pdfjs": "bun run scripts/bundle-pdfjs.ts"
+    "bundle-pdfjs": "bun run scripts/bundle-pdfjs.ts",
+    "release:tag": "./bin/release-tag.sh"
   },
   "overrides": {
     "react-error-overlay": "6.0.9",
