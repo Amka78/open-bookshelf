@@ -1,5 +1,5 @@
 import { Image, type ImageProps } from "@/components"
-import React, { useState } from "react"
+import { useRef, useState } from "react"
 import { useWindowDimensions } from "react-native"
 
 export type BookImageProps = ImageProps & {
@@ -29,11 +29,37 @@ const getContainedDimension = (
   return { height: imageHeight, width: imageWidth }
 }
 
+const getSourceUri = (source: ImageProps["source"]): string | undefined => {
+  if (typeof source === "object" && source !== null && "uri" in source) {
+    return (source as { uri?: string | null }).uri ?? undefined
+  }
+  if (typeof source === "string") {
+    return source
+  }
+  return undefined
+}
+
+// React Compiler auto-memoizes this component.
+// Source stabilization uses refs so that expo-image does not re-trigger its
+// fade transition when the parent re-renders with a new source object but the
+// same URI (e.g. auth headers recreated on every render).
 export function BookPage(props: BookImageProps) {
   const [sourceDimension, setSourceDimension] = useState<ImageDimension>()
   const { width: windowWidth, height: windowHeight } = useWindowDimensions()
   const viewportWidth = props.availableWidth ?? windowWidth
   const viewportHeight = props.availableHeight ?? windowHeight
+
+  const sourceUri = getSourceUri(props.source)
+
+  // Derived-state via refs: update only when URI changes. This is the
+  // React-recommended alternative to useMemo with incomplete dependencies.
+  const stableSourceRef = useRef(props.source)
+  const lastUriRef = useRef<string | undefined>(sourceUri)
+  if (sourceUri !== lastUriRef.current) {
+    lastUriRef.current = sourceUri
+    stableSourceRef.current = props.source
+  }
+
   const dimension = sourceDimension
     ? getContainedDimension(sourceDimension, {
         width: viewportWidth,
@@ -46,7 +72,7 @@ export function BookPage(props: BookImageProps) {
 
   return (
     <Image
-      source={props.source}
+      source={stableSourceRef.current}
       style={dimension}
       contentFit={"contain"}
       onLoad={(e) => {

@@ -60,6 +60,8 @@ export class Api {
   private digestChallenge: DigestChallenge | null = null
   private digestNc = 0
   private authStateVersion = 0
+  private _cachedBasicHeader: Record<string, string> | undefined = undefined
+  private _cachedBasicToken: string | undefined = undefined
   private authStateListeners = new Set<(version: number) => void>()
 
   /**
@@ -158,7 +160,11 @@ export class Api {
     }
 
     if (this.credentials.basicToken) {
-      return { Authorization: `Basic ${this.credentials.basicToken}` }
+      if (this._cachedBasicToken !== this.credentials.basicToken) {
+        this._cachedBasicToken = this.credentials.basicToken
+        this._cachedBasicHeader = { Authorization: `Basic ${this.credentials.basicToken}` }
+      }
+      return this._cachedBasicHeader
     }
 
     return undefined

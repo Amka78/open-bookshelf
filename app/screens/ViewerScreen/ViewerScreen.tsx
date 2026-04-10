@@ -44,52 +44,52 @@ export const ViewerScreen: FC = observer(() => {
         : cachedPathList ?? selectedBook.path
 
   const renderPage = (props: RenderPageProps) => {
-    const sourcePagePath = sourcePathList[props.page]
+      const sourcePagePath = sourcePathList[props.page]
 
-    if (isCalibreSerializedHtmlPath(sourcePagePath)) {
-      logger.debug("Page is a Calibre serialized HTML, rendering with BookHtmlPage", {
+      if (isCalibreSerializedHtmlPath(sourcePagePath)) {
+        logger.debug("Page is a Calibre serialized HTML, rendering with BookHtmlPage", {
+          page: props.page,
+          sourcePagePath,
+        })
+        return (
+          <BookHtmlPage
+            availableWidth={props.availableWidth}
+            availableHeight={props.availableHeight}
+            pageType={props.pageType}
+            bookId={selectedBook.id}
+            format={selectedBook.metaData.selectedFormat ?? "AZW3"}
+            hash={selectedBook.hash ?? 0}
+            headers={authenticationStore.getHeader(sourcePagePath)}
+            libraryId={selectedLibrary.id}
+            onPress={props.onPress}
+            onLongPress={props.onLongPress}
+            pagePath={sourcePagePath}
+            size={selectedBook.metaData.formatSizes.get(selectedBook.metaData.selectedFormat) ?? 0}
+            annotations={props.annotations}
+            onTextSelect={props.onTextSelect}
+          />
+        )
+      }
+
+      const pagePath = cachedPathList?.[props.page] ?? sourcePagePath
+      const isRemotePath = isRemoteBookImagePath(pagePath)
+      logger.debug("Page is an image, rendering with BookPage", {
         page: props.page,
-        sourcePagePath,
+        pagePath,
+        isRemotePath,
       })
+
       return (
-        <BookHtmlPage
+        <BookPage
           availableWidth={props.availableWidth}
           availableHeight={props.availableHeight}
-          pageType={props.pageType}
-          bookId={selectedBook.id}
-          format={selectedBook.metaData.selectedFormat ?? "AZW3"}
-          hash={selectedBook.hash ?? 0}
-          headers={authenticationStore.getHeader(sourcePagePath)}
-          libraryId={selectedLibrary.id}
-          onPress={props.onPress}
-          onLongPress={props.onLongPress}
-          pagePath={sourcePagePath}
-          size={selectedBook.metaData.formatSizes.get(selectedBook.metaData.selectedFormat) ?? 0}
-          annotations={props.annotations}
-          onTextSelect={props.onTextSelect}
+          source={{
+            uri: pagePath,
+            headers: isRemotePath ? authenticationStore.getHeader(pagePath) : undefined,
+          }}
         />
       )
     }
-
-    const pagePath = cachedPathList?.[props.page] ?? sourcePagePath
-    const isRemotePath = isRemoteBookImagePath(pagePath)
-    logger.debug("Page is an image, rendering with BookPage", {
-      page: props.page,
-      pagePath,
-      isRemotePath,
-    })
-
-    return (
-      <BookPage
-        availableWidth={props.availableWidth}
-        availableHeight={props.availableHeight}
-        source={{
-          uri: pagePath,
-          headers: isRemotePath ? authenticationStore.getHeader(pagePath) : undefined,
-        }}
-      />
-    )
-  }
 
   const totalPages = sourcePathList.length
 
