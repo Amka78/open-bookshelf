@@ -25,23 +25,38 @@ export const ViewerScreen: FC = observer(() => {
     onLastPage,
   } = viewerHook
 
+  // Derive source list before hooks so all hooks are called unconditionally.
+  const isHtmlViewerFormat = selectedBook
+    ? isCalibreHtmlViewerFormat(selectedBook.metaData.selectedFormat)
+    : false
+  const sourcePathList = selectedBook
+    ? selectedBook.path.length > 0
+      ? selectedBook.path
+      : isHtmlViewerFormat
+        ? selectedBook.path
+        : cachedPathList ?? selectedBook.path
+    : []
+  const totalPages = sourcePathList.length
+
   useLayoutEffect(() => {
     if (!selectedBook) {
       navigation.navigate("Library")
     }
   }, [selectedBook, navigation])
 
+  useEffect(() => {
+    if (!viewerReady || !selectedBook) return
+    logger.debug("ViewerScreen: Rendering viewer with", {
+      bookId: selectedBook.id,
+      format: selectedBook.metaData.selectedFormat,
+      initialPage,
+      totalPages,
+    })
+  }, [viewerReady, selectedBook, initialPage, totalPages])
+
   if (!selectedLibrary || !selectedBook) {
     return null
   }
-
-  const isHtmlViewerFormat = isCalibreHtmlViewerFormat(selectedBook.metaData.selectedFormat)
-  const sourcePathList =
-    selectedBook.path.length > 0
-      ? selectedBook.path
-      : isHtmlViewerFormat
-        ? selectedBook.path
-        : cachedPathList ?? selectedBook.path
 
   const renderPage = (props: RenderPageProps) => {
       const sourcePagePath = sourcePathList[props.page]
@@ -90,18 +105,6 @@ export const ViewerScreen: FC = observer(() => {
         />
       )
     }
-
-  const totalPages = sourcePathList.length
-
-  useEffect(() => {
-    if (!viewerReady) return
-    logger.debug("ViewerScreen: Rendering viewer with", {
-      bookId: selectedBook.id,
-      format: selectedBook.metaData.selectedFormat,
-      initialPage,
-      totalPages,
-    })
-  }, [viewerReady, selectedBook.id, selectedBook.metaData.selectedFormat, initialPage, totalPages])
 
   if (!viewerReady) {
     return null
