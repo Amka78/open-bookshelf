@@ -8,8 +8,10 @@ import {
   VStack,
 } from "@/components"
 import type { Book } from "@/models/calibre/BookModel"
-import { Pressable, Text } from "@gluestack-ui/themed"
-import { StyleSheet } from "react-native"
+import { usePalette } from "@/theme"
+import { typography } from "@/theme/typography"
+import { Pressable } from "@gluestack-ui/themed"
+import { StyleSheet, Text } from "react-native"
 
 type BookListItemProps = {
   book: Book
@@ -33,15 +35,6 @@ const STATUS_ICON: Record<
   finished: { name: "check-circle-outline", color: "#22C55E" },
 }
 
-const FORMAT_COLORS: Record<string, string> = {
-  EPUB: "#3B82F6",
-  PDF: "#EF4444",
-  MOBI: "#F97316",
-  AZW3: "#8B5CF6",
-  CBZ: "#10B981",
-  CBR: "#10B981",
-}
-
 export function BookListItem({
   book,
   source,
@@ -52,6 +45,7 @@ export function BookListItem({
   onPress,
   onLongPress,
 }: BookListItemProps) {
+  const palette = usePalette()
   const meta = book.metaData
   const title = meta?.title ?? ""
   const authors = meta?.authors?.join(", ") ?? ""
@@ -70,24 +64,37 @@ export function BookListItem({
         paddingHorizontal="$3"
         paddingVertical="$2"
         space="md"
-        style={[styles.row, isSelected && styles.selectedRow]}
+        style={[
+          styles.row,
+          { borderBottomColor: palette.borderSubtle },
+          isSelected && { backgroundColor: palette.surfaceStrong },
+        ]}
       >
         {/* Cover image */}
         <Box style={styles.coverContainer}>
           {source ? (
             <Image source={source} style={styles.cover} contentFit="fill" />
           ) : (
-            <Box style={[styles.cover, styles.coverPlaceholder]} />
+            <Box style={[styles.cover, { backgroundColor: palette.surfaceMuted }]} />
           )}
         </Box>
 
         {/* Book info */}
         <VStack flex={1} space="xs">
-          <Text fontWeight="$bold" fontSize="$sm" numberOfLines={2} lineBreakMode="tail">
+          <Text
+            style={[
+              styles.title,
+              { color: palette.textPrimary, fontFamily: typography.primary.semiBold },
+            ]}
+            numberOfLines={2}
+          >
             {title}
           </Text>
           {authors ? (
-            <Text fontSize="$xs" color="$textLight600" numberOfLines={1}>
+            <Text
+              style={[styles.authors, { color: palette.textSecondary }]}
+              numberOfLines={1}
+            >
               {authors}
             </Text>
           ) : null}
@@ -98,10 +105,17 @@ export function BookListItem({
                   key={fmt}
                   style={[
                     styles.formatBadge,
-                    { backgroundColor: FORMAT_COLORS[fmt.toUpperCase()] ?? "#6B7280" },
+                    {
+                      backgroundColor: palette.surfaceStrong,
+                      borderColor: palette.borderStrong,
+                    },
                   ]}
                 >
-                  <Text style={styles.formatBadgeText}>{fmt.toUpperCase()}</Text>
+                  <Text
+                    style={[styles.formatBadgeText, { color: palette.textSecondary }]}
+                  >
+                    {fmt.toUpperCase()}
+                  </Text>
                 </Box>
               ))}
             </HStack>
@@ -111,7 +125,7 @@ export function BookListItem({
         {/* Right: status + progress */}
         <VStack alignItems="center" space="xs">
           {isCached ? (
-            <MaterialCommunityIcon name="cloud-check" iconSize="sm-" color="#6B7280" />
+            <MaterialCommunityIcon name="cloud-check" iconSize="sm-" color={palette.textSecondary} />
           ) : null}
           {statusIconConfig ? (
             <MaterialCommunityIcon
@@ -121,7 +135,7 @@ export function BookListItem({
             />
           ) : null}
           {progressPct ? (
-            <Text fontSize="$xs" color="$textLight500">
+            <Text style={[styles.progress, { color: palette.textSecondary }]}>
               {progressPct}
             </Text>
           ) : null}
@@ -134,12 +148,6 @@ export function BookListItem({
 const styles = StyleSheet.create({
   row: {
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "rgba(0,0,0,0.1)",
-  },
-  selectedRow: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "rgba(0,0,0,0.1)",
-    backgroundColor: "rgba(59,130,246,0.1)",
   },
   coverContainer: {
     width: 48,
@@ -150,16 +158,22 @@ const styles = StyleSheet.create({
     height: 64,
     borderRadius: 2,
   },
-  coverPlaceholder: {
-    backgroundColor: "#E5E7EB",
+  title: {
+    fontSize: 14,
+  },
+  authors: {
+    fontSize: 12,
+  },
+  progress: {
+    fontSize: 11,
   },
   formatBadge: {
     borderRadius: 4,
-    paddingHorizontal: 4,
+    borderWidth: 1,
+    paddingHorizontal: 5,
     paddingVertical: 1,
   },
   formatBadgeText: {
-    color: "#fff",
     fontSize: 9,
     fontWeight: "600",
   },

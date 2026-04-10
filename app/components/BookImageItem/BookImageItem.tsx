@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from "react"
+import type React from "react"
+import { useEffect, useRef, useState } from "react"
 import { StyleSheet, View } from "react-native"
 
 import {
@@ -252,9 +253,9 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(59,130,246,0.18)",
+    backgroundColor: "rgba(0,0,0,0.08)",
     borderWidth: 2,
-    borderColor: "rgba(59,130,246,0.7)",
+    borderColor: "rgba(180,190,210,0.8)",
     pointerEvents: "none",
   },
 })

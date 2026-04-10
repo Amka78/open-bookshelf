@@ -1,5 +1,6 @@
 import { Text } from "@/components/Text/Text"
 import type { Annotation } from "@/models/calibre"
+import { usePalette } from "@/theme"
 import React from "react"
 import { FlatList, Pressable, StyleSheet, View } from "react-native"
 
@@ -24,12 +25,14 @@ export function AnnotationPanel({
   onDeleteAnnotation,
   onExport,
 }: Props) {
+  const palette = usePalette()
+
   const header = (
-    <View style={styles.header}>
-      <Text tx="annotationPanel.title" style={styles.headerTitle} />
+    <View style={[styles.header, { borderBottomColor: palette.borderSubtle }]}>
+      <Text tx="annotationPanel.title" style={[styles.headerTitle, { color: palette.textPrimary }]} />
       {onExport != null && (
         <Pressable onPress={onExport} style={styles.exportBtn} accessibilityRole="button">
-          <Text tx="annotationPanel.export" style={styles.exportBtnText} />
+          <Text tx="annotationPanel.export" style={[styles.exportBtnText, { color: palette.textSecondary }]} />
         </Pressable>
       )}
     </View>
@@ -53,7 +56,10 @@ export function AnnotationPanel({
         data={annotations.slice().sort((a, b) => a.spineIndex - b.spineIndex)}
         keyExtractor={(item) => item.uuid}
         renderItem={({ item }) => (
-          <Pressable style={styles.item} onPress={() => onAnnotationPress(item)}>
+          <Pressable
+            style={[styles.item, { borderBottomColor: palette.borderSubtle }]}
+            onPress={() => onAnnotationPress(item)}
+          >
             <View style={styles.itemHeader}>
               {item.type === "highlight" && (
                 <View
@@ -66,23 +72,23 @@ export function AnnotationPanel({
                 />
               )}
               {item.type === "bookmark" && <Text style={styles.bookmarkIcon}>🔖</Text>}
-              <Text style={styles.pageLabel}>P.{item.spineIndex + 1}</Text>
+              <Text style={[styles.pageLabel, { color: palette.textSecondary }]}>P.{item.spineIndex + 1}</Text>
               <Pressable onPress={() => onDeleteAnnotation(item.uuid)} style={styles.deleteBtn}>
-                <Text style={styles.deleteBtnText}>✕</Text>
+                <Text style={[styles.deleteBtnText, { color: palette.textSecondary }]}>✕</Text>
               </Pressable>
             </View>
             {item.highlightedText ? (
-              <Text style={styles.highlightText} numberOfLines={2}>
+              <Text style={[styles.highlightText, { color: palette.textPrimary }]} numberOfLines={2}>
                 "{item.highlightedText}"
               </Text>
             ) : null}
             {item.title ? (
-              <Text style={styles.noteText} numberOfLines={1}>
+              <Text style={[styles.noteText, { color: palette.textSecondary }]} numberOfLines={1}>
                 {item.title}
               </Text>
             ) : null}
             {item.notes ? (
-              <Text style={styles.noteText} numberOfLines={2}>
+              <Text style={[styles.noteText, { color: palette.textSecondary }]} numberOfLines={2}>
                 {item.notes}
               </Text>
             ) : null}
@@ -104,20 +110,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
   },
   headerTitle: { fontSize: 15, fontWeight: "600" },
   exportBtn: { paddingHorizontal: 8, paddingVertical: 4 },
-  exportBtnText: { fontSize: 13, color: "#3B82F6" },
+  exportBtnText: { fontSize: 13 },
   list: { flex: 1 },
   empty: { padding: 16, alignItems: "center" },
-  item: { padding: 12, borderBottomWidth: 1, borderBottomColor: "#E0E0E0" },
+  item: { padding: 12, borderBottomWidth: 1 },
   itemHeader: { flexDirection: "row", alignItems: "center", marginBottom: 4 },
   colorDot: { width: 12, height: 12, borderRadius: 6, marginRight: 6 },
   bookmarkIcon: { fontSize: 14, marginRight: 6 },
-  pageLabel: { flex: 1, fontSize: 12, color: "#666" },
+  pageLabel: { flex: 1, fontSize: 12 },
   deleteBtn: { padding: 4 },
-  deleteBtnText: { fontSize: 12, color: "#999" },
-  highlightText: { fontStyle: "italic", fontSize: 13, color: "#333" },
-  noteText: { fontSize: 13, color: "#555", marginTop: 2 },
+  deleteBtnText: { fontSize: 12 },
+  highlightText: { fontStyle: "italic", fontSize: 13 },
+  noteText: { fontSize: 13, marginTop: 2 },
 })

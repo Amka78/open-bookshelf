@@ -4,8 +4,40 @@ import type { Book } from "@/models/calibre/BookModel"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
-mock.module("expo-image", () => ({
-  Image: () => <img alt="cover" />,
+mock.module("react-native", () => ({
+  ...(global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock,
+  Text: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
+}))
+
+mock.module("@/theme", () => ({
+  usePalette: () => ({
+    textPrimary: "#111",
+    textSecondary: "#555",
+    textTertiary: "#999",
+    surfaceBase: "#fff",
+    surfaceStrong: "#f0f0f0",
+    surfaceMuted: "#e0e0e0",
+    borderSubtle: "#ddd",
+    borderStrong: "#aaa",
+  }),
+}))
+
+mock.module("@/theme/typography", () => ({
+  typography: {
+    primary: {
+      normal: "serif",
+      medium: "serif",
+      semiBold: "serif",
+      bold: "serif",
+    },
+    secondary: {
+      light: "sans-serif",
+      normal: "sans-serif",
+      medium: "sans-serif",
+      semiBold: "sans-serif",
+      bold: "sans-serif",
+    },
+  },
 }))
 
 mock.module("@/components", () => ({

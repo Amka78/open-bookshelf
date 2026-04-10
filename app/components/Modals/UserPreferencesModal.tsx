@@ -2,6 +2,7 @@ import { Button } from "@/components/Button/Button"
 import { Heading } from "@/components/Heading/Heading"
 import { Text } from "@/components/Text/Text"
 import { useStores } from "@/models"
+import { usePalette } from "@/theme"
 import { HStack, VStack } from "@gluestack-ui/themed"
 import { observer } from "mobx-react-lite"
 import { Pressable } from "react-native"
@@ -34,6 +35,7 @@ function ChipRow<T extends string | number>({
   onSelect: (value: T) => void
   labelOf?: (value: T) => string
 }) {
+  const palette = usePalette()
   return (
     <HStack flexWrap="wrap" space="sm">
       {options.map((option) => {
@@ -46,15 +48,20 @@ function ChipRow<T extends string | number>({
             style={{
               paddingHorizontal: 12,
               paddingVertical: 6,
-              borderRadius: 16,
+              borderRadius: 8,
               borderWidth: 1,
-              borderColor: isSelected ? "#6366f1" : "#d1d5db",
-              backgroundColor: isSelected ? "#6366f1" : "transparent",
+              borderColor: isSelected ? palette.borderStrong : palette.borderSubtle,
+              backgroundColor: isSelected ? palette.surfaceStrong : "transparent",
             }}
           >
             <Text
-              style={{ color: isSelected ? "#ffffff" : undefined, fontSize: 13 }}
-            >{label}</Text>
+              style={{
+                color: isSelected ? palette.textPrimary : palette.textSecondary,
+                fontSize: 13,
+              }}
+            >
+              {label}
+            </Text>
           </Pressable>
         )
       })}
