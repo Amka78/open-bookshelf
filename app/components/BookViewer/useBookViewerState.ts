@@ -103,6 +103,12 @@ export function useBookViewerState({
   const prevReadingStyleRef = useRef(readingStyle)
   // readingStyle 変化前の scrollIndex を stale closure なしで参照するための ref
   const scrollIndexRef = useRef(0)
+  // 親から渡されるコールバックをrefで保持し、useEffectの依存配列から外すことで
+  // 参照が変わるたびにエフェクトが再実行される無限ループを防ぐ
+  const onPageChangeRef = useRef(onPageChange)
+  onPageChangeRef.current = onPageChange
+  const onLastPageRef = useRef(onLastPage)
+  onLastPageRef.current = onLastPage
 
   const scrollToIndex = (index: number, animated = true, viewPosition?: number) => {
     setScrollIndex(index)
@@ -235,10 +241,12 @@ export function useBookViewerState({
     }
   }
 
+  // onPageChangeRef を使うことで onPageChange の参照変化によるエフェクト再実行を防ぐ
   useEffect(() => {
-    onPageChange?.(currentPage)
-  }, [currentPage, onPageChange])
+    onPageChangeRef.current?.(currentPage)
+  }, [currentPage])
 
+  // onLastPageRef を使うことで onLastPage の参照変化によるエフェクト再実行を防ぐ
   useEffect(() => {
     if (!pages) return
 
@@ -252,12 +260,12 @@ export function useBookViewerState({
       }
 
       lastPageNotifiedKeyRef.current = lastPageKey
-      onLastPage?.()
+      onLastPageRef.current?.()
       return
     }
 
     lastPageNotifiedKeyRef.current = undefined
-  }, [pages, onLastPage, scrollIndex, readingStyle])
+  }, [pages, scrollIndex, readingStyle])
 
   const getScrollIndexForPage = (page: number) => {
     if (!pages) return page
