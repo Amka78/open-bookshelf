@@ -70,7 +70,7 @@ describe("BookPage", () => {
     rerender(<Wrapper headers={{ Authorization: "Basic abc" }} />)
     const secondSource = capturedSources[capturedSources.length - 1]
 
-    // The state-stabilized source must be the same object reference (no re-trigger of expo-image)
+    // The useMemo-stabilized source must be the same object reference (no re-trigger of expo-image)
     expect(secondSource).toBe(firstSource)
   })
 
