@@ -186,6 +186,15 @@ export function BookViewer(props: BookViewerProps) {
   const scrollIndexRef = useRef(scrollIndex)
   scrollIndexRef.current = scrollIndex
 
+  // Ref for viewerHook: gives renderPage access to latest hook values (e.g. onManageMenu)
+  // without making the whole unstable object a dep of useCallback.
+  const viewerHookRef = useRef(viewerHook)
+  viewerHookRef.current = viewerHook
+
+  // Extract readingStyle as a primitive dep so renderPage is only recreated on style changes,
+  // not on every page turn (which would change the whole viewerHook object reference).
+  const viewerReadingStyle = viewerHook.readingStyle
+
   const handleShowToc = () => {
     const toc = viewerHook.toc
     if (!toc) return
@@ -202,14 +211,15 @@ export function BookViewer(props: BookViewerProps) {
     modal.openModal("ReadingSettingsModal", {})
   }
 
-  // scrollIndex accessed via ref to avoid page-turn recreation; viewerHook is object-stable via React Compiler
+  // scrollIndex and viewerHook accessed via refs to avoid page-turn recreation of renderPage.
+  // Only primitive/stable values (readingStyle string) are kept as deps.
   const renderPage = useCallback(
     (renderProps: RenderPageProps) => {
       const handlePagePress = () => {
         const targetIndex =
           renderProps.direction === "previous"
             ? goToPreviousPage(renderProps.scrollIndex, 1)
-            : goToNextPage(renderProps.scrollIndex, pages[viewerHook.readingStyle].length, 1)
+            : goToNextPage(renderProps.scrollIndex, pages[viewerReadingStyle].length, 1)
 
         scrollToIndex(targetIndex, true, isHorizontalReading ? undefined : 0.5)
       }
@@ -217,7 +227,7 @@ export function BookViewer(props: BookViewerProps) {
       const pageProps = {
         ...renderProps,
         onPress: handlePagePress,
-        onLongPress: viewerHook.onManageMenu,
+        onLongPress: viewerHookRef.current.onManageMenu,
         annotations: annotationsForPage(renderProps.page)
           .filter((a) => a.type === "highlight")
           .map((a) => ({
@@ -253,14 +263,14 @@ export function BookViewer(props: BookViewerProps) {
         <PagePressable
           currentPage={renderProps.scrollIndex}
           direction={renderProps.direction}
-          onLongPress={viewerHook.onManageMenu}
+          onLongPress={viewerHookRef.current.onManageMenu}
           disabled={props.disableNavigation}
           onPageChanging={(page) => {
             console.tron.log(`current scroll index ${scrollIndexRef.current}`)
             console.tron.log(`page pressed next page:${page}`)
             scrollToIndex(page, true, isHorizontalReading ? undefined : 0.5)
           }}
-          totalPages={pages[viewerHook.readingStyle].length}
+          totalPages={pages[viewerReadingStyle].length}
           transitionPages={1}
           style={{
             ...(isHorizontalReading ? styles.pageRoot : styles.verticalPageRoot),
@@ -275,7 +285,7 @@ export function BookViewer(props: BookViewerProps) {
     [
       isHorizontalReading,
       pages,
-      viewerHook,
+      viewerReadingStyle,
       props.renderPage,
       props.disableNavigation,
       scrollToIndex,

@@ -1,7 +1,7 @@
 import type { BookReadingStyleType } from "@/type/types"
 import { goToNextPage } from "@/utils/pageTurnning"
 import type { FlashListRef } from "@shopify/flash-list"
-import { type RefObject, useEffect, useRef, useState } from "react"
+import { type RefObject, useCallback, useEffect, useRef, useState } from "react"
 
 export type FacingPageType = { page1?: number; page2?: number }
 export type PageStyles = Record<BookReadingStyleType, number[] | FacingPageType[]>
@@ -110,16 +110,19 @@ export function useBookViewerState({
   const onLastPageRef = useRef(onLastPage)
   onLastPageRef.current = onLastPage
 
-  const scrollToIndex = (index: number, animated = true, viewPosition?: number) => {
-    setScrollIndex(index)
-    flashListRef.current?.scrollToIndex({ index, animated, viewPosition })
-  }
+  const scrollToIndex = useCallback(
+    (index: number, animated = true, viewPosition?: number) => {
+      setScrollIndex(index)
+      flashListRef.current?.scrollToIndex({ index, animated, viewPosition })
+    },
+    [flashListRef],
+  )
 
-  const syncScrollIndex = (index: number) => {
+  const syncScrollIndex = useCallback((index: number) => {
     setScrollIndex((prev) => {
       return prev === index ? prev : index
     })
-  }
+  }, [])
 
   useEffect(() => {
     if (!autoPageTurning) {
@@ -267,48 +270,54 @@ export function useBookViewerState({
     lastPageNotifiedKeyRef.current = undefined
   }, [pages, scrollIndex, readingStyle])
 
-  const getScrollIndexForPage = (page: number) => {
-    if (!pages) return page
+  const getScrollIndexForPage = useCallback(
+    (page: number) => {
+      if (!pages) return page
 
-    if (isFacingPageStyle(readingStyle) && page !== 0) {
-      const index = (pages[readingStyle] as FacingPageType[]).findIndex((value) => {
-        return value.page1 === page || value.page2 === page
-      })
-      return index >= 0 ? index : 0
-    }
-
-    return page
-  }
-
-  const getIndexForReadingStyleChange = (newReadingStyle: BookReadingStyleType) => {
-    if (!pages) return undefined
-    if (newReadingStyle === readingStyle) return scrollIndex
-
-    const isFacingCurrent = isFacingPageStyle(readingStyle)
-    const isFacingNext = isFacingPageStyle(newReadingStyle)
-
-    if (isFacingCurrent) {
-      const currentPage = (pages[readingStyle][scrollIndex] as FacingPageType).page1 ?? 0
-
-      if (!isFacingNext) {
-        return currentPage
+      if (isFacingPageStyle(readingStyle) && page !== 0) {
+        const index = (pages[readingStyle] as FacingPageType[]).findIndex((value) => {
+          return value.page1 === page || value.page2 === page
+        })
+        return index >= 0 ? index : 0
       }
 
-      const nextIndex = (pages[newReadingStyle] as FacingPageType[]).findIndex((value) => {
-        return value.page1 === currentPage || value.page2 === currentPage
-      })
-      return nextIndex >= 0 ? nextIndex : 0
-    }
+      return page
+    },
+    [pages, readingStyle],
+  )
 
-    if (isFacingNext) {
-      const nextIndex = (pages[newReadingStyle] as FacingPageType[]).findIndex((value) => {
-        return value.page1 === scrollIndex || value.page2 === scrollIndex
-      })
-      return nextIndex >= 0 ? nextIndex : 0
-    }
+  const getIndexForReadingStyleChange = useCallback(
+    (newReadingStyle: BookReadingStyleType) => {
+      if (!pages) return undefined
+      if (newReadingStyle === readingStyle) return scrollIndex
 
-    return scrollIndex
-  }
+      const isFacingCurrent = isFacingPageStyle(readingStyle)
+      const isFacingNext = isFacingPageStyle(newReadingStyle)
+
+      if (isFacingCurrent) {
+        const currentPage = (pages[readingStyle][scrollIndex] as FacingPageType).page1 ?? 0
+
+        if (!isFacingNext) {
+          return currentPage
+        }
+
+        const nextIndex = (pages[newReadingStyle] as FacingPageType[]).findIndex((value) => {
+          return value.page1 === currentPage || value.page2 === currentPage
+        })
+        return nextIndex >= 0 ? nextIndex : 0
+      }
+
+      if (isFacingNext) {
+        const nextIndex = (pages[newReadingStyle] as FacingPageType[]).findIndex((value) => {
+          return value.page1 === scrollIndex || value.page2 === scrollIndex
+        })
+        return nextIndex >= 0 ? nextIndex : 0
+      }
+
+      return scrollIndex
+    },
+    [pages, readingStyle, scrollIndex],
+  )
 
   return {
     pages,
