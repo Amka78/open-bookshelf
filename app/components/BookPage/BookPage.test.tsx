@@ -42,7 +42,6 @@ describe("BookPage", () => {
   test("passes the same source object to Image when re-rendered with a new object but same URI", () => {
     const capturedSources: unknown[] = []
 
-    // Intercept the Image component to capture what source is passed
     mock.module("@/components", () => ({
       Image: ({ source }: { source: unknown }) => {
         capturedSources.push(source)
@@ -71,7 +70,7 @@ describe("BookPage", () => {
     rerender(<Wrapper headers={{ Authorization: "Basic abc" }} />)
     const secondSource = capturedSources[capturedSources.length - 1]
 
-    // The ref-stabilized source must be the same object reference (no re-trigger of expo-image)
+    // The state-stabilized source must be the same object reference (no re-trigger of expo-image)
     expect(secondSource).toBe(firstSource)
   })
 
