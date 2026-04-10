@@ -8,7 +8,7 @@ import { logger } from "@/utils/logger"
 import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { Image } from "expo-image"
 import { observer } from "mobx-react-lite"
-import React, { type FC, useEffect, useState } from "react"
+import React, { type FC, useCallback, useEffect, useState } from "react"
 
 type AcquisitionScreenRouteProp = RouteProp<AppStackParamList, "Acquisition">
 
@@ -72,84 +72,91 @@ export const AcquisitionScreen: FC = observer(() => {
     })
   }, [currentOpds, navigation, palette.textPrimary, settingStore.api.baseUrl])
 
-  const renderItem = ({ item }: { item: Entry }) => {
-    logger.debug("OPDS entry", item)
-    const thumbnail = item.link.find((value) => {
-      return value.rel === "http://opds-spec.org/image/thumbnail"
-    })
-
-    let bottomText = ""
-
-    if (item.contentType === "text") {
-      bottomText = item.content
-    } else {
-      item.author.forEach((value) => {
-        if (bottomText === "") {
-          bottomText = value.name
-        } else {
-          bottomText += `,${value.name}`
-        }
+  const renderItem = useCallback(
+    ({ item }: { item: Entry }) => {
+      logger.debug("OPDS entry", item)
+      const thumbnail = item.link.find((value) => {
+        return value.rel === "http://opds-spec.org/image/thumbnail"
       })
-    }
 
-    return (
-      <ListItem
-        LeftComponent={
-          <Box flexDirection={"row"} width={"$full"}>
-            <Box flexDirection={"row"} width={"$5/6"}>
+      let bottomText = ""
+
+      if (item.contentType === "text") {
+        bottomText = item.content
+      } else {
+        item.author.forEach((value) => {
+          if (bottomText === "") {
+            bottomText = value.name
+          } else {
+            bottomText += `,${value.name}`
+          }
+        })
+      }
+
+      return (
+        <ListItem
+          LeftComponent={
+            <Box flexDirection={"row"} width={"$full"}>
+              <Box flexDirection={"row"} width={"$5/6"}>
+                {item.contentType !== "text" && (
+                  <Image
+                    source={{ uri: thumbnail && `${settingStore.api.baseUrl}${thumbnail.href}` }}
+                    style={{ height: 50, width: 30 }}
+                    resizeMode={"contain"}
+                  />
+                )}
+                <Box marginLeft={"$1"}>
+                  <Text fontSize={"$lg"} lineBreakMode="tail" numberOfLines={1}>
+                    {item.title}
+                  </Text>
+                  <Text fontSize={"$md"} marginTop={"$0.5"}>
+                    {bottomText}
+                  </Text>
+                </Box>
+              </Box>
               {item.contentType !== "text" && (
-                <Image
-                  source={{ uri: thumbnail && `${settingStore.api.baseUrl}${thumbnail.href}` }}
-                  style={{ height: 50, width: 30 }}
-                  resizeMode={"contain"}
+                <MaterialCommunityIcon
+                  name="arrow-down-thin-circle-outline"
+                  position={"absolute"}
+                  top={"$1.5"}
+                  right={"$0.5"}
                 />
               )}
-              <Box marginLeft={"$1"}>
-                <Text fontSize={"$lg"} lineBreakMode="tail" numberOfLines={1}>
-                  {item.title}
-                </Text>
-                <Text fontSize={"$md"} marginTop={"$0.5"}>
-                  {bottomText}
-                </Text>
-              </Box>
             </Box>
-            {item.contentType !== "text" && (
-              <MaterialCommunityIcon
-                name="arrow-down-thin-circle-outline"
-                position={"absolute"}
-                top={"$1.5"}
-                right={"$0.5"}
-              />
-            )}
-          </Box>
-        }
-        onPress={() => {
-          if (item.contentType === "text") {
-            navigation.push("Acquisition", { link: item.link[0] })
           }
-        }}
-      />
-    )
-  }
+          onPress={() => {
+            if (item.contentType === "text") {
+              navigation.push("Acquisition", { link: item.link[0] })
+            }
+          }}
+        />
+      )
+    },
+    [navigation, settingStore.api.baseUrl],
+  )
+
+  const onRefresh = useCallback(async () => {
+    const linkOopds = await loadOpdsFromLink(linkHref)
+    setCurrentOPDS(linkOopds)
+  }, [linkHref])
+
+  const onEndReached = useCallback(async () => {
+    const link = currentOpds.link.find((value) => {
+      return value.rel === "next"
+    })
+
+    if (link) {
+      currentOpds.load(link.href, false)
+    }
+  }, [currentOpds])
 
   return (
     <RootContainer>
       <FlatList<Entry>
         data={currentOpds?.entry.slice()}
         renderItem={renderItem}
-        onRefresh={async () => {
-          const linkOopds = await loadOpdsFromLink(linkHref)
-          setCurrentOPDS(linkOopds)
-        }}
-        onEndReached={async () => {
-          const link = currentOpds.link.find((value) => {
-            return value.rel === "next"
-          })
-
-          if (link) {
-            currentOpds.load(link.href, false)
-          }
-        }}
+        onRefresh={onRefresh}
+        onEndReached={onEndReached}
       />
     </RootContainer>
   )

@@ -1,7 +1,7 @@
 import { Text } from "@/components/Text/Text"
 import type { Annotation } from "@/models/calibre"
 import { usePalette } from "@/theme"
-import React from "react"
+import React, { useCallback, useMemo } from "react"
 import { FlatList, Pressable, StyleSheet, View } from "react-native"
 
 type Props = {
@@ -49,51 +49,74 @@ export function AnnotationPanel({
     )
   }
 
+  const sortedAnnotations = useMemo(
+    () => annotations.slice().sort((a, b) => a.spineIndex - b.spineIndex),
+    [annotations],
+  )
+
+  const renderItem = useCallback(
+    ({ item }: { item: Annotation }) => (
+      <Pressable
+        style={[styles.item, { borderBottomColor: palette.borderSubtle }]}
+        onPress={() => onAnnotationPress(item)}
+      >
+        <View style={styles.itemHeader}>
+          {item.type === "highlight" && (
+            <View
+              style={[
+                styles.colorDot,
+                {
+                  backgroundColor: COLOR_MAP[item.styleWhich ?? "yellow"] ?? COLOR_MAP.yellow,
+                },
+              ]}
+            />
+          )}
+          {item.type === "bookmark" && <Text style={styles.bookmarkIcon}>🔖</Text>}
+          <Text style={[styles.pageLabel, { color: palette.textSecondary }]}>
+            P.{item.spineIndex + 1}
+          </Text>
+          <Pressable onPress={() => onDeleteAnnotation(item.uuid)} style={styles.deleteBtn}>
+            <Text style={[styles.deleteBtnText, { color: palette.textSecondary }]}>✕</Text>
+          </Pressable>
+        </View>
+        {item.highlightedText ? (
+          <Text
+            style={[styles.highlightText, { color: palette.textPrimary }]}
+            numberOfLines={2}
+          >
+            "{item.highlightedText}"
+          </Text>
+        ) : null}
+        {item.title ? (
+          <Text
+            style={[styles.noteText, { color: palette.textSecondary }]}
+            numberOfLines={1}
+          >
+            {item.title}
+          </Text>
+        ) : null}
+        {item.notes ? (
+          <Text
+            style={[styles.noteText, { color: palette.textSecondary }]}
+            numberOfLines={2}
+          >
+            {item.notes}
+          </Text>
+        ) : null}
+      </Pressable>
+    ),
+    [onAnnotationPress, onDeleteAnnotation, palette],
+  )
+
+  const keyExtractor = useCallback((item: Annotation) => item.uuid, [])
+
   return (
     <View style={styles.container}>
       {header}
       <FlatList
-        data={annotations.slice().sort((a, b) => a.spineIndex - b.spineIndex)}
-        keyExtractor={(item) => item.uuid}
-        renderItem={({ item }) => (
-          <Pressable
-            style={[styles.item, { borderBottomColor: palette.borderSubtle }]}
-            onPress={() => onAnnotationPress(item)}
-          >
-            <View style={styles.itemHeader}>
-              {item.type === "highlight" && (
-                <View
-                  style={[
-                    styles.colorDot,
-                    {
-                      backgroundColor: COLOR_MAP[item.styleWhich ?? "yellow"] ?? COLOR_MAP.yellow,
-                    },
-                  ]}
-                />
-              )}
-              {item.type === "bookmark" && <Text style={styles.bookmarkIcon}>🔖</Text>}
-              <Text style={[styles.pageLabel, { color: palette.textSecondary }]}>P.{item.spineIndex + 1}</Text>
-              <Pressable onPress={() => onDeleteAnnotation(item.uuid)} style={styles.deleteBtn}>
-                <Text style={[styles.deleteBtnText, { color: palette.textSecondary }]}>✕</Text>
-              </Pressable>
-            </View>
-            {item.highlightedText ? (
-              <Text style={[styles.highlightText, { color: palette.textPrimary }]} numberOfLines={2}>
-                "{item.highlightedText}"
-              </Text>
-            ) : null}
-            {item.title ? (
-              <Text style={[styles.noteText, { color: palette.textSecondary }]} numberOfLines={1}>
-                {item.title}
-              </Text>
-            ) : null}
-            {item.notes ? (
-              <Text style={[styles.noteText, { color: palette.textSecondary }]} numberOfLines={2}>
-                {item.notes}
-              </Text>
-            ) : null}
-          </Pressable>
-        )}
+        data={sortedAnnotations}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
         style={styles.list}
       />
     </View>

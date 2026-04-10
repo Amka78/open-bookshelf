@@ -2,7 +2,7 @@ import { BookViewer, type RenderPageProps } from "@/components"
 import { usePDFViewer } from "@/screens/PDFViewerScreen/usePDFViewer"
 import { useViewer } from "@/screens/ViewerScreen/useViewer"
 import { observer } from "mobx-react-lite"
-import React, { useState } from "react"
+import React, { useCallback, useMemo, useState } from "react"
 import { StyleSheet, View } from "react-native"
 import { Document, Page, pdfjs } from "react-pdf"
 
@@ -25,91 +25,97 @@ export const PDFViewerScreen = observer(() => {
     calculatePageWidth,
   } = pdfHook
 
-  const renderPage = (renderProps: RenderPageProps) => {
-    const renderStartTime = performance.now()
+  const renderPage = useCallback(
+    (renderProps: RenderPageProps) => {
+      const renderStartTime = performance.now()
 
-    const availableHeight = renderProps.availableHeight ?? windowDimension.height
-    const isFacingPage = renderProps.pageType !== "singlePage"
-    const maxWidth = calculatePageWidth(isFacingPage, windowDimension.width)
+      const availableHeight = renderProps.availableHeight ?? windowDimension.height
+      const isFacingPage = renderProps.pageType !== "singlePage"
+      const maxWidth = calculatePageWidth(isFacingPage, windowDimension.width)
 
-    let pageWidth = maxWidth
-    if (pageAspectRatio !== undefined) {
-      const widthForHeight = Math.floor(availableHeight * pageAspectRatio)
-      pageWidth = Math.min(maxWidth, widthForHeight)
-    }
+      let pageWidth = maxWidth
+      if (pageAspectRatio !== undefined) {
+        const widthForHeight = Math.floor(availableHeight * pageAspectRatio)
+        pageWidth = Math.min(maxWidth, widthForHeight)
+      }
 
-    const pageContainerStyle =
-      renderProps.pageType === "singlePage"
-        ? styles.singlePage
-        : renderProps.pageType === "leftPage"
-          ? styles.leftPage
-          : styles.rightPage
+      const pageContainerStyle =
+        renderProps.pageType === "singlePage"
+          ? styles.singlePage
+          : renderProps.pageType === "leftPage"
+            ? styles.leftPage
+            : styles.rightPage
 
-    return (
-      <View style={[styles.page, pageContainerStyle]}>
-        <Page
-          key={`${renderProps.page}`}
-          pageNumber={renderProps.page + 1}
-          width={Math.max(1, pageWidth)}
-          renderAnnotationLayer={false}
-          renderTextLayer={false}
-          renderMode="canvas"
-          devicePixelRatio={1}
-          loading={null}
-          onRenderSuccess={() => {
-            const renderDone = performance.now()
-            pdfDiagnostics.logMetric({
-              pageNumber: renderProps.page + 1,
-              renderStartTime,
-              layoutCompleteTime: renderDone,
-              totalRenderTime: renderDone - renderStartTime,
-              pageType: renderProps.pageType,
-              width: pageWidth,
-              height: availableHeight,
-            })
-          }}
-        />
-      </View>
-    )
-  }
+      return (
+        <View style={[styles.page, pageContainerStyle]}>
+          <Page
+            key={`${renderProps.page}`}
+            pageNumber={renderProps.page + 1}
+            width={Math.max(1, pageWidth)}
+            renderAnnotationLayer={false}
+            renderTextLayer={false}
+            renderMode="canvas"
+            devicePixelRatio={1}
+            loading={null}
+            onRenderSuccess={() => {
+              const renderDone = performance.now()
+              pdfDiagnostics.logMetric({
+                pageNumber: renderProps.page + 1,
+                renderStartTime,
+                layoutCompleteTime: renderDone,
+                totalRenderTime: renderDone - renderStartTime,
+                pageType: renderProps.pageType,
+                width: pageWidth,
+                height: availableHeight,
+              })
+            }}
+          />
+        </View>
+      )
+    },
+    [windowDimension.height, windowDimension.width, calculatePageWidth, pageAspectRatio],
+  )
 
-  // 前後±2ページを非表示で事前レンダリング。ページ遷移時に再描画コストをゼロにする
-  const preloadPageIndices =
-    !pdfReady || totalPages == null
-      ? []
-      : [-2, -1, 1, 2].map((offset) => initialPage + offset).filter((p) => p >= 0 && p < totalPages)
+  const preloadPageIndices = useMemo(
+    () =>
+      !pdfReady || totalPages == null
+        ? []
+        : [-2, -1, 1, 2]
+            .map((offset) => initialPage + offset)
+            .filter((p) => p >= 0 && p < totalPages),
+    [pdfReady, totalPages, initialPage],
+  )
 
-  // 先読みページの描画幅（単ページ幅・アスペクト比考慮）
-  const preloadPageWidth = (() => {
+  const preloadPageWidth = useMemo(() => {
     const maxWidth = calculatePageWidth(false, windowDimension.width)
     if (pageAspectRatio !== undefined) {
       const widthForHeight = Math.floor(windowDimension.height * pageAspectRatio)
       return Math.max(1, Math.min(maxWidth, widthForHeight))
     }
     return Math.max(1, maxWidth)
-  })()
+  }, [calculatePageWidth, windowDimension.width, windowDimension.height, pageAspectRatio])
 
-  const onDocumentLoadSuccess = async (pdf: {
-    numPages: number
-    getPage: (
-      n: number,
-    ) => Promise<{ getViewport: (opts: { scale: number }) => { width: number; height: number } }>
-  }) => {
-    // setTotalPages と setPageAspectRatio を await 後に同一マイクロタスクで呼ぶことで
-    // React 18 の自動バッチングにより1回のレンダリングにまとめる。
-    // これにより intermediate な状態（ページ数だけ判明してアスペクト比未定）が生じず、
-    // scheduleHorizontalRecenter によるスクロール位置リセットを防ぐ。
-    try {
-      const firstPage = await pdf.getPage(1)
-      const viewport = firstPage.getViewport({ scale: 1 })
-      setTotalPages((prev) => (prev === pdf.numPages ? prev : pdf.numPages))
-      setPageAspectRatio(viewport.width / viewport.height)
-    } catch {
-      // アスペクト比取得失敗時はページ数だけ更新してそのまま続行
-      setTotalPages((prev) => (prev === pdf.numPages ? prev : pdf.numPages))
-    }
-    setPdfReady(true)
-  }
+  const onDocumentLoadSuccess = useCallback(
+    async (pdf: {
+      numPages: number
+      getPage: (
+        n: number,
+      ) => Promise<{
+        getViewport: (opts: { scale: number }) => { width: number; height: number }
+      }>
+    }) => {
+      try {
+        const firstPage = await pdf.getPage(1)
+        const viewport = firstPage.getViewport({ scale: 1 })
+        setTotalPages((prev) => (prev === pdf.numPages ? prev : pdf.numPages))
+        setPageAspectRatio(viewport.width / viewport.height)
+      } catch {
+        setTotalPages((prev) => (prev === pdf.numPages ? prev : pdf.numPages))
+      }
+      setPdfReady(true)
+    },
+    [setTotalPages],
+  )
 
   if (!selectedBook) {
     return null

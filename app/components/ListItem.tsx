@@ -1,4 +1,5 @@
 import { usePalette } from "@/theme"
+import { memo } from "react"
 import type { ReactElement, ReactNode } from "react"
 import {
   type StyleProp,
@@ -91,7 +92,9 @@ interface ListItemActionProps {
  *
  * - [Documentation and Examples](https://github.com/infinitered/ignite/blob/master/docs/Components-ListItem.md)
  */
-export function ListItem(props: ListItemProps) {
+// React.memo: FlatList uses reference equality — memo prevents re-rendering
+// list items when parent re-renders but item props haven't changed.
+export const ListItem = memo(function ListItem(props: ListItemProps) {
   const palette = usePalette()
   const {
     bottomSeparator,
@@ -155,7 +158,7 @@ export function ListItem(props: ListItemProps) {
       </TouchableOpacity>
     </View>
   )
-}
+})
 
 function ListItemAction(props: ListItemActionProps) {
   const { Component, iconColor: _iconColor, size: _size, side: _side } = props

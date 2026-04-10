@@ -6,7 +6,7 @@ import { useViewer } from "@/screens/ViewerScreen/useViewer"
 import { logger } from "@/utils/logger"
 import { File } from "expo-file-system"
 import { observer } from "mobx-react-lite"
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { type FlexAlignType, StyleSheet, View, type ViewStyle } from "react-native"
 
 export const PDFViewerScreen = observer(() => {
@@ -36,11 +36,14 @@ export const PDFViewerScreen = observer(() => {
 
   const isViewerSourceLocalPdf = viewerSourceUri.startsWith("file://")
 
-  const viewerPdfSource = {
-    uri: viewerSourceUri,
-    cache: true,
-    headers: header,
-  }
+  const viewerPdfSource = useMemo(
+    () => ({
+      uri: viewerSourceUri,
+      cache: true,
+      headers: header,
+    }),
+    [viewerSourceUri, header],
+  )
 
   useEffect(() => {
     setPdfError(undefined)
@@ -90,68 +93,87 @@ export const PDFViewerScreen = observer(() => {
     }
   }, [isViewerSourceLocalPdf, viewerSourceUri])
 
-  const handleHiddenPdfLoadComplete = (numberOfPages: number) => {
+  const handleHiddenPdfLoadComplete = useCallback((numberOfPages: number) => {
     setTotalPages((prev) => Math.max(prev ?? 0, numberOfPages))
-  }
+  }, [setTotalPages])
 
-  const handlePageLoadComplete = (
-    numberOfPages: number,
-    _path: string,
-    size: { width: number; height: number },
-  ) => {
-    setTotalPages((prev) => Math.max(prev ?? 0, numberOfPages))
+  const handlePageLoadComplete = useCallback(
+    (
+      numberOfPages: number,
+      _path: string,
+      size: { width: number; height: number },
+    ) => {
+      setTotalPages((prev) => Math.max(prev ?? 0, numberOfPages))
 
-    setSourcePageSize((prev) => {
-      if (prev && prev.width === size.width && prev.height === size.height) {
-        return prev
+      setSourcePageSize((prev) => {
+        if (prev && prev.width === size.width && prev.height === size.height) {
+          return prev
+        }
+
+        return { height: size.height, width: size.width }
+      })
+    },
+    [setTotalPages],
+  )
+
+  const handlePageError = useCallback(
+    (error: unknown) => {
+      const message = error instanceof Error ? error.message : String(error)
+      logger.error("Failed to render PDF page", { message, sourceUri: viewerSourceUri })
+      setPdfError(message)
+    },
+    [viewerSourceUri],
+  )
+
+  const handleHiddenPageCountError = useCallback(
+    (message: string) => {
+      logger.warn("Failed to detect PDF page count in hidden WebView", {
+        message,
+        sourceUri: viewerSourceUri,
+      })
+    },
+    [viewerSourceUri],
+  )
+
+  const renderPage = useCallback(
+    (renderProps: RenderPageProps) => {
+      const imageSize =
+        sourcePageSize &&
+        calculatePageDimensions(
+          sourcePageSize,
+          renderProps.availableWidth,
+          renderProps.availableHeight ?? windowDimension.height,
+          false,
+        )
+
+      const pageAlignStyle: ViewStyle = {
+        alignSelf: "center" as FlexAlignType,
+        justifyContent: "center",
       }
 
-      return { height: size.height, width: size.width }
-    })
-  }
-
-  const handlePageError = (error: unknown) => {
-    const message = error instanceof Error ? error.message : String(error)
-    logger.error("Failed to render PDF page", { message, sourceUri: viewerSourceUri })
-    setPdfError(message)
-  }
-
-  const handleHiddenPageCountError = (message: string) => {
-    logger.warn("Failed to detect PDF page count in hidden WebView", {
-      message,
-      sourceUri: viewerSourceUri,
-    })
-  }
-
-  const renderPage = (renderProps: RenderPageProps) => {
-    const imageSize =
-      sourcePageSize &&
-      calculatePageDimensions(
-        sourcePageSize,
-        renderProps.availableWidth,
-        renderProps.availableHeight ?? windowDimension.height,
-        false,
+      return (
+        <PDF
+          source={viewerPdfSource}
+          style={[styles.page, pageAlignStyle, imageSize]}
+          onLoadComplete={handlePageLoadComplete}
+          onError={handlePageError}
+          trustAllCerts={false}
+          enablePaging={false}
+          scrollEnabled={false}
+          singlePage={true}
+          page={renderProps.page + 1}
+        />
       )
-
-    const pageAlignStyle: ViewStyle = {
-      alignSelf: "center" as FlexAlignType,
-      justifyContent: "center",
-    }
-
-    return (
-      <PDF
-        source={viewerPdfSource}
-        style={[styles.page, pageAlignStyle, imageSize]}
-        onLoadComplete={handlePageLoadComplete}
-        onError={handlePageError}
-        trustAllCerts={false}
-        enablePaging={false}
-        scrollEnabled={false}
-        singlePage={true}
-        page={renderProps.page + 1}
-      />
-    )
-  }
+    },
+    [
+      sourcePageSize,
+      calculatePageDimensions,
+      windowDimension.height,
+      viewerPdfSource,
+      handlePageLoadComplete,
+      handlePageError,
+    ],
+  )
 
   if (!selectedBook) return null
 
