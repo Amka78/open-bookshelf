@@ -1,5 +1,5 @@
 import type React from "react"
-import { useEffect, useRef, useState } from "react"
+import { memo, useEffect, useRef, useState } from "react"
 import { StyleSheet, View } from "react-native"
 
 import {
@@ -43,7 +43,11 @@ type BoxWithHoverProps = React.ComponentPropsWithRef<typeof Box> & {
 }
 const BoxWithHover = Box as React.ComponentType<BoxWithHoverProps>
 
-export function BookImageItem({
+// React.memo: prevents re-rendering when parent's renderItem creates
+// new closure props but all values are referentially equal.
+// React Compiler handles intra-component memoization but cannot prevent
+// the component function from being called when the parent re-renders.
+export const BookImageItem = memo(function BookImageItem({
   loading = false,
   selected,
   onSelectToggle,
@@ -174,7 +178,7 @@ export function BookImageItem({
       {selected ? <Box style={styles.selectedOverlay} pointerEvents="none" /> : null}
     </Box>
   )
-}
+})
 
 const styles = StyleSheet.create({
   imageSize: {

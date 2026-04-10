@@ -11,6 +11,7 @@ import type { Book } from "@/models/calibre/BookModel"
 import { usePalette } from "@/theme"
 import { typography } from "@/theme/typography"
 import { Pressable } from "@gluestack-ui/themed"
+import { memo } from "react"
 import { StyleSheet, Text } from "react-native"
 
 type BookListItemProps = {
@@ -35,7 +36,9 @@ const STATUS_ICON: Record<
   finished: { name: "check-circle-outline", color: "#22C55E" },
 }
 
-export function BookListItem({
+// React.memo: prevents re-rendering when the list's renderItem callback
+// recreates closure props but the actual values are unchanged.
+export const BookListItem = memo(function BookListItem({
   book,
   source,
   readStatus,
@@ -143,7 +146,7 @@ export function BookListItem({
       </HStack>
     </Pressable>
   )
-}
+})
 
 const styles = StyleSheet.create({
   row: {

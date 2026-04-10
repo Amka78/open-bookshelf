@@ -36,7 +36,7 @@ import { deleteCachedBookImages } from "@/utils/bookImageCache"
 import { useIsFocused, useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import type React from "react"
-import { type FC, useEffect, useLayoutEffect, useRef, useState } from "react"
+import { type FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Platform, useWindowDimensions } from "react-native"
 import { useLibrary } from "./useLibrary"
 
@@ -95,7 +95,7 @@ export const LibraryScreen: FC = observer(() => {
   const bookList = selectedLibrary?.books ? Array.from(selectedLibrary.books.values()) : []
 
   // O(1) lookup for cached books instead of O(n) scan per renderItem
-  const cachedBookIds = (() => {
+  const cachedBookIds = useMemo(() => {
     const set = new Set<number>()
     for (const h of calibreRootStore.readingHistories) {
       if (h.libraryId === selectedLibrary?.id && h.cachedPath.length > 0) {
@@ -103,10 +103,10 @@ export const LibraryScreen: FC = observer(() => {
       }
     }
     return set
-  })()
+  }, [calibreRootStore.readingHistories, selectedLibrary?.id])
 
   // Build readingProgress map (best serverPosFrac per book) for the progress bar
-  const readingProgressById = (() => {
+  const readingProgressById = useMemo(() => {
     const map = new Map<number, number>()
     for (const h of calibreRootStore.readingHistories) {
       if (
@@ -121,7 +121,7 @@ export const LibraryScreen: FC = observer(() => {
       }
     }
     return map
-  })()
+  }, [calibreRootStore.readingHistories, selectedLibrary?.id])
 
   const thumbnailSourceById = (() => {
     const nextCache = new Map<
@@ -273,167 +273,191 @@ export const LibraryScreen: FC = observer(() => {
     })
   }, [convergenceHook.isLarge, libraryHook, libraryActions, navigation, selectedLibrary, viewMode])
 
-  const renderItem = ({ item }: { item: Book }) => {
-    const onPress = async () => {
-      selectedLibrary.setBook(item.id)
-      await openViewerHook.execute(modal)
-    }
-
-    let listItem: React.JSX.Element
-    const hasReadingHistory = cachedBookIds.has(item.id)
-    const readingProgress = readingProgressById.get(item.id) ?? null
-    const readStatus = settingStore.getReadStatus(selectedLibrary.id, item.id) as
-      | "want-to-read"
-      | "reading"
-      | "finished"
-      | undefined
-
-    const handleSetStatus = (status: "want-to-read" | "reading" | "finished" | null) => {
-      settingStore.setReadStatus(selectedLibrary.id, item.id, status)
-    }
-
-    const thumbnailUri = encodeURI(api.getBookThumbnailUrl(item.id, selectedLibrary.id))
-    const imageSource = thumbnailSourceById.get(item.id)?.source ?? {
-      uri: thumbnailUri,
-      headers: api.getAuthHeaders(thumbnailUri),
-    }
-    const imageUrl = imageSource.uri
-
-    const onLongPress = async () => {
-      selectedLibrary.setBook(item.id)
-      if (Platform.OS === "web") {
+  const renderItem = useCallback(
+    ({ item }: { item: Book }) => {
+      const onPress = async () => {
+        selectedLibrary.setBook(item.id)
         await openViewerHook.execute(modal)
-        return
       }
 
-      if (convergenceHook.isLarge) {
-        modal.openModal("BookDetailModal", {
-          imageUrl: imageUrl,
-          onLinkPress: (query) => {
-            libraryHook.onSearch(query)
+      let listItem: React.JSX.Element
+      const hasReadingHistory = cachedBookIds.has(item.id)
+      const readingProgress = readingProgressById.get(item.id) ?? null
+      const readStatus = settingStore.getReadStatus(selectedLibrary.id, item.id) as
+        | "want-to-read"
+        | "reading"
+        | "finished"
+        | undefined
+
+      const handleSetStatus = (status: "want-to-read" | "reading" | "finished" | null) => {
+        settingStore.setReadStatus(selectedLibrary.id, item.id, status)
+      }
+
+      const thumbnailUri = encodeURI(api.getBookThumbnailUrl(item.id, selectedLibrary.id))
+      const imageSource = thumbnailSourceById.get(item.id)?.source ?? {
+        uri: thumbnailUri,
+        headers: api.getAuthHeaders(thumbnailUri),
+      }
+      const imageUrl = imageSource.uri
+
+      const onLongPress = async () => {
+        selectedLibrary.setBook(item.id)
+        if (Platform.OS === "web") {
+          await openViewerHook.execute(modal)
+          return
+        }
+
+        if (convergenceHook.isLarge) {
+          modal.openModal("BookDetailModal", {
+            imageUrl: imageUrl,
+            onLinkPress: (query) => {
+              libraryHook.onSearch(query)
+            },
+          })
+        } else {
+          navigation.navigate("BookDetail", {
+            imageUrl: imageUrl,
+            onLinkPress: (query) => {
+              libraryHook.onSearch(query)
+            },
+          })
+        }
+      }
+
+      const onOpenBook = async () => {
+        selectedLibrary.setBook(item.id)
+        await openViewerHook.execute(modal)
+      }
+
+      const onDownloadBook = async () => {
+        selectedLibrary.setBook(item.id)
+        await downloadBookHook.execute(modal)
+      }
+
+      const onConvertBook = async () => {
+        selectedLibrary.setBook(item.id)
+        const book = selectedLibrary.selectedBook
+        if (!book?.metaData?.formats?.length) {
+          return
+        }
+        modal.openModal("BookConvertModal", { imageUrl })
+      }
+
+      const onEditBook = () => {
+        selectedLibrary.setBook(item.id)
+        if (convergenceHook.isLarge) {
+          modal.openModal("BookEditModal", {
+            imageUrl: imageUrl,
+          })
+        } else {
+          navigation.navigate("BookEdit", {
+            imageUrl: imageUrl,
+          })
+        }
+      }
+
+      const onDeleteBook = async () => {
+        selectedLibrary.setBook(item.id)
+        await deleteBookHook.execute(modal)
+      }
+
+      const onClearBookCache = () => {
+        modal.openModal("ConfirmModal", {
+          titleTx: "modal.cacheClearConfirmModal.title",
+          messageTx: "modal.cacheClearConfirmModal.message",
+          onOKPress: async () => {
+            try {
+              const targetReadingHistories = calibreRootStore.readingHistories.filter(
+                (history) => {
+                  return history.libraryId === selectedLibrary.id && history.bookId === item.id
+                },
+              )
+
+              const cachedPathList = targetReadingHistories.flatMap(
+                (history) => history.cachedPath,
+              )
+              calibreRootStore.removeReadingHistoriesByBook(selectedLibrary.id, item.id)
+
+              await deleteCachedBookImages(cachedPathList)
+            } catch (e) {
+              modal.closeModal("ConfirmModal")
+              modal.openModal("ErrorModal", {
+                titleTx: "common.error",
+                message: e instanceof Error ? e.message : String(e),
+              })
+            }
           },
         })
-      } else {
-        navigation.navigate("BookDetail", {
-          imageUrl: imageUrl,
-          onLinkPress: (query) => {
-            libraryHook.onSearch(query)
-          },
-        })
       }
-    }
 
-    const onOpenBook = async () => {
-      selectedLibrary.setBook(item.id)
-      await openViewerHook.execute(modal)
-    }
-
-    const onDownloadBook = async () => {
-      selectedLibrary.setBook(item.id)
-      await downloadBookHook.execute(modal)
-    }
-
-    const onConvertBook = async () => {
-      selectedLibrary.setBook(item.id)
-      const book = selectedLibrary.selectedBook
-      if (!book?.metaData?.formats?.length) {
-        return
+      if (viewMode === "list") {
+        listItem = (
+          <BookListItem
+            book={item}
+            source={imageSource}
+            readStatus={readStatus}
+            readingProgress={readingProgress ?? undefined}
+            isCached={hasReadingHistory}
+            isSelected={libraryHook.isBookSelected(item.id)}
+            onPress={
+              libraryHook.isSelectionMode
+                ? () => libraryHook.toggleBookSelection(item.id)
+                : onPress
+            }
+            onLongPress={onLongPress}
+          />
+        )
+      } else if (libraryHook.currentListStyle === "gridView") {
+        listItem = (
+          <BookImageItem
+            source={imageSource}
+            showCachedIcon={hasReadingHistory}
+            onCachedIconPress={onClearBookCache}
+            readingProgress={readingProgress}
+            readStatus={readStatus}
+            onPress={
+              libraryHook.isSelectionMode
+                ? async () => libraryHook.toggleBookSelection(item.id)
+                : onPress
+            }
+            onLongPress={onLongPress}
+            detailMenuProps={
+              libraryHook.isSelectionMode
+                ? undefined
+                : {
+                    onOpenBook: onOpenBook,
+                    onDownloadBook: onDownloadBook,
+                    onConvertBook: onConvertBook,
+                    onEditBook: onEditBook,
+                    onDeleteBook: onDeleteBook,
+                    readStatus: readStatus ?? null,
+                    onSetStatus: handleSetStatus,
+                  }
+            }
+            selected={libraryHook.isBookSelected(item.id)}
+            onSelectToggle={() => libraryHook.toggleBookSelection(item.id)}
+          />
+        )
       }
-      modal.openModal("BookConvertModal", { imageUrl })
-    }
-
-    const onEditBook = () => {
-      selectedLibrary.setBook(item.id)
-      if (convergenceHook.isLarge) {
-        modal.openModal("BookEditModal", {
-          imageUrl: imageUrl,
-        })
-      } else {
-        navigation.navigate("BookEdit", {
-          imageUrl: imageUrl,
-        })
-      }
-    }
-
-    const onDeleteBook = async () => {
-      selectedLibrary.setBook(item.id)
-      await deleteBookHook.execute(modal)
-    }
-
-    const onClearBookCache = () => {
-      modal.openModal("ConfirmModal", {
-        titleTx: "modal.cacheClearConfirmModal.title",
-        messageTx: "modal.cacheClearConfirmModal.message",
-        onOKPress: async () => {
-          try {
-            const targetReadingHistories = calibreRootStore.readingHistories.filter((history) => {
-              return history.libraryId === selectedLibrary.id && history.bookId === item.id
-            })
-
-            const cachedPathList = targetReadingHistories.flatMap((history) => history.cachedPath)
-            calibreRootStore.removeReadingHistoriesByBook(selectedLibrary.id, item.id)
-
-            await deleteCachedBookImages(cachedPathList)
-          } catch (e) {
-            modal.closeModal("ConfirmModal")
-            modal.openModal("ErrorModal", {
-              titleTx: "common.error",
-              message: e instanceof Error ? e.message : String(e),
-            })
-          }
-        },
-      })
-    }
-
-    if (viewMode === "list") {
-      listItem = (
-        <BookListItem
-          book={item}
-          source={imageSource}
-          readStatus={readStatus}
-          readingProgress={readingProgress ?? undefined}
-          isCached={hasReadingHistory}
-          isSelected={libraryHook.isBookSelected(item.id)}
-          onPress={
-            libraryHook.isSelectionMode ? () => libraryHook.toggleBookSelection(item.id) : onPress
-          }
-          onLongPress={onLongPress}
-        />
-      )
-    } else if (libraryHook.currentListStyle === "gridView") {
-      listItem = (
-        <BookImageItem
-          source={imageSource}
-          showCachedIcon={hasReadingHistory}
-          onCachedIconPress={onClearBookCache}
-          readingProgress={readingProgress}
-          readStatus={readStatus}
-          onPress={
-            libraryHook.isSelectionMode
-              ? async () => libraryHook.toggleBookSelection(item.id)
-              : onPress
-          }
-          onLongPress={onLongPress}
-          detailMenuProps={
-            libraryHook.isSelectionMode
-              ? undefined
-              : {
-                  onOpenBook: onOpenBook,
-                  onDownloadBook: onDownloadBook,
-                  onConvertBook: onConvertBook,
-                  onEditBook: onEditBook,
-                  onDeleteBook: onDeleteBook,
-                  readStatus: readStatus ?? null,
-                  onSetStatus: handleSetStatus,
-                }
-          }
-          selected={libraryHook.isBookSelected(item.id)}
-          onSelectToggle={() => libraryHook.toggleBookSelection(item.id)}
-        />
-      )
-    }
-    return listItem
-  }
+      return listItem
+    },
+    [
+      selectedLibrary,
+      openViewerHook,
+      deleteBookHook,
+      downloadBookHook,
+      libraryHook,
+      convergenceHook,
+      modal,
+      navigation,
+      cachedBookIds,
+      readingProgressById,
+      thumbnailSourceById,
+      viewMode,
+      settingStore,
+      calibreRootStore,
+    ],
+  )
 
   const onBulkEdit = () => {
     if (libraryHook.selectedBooks.length === 0) return

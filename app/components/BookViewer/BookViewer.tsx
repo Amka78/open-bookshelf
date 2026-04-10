@@ -17,7 +17,7 @@ import { goToNextPage, goToPreviousPage } from "@/utils/pageTurnning"
 import { useNavigation } from "@react-navigation/native"
 import { FlashList, type FlashListRef, type ListRenderItem } from "@shopify/flash-list"
 import React from "react"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import {
   type FlexAlignType,
   type NativeScrollEvent,
@@ -179,6 +179,13 @@ export function BookViewer(props: BookViewerProps) {
     scrollToIndex(idx, true)
   }, [jumpRequest?.id])
 
+  // Ref for scrollIndex: used only in logging inside renderPage.
+  // Avoids making scrollIndex a dependency of useCallback, which would
+  // recreate renderItem on every page turn and force FlashList to
+  // re-render all visible items.
+  const scrollIndexRef = useRef(scrollIndex)
+  scrollIndexRef.current = scrollIndex
+
   const handleShowToc = () => {
     const toc = viewerHook.toc
     if (!toc) return
@@ -195,130 +202,158 @@ export function BookViewer(props: BookViewerProps) {
     modal.openModal("ReadingSettingsModal", {})
   }
 
-  const renderPage = (renderProps: RenderPageProps) => {
-    const handlePagePress = () => {
-      const targetIndex =
-        renderProps.direction === "previous"
-          ? goToPreviousPage(renderProps.scrollIndex, 1)
-          : goToNextPage(renderProps.scrollIndex, pages[viewerHook.readingStyle].length, 1)
+  // scrollIndex accessed via ref to avoid page-turn recreation; viewerHook is object-stable via React Compiler
+  const renderPage = useCallback(
+    (renderProps: RenderPageProps) => {
+      const handlePagePress = () => {
+        const targetIndex =
+          renderProps.direction === "previous"
+            ? goToPreviousPage(renderProps.scrollIndex, 1)
+            : goToNextPage(renderProps.scrollIndex, pages[viewerHook.readingStyle].length, 1)
 
-      scrollToIndex(targetIndex, true, isHorizontalReading ? undefined : 0.5)
-    }
+        scrollToIndex(targetIndex, true, isHorizontalReading ? undefined : 0.5)
+      }
 
-    const pageProps = {
-      ...renderProps,
-      onPress: handlePagePress,
-      onLongPress: viewerHook.onManageMenu,
-      annotations: annotationsForPage(renderProps.page)
-        .filter((a) => a.type === "highlight")
-        .map((a) => ({
-          uuid: a.uuid,
-          highlightedText: a.highlightedText,
-          styleWhich: a.styleWhich,
-        })),
-      onTextSelect: (text: string) => {
-        modal.openModal("AnnotationModal", {
-          selectedText: text,
-          onSave: async ({ text: selText, notes, styleWhich }) => {
-            await addHighlight(renderProps.page, selText ?? text, notes || undefined, styleWhich)
-          },
+      const pageProps = {
+        ...renderProps,
+        onPress: handlePagePress,
+        onLongPress: viewerHook.onManageMenu,
+        annotations: annotationsForPage(renderProps.page)
+          .filter((a) => a.type === "highlight")
+          .map((a) => ({
+            uuid: a.uuid,
+            highlightedText: a.highlightedText,
+            styleWhich: a.styleWhich,
+          })),
+        onTextSelect: (text: string) => {
+          modal.openModal("AnnotationModal", {
+            selectedText: text,
+            onSave: async ({ text: selText, notes, styleWhich }) => {
+              await addHighlight(renderProps.page, selText ?? text, notes || undefined, styleWhich)
+            },
+          })
+        },
+      }
+
+      let alignItems: FlexAlignType = "center"
+
+      switch (renderProps.pageType) {
+        case "singlePage":
+          alignItems = "center"
+          break
+        case "leftPage":
+          alignItems = "flex-end"
+          break
+        case "rightPage":
+          alignItems = "flex-start"
+          break
+      }
+
+      return (
+        <PagePressable
+          currentPage={renderProps.scrollIndex}
+          direction={renderProps.direction}
+          onLongPress={viewerHook.onManageMenu}
+          disabled={props.disableNavigation}
+          onPageChanging={(page) => {
+            console.tron.log(`current scroll index ${scrollIndexRef.current}`)
+            console.tron.log(`page pressed next page:${page}`)
+            scrollToIndex(page, true, isHorizontalReading ? undefined : 0.5)
+          }}
+          totalPages={pages[viewerHook.readingStyle].length}
+          transitionPages={1}
+          style={{
+            ...(isHorizontalReading ? styles.pageRoot : styles.verticalPageRoot),
+            alignItems,
+            width: renderProps.availableWidth,
+          }}
+        >
+          {props.renderPage(pageProps)}
+        </PagePressable>
+      )
+    },
+    [
+      isHorizontalReading,
+      pages,
+      viewerHook,
+      props.renderPage,
+      props.disableNavigation,
+      scrollToIndex,
+      annotationsForPage,
+      addHighlight,
+      modal,
+    ],
+  )
+
+  // viewerHook.pageDirection accessed as property for granular dep tracking
+  const renderItemContent = useCallback(
+    (item: number | FacingPageType, index: number) => {
+      let renderComp: React.JSX.Element
+      if (typeof item === "number" || (item as FacingPageType).page2 === undefined) {
+        const num = typeof item === "number" ? item : (item as FacingPageType).page1
+        renderComp = (
+          <Box
+            width={listViewportWidth}
+            height={isHorizontalReading ? dimension.height : undefined}
+            style={useTransformInvert ? styles.scaleXInverted : undefined}
+          >
+            {renderPage({
+              page: num,
+              direction: "next",
+              pageType: "singlePage",
+              scrollIndex: index,
+              availableWidth: listViewportWidth,
+              availableHeight: isHorizontalReading ? dimension.height : undefined,
+            })}
+          </Box>
+        )
+      } else {
+        const leftPage = renderPage({
+          page: viewerHook.pageDirection === "left" ? item.page2 : item.page1,
+          direction: viewerHook.pageDirection === "left" ? "next" : "previous",
+          pageType: "leftPage",
+          scrollIndex: index,
+          availableWidth: listViewportWidth / 2,
+          availableHeight: dimension.height,
         })
-      },
-    }
+        const rightPage = renderPage({
+          page: viewerHook.pageDirection === "left" ? item.page1 : item.page2,
+          direction: viewerHook.pageDirection === "left" ? "previous" : "next",
+          pageType: "rightPage",
+          scrollIndex: index,
+          availableWidth: listViewportWidth / 2,
+          availableHeight: dimension.height,
+        })
+        renderComp = (
+          <HStack
+            width={listViewportWidth}
+            height={dimension.height}
+            style={useTransformInvert ? styles.scaleXInverted : undefined}
+          >
+            {leftPage}
+            {rightPage}
+          </HStack>
+        )
+      }
 
-    let alignItems: FlexAlignType = "center"
+      return renderComp
+    },
+    [
+      dimension.height,
+      isHorizontalReading,
+      listViewportWidth,
+      renderPage,
+      useTransformInvert,
+      viewerHook.pageDirection,
+    ],
+  )
 
-    switch (renderProps.pageType) {
-      case "singlePage":
-        alignItems = "center"
-        break
-      case "leftPage":
-        alignItems = "flex-end"
-        break
-      case "rightPage":
-        alignItems = "flex-start"
-        break
-    }
-
-    return (
-      <PagePressable
-        currentPage={renderProps.scrollIndex}
-        direction={renderProps.direction}
-        onLongPress={viewerHook.onManageMenu}
-        disabled={props.disableNavigation}
-        onPageChanging={(page) => {
-          console.tron.log(`current scroll index ${scrollIndex}`)
-          console.tron.log(`page pressed next page:${page}`)
-          scrollToIndex(page, true, isHorizontalReading ? undefined : 0.5)
-        }}
-        totalPages={pages[viewerHook.readingStyle].length}
-        transitionPages={1}
-        style={{
-          ...(isHorizontalReading ? styles.pageRoot : styles.verticalPageRoot),
-          alignItems,
-          width: renderProps.availableWidth,
-        }}
-      >
-        {props.renderPage(pageProps)}
-      </PagePressable>
-    )
-  }
-
-  const renderItemContent = (item: number | FacingPageType, index: number) => {
-    let renderComp: React.JSX.Element
-    if (typeof item === "number" || (item as FacingPageType).page2 === undefined) {
-      const num = typeof item === "number" ? item : (item as FacingPageType).page1
-      renderComp = (
-        <Box
-          width={listViewportWidth}
-          height={isHorizontalReading ? dimension.height : undefined}
-          style={useTransformInvert ? styles.scaleXInverted : undefined}
-        >
-          {renderPage({
-            page: num,
-            direction: "next",
-            pageType: "singlePage",
-            scrollIndex: index,
-            availableWidth: listViewportWidth,
-            availableHeight: isHorizontalReading ? dimension.height : undefined,
-          })}
-        </Box>
-      )
-    } else {
-      const leftPage = renderPage({
-        page: viewerHook.pageDirection === "left" ? item.page2 : item.page1,
-        direction: viewerHook.pageDirection === "left" ? "next" : "previous",
-        pageType: "leftPage",
-        scrollIndex: index,
-        availableWidth: listViewportWidth / 2,
-        availableHeight: dimension.height,
-      })
-      const rightPage = renderPage({
-        page: viewerHook.pageDirection === "left" ? item.page1 : item.page2,
-        direction: viewerHook.pageDirection === "left" ? "previous" : "next",
-        pageType: "rightPage",
-        scrollIndex: index,
-        availableWidth: listViewportWidth / 2,
-        availableHeight: dimension.height,
-      })
-      renderComp = (
-        <HStack
-          width={listViewportWidth}
-          height={dimension.height}
-          style={useTransformInvert ? styles.scaleXInverted : undefined}
-        >
-          {leftPage}
-          {rightPage}
-        </HStack>
-      )
-    }
-
-    return renderComp
-  }
-
-  const renderItem: ListRenderItem<number | FacingPageType> = ({ item, index }) => {
-    return renderItemContent(item, index)
-  }
+  const renderItem: ListRenderItem<number | FacingPageType> = useCallback(
+    ({ item, index }) => {
+      return renderItemContent(item, index)
+    },
+    [renderItemContent],
+  )
 
   const estimatedItemSize =
     viewerHook.readingStyle === "verticalScroll" ? dimension.height : listViewportWidth
@@ -353,21 +388,24 @@ export function BookViewer(props: BookViewerProps) {
   >(undefined)
   const singlePageLongPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const clearSinglePageLongPressTimer = () => {
+  const clearSinglePageLongPressTimer = useCallback(() => {
     if (singlePageLongPressTimerRef.current != null) {
       clearTimeout(singlePageLongPressTimerRef.current)
       singlePageLongPressTimerRef.current = null
     }
-  }
+  }, [])
 
-  const navigateSinglePageDirection = (baseIndex: number, direction: "next" | "previous") => {
-    const targetIndex =
-      direction === "previous"
-        ? goToPreviousPage(baseIndex, 1)
-        : goToNextPage(baseIndex, data.length, 1)
+  const navigateSinglePageDirection = useCallback(
+    (baseIndex: number, direction: "next" | "previous") => {
+      const targetIndex =
+        direction === "previous"
+          ? goToPreviousPage(baseIndex, 1)
+          : goToNextPage(baseIndex, data.length, 1)
 
-    scrollToIndex(targetIndex, true, isHorizontalReading ? undefined : 0.5)
-  }
+      scrollToIndex(targetIndex, true, isHorizontalReading ? undefined : 0.5)
+    },
+    [data.length, isHorizontalReading, scrollToIndex],
+  )
 
   useEffect(() => {
     latestHorizontalIndexRef.current = scrollIndex
@@ -402,26 +440,37 @@ export function BookViewer(props: BookViewerProps) {
     }
   }, [currentHorizontalLayoutKey, pages])
 
-  const onListScrollSettled = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    if (!data.length) {
-      return
-    }
+  const onListScrollSettled = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      if (!data.length) {
+        return
+      }
 
-    const pageSize = isHorizontalReading ? listViewportWidth : dimension.height
-    if (pageSize <= 0) {
-      return
-    }
+      const pageSize = isHorizontalReading ? listViewportWidth : dimension.height
+      if (pageSize <= 0) {
+        return
+      }
 
-    const offset = isHorizontalReading
-      ? event.nativeEvent.contentOffset.x
-      : event.nativeEvent.contentOffset.y
-    const rawIndex = Math.round(offset / pageSize)
-    const clampedRawIndex = Math.max(0, Math.min(rawIndex, data.length - 1))
-    const resolvedIndex =
-      isInverted && !useTransformInvert ? data.length - 1 - clampedRawIndex : clampedRawIndex
+      const offset = isHorizontalReading
+        ? event.nativeEvent.contentOffset.x
+        : event.nativeEvent.contentOffset.y
+      const rawIndex = Math.round(offset / pageSize)
+      const clampedRawIndex = Math.max(0, Math.min(rawIndex, data.length - 1))
+      const resolvedIndex =
+        isInverted && !useTransformInvert ? data.length - 1 - clampedRawIndex : clampedRawIndex
 
-    syncScrollIndex(resolvedIndex)
-  }
+      syncScrollIndex(resolvedIndex)
+    },
+    [
+      data.length,
+      dimension.height,
+      isInverted,
+      isHorizontalReading,
+      listViewportWidth,
+      syncScrollIndex,
+      useTransformInvert,
+    ],
+  )
 
   return (
     <View style={styles.viewerContainer}>

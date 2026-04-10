@@ -8,7 +8,7 @@ import { isCalibreHtmlViewerFormat, isCalibreSerializedHtmlPath } from "@/utils/
 import { logger } from "@/utils/logger"
 import { useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
-import React, { type FC, useEffect, useLayoutEffect } from "react"
+import React, { type FC, useCallback, useEffect, useLayoutEffect, useMemo } from "react"
 
 export const ViewerScreen: FC = observer(() => {
   const { authenticationStore } = useStores()
@@ -29,13 +29,17 @@ export const ViewerScreen: FC = observer(() => {
   const isHtmlViewerFormat = selectedBook
     ? isCalibreHtmlViewerFormat(selectedBook.metaData.selectedFormat)
     : false
-  const sourcePathList = selectedBook
-    ? selectedBook.path.length > 0
-      ? selectedBook.path
-      : isHtmlViewerFormat
-        ? selectedBook.path
-        : cachedPathList ?? selectedBook.path
-    : []
+  const sourcePathList = useMemo(
+    (): string[] =>
+      selectedBook
+        ? selectedBook.path.length > 0
+          ? selectedBook.path
+          : isHtmlViewerFormat
+            ? selectedBook.path
+            : cachedPathList ?? selectedBook.path
+        : [],
+    [selectedBook, isHtmlViewerFormat, cachedPathList],
+  )
   const totalPages = sourcePathList.length
 
   useLayoutEffect(() => {
@@ -54,57 +58,61 @@ export const ViewerScreen: FC = observer(() => {
     })
   }, [viewerReady, selectedBook, initialPage, totalPages])
 
-  if (!selectedLibrary || !selectedBook) {
-    return null
-  }
-
-  const renderPage = (props: RenderPageProps) => {
-      const sourcePagePath = sourcePathList[props.page]
+  const renderPage = useCallback(
+    (renderProps: RenderPageProps) => {
+      if (!selectedBook || !selectedLibrary) return null
+      const sourcePagePath = sourcePathList[renderProps.page]
 
       if (isCalibreSerializedHtmlPath(sourcePagePath)) {
         logger.debug("Page is a Calibre serialized HTML, rendering with BookHtmlPage", {
-          page: props.page,
+          page: renderProps.page,
           sourcePagePath,
         })
         return (
           <BookHtmlPage
-            availableWidth={props.availableWidth}
-            availableHeight={props.availableHeight}
-            pageType={props.pageType}
+            availableWidth={renderProps.availableWidth}
+            availableHeight={renderProps.availableHeight}
+            pageType={renderProps.pageType}
             bookId={selectedBook.id}
             format={selectedBook.metaData.selectedFormat ?? "AZW3"}
             hash={selectedBook.hash ?? 0}
             headers={authenticationStore.getHeader(sourcePagePath)}
             libraryId={selectedLibrary.id}
-            onPress={props.onPress}
-            onLongPress={props.onLongPress}
+            onPress={renderProps.onPress}
+            onLongPress={renderProps.onLongPress}
             pagePath={sourcePagePath}
             size={selectedBook.metaData.formatSizes.get(selectedBook.metaData.selectedFormat) ?? 0}
-            annotations={props.annotations}
-            onTextSelect={props.onTextSelect}
+            annotations={renderProps.annotations}
+            onTextSelect={renderProps.onTextSelect}
           />
         )
       }
 
-      const pagePath = cachedPathList?.[props.page] ?? sourcePagePath
+      const pagePath = cachedPathList?.[renderProps.page] ?? sourcePagePath
       const isRemotePath = isRemoteBookImagePath(pagePath)
       logger.debug("Page is an image, rendering with BookPage", {
-        page: props.page,
+        page: renderProps.page,
         pagePath,
         isRemotePath,
       })
 
       return (
         <BookPage
-          availableWidth={props.availableWidth}
-          availableHeight={props.availableHeight}
+          availableWidth={renderProps.availableWidth}
+          availableHeight={renderProps.availableHeight}
           source={{
             uri: pagePath,
             headers: isRemotePath ? authenticationStore.getHeader(pagePath) : undefined,
           }}
         />
       )
-    }
+    },
+    [sourcePathList, cachedPathList, selectedBook, selectedLibrary, authenticationStore],
+  )
+
+  if (!selectedLibrary || !selectedBook) {
+    return null
+  }
 
   if (!viewerReady) {
     return null
