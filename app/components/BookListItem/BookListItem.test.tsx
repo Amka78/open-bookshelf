@@ -42,11 +42,16 @@ mock.module("@/theme/typography", () => ({
 
 mock.module("@/components", () => ({
   ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
-  Box: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  Box: ({ children, ...props }: { children?: ReactNode }) => <div {...props}>{children}</div>,
   HStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   VStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   Image: () => <img alt="cover" />,
   MaterialCommunityIcon: () => <span />,
+  Button: ({ children, onPress }: { children?: ReactNode; onPress?: () => void }) => (
+    <button type="button" onClick={onPress}>
+      {children}
+    </button>
+  ),
 }))
 
 mock.module("@gluestack-ui/themed", () => ({

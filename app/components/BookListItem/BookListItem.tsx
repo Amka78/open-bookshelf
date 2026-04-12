@@ -1,10 +1,12 @@
 import {
   Box,
+  Button,
   HStack,
   Image,
   type ImageProps,
   MaterialCommunityIcon,
   type MaterialCommunityIconProps,
+  Text,
   VStack,
 } from "@/components"
 import type { Book } from "@/models/calibre/BookModel"
@@ -12,7 +14,7 @@ import { usePalette } from "@/theme"
 import { typography } from "@/theme/typography"
 import { Pressable } from "@gluestack-ui/themed"
 import { memo } from "react"
-import { StyleSheet, Text } from "react-native"
+import { StyleSheet } from "react-native"
 
 type BookListItemProps = {
   book: Book
@@ -24,6 +26,7 @@ type BookListItemProps = {
   onPress?: () => void
   onLongPress?: () => void
   onSelectToggle?: () => void
+  onAuthorPress?: (author: string) => void
 }
 
 type ReadStatusValue = "want-to-read" | "reading" | "finished"
@@ -49,11 +52,13 @@ export const BookListItem = memo(function BookListItem({
   onPress,
   onLongPress,
   onSelectToggle,
+  onAuthorPress,
 }: BookListItemProps) {
   const palette = usePalette()
   const meta = book.metaData
   const title = meta?.title ?? ""
   const authors = meta?.authors?.join(", ") ?? ""
+  const authorList = meta?.authors ?? []
   const formats: string[] = meta?.formats ? [...meta.formats] : []
   const progressPct =
     typeof readingProgress === "number" && readingProgress > 0
@@ -104,7 +109,20 @@ export const BookListItem = memo(function BookListItem({
             >
               {title}
             </Text>
-            {authors ? (
+            {authorList.length > 0 && onAuthorPress ? (
+              <HStack flexWrap="wrap" flex={1} alignItems="center">
+                {authorList.map((author, index) => (
+                  <HStack key={author} alignItems="center">
+                    <Button variant="link" height="$5" onPress={() => onAuthorPress(author)}>
+                      {author}
+                    </Button>
+                    {index < authorList.length - 1 && (
+                      <Text style={{ color: palette.textSecondary }}>, </Text>
+                    )}
+                  </HStack>
+                ))}
+              </HStack>
+            ) : authors ? (
               <Text style={[styles.authors, { color: palette.textSecondary }]} numberOfLines={1}>
                 {authors}
               </Text>
@@ -181,6 +199,10 @@ const styles = StyleSheet.create({
   },
   authors: {
     fontSize: 12,
+  },
+  authorLink: {
+    fontSize: 12,
+    textDecorationLine: "underline",
   },
   progress: {
     fontSize: 11,
