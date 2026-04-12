@@ -182,8 +182,8 @@ describe("BookListItem", () => {
     // Find all buttons - there should be 2 (checkbox + outer pressable)
     const buttons = container.querySelectorAll('[role="button"]')
     expect(buttons.length).toBe(2)
-    // First button is the outer Pressable, second is the checkbox
-    const checkbox = buttons[1]
+    // First button is the checkbox (appears first in DOM), second is the row content
+    const checkbox = buttons[0]
     expect(checkbox).not.toBeNull()
     checkbox?.click()
     // Due to React event bubbling, both handlers may be called in test environment

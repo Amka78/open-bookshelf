@@ -65,6 +65,8 @@ export const BookListItem = memo(function BookListItem({
   return (
     <HStack
       alignItems="center"
+      paddingHorizontal="$2"
+      paddingVertical="$2"
       style={[
         styles.row,
         { borderBottomColor: palette.borderSubtle },
@@ -75,13 +77,13 @@ export const BookListItem = memo(function BookListItem({
       <Pressable onPress={onSelectToggle} style={styles.checkboxContainer}>
         <MaterialCommunityIcon
           name={isSelected ? "checkbox-marked" : "checkbox-blank-outline"}
-          iconSize="md"
+          iconSize="sm"
           color={isSelected ? "$primary500" : palette.textSecondary}
         />
       </Pressable>
 
-      <Pressable onPress={onPress} onLongPress={onLongPress}>
-        <HStack alignItems="center" paddingHorizontal="$3" paddingVertical="$2">
+      <Pressable onPress={onPress} onLongPress={onLongPress} style={styles.rowContent}>
+        <HStack alignItems="center" space="md">
           {/* Cover image */}
           <Box style={styles.coverContainer}>
             {source ? (
@@ -161,6 +163,9 @@ const styles = StyleSheet.create({
     height: 28,
     alignItems: "center",
     justifyContent: "center",
+  },
+  rowContent: {
+    flex: 1,
   },
   coverContainer: {
     width: 48,
