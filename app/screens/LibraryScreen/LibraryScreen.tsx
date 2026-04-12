@@ -50,6 +50,49 @@ function parseQueryParts(query: string): string[] {
     .filter(Boolean)
 }
 
+type LibrarySearchHeaderProps = {
+  convergenceHook: ReturnType<typeof useConvergence>
+  libraryHook: ReturnType<typeof useLibrary>
+  selectedLibrary: ReturnType<typeof useStores>["calibreRootStore"]["selectedLibrary"]
+  settingStore: ReturnType<typeof useStores>["settingStore"]
+}
+
+const LibrarySearchHeader = observer(
+  ({ convergenceHook, libraryHook, selectedLibrary, settingStore }: LibrarySearchHeaderProps) => {
+    return (
+      <HStack alignItems="center" flex={1} pl={convergenceHook.isLarge ? "$48" : 0}>
+        <SearchInputField
+          value={libraryHook.headerSearchText}
+          onChangeText={(text) => {
+            libraryHook.setHeaderSearchText(libraryHook.completeSearchParameter(text))
+          }}
+          onSubmit={(text) => {
+            libraryHook.onSearch(text)
+          }}
+          suggestions={libraryHook.getSearchSuggestions()}
+          placeholderTx={
+            selectedLibrary?.ftsEnabled
+              ? "libraryScreen.searchPlaceholderFts"
+              : "libraryScreen.searchPlaceholder"
+          }
+          size="md"
+          width={convergenceHook.isLarge ? 700 : "100%"}
+          testID="library-search-input"
+          savedSearches={selectedLibrary?.savedSearches?.slice() ?? []}
+          onSaveSearch={(name, query) => {
+            selectedLibrary?.addSavedSearch(name, query)
+          }}
+          onLoadSearch={(query) => {
+            libraryHook.setHeaderSearchText(query)
+            libraryHook.onSearch(query)
+          }}
+          recentSearches={settingStore.recentSearches.slice()}
+        />
+      </HStack>
+    )
+  },
+)
+
 export const LibraryScreen: FC = observer(() => {
   const { authenticationStore, calibreRootStore, settingStore } = useStores()
 
@@ -218,35 +261,12 @@ export const LibraryScreen: FC = observer(() => {
         )
       },
       headerTitle: () => (
-        <HStack alignItems="center" flex={1} pl={convergenceHook.isLarge ? "$32" : 0}>
-          <SearchInputField
-            value={libraryHook.headerSearchText}
-            onChangeText={(text) => {
-              libraryHook.setHeaderSearchText(libraryHook.completeSearchParameter(text))
-            }}
-            onSubmit={(text) => {
-              libraryHook.onSearch(text)
-            }}
-            suggestions={libraryHook.getSearchSuggestions()}
-            placeholderTx={
-              selectedLibrary?.ftsEnabled
-                ? "libraryScreen.searchPlaceholderFts"
-                : "libraryScreen.searchPlaceholder"
-            }
-            size="md"
-            width={convergenceHook.isLarge ? 700 : "100%"}
-            testID="library-search-input"
-            savedSearches={selectedLibrary?.savedSearches?.slice() ?? []}
-            onSaveSearch={(name, query) => {
-              selectedLibrary?.addSavedSearch(name, query)
-            }}
-            onLoadSearch={(query) => {
-              libraryHook.setHeaderSearchText(query)
-              libraryHook.onSearch(query)
-            }}
-            recentSearches={settingStore.recentSearches.slice()}
-          />
-        </HStack>
+        <LibrarySearchHeader
+          convergenceHook={convergenceHook}
+          libraryHook={libraryHook}
+          selectedLibrary={selectedLibrary}
+          settingStore={settingStore}
+        />
       ),
       headerRight: convergenceHook.isLarge
         ? () => {
@@ -378,10 +398,13 @@ export const LibraryScreen: FC = observer(() => {
             readingProgress={readingProgress ?? undefined}
             isCached={hasReadingHistory}
             isSelected={libraryHook.isBookSelected(item.id)}
-            onPress={
-              libraryHook.isSelectionMode ? () => libraryHook.toggleBookSelection(item.id) : onPress
-            }
+            onPress={onPress}
             onLongPress={onLongPress}
+            onPressImage={
+              libraryHook.isSelectionMode
+                ? () => libraryHook.toggleBookSelection(item.id)
+                : undefined
+            }
           />
         )
       } else if (libraryHook.currentListStyle === "gridView") {

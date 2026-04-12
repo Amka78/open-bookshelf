@@ -4,7 +4,7 @@ import { IconButton } from "@/components/IconButton/IconButton"
 import { InputField } from "@/components/InputField/InputField"
 import type { MessageKey } from "@/i18n"
 import { HStack, Input } from "@gluestack-ui/themed"
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import type { TextInput as RNTextInput } from "react-native"
 
 const MAX_SUGGESTIONS = 8
@@ -58,29 +58,7 @@ export function SearchInputField({
   recentSearches,
 }: Props) {
   const [isSuggestionOpen, setIsSuggestionOpen] = useState(false)
-  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inputRef = useRef<RNTextInput | null>(null)
-
-  useEffect(() => {
-    return () => {
-      if (closeTimerRef.current != null) clearTimeout(closeTimerRef.current)
-    }
-  }, [])
-
-  const scheduleClose = () => {
-    if (closeTimerRef.current != null) clearTimeout(closeTimerRef.current)
-    closeTimerRef.current = setTimeout(() => {
-      closeTimerRef.current = null
-      setIsSuggestionOpen(false)
-    }, 120)
-  }
-
-  const cancelClose = () => {
-    if (closeTimerRef.current != null) {
-      clearTimeout(closeTimerRef.current)
-      closeTimerRef.current = null
-    }
-  }
 
   const { prefix, token } = getCurrentToken(value)
   const lowerToken = token.toLowerCase()
@@ -147,15 +125,12 @@ export function SearchInputField({
                   <InputField
                     value={value}
                     onChangeText={(text) => {
-                      cancelClose()
                       setIsSuggestionOpen(true)
                       onChangeText(text)
                     }}
                     onFocus={() => {
-                      cancelClose()
                       setIsSuggestionOpen(true)
                     }}
-                    onBlur={scheduleClose}
                     onSubmitEditing={() => onSubmit?.(value)}
                     returnKeyType="search"
                     autoCapitalize="none"
