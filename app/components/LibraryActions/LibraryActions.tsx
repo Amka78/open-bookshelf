@@ -6,9 +6,11 @@ import {
   SortMenu,
   VirtualLibraryButton,
 } from "@/components"
+import { translate } from "@/i18n"
 import { useStores } from "@/models"
 import type { ApppNavigationProp } from "@/navigators/types"
 import { useElectrobunModal } from "@/hooks/useElectrobunModal"
+import { Menu, MenuItem, MenuItemLabel, Pressable } from "@gluestack-ui/themed"
 import type { DocumentPickerAsset } from "expo-document-picker"
 import type React from "react"
 import type { NavigationProp } from "@react-navigation/native"
@@ -51,27 +53,41 @@ export function LibraryActions({
 
   return (
     <>
-      <IconButton
-        name="cog"
-        iconSize="md-"
-        onPress={() => {
-          modal.openModal("UserPreferencesModal", {})
-        }}
-      />
-      <IconButton
-        name="progress-clock"
-        iconSize="md-"
-        onPress={() => {
-          modal.openModal("JobQueueModal", {})
-        }}
-      />
-      <IconButton
-        name="chart-bar"
-        onPress={() => {
-          modal.openModal("ReadingStatsModal", {})
-        }}
-        iconSize="md-"
-      />
+      <Menu
+        placement="bottom"
+        closeOnSelect={true}
+        trigger={(triggerProps) => (
+          <IconButton {...triggerProps} name="cog" iconSize="md-" variant="staggerChild" />
+        )}
+      >
+        <MenuItem
+          key="user-preferences"
+          textValue="user-preferences"
+          onPress={() => {
+            modal.openModal("UserPreferencesModal", {})
+          }}
+        >
+          <MenuItemLabel>{translate("userPreferences.title")}</MenuItemLabel>
+        </MenuItem>
+        <MenuItem
+          key="job-queue"
+          textValue="job-queue"
+          onPress={() => {
+            modal.openModal("JobQueueModal", {})
+          }}
+        >
+          <MenuItemLabel>{translate("jobQueue.title")}</MenuItemLabel>
+        </MenuItem>
+        <MenuItem
+          key="reading-stats"
+          textValue="reading-stats"
+          onPress={() => {
+            modal.openModal("ReadingStatsModal", {})
+          }}
+        >
+          <MenuItemLabel>{translate("readingStats.title")}</MenuItemLabel>
+        </MenuItem>
+      </Menu>
       <AuthButton
         mode={authenticationStore.isAuthenticated ? "logout" : "login"}
         onLoginPress={() => {

@@ -4,6 +4,7 @@ import { Pressable } from "@/components/Pressable/Pressable"
 import { Text } from "@/components/Text/Text"
 import { useKeyboardVisibility } from "@/hooks/useKeyboardVisibility"
 import { usePalette } from "@/theme"
+import { Platform } from "react-native"
 import type { ReactNode } from "react"
 import type { DimensionValue } from "react-native"
 import { resolveSuggestionPopoverPlacement } from "./formSuggestionPlacement"
@@ -44,6 +45,57 @@ export function FormSuggestionPopover(props: FormSuggestionPopoverProps) {
   const { isKeyboardVisible } = useKeyboardVisibility()
 
   const popoverPlacement = resolveSuggestionPopoverPlacement(isKeyboardVisible)
+
+  // On web, render a simple dropdown to avoid Popover focus trapping issues
+  if (Platform.OS === "web") {
+    return (
+      <Box position="relative" flex={1}>
+        {trigger({})}
+        {isOpen && (
+          <Box
+            position="absolute"
+            top="100%"
+            left={0}
+            right={0}
+            zIndex={9999}
+            backgroundColor={palette.surface}
+            borderWidth="$1"
+            borderColor={palette.borderStrong}
+            borderRadius="$sm"
+            padding="$1"
+            shadowColor={palette.accent}
+            shadowOffset={{ width: 0, height: 2 }}
+            shadowOpacity={0.15}
+            shadowRadius={4}
+          >
+            {candidates.map((candidate) => (
+              <Pressable
+                key={`${testIdPrefix}-${candidate}`}
+                testID={`${
+                  candidateTestIDPrefix ?? `${testIdPrefix}-suggestion`
+                }-${encodeURIComponent(candidate)}`}
+                onPress={() => {
+                  onSelect(candidate)
+                }}
+              >
+                <Box
+                  borderWidth="$1"
+                  borderRadius="$sm"
+                  paddingHorizontal={optionPaddingHorizontal as DimensionValue}
+                  paddingVertical={optionPaddingVertical as DimensionValue}
+                  marginBottom={optionMarginBottom as DimensionValue}
+                >
+                  <Text fontSize="$sm" isTruncated={true}>
+                    {candidate}
+                  </Text>
+                </Box>
+              </Pressable>
+            ))}
+          </Box>
+        )}
+      </Box>
+    )
+  }
 
   return (
     <Popover

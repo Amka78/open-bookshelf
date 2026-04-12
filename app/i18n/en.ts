@@ -192,6 +192,7 @@ const en = {
   bookDetailMenu: {
     openBookTooltip: "Open book",
     downloadTooltip: "Download book",
+    bookDetailTooltip: "View details",
     convertTooltip: "Convert book",
     editTooltip: "Edit book",
     deleteTooltip: "Delete book",

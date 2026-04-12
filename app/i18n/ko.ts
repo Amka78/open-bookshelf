@@ -256,6 +256,7 @@ const ko: Translations = {
   bookDetailMenu: {
     openBookTooltip: "책 열기",
     downloadTooltip: "책 다운로드",
+    bookDetailTooltip: "상세 정보",
     convertTooltip: "책 변환",
     editTooltip: "책 편집",
     deleteTooltip: "책 삭제",

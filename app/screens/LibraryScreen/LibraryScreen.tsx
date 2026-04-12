@@ -1,16 +1,13 @@
 import {
-  AddFileButton,
-  AuthButton,
   BookImageItem,
   Box,
   FlatList,
   HStack,
   IconButton,
   LeftSideMenu,
+  LibraryActions,
   SelectionActionBar,
-  SortMenu,
   StaggerContainer,
-  VirtualLibraryButton,
 } from "@/components"
 import { BookListItem } from "@/components/BookListItem"
 import type { CalibreFieldOperator, QueryOperator } from "@/components/LeftSideMenu/LeftSideMenu"
@@ -40,6 +37,7 @@ import { type FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useS
 import { Platform, useWindowDimensions } from "react-native"
 import { buildThumbnailSourceCache } from "./buildThumbnailSourceCache"
 import { useLibrary } from "./useLibrary"
+import { logger } from "@/utils/logger"
 
 /** Split a query string by AND or OR, returning individual conditions. */
 function parseQueryParts(query: string): string[] {
@@ -59,15 +57,33 @@ type LibrarySearchHeaderProps = {
 
 const LibrarySearchHeader = observer(
   ({ convergenceHook, libraryHook, selectedLibrary, settingStore }: LibrarySearchHeaderProps) => {
+    const [draftText, setDraftText] = useState(libraryHook.headerSearchText)
+
+    // Only sync draft text when headerSearchText changes externally (e.g., after search)
+    // Use a ref to track previous value and avoid resetting on every render
+    const prevHeaderTextRef = useRef(libraryHook.headerSearchText)
+
+    useEffect(() => {
+      if (prevHeaderTextRef.current !== libraryHook.headerSearchText) {
+        setDraftText(libraryHook.headerSearchText)
+        prevHeaderTextRef.current = libraryHook.headerSearchText
+      }
+    }, [libraryHook.headerSearchText])
+
     return (
       <HStack alignItems="center" flex={1} pl={convergenceHook.isLarge ? "$48" : 0}>
         <SearchInputField
-          value={libraryHook.headerSearchText}
+          value={draftText}
           onChangeText={(text) => {
-            libraryHook.setHeaderSearchText(libraryHook.completeSearchParameter(text))
+            // Immediately update draft text for each keystroke including backspace
+            setDraftText(text)
           }}
           onSubmit={(text) => {
-            libraryHook.onSearch(text)
+            // Apply completion at search time to avoid interfering with IME
+            const withParam = libraryHook.completeSearchParameter(text)
+            const withOperator = libraryHook.completeOperator(withParam)
+            libraryHook.setHeaderSearchText(withOperator)
+            libraryHook.onSearch(withOperator)
           }}
           suggestions={libraryHook.getSearchSuggestions()}
           placeholderTx={
@@ -181,65 +197,21 @@ export const LibraryScreen: FC = observer(() => {
   }, [thumbnailSourceById])
 
   const libraryActions = (
-    <>
-      <IconButton
-        name="cog"
-        iconSize="md-"
-        onPress={() => {
-          modal.openModal("UserPreferencesModal", {})
-        }}
-      />
-      <IconButton
-        name="progress-clock"
-        iconSize="md-"
-        onPress={() => {
-          modal.openModal("JobQueueModal", {})
-        }}
-      />
-      <IconButton
-        name="chart-bar"
-        onPress={() => {
-          modal.openModal("ReadingStatsModal", {})
-        }}
-        iconSize="md-"
-      />
-      <AuthButton
-        mode={authenticationStore.isAuthenticated ? "logout" : "login"}
-        onLoginPress={() => {
-          modal.openModal("LoginModal", {
-            onLoginPress: () => {
-              navigation.navigate("Connect")
-            },
-          })
-        }}
-        onLogoutPress={() => {
-          authenticationStore.logout()
-          navigation.navigate("Connect")
-        }}
-      />
-      <VirtualLibraryButton
-        virtualLibraries={selectedLibrary?.virtualLibraries?.slice() ?? []}
-        selectedVl={selectedLibrary?.searchSetting?.vl}
-        onSelect={(name) => {
-          libraryHook.onSelectVirtualLibrary(name)
-        }}
-        isLargeScreen={convergenceHook.isLarge}
-      />
-      <AddFileButton
-        onDocumentSelect={async (documents) => {
-          await libraryHook.onUploadFile(documents)
-        }}
-      />
-      <LibraryViewModeButton mode={viewMode} onToggle={handleToggleViewMode} />
-      <SortMenu
-        selectedSort={selectedLibrary?.searchSetting?.sort}
-        selectedSortOrder={selectedLibrary?.searchSetting?.sortOrder}
-        field={selectedLibrary?.sortField}
-        onSortChange={(val) => {
-          libraryHook.onSort(val)
-        }}
-      />
-    </>
+    <LibraryActions
+      viewMode={viewMode}
+      onToggleViewMode={handleToggleViewMode}
+      onSearch={libraryHook.onSearch}
+      onSort={libraryHook.onSort}
+      onSelectVirtualLibrary={libraryHook.onSelectVirtualLibrary}
+      onUploadFile={libraryHook.onUploadFile}
+      navigation={navigation}
+      isLargeScreen={convergenceHook.isLarge}
+      sortField={selectedLibrary?.sortField}
+      selectedSort={selectedLibrary?.searchSetting?.sort}
+      selectedSortOrder={selectedLibrary?.searchSetting?.sortOrder}
+      virtualLibraries={selectedLibrary?.virtualLibraries}
+      searchSettingVl={selectedLibrary?.searchSetting?.vl}
+    />
   )
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: navigation.setOptions is stable; navigation prop is not a dep in React Navigation patterns
@@ -279,7 +251,7 @@ export const LibraryScreen: FC = observer(() => {
   const renderItem = useCallback(
     ({ item }: { item: Book }) => {
       const onPress = async () => {
-        selectedLibrary.setBook(item.id)
+        selectedLibrary?.setBook(item.id)
         await openViewerHook.execute(modal)
       }
 
@@ -359,6 +331,25 @@ export const LibraryScreen: FC = observer(() => {
         }
       }
 
+      const onOpenBookDetail = () => {
+        selectedLibrary.setBook(item.id)
+        if (convergenceHook.isLarge) {
+          modal.openModal("BookDetailModal", {
+            imageUrl: imageUrl,
+            onLinkPress: (query) => {
+              libraryHook.onSearch(query)
+            },
+          })
+        } else {
+          navigation.navigate("BookDetail", {
+            imageUrl: imageUrl,
+            onLinkPress: (query) => {
+              libraryHook.onSearch(query)
+            },
+          })
+        }
+      }
+
       const onDeleteBook = async () => {
         selectedLibrary.setBook(item.id)
         await deleteBookHook.execute(modal)
@@ -398,12 +389,24 @@ export const LibraryScreen: FC = observer(() => {
             readingProgress={readingProgress ?? undefined}
             isCached={hasReadingHistory}
             isSelected={libraryHook.isBookSelected(item.id)}
-            onPress={onPress}
-            onLongPress={onLongPress}
-            onPressImage={
+            onPress={
+              libraryHook.isSelectionMode
+                ? async () => libraryHook.toggleBookSelection(item.id)
+                : onPress
+            }
+            onLongPress={libraryHook.isSelectionMode ? undefined : onLongPress}
+            onSelectToggle={
               libraryHook.isSelectionMode
                 ? () => libraryHook.toggleBookSelection(item.id)
                 : undefined
+            }
+            onAuthorPress={
+              libraryHook.isSelectionMode
+                ? undefined
+                : (author) => {
+                    libraryHook.setHeaderSearchText(`authors:="${author}"`)
+                    libraryHook.onSearch(`authors:="${author}"`)
+                  }
             }
           />
         )
@@ -421,12 +424,14 @@ export const LibraryScreen: FC = observer(() => {
                 : onPress
             }
             onLongPress={onLongPress}
+            onOpenBookDetail={libraryHook.isSelectionMode ? undefined : onOpenBookDetail}
             detailMenuProps={
               libraryHook.isSelectionMode
                 ? undefined
                 : {
                     onOpenBook: onOpenBook,
                     onDownloadBook: onDownloadBook,
+                    onOpenBookDetail: onOpenBookDetail,
                     onConvertBook: onConvertBook,
                     onEditBook: onEditBook,
                     onDeleteBook: onDeleteBook,
@@ -634,6 +639,10 @@ export const LibraryScreen: FC = observer(() => {
               libraryHook.setHeaderSearchText(nextQuery)
               await libraryHook.onSearch(nextQuery)
             }
+          }}
+          onSubCategoryLongPress={(name) => {
+            libraryHook.setHeaderSearchText(name)
+            libraryHook.onSearch(name)
           }}
           tagBrowser={selectedLibrary?.tagBrowser}
           itemOperators={itemOperators}

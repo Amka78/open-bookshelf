@@ -58,11 +58,19 @@ export function useLibrary() {
 
   /**
    * Returns autocomplete suggestions for the current search input.
-   * Suggests Calibre field names (with `:=` suffix) and boolean keywords.
+   * Order: metadata names (without operator), boolean keywords, metadata with all operators.
+   * This allows staged autocomplete:
+   * 1. First shows metadata names (e.g., "title", "author")
+   * 2. Then shows boolean operators (e.g., "AND", "OR", "NOT")
+   * 3. Finally shows metadata with operators (e.g., "title:=", "title:~", "title:!=", "title:!~")
    */
   const getSearchSuggestions = (): string[] => {
-    const fieldSuggestions = searchParameterCandidates.map((f) => `${f}:=`)
-    return ["AND", "OR", "NOT", ...fieldSuggestions]
+    const metadataNames = searchParameterCandidates
+    const operators = [":=", ":~", ":!=", ":!~"]
+    const fieldWithOperators = searchParameterCandidates.flatMap((f) =>
+      operators.map((op) => `${f}${op}`),
+    )
+    return [...metadataNames, "AND", "OR", "NOT", ...fieldWithOperators]
   }
 
   const completeSearchParameter = (text: string) => {
@@ -87,7 +95,37 @@ export function useLibrary() {
       return text
     }
 
-    return `${prefixText}${matches[0]}:=`
+    // Return the metadata name with colon only, let user choose operator from suggestions
+    return `${prefixText}${matches[0]}:`
+  }
+
+  const completeOperator = (text: string) => {
+    const lastSpaceIndex = text.lastIndexOf(" ")
+    const prefixText = lastSpaceIndex >= 0 ? text.slice(0, lastSpaceIndex + 1) : ""
+    const token = lastSpaceIndex >= 0 ? text.slice(lastSpaceIndex + 1) : text
+
+    // Check if token ends with a colon followed by an operator prefix (e.g., "title:!", "title:~")
+    const colonIndex = token.indexOf(":")
+    if (colonIndex === -1) {
+      return text
+    }
+
+    const metadataPart = token.slice(0, colonIndex)
+    const afterColon = token.slice(colonIndex + 1)
+
+    // If nothing after colon or just starting to type operator, don't complete
+    if (afterColon.length === 0) {
+      return text
+    }
+
+    const operators = ["=", "~", "!=", "!~"]
+    const matches = operators.filter((op) => op.startsWith(afterColon))
+
+    if (matches.length === 1) {
+      return `${prefixText}${metadataPart}:${matches[0]}`
+    }
+
+    return text
   }
   const search = async () => {
     setSearching(true)
@@ -183,6 +221,7 @@ export function useLibrary() {
     setHeaderSearchText,
     searchParameterCandidates,
     completeSearchParameter,
+    completeOperator,
     getSearchSuggestions,
     selectedBookIds,
     isSelectionMode,

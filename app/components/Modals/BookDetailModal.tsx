@@ -1,6 +1,7 @@
 import { BookDetailFieldList } from "@/components/BookDetailFieldList/BookDetailFieldList"
 import { BookDetailMenu } from "@/components/BookDetailMenu/BookDetailMenu"
 import { BookImageItem } from "@/components/BookImageItem/BookImageItem"
+import { Box } from "@/components/Box/Box"
 import { HStack } from "@/components/HStack/HStack"
 import { Heading } from "@/components/Heading/Heading"
 import { VStack } from "@/components/VStack/VStack"
@@ -86,9 +87,11 @@ export function BookDetailModalTemplate(props: BookDetailModalTemplateProps) {
         />
       </Header>
       <Body>
-        <HStack>
-          <BookImageItem source={props.modal.params.imageUrl} />
-          <VStack height={320}>
+        <HStack space="md">
+          <Box>
+            <BookImageItem source={props.modal.params.imageUrl} />
+          </Box>
+          <VStack flex={1}>
             <BookDetailMenu
               onOpenBook={props.modal.params.onOpenBook}
               onDownloadBook={props.modal.params.onDownloadBook}

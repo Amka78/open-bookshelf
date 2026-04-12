@@ -4,6 +4,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { useState } from "react"
 import { SearchInputField } from "./SearchInputField"
 import {
+  playBackspaceRemovesText,
   playFocusShowsSuggestions,
   playSelectSuggestionClosesSuggestions,
   playTypingFiltersSuggestions,
@@ -56,4 +57,8 @@ export const TypingFiltersSuggestions: Story = {
 
 export const SelectSuggestionClosesSuggestions: Story = {
   play: playSelectSuggestionClosesSuggestions,
+}
+
+export const BackspaceRemovesText: Story = {
+  play: playBackspaceRemovesText,
 }

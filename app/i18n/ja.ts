@@ -194,6 +194,7 @@ const ja: Translations = {
   bookDetailMenu: {
     openBookTooltip: "書籍を開く",
     downloadTooltip: "書籍をダウンロード",
+    bookDetailTooltip: "詳細を表示",
     convertTooltip: "書籍を変換",
     editTooltip: "書籍を編集",
     deleteTooltip: "書籍を削除",

@@ -111,3 +111,35 @@ export async function playSelectSuggestionClosesSuggestions({
   // Suggestions should close
   await waitForAbsence(canvasElement, "search-input-suggestion-AND")
 }
+
+/**
+ * KEY TEST: Verifies that backspace properly removes text.
+ * This tests the bug where "authors:=" cannot be deleted with backspace.
+ */
+export async function playBackspaceRemovesText({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  const input = await findByTestId(canvasElement, "search-input-story")
+  input.focus()
+
+  // Type "authors:="
+  typeInput(input, "authors:=")
+  await findByTestId(canvasElement, "search-input-suggestion-authors%3A%3D")
+
+  // Verify the value is "authors:="
+  expect((input as HTMLInputElement).value).toBe("authors:=")
+
+  // Simulate backspace - remove "="
+  typeInput(input, "authors:")
+  expect((input as HTMLInputElement).value).toBe("authors:")
+
+  // Simulate another backspace - remove ":"
+  typeInput(input, "authors")
+  expect((input as HTMLInputElement).value).toBe("authors")
+
+  // Simulate another backspace - remove "s"
+  typeInput(input, "author")
+  expect((input as HTMLInputElement).value).toBe("author")
+}

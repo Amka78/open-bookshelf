@@ -193,6 +193,7 @@ const ar: Translations = {
   bookDetailMenu: {
     openBookTooltip: "فتح الكتاب",
     downloadTooltip: "تنزيل الكتاب",
+    bookDetailTooltip: "عرض التفاصيل",
     convertTooltip: "تحويل الكتاب",
     editTooltip: "تعديل الكتاب",
     deleteTooltip: "حذف الكتاب",

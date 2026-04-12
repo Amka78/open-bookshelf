@@ -63,6 +63,12 @@ export function SearchInputField({
   const { prefix, token } = getCurrentToken(value)
   const lowerToken = token.toLowerCase()
 
+  // Filter suggestions by prefix match, preserving the original order.
+  // The order should be: metadata names → boolean operators → metadata with operators.
+  // This enables staged autocomplete:
+  // 1. First shows metadata names (e.g., "title", "author")
+  // 2. Then shows boolean operators (e.g., "AND", "OR", "NOT")
+  // 3. Finally shows metadata with operators (e.g., "title:=", "author:=")
   const candidates: string[] = []
   if (isSuggestionOpen && suggestions.length > 0 && lowerToken.length > 0) {
     for (const s of suggestions) {
@@ -124,9 +130,13 @@ export function SearchInputField({
                 <Input variant="underlined" size={(size as never) ?? "lg"}>
                   <InputField
                     value={value}
-                    onChangeText={(text) => {
-                      setIsSuggestionOpen(true)
-                      onChangeText(text)
+                    onChange={(e) => {
+                      // Web: ensure text value is updated on every change including backspace
+                      const text = e?.target?.value ?? e?.nativeEvent?.text
+                      if (typeof text === "string" && text !== value) {
+                        setIsSuggestionOpen(true)
+                        onChangeText(text)
+                      }
                     }}
                     onFocus={() => {
                       setIsSuggestionOpen(true)
@@ -169,7 +179,14 @@ export function SearchInputField({
               setIsSuggestionOpen(false)
               return
             }
-            const newValue = `${prefix}${candidate} `
+
+            // Check if this is a metadata name (without operator suffix)
+            // If so, append ":" to allow the user to choose an operator from suggestions
+            const isMetadataName =
+              !candidate.includes(":") &&
+              !["AND", "OR", "NOT"].includes(candidate)
+            const suffix = isMetadataName ? ":" : " "
+            const newValue = `${prefix}${candidate}${suffix}`
             onChangeText(newValue)
             setIsSuggestionOpen(false)
             inputRef.current?.focus()
