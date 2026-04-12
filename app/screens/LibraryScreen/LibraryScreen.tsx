@@ -235,7 +235,7 @@ export const LibraryScreen: FC = observer(() => {
         )
       },
       headerTitle: () => (
-        <HStack alignItems="center" flex={1}>
+        <HStack alignItems="center" flex={1} pl={convergenceHook.isLarge ? "$32" : 0}>
           <SearchInputField
             value={libraryHook.headerSearchText}
             onChangeText={(text) => {
@@ -250,8 +250,8 @@ export const LibraryScreen: FC = observer(() => {
                 ? "libraryScreen.searchPlaceholderFts"
                 : "libraryScreen.searchPlaceholder"
             }
-            size="sm"
-            width={convergenceHook.isLarge ? 280 : "100%"}
+            size="md"
+            width={convergenceHook.isLarge ? 700 : "100%"}
             testID="library-search-input"
             savedSearches={selectedLibrary?.savedSearches?.slice() ?? []}
             onSaveSearch={(name, query) => {
@@ -367,15 +367,11 @@ export const LibraryScreen: FC = observer(() => {
           messageTx: "modal.cacheClearConfirmModal.message",
           onOKPress: async () => {
             try {
-              const targetReadingHistories = calibreRootStore.readingHistories.filter(
-                (history) => {
-                  return history.libraryId === selectedLibrary.id && history.bookId === item.id
-                },
-              )
+              const targetReadingHistories = calibreRootStore.readingHistories.filter((history) => {
+                return history.libraryId === selectedLibrary.id && history.bookId === item.id
+              })
 
-              const cachedPathList = targetReadingHistories.flatMap(
-                (history) => history.cachedPath,
-              )
+              const cachedPathList = targetReadingHistories.flatMap((history) => history.cachedPath)
               calibreRootStore.removeReadingHistoriesByBook(selectedLibrary.id, item.id)
 
               await deleteCachedBookImages(cachedPathList)
@@ -400,9 +396,7 @@ export const LibraryScreen: FC = observer(() => {
             isCached={hasReadingHistory}
             isSelected={libraryHook.isBookSelected(item.id)}
             onPress={
-              libraryHook.isSelectionMode
-                ? () => libraryHook.toggleBookSelection(item.id)
-                : onPress
+              libraryHook.isSelectionMode ? () => libraryHook.toggleBookSelection(item.id) : onPress
             }
             onLongPress={onLongPress}
           />
