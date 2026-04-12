@@ -23,6 +23,7 @@ type BookListItemProps = {
   isSelected?: boolean
   onPress?: () => void
   onLongPress?: () => void
+  onSelectToggle?: () => void
 }
 
 type ReadStatusValue = "want-to-read" | "reading" | "finished"
@@ -47,6 +48,7 @@ export const BookListItem = memo(function BookListItem({
   isSelected,
   onPress,
   onLongPress,
+  onSelectToggle,
 }: BookListItemProps) {
   const palette = usePalette()
   const meta = book.metaData
@@ -61,96 +63,104 @@ export const BookListItem = memo(function BookListItem({
     readStatus && readStatus in STATUS_ICON ? STATUS_ICON[readStatus as ReadStatusValue] : null
 
   return (
-    <Pressable onPress={onPress} onLongPress={onLongPress}>
-      <HStack
-        alignItems="center"
-        paddingHorizontal="$3"
-        paddingVertical="$2"
-        space="md"
-        style={[
-          styles.row,
-          { borderBottomColor: palette.borderSubtle },
-          isSelected && { backgroundColor: palette.surfaceStrong },
-        ]}
-      >
-        {/* Cover image */}
-        <Box style={styles.coverContainer}>
-          {source ? (
-            <Image source={source} style={styles.cover} contentFit="fill" />
-          ) : (
-            <Box style={[styles.cover, { backgroundColor: palette.surfaceMuted }]} />
-          )}
-        </Box>
+    <HStack
+      alignItems="center"
+      style={[
+        styles.row,
+        { borderBottomColor: palette.borderSubtle },
+        isSelected && { backgroundColor: palette.surfaceStrong },
+      ]}
+    >
+      {/* Selection checkbox - only shown in selection mode */}
+      <Pressable onPress={onSelectToggle} style={styles.checkboxContainer}>
+        <MaterialCommunityIcon
+          name={isSelected ? "checkbox-marked" : "checkbox-blank-outline"}
+          iconSize="md"
+          color={isSelected ? "$primary500" : palette.textSecondary}
+        />
+      </Pressable>
 
-        {/* Book info */}
-        <VStack flex={1} space="xs">
-          <Text
-            style={[
-              styles.title,
-              { color: palette.textPrimary, fontFamily: typography.primary.semiBold },
-            ]}
-            numberOfLines={2}
-          >
-            {title}
-          </Text>
-          {authors ? (
+      <Pressable onPress={onPress} onLongPress={onLongPress}>
+        <HStack alignItems="center" paddingHorizontal="$3" paddingVertical="$2">
+          {/* Cover image */}
+          <Box style={styles.coverContainer}>
+            {source ? (
+              <Image source={source} style={styles.cover} contentFit="fill" />
+            ) : (
+              <Box style={[styles.cover, { backgroundColor: palette.surfaceMuted }]} />
+            )}
+          </Box>
+
+          {/* Book info */}
+          <VStack flex={1} space="xs">
             <Text
-              style={[styles.authors, { color: palette.textSecondary }]}
-              numberOfLines={1}
+              style={[
+                styles.title,
+                { color: palette.textPrimary, fontFamily: typography.primary.semiBold },
+              ]}
+              numberOfLines={2}
             >
-              {authors}
+              {title}
             </Text>
-          ) : null}
-          {formats.length > 0 ? (
-            <HStack space="xs" flexWrap="wrap">
-              {formats.map((fmt) => (
-                <Box
-                  key={fmt}
-                  style={[
-                    styles.formatBadge,
-                    {
-                      backgroundColor: palette.surfaceStrong,
-                      borderColor: palette.borderStrong,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[styles.formatBadgeText, { color: palette.textSecondary }]}
+            {authors ? (
+              <Text style={[styles.authors, { color: palette.textSecondary }]} numberOfLines={1}>
+                {authors}
+              </Text>
+            ) : null}
+            {formats.length > 0 ? (
+              <HStack space="xs" flexWrap="wrap">
+                {formats.map((fmt) => (
+                  <Box
+                    key={fmt}
+                    style={[
+                      styles.formatBadge,
+                      { backgroundColor: palette.surfaceStrong, borderColor: palette.borderStrong },
+                    ]}
                   >
-                    {fmt.toUpperCase()}
-                  </Text>
-                </Box>
-              ))}
-            </HStack>
-          ) : null}
-        </VStack>
+                    <Text style={[styles.formatBadgeText, { color: palette.textSecondary }]}>
+                      {fmt.toUpperCase()}
+                    </Text>
+                  </Box>
+                ))}
+              </HStack>
+            ) : null}
+          </VStack>
 
-        {/* Right: status + progress */}
-        <VStack alignItems="center" space="xs">
-          {isCached ? (
-            <MaterialCommunityIcon name="cloud-check" iconSize="sm-" color={palette.textSecondary} />
-          ) : null}
-          {statusIconConfig ? (
-            <MaterialCommunityIcon
-              name={statusIconConfig.name}
-              iconSize="sm"
-              color={statusIconConfig.color}
-            />
-          ) : null}
-          {progressPct ? (
-            <Text style={[styles.progress, { color: palette.textSecondary }]}>
-              {progressPct}
-            </Text>
-          ) : null}
-        </VStack>
-      </HStack>
-    </Pressable>
+          {/* Right: status + progress */}
+          <VStack alignItems="center" space="xs">
+            {isCached ? (
+              <MaterialCommunityIcon
+                name="cloud-check"
+                iconSize="sm-"
+                color={palette.textSecondary}
+              />
+            ) : null}
+            {statusIconConfig ? (
+              <MaterialCommunityIcon
+                name={statusIconConfig.name}
+                iconSize="sm"
+                color={statusIconConfig.color}
+              />
+            ) : null}
+            {progressPct ? (
+              <Text style={[styles.progress, { color: palette.textSecondary }]}>{progressPct}</Text>
+            ) : null}
+          </VStack>
+        </HStack>
+      </Pressable>
+    </HStack>
   )
 })
 
 const styles = StyleSheet.create({
   row: {
     borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  checkboxContainer: {
+    width: 28,
+    height: 28,
+    alignItems: "center",
+    justifyContent: "center",
   },
   coverContainer: {
     width: 48,

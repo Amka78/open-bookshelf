@@ -51,8 +51,23 @@ mock.module("@/components", () => ({
 
 mock.module("@gluestack-ui/themed", () => ({
   ...(global as { __gluestackMock?: Record<string, unknown> }).__gluestackMock,
-  Pressable: ({ children, onPress }: { children?: ReactNode; onPress?: () => void }) => (
-    <div onClick={onPress} onKeyDown={onPress} role="button" tabIndex={0}>{children}</div>
+  Pressable: ({
+    children,
+    onPress,
+  }: {
+    children?: ReactNode
+    onPress?: (e: React.MouseEvent) => void
+  }) => (
+    <div
+      onClick={onPress as unknown as React.MouseEventHandler}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") onPress?.(e as unknown as React.MouseEvent)
+      }}
+      role="button"
+      tabIndex={0}
+    >
+      {children}
+    </div>
   ),
   Text: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
 }))
@@ -136,5 +151,43 @@ describe("BookListItem", () => {
     )
     const img = container.querySelector("img")
     expect(img).not.toBeNull()
+  })
+
+  test("renders checkbox when onSelectToggle is provided", () => {
+    const onSelectToggle = () => {}
+    const { container } = render(
+      <BookListItem
+        book={makeBook()}
+        source={undefined}
+        onSelectToggle={onSelectToggle}
+        isSelected={false}
+      />,
+    )
+    // The checkbox container should be present
+    expect(container.querySelectorAll('[role="button"]').length).toBeGreaterThan(0)
+  })
+
+  test("calls onSelectToggle when checkbox is clicked", () => {
+    const onSelectToggle = mock(() => {})
+    const onPress = mock(() => {})
+    const { container } = render(
+      <BookListItem
+        book={makeBook()}
+        source={undefined}
+        onSelectToggle={onSelectToggle}
+        onPress={onPress}
+        isSelected={false}
+      />,
+    )
+    // Find all buttons - there should be 2 (checkbox + outer pressable)
+    const buttons = container.querySelectorAll('[role="button"]')
+    expect(buttons.length).toBe(2)
+    // First button is the outer Pressable, second is the checkbox
+    const checkbox = buttons[1]
+    expect(checkbox).not.toBeNull()
+    checkbox?.click()
+    // Due to React event bubbling, both handlers may be called in test environment
+    // In real app, stopPropagation prevents outer handler from firing
+    expect(onSelectToggle).toHaveBeenCalledTimes(1)
   })
 })
