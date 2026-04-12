@@ -12,6 +12,7 @@ export type LeftSideMenuItemProps = {
   mode?: "category" | "subCategory" | "node"
   depth?: number
   onLastNodePress?: () => void
+  onSubCategoryLongPress?: (name: string) => void
   selected?: boolean
   operator?: "AND" | "OR"
   onOperatorToggle?: () => void
@@ -72,7 +73,15 @@ export function LeftSideMenuItem({ mode = "category", ...restProps }: LeftSideMe
               </Text>
             </Pressable>
           )}
-          <Text fontSize={"$md"}>{props.name}</Text>
+          <Pressable
+            onLongPress={
+              mode === "subCategory" && props.onSubCategoryLongPress
+                ? () => props.onSubCategoryLongPress?.(props.name)
+                : undefined
+            }
+          >
+            <Text fontSize={"$md"}>{props.name}</Text>
+          </Pressable>
           {props.selected && props.onOperatorToggle && (
             <Pressable
               onPress={props.onOperatorToggle}

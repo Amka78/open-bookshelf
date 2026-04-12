@@ -16,6 +16,7 @@ export type LeftSideMenuProps = {
   itemOperators?: Record<string, QueryOperator>
   itemCalibreOperators?: Record<string, CalibreFieldOperator>
   onNodePress: (nodeName: string) => Promise<void>
+  onSubCategoryLongPress?: (name: string) => void
   onItemOperatorChange?: (itemKey: string, op: QueryOperator) => void
   onItemCalibreOperatorChange?: (
     categoryKey: string,
@@ -354,6 +355,7 @@ const SubCategoryItem = ({
   subCategory,
   categoryKey,
   onPress,
+  onSubCategoryLongPress,
   selectedNames,
   itemOperators,
   itemCalibreOperators,
@@ -363,6 +365,7 @@ const SubCategoryItem = ({
   subCategory: MenuSubCategory
   categoryKey: string
   onPress: (query: string) => Promise<void>
+  onSubCategoryLongPress?: (name: string) => void
   selectedNames?: string[]
   itemOperators?: Record<string, QueryOperator>
   itemCalibreOperators?: Record<string, CalibreFieldOperator>
@@ -402,6 +405,7 @@ const SubCategoryItem = ({
       count={subCategory.count}
       name={subCategory.name}
       onLastNodePress={handlePress}
+      onSubCategoryLongPress={onSubCategoryLongPress}
       selected={isSelected}
       operator={operator}
       onOperatorToggle={isSelected && !isLastSelected ? handleOperatorToggle : undefined}
@@ -429,6 +433,7 @@ const SubCategoryList = ({
   subCategories,
   categoryKey,
   onPress,
+  onSubCategoryLongPress,
   selectedNames,
   itemOperators,
   itemCalibreOperators,
@@ -438,6 +443,7 @@ const SubCategoryList = ({
   subCategories: MenuSubCategory[]
   categoryKey: string
   onPress: (query: string) => Promise<void>
+  onSubCategoryLongPress?: (name: string) => void
   selectedNames?: string[]
   itemOperators?: Record<string, QueryOperator>
   itemCalibreOperators?: Record<string, CalibreFieldOperator>
@@ -459,6 +465,7 @@ const SubCategoryList = ({
           subCategory={subCategory}
           categoryKey={categoryKey}
           onPress={onPress}
+          onSubCategoryLongPress={onSubCategoryLongPress}
           selectedNames={selectedNames}
           itemOperators={itemOperators}
           itemCalibreOperators={itemCalibreOperators}
@@ -473,6 +480,7 @@ const SubCategoryList = ({
 const CategoryItem = ({
   category,
   onPress,
+  onSubCategoryLongPress,
   selectedNames,
   itemOperators,
   itemCalibreOperators,
@@ -481,6 +489,7 @@ const CategoryItem = ({
 }: {
   category: Category
   onPress: (query: string) => Promise<void>
+  onSubCategoryLongPress?: (name: string) => void
   selectedNames?: string[]
   itemOperators?: Record<string, QueryOperator>
   itemCalibreOperators?: Record<string, CalibreFieldOperator>
@@ -525,6 +534,7 @@ const CategoryItem = ({
           subCategories={subCategories}
           categoryKey={category.category}
           onPress={onPress}
+          onSubCategoryLongPress={onSubCategoryLongPress}
           selectedNames={selectedNames}
           itemOperators={itemOperators}
           itemCalibreOperators={itemCalibreOperators}
@@ -553,6 +563,7 @@ export const LeftSideMenu = observer((props: LeftSideMenuProps) => {
             key={category.name}
             category={category}
             onPress={props.onNodePress}
+            onSubCategoryLongPress={props.onSubCategoryLongPress}
             selectedNames={props.selectedNames}
             itemOperators={props.itemOperators}
             itemCalibreOperators={props.itemCalibreOperators}
