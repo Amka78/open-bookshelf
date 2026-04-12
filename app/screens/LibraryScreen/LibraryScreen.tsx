@@ -38,6 +38,7 @@ import { observer } from "mobx-react-lite"
 import type React from "react"
 import { type FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Platform, useWindowDimensions } from "react-native"
+import { buildThumbnailSourceCache } from "./buildThumbnailSourceCache"
 import { useLibrary } from "./useLibrary"
 
 /** Split a query string by AND or OR, returning individual conditions. */
@@ -123,32 +124,14 @@ export const LibraryScreen: FC = observer(() => {
     return map
   }, [calibreRootStore.readingHistories, selectedLibrary?.id])
 
-  const thumbnailSourceById = (() => {
-    const nextCache = new Map<
-      Book["id"],
-      {
-        authStateVersion: number
-        source: { uri: string; headers: Record<string, string> | undefined }
-      }
-    >()
-
-    for (const book of bookList) {
-      const uri = encodeURI(api.getBookThumbnailUrl(book.id, selectedLibrary.id))
-      const headers = api.getAuthHeaders(uri)
-      const cachedSource = thumbnailSourceCacheRef.current.get(book.id)
-      const cacheEntry =
-        cachedSource &&
-        cachedSource.authStateVersion === authStateVersion &&
-        cachedSource.source.uri === uri &&
-        cachedSource.source.headers === headers
-          ? cachedSource
-          : { authStateVersion, source: { uri, headers } }
-
-      nextCache.set(book.id, cacheEntry)
-    }
-
-    return nextCache
-  })()
+  const thumbnailSourceById = buildThumbnailSourceCache({
+    authStateVersion,
+    bookList,
+    getAuthHeaders: (url) => api.getAuthHeaders(url),
+    getBookThumbnailUrl: (bookId, libraryId) => api.getBookThumbnailUrl(bookId, libraryId),
+    libraryId: selectedLibrary.id,
+    previousCache: thumbnailSourceCacheRef.current,
+  })
 
   useEffect(() => {
     thumbnailSourceCacheRef.current = thumbnailSourceById
