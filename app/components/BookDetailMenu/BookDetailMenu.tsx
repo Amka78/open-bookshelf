@@ -20,6 +20,7 @@ export type BookDetailMenuProps = {
   onConvertBook: () => void
   onEditBook: () => void
   onDeleteBook: () => void
+  onOpenBookDetail: () => void
   onShareLink?: () => void
   onSendByEmail?: () => void
   readStatus?: ReadStatusValue | null
@@ -27,6 +28,7 @@ export type BookDetailMenuProps = {
   iconOpacity?: number
   containerProps?: HStackProps
   iconButtonProps?: Partial<IconButtonProps>
+  wrap?: boolean
 }
 export function BookDetailMenu(props: BookDetailMenuProps) {
   const baseIconStyle = props.iconButtonProps?.style
@@ -61,12 +63,20 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
     ? STATUS_ICON_MAP[props.readStatus]
     : "bookmark-plus-outline"
 
+  const iconSize = props.wrap ? "sm" : "md-"
+
   return (
-    <HStack bgColor="transparent" {...props.containerProps}>
+    <HStack
+      bgColor="transparent"
+      flexWrap={props.wrap ? "wrap" : undefined}
+      maxWidth={props.wrap ? 280 : undefined}
+      justifyContent={props.wrap ? "center" : undefined}
+      {...props.containerProps}
+    >
       <TooltipIconButton
         {...sharedIconButtonProps}
         name={"book-open"}
-        iconSize="md-"
+        iconSize={iconSize}
         onPress={props.onOpenBook}
         testID="book-detail-open-button"
         tooltipTx="bookDetailMenu.openBookTooltip"
@@ -74,16 +84,24 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
       <TooltipIconButton
         {...sharedIconButtonProps}
         name={"download"}
-        iconSize="md-"
+        iconSize={iconSize}
         onPress={props.onDownloadBook}
         testID="book-detail-download-button"
         tooltipTx="bookDetailMenu.downloadTooltip"
+      />
+      <TooltipIconButton
+        {...sharedIconButtonProps}
+        name={"information-outline"}
+        iconSize={iconSize}
+        onPress={props.onOpenBookDetail}
+        testID="book-detail-info-button"
+        tooltipTx="bookDetailMenu.bookDetailTooltip"
       />
       {props.onShareLink != null && (
         <TooltipIconButton
           {...sharedIconButtonProps}
           name={"share-variant"}
-          iconSize="md-"
+          iconSize={iconSize}
           onPress={props.onShareLink}
           testID="book-detail-share-button"
           tooltipTx="bookDetailMenu.shareLinkTooltip"
@@ -93,7 +111,7 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
         <TooltipIconButton
           {...sharedIconButtonProps}
           name={"email-edit-outline"}
-          iconSize="md-"
+          iconSize={iconSize}
           onPress={props.onSendByEmail}
           testID="book-detail-send-email-button"
           tooltipTx="emailDelivery.buttonTooltip"
@@ -103,7 +121,7 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
         <TooltipIconButton
           {...sharedIconButtonProps}
           name={statusIconName}
-          iconSize="md-"
+          iconSize={iconSize}
           onPress={handleCycleStatus}
           testID="book-detail-status-button"
           tooltipTx="bookDetailMenu.setStatusTooltip"
@@ -112,7 +130,7 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
       <TooltipIconButton
         {...sharedIconButtonProps}
         name={"sync-circle"}
-        iconSize="md-"
+        iconSize={iconSize}
         onPress={props.onConvertBook}
         testID="book-detail-convert-button"
         tooltipTx="bookDetailMenu.convertTooltip"
@@ -120,7 +138,7 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
       <TooltipIconButton
         {...sharedIconButtonProps}
         name={"book-edit"}
-        iconSize="md-"
+        iconSize={iconSize}
         onPress={props.onEditBook}
         testID="book-detail-edit-button"
         tooltipTx="bookDetailMenu.editTooltip"
@@ -128,7 +146,7 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
       <TooltipIconButton
         {...sharedIconButtonProps}
         name={"trash-can"}
-        iconSize="md-"
+        iconSize={iconSize}
         onPress={props.onDeleteBook}
         testID="book-detail-delete-button"
         tooltipTx="bookDetailMenu.deleteTooltip"

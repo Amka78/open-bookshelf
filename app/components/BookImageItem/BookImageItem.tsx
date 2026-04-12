@@ -29,6 +29,7 @@ export type BookImageprops = Pick<ImageProps, "source"> & {
   onSelectToggle?: () => void
   readingProgress?: number | null
   readStatus?: ReadStatusValue | null
+  onOpenBookDetail?: () => void
 }
 
 const STATUS_ICON: Record<ReadStatusValue, { name: IconName; color: string }> = {
@@ -96,7 +97,11 @@ export const BookImageItem = memo(function BookImageItem({
   const image = <Image source={props.source} style={styles.imageSize} contentFit={"fill"} />
   const shouldUsePressable = Boolean(props.onPress || props.onLongPress || props.detailMenuProps)
   const contentWithMenu = (
-    <BoxWithHover style={styles.imageContainer} onMouseEnter={handleHoverIn} onMouseLeave={handleHoverOut}>
+    <BoxWithHover
+      style={styles.imageContainer}
+      onMouseEnter={handleHoverIn}
+      onMouseLeave={handleHoverOut}
+    >
       {image}
       {props.showCachedIcon ? (
         <Pressable
@@ -119,13 +124,17 @@ export const BookImageItem = memo(function BookImageItem({
       ) : null}
       {showProgressBar ? (
         <View style={styles.progressBarBg}>
-          <View style={[styles.progressBarFill, { width: `${(props.readingProgress ?? 0) * 100}%` }]} />
+          <View
+            style={[styles.progressBarFill, { width: `${(props.readingProgress ?? 0) * 100}%` }]}
+          />
         </View>
       ) : null}
       {showDetailMenu ? (
         <Box style={styles.detailMenuOverlay}>
           <BookDetailMenu
             {...props.detailMenuProps}
+            onOpenBookDetail={props.onOpenBookDetail ?? (() => {})}
+            wrap
             iconOpacity={0.85}
             containerProps={{ alignItems: "center", justifyContent: "center" }}
             iconButtonProps={{ style: styles.detailMenuIcon }}
@@ -183,12 +192,13 @@ export const BookImageItem = memo(function BookImageItem({
 const styles = StyleSheet.create({
   imageSize: {
     height: 320,
-    width: 240,
+    width: 280,
   },
   imageContainer: {
     height: 320,
-    width: 240,
+    width: 280,
     position: "relative",
+    overflow: "hidden",
   },
   cachedIconBadge: {
     position: "absolute",
@@ -228,15 +238,18 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     alignItems: "center",
+    justifyContent: "center",
     paddingBottom: 6,
+    paddingTop: 6,
   },
   detailMenuIcon: {
     backgroundColor: "rgba(0, 0, 0, 0.35)",
     borderColor: "rgba(255, 255, 255, 0.25)",
     borderRadius: 999,
     borderWidth: 1,
-    marginHorizontal: 2,
-    padding: 2,
+    marginHorizontal: 1,
+    marginVertical: 1,
+    padding: 1,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.35,
@@ -245,7 +258,7 @@ const styles = StyleSheet.create({
   },
   selectionArea: {
     height: 28,
-    width: 240,
+    width: 280,
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 6,
