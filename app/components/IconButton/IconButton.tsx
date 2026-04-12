@@ -10,12 +10,14 @@ export type IconButtonProps = ComponentProps<typeof Pressable> & {
   labelTx?: MessageKey
   pressable?: boolean
   rotate?: "90" | "180" | "270"
+  loading?: boolean
 } & Pick<ComponentProps<typeof MaterialCommunityIcon>, "name">
 
 export const IconButton = ({
   iconSize = "md",
   variant = "common",
   pressable = true,
+  loading = false,
   ...restProps
 }: IconButtonProps) => {
   const palette = usePalette()
@@ -43,9 +45,13 @@ export const IconButton = ({
       {...props}
       onPress={(event) => {
         if (props.onPress) {
-          startTransition(async () => {
-            await props.onPress(event)
-          })
+          if (loading) {
+            startTransition(async () => {
+              await props.onPress(event)
+            })
+          } else {
+            props.onPress(event)
+          }
         }
       }}
       disabled={isPending}
