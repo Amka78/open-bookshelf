@@ -5,7 +5,7 @@ import {
 } from "@/components/BookConvertForm/ConvertOptions"
 import { useStores } from "@/models"
 import { api } from "@/services/api"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 
 export function useBookConvert() {
@@ -53,9 +53,16 @@ export function useBookConvert() {
 
         if (response.kind === "ok") {
           setOutputFormats(response.data.output_formats)
+
+          // Restore outputFormat from server-saved conversion options if available
+          const savedOutputFmt = response.data.conversion_options?.output_fmt ?? ""
+          const isValidOutputFmt =
+            savedOutputFmt && response.data.output_formats.includes(savedOutputFmt)
+          const newOutputFormat = isValidOutputFmt ? savedOutputFmt : ""
+
           const currentOutputFormat = form.getValues("outputFormat")
-          if (currentOutputFormat && !response.data.output_formats.includes(currentOutputFormat)) {
-            form.setValue("outputFormat", "")
+          if (currentOutputFormat !== newOutputFormat) {
+            form.setValue("outputFormat", newOutputFormat)
           }
           return
         }
@@ -75,7 +82,7 @@ export function useBookConvert() {
     }
   }, [form, inputFormats, selectedBook?.id, selectedLibrary.id])
 
-  const handleConvert = async () => {
+  const handleConvert = useCallback(async () => {
     const values = form.getValues()
     if (!values.outputFormat) return
 
@@ -89,9 +96,9 @@ export function useBookConvert() {
       setConvertStatus("error")
       setErrorMessage(e instanceof Error ? e.message : String(e))
     }
-  }
+  }, [form, selectedBook, selectedLibrary.id])
 
-  const handleStartConvert = async () => {
+  const handleStartConvert = useCallback(async () => {
     const values = form.getValues()
     if (!values.outputFormat) return
 
@@ -103,9 +110,9 @@ export function useBookConvert() {
       setErrorMessage(e instanceof Error ? e.message : String(e))
       return false
     }
-  }
+  }, [form, selectedBook, selectedLibrary.id])
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     form.reset({
       outputFormat: "",
       inputFormat: inputFormats[0] ?? null,
@@ -113,7 +120,7 @@ export function useBookConvert() {
     })
     setConvertStatus("idle")
     setErrorMessage(null)
-  }
+  }, [form, inputFormats])
 
   return {
     selectedBook,

@@ -40,7 +40,10 @@ export type ApiConversionBookData = {
   input_formats: string[]
   output_formats: string[]
   profiles: unknown
-  conversion_options: unknown
+  conversion_options: {
+    output_fmt?: string
+    [key: string]: unknown
+  }
   title: string
   authors: string[]
   book_id: number

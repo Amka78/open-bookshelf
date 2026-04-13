@@ -30,6 +30,7 @@ import type { Book } from "@/models/calibre"
 import type { ApppNavigationProp } from "@/navigators/types"
 import { api } from "@/services/api"
 import { deleteCachedBookImages } from "@/utils/bookImageCache"
+import { logger } from "@/utils/logger"
 import { useIsFocused, useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import type React from "react"
@@ -37,7 +38,6 @@ import { type FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useS
 import { Platform, useWindowDimensions } from "react-native"
 import { buildThumbnailSourceCache } from "./buildThumbnailSourceCache"
 import { useLibrary } from "./useLibrary"
-import { logger } from "@/utils/logger"
 
 /** Split a query string by AND or OR, returning individual conditions. */
 function parseQueryParts(query: string): string[] {
@@ -528,6 +528,9 @@ export const LibraryScreen: FC = observer(() => {
           }
           onEndReached={async () => {
             if (!isFocused) {
+              return
+            }
+            if (calibreRootStore.isFetchingMore) {
               return
             }
             await calibreRootStore.searchMoreLibrary()

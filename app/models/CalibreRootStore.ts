@@ -37,6 +37,7 @@ export const CalibreRootStore = types
     libraryMap: types.map(LibraryMapModel),
     selectedLibrary: types.maybe(types.reference(types.late(() => LibraryMapModel))),
     readingHistories: types.array(ReadingHistoryModel),
+    isFetchingMore: types.optional(types.boolean, false),
   })
   .actions(withSetPropAction)
   .actions((root) => ({
@@ -148,6 +149,7 @@ export const CalibreRootStore = types
       return false
     }),
     searchLibrary: flow(function* (num?: number) {
+      root.isFetchingMore = false
       const response = yield api.getLibrary(
         root.selectedLibrary.id,
         root.selectedLibrary.searchSetting ? root.selectedLibrary.searchSetting.query : "",
@@ -169,20 +171,33 @@ export const CalibreRootStore = types
     }),
     searchMoreLibrary: flow(function* () {
       const selectedLibrary = root.selectedLibrary
-      const response = yield api.getMoreLibrary(root.selectedLibrary.id, {
-        offset: selectedLibrary.searchSetting.offset,
-        query: selectedLibrary.searchSetting.query ? selectedLibrary.searchSetting.query : "",
-        sort: selectedLibrary.searchSetting.sort,
-        sort_order: selectedLibrary.searchSetting.sortOrder,
-        vl: selectedLibrary.searchSetting.vl ?? "",
-      })
+      if (!selectedLibrary) return false
 
-      if (response.kind === "ok") {
-        convertSearchResult(response.data, selectedLibrary)
-        return true
+      // Guard: prevent duplicate calls or fetching when already at end
+      if (root.isFetchingMore) return false
+      const totalNum = selectedLibrary.searchSetting?.totalNum ?? 0
+      const offset = selectedLibrary.searchSetting?.offset ?? 0
+      if (totalNum > 0 && offset >= totalNum) return false
+
+      root.isFetchingMore = true
+      try {
+        const response = yield api.getMoreLibrary(selectedLibrary.id, {
+          offset: offset,
+          query: selectedLibrary.searchSetting.query ? selectedLibrary.searchSetting.query : "",
+          sort: selectedLibrary.searchSetting.sort,
+          sort_order: selectedLibrary.searchSetting.sortOrder,
+          vl: selectedLibrary.searchSetting.vl ?? "",
+        })
+
+        if (response.kind === "ok") {
+          convertSearchResult(response.data, selectedLibrary)
+          return true
+        }
+        handleCommonApiError(response)
+        return false
+      } finally {
+        root.isFetchingMore = false
       }
-      handleCommonApiError(response)
-      return false
     }),
     setLibrary: (libraryId?: string) => {
       // MST resolves references by identifier at runtime; TS types don't allow direct ID assignment
