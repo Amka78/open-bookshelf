@@ -1202,27 +1202,6 @@ export class Api {
     return { kind: "ok" }
   }
 
-  async syncReadingPosition(
-    libraryId: string,
-    bookId: number,
-    format: string,
-    page: number,
-  ): Promise<{ kind: "ok" } | GeneralApiProblem> {
-    const response: ApiResponse<unknown> = await this.apisauce.post(
-      `cdb/set-fields/${bookId}/${libraryId}`,
-      {
-        changes: { reading_pos: { format, page } },
-        loaded_book_ids: [bookId],
-      },
-    )
-
-    if (!response.ok) {
-      const problem = getGeneralApiProblem(response)
-      if (problem) return problem
-    }
-
-    return { kind: "ok" }
-  }
   async saveAnnotations(
     libraryId: string,
     bookId: number,
@@ -1251,13 +1230,16 @@ export class Api {
     bookId: number,
     format: string,
     posFrac: number,
-    epoch: number,
+    epoch: string,
   ): Promise<{ kind: "ok" } | GeneralApiProblem> {
+    logger.debug(epoch)
     const response: ApiResponse<unknown> = await this.apisauce.post(
-      `ajax/set-last-read-position?library_id=${encodeURIComponent(
-        libraryId,
-      )}&book_id=${bookId}&fmt=${encodeURIComponent(format)}`,
-      { device_name: "open-bookshelf", cfi: "", pos_frac: posFrac, epoch },
+      `book-set-last-read-position/${libraryId}/${bookId}/${format}`,
+      {
+        device: "open-bookshelf",
+        cfi: "epubcfi(/2/2/4/66[page_33]@50:49.94)",
+        pos_frac: posFrac,
+      },
     )
     if (!response.ok) {
       const problem = getGeneralApiProblem(response)

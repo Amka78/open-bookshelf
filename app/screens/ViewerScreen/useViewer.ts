@@ -256,15 +256,12 @@ export function useViewer() {
           // Sync with the legacy endpoint (app-internal) and the standard Calibre endpoint.
           Promise.all([
             api
-              .syncReadingPosition(selectedLibraryId, selectedBook.id, history.format, page)
-              .catch((err) => logger.warn("Failed to sync reading position (legacy)", err)),
-            api
               .syncReadingPositionFull(
                 selectedLibraryId,
                 selectedBook.id,
                 history.format,
                 posFrac,
-                epoch,
+                `epubcfi(/2/2/4/0[page_${page}]@00:00.00)`,
               )
               .catch((err) => logger.warn("Failed to sync reading position (standard)", err)),
           ])
