@@ -152,6 +152,36 @@ export const BookModel = types
     },
   }))
   .actions((root) => ({
+    startConvert: flow(function* (
+      format: string,
+      libraryId: string,
+      convertOptions?: ConvertOptions,
+    ) {
+      const convertParams = convertOptions ? convertOptionsToParams(convertOptions) : undefined
+      const inputFmt = convertOptions?.inputFormat
+
+      if (!inputFmt) {
+        throw new Error("No input format specified")
+      }
+
+      const startResponse = yield api.startConversion(
+        libraryId,
+        root.id,
+        inputFmt,
+        format,
+        convertParams,
+      )
+
+      if (startResponse.kind !== "ok") {
+        if (startResponse.kind === "not-found") {
+          throw new Error(startResponse.message)
+        }
+        handleCommonApiError(startResponse)
+        return
+      }
+
+      return startResponse.data
+    }),
     convert: flow(function* (
       format: string,
       libraryId: string,

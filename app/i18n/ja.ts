@@ -130,6 +130,7 @@ const ja: Translations = {
     },
     bookConvertModal: {
       title: "書籍変換",
+      conversionStarted: "変換処理を開始しました。変換処理の進行はBackground Jobsで確認してください。",
     },
     cacheClearConfirmModal: {
       title: "キャッシュ削除",

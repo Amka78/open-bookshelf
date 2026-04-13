@@ -16,6 +16,7 @@ export function useBookConvert() {
 
   const inputFormats: string[] = selectedBook?.metaData?.formats ?? []
   const [outputFormats, setOutputFormats] = useState<string[]>(inputFormats)
+  const [isLoadingFormats, setIsLoadingFormats] = useState(false)
 
   const [convertStatus, setConvertStatus] = useState<ConvertStatus>("idle")
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -40,24 +41,31 @@ export function useBookConvert() {
     let cancelled = false
 
     const loadConversionBookData = async () => {
-      const response = await api.getConversionBookData(
-        selectedLibrary.id,
-        selectedBook.id,
-        preferredInputFormat ?? undefined,
-      )
+      setIsLoadingFormats(true)
+      try {
+        const response = await api.getConversionBookData(
+          selectedLibrary.id,
+          selectedBook.id,
+          preferredInputFormat ?? undefined,
+        )
 
-      if (cancelled) return
+        if (cancelled) return
 
-      if (response.kind === "ok") {
-        setOutputFormats(response.data.output_formats)
-        const currentOutputFormat = form.getValues("outputFormat")
-        if (currentOutputFormat && !response.data.output_formats.includes(currentOutputFormat)) {
-          form.setValue("outputFormat", "")
+        if (response.kind === "ok") {
+          setOutputFormats(response.data.output_formats)
+          const currentOutputFormat = form.getValues("outputFormat")
+          if (currentOutputFormat && !response.data.output_formats.includes(currentOutputFormat)) {
+            form.setValue("outputFormat", "")
+          }
+          return
         }
-        return
-      }
 
-      setOutputFormats(inputFormats)
+        setOutputFormats(inputFormats)
+      } finally {
+        if (!cancelled) {
+          setIsLoadingFormats(false)
+        }
+      }
     }
 
     void loadConversionBookData()
@@ -83,6 +91,20 @@ export function useBookConvert() {
     }
   }
 
+  const handleStartConvert = async () => {
+    const values = form.getValues()
+    if (!values.outputFormat) return
+
+    try {
+      await selectedBook.startConvert(values.outputFormat, selectedLibrary.id, values)
+      return true
+    } catch (e) {
+      setConvertStatus("error")
+      setErrorMessage(e instanceof Error ? e.message : String(e))
+      return false
+    }
+  }
+
   const handleReset = () => {
     form.reset({
       outputFormat: "",
@@ -98,10 +120,12 @@ export function useBookConvert() {
     selectedLibrary,
     inputFormats,
     outputFormats,
+    isLoadingFormats,
     form,
     convertStatus,
     errorMessage,
     handleConvert,
+    handleStartConvert,
     handleReset,
   }
 }

@@ -129,6 +129,7 @@ const ko: Translations = {
     },
     bookConvertModal: {
       title: "도서 변환",
+      conversionStarted: "변환이 시작되었습니다. 진행 상황은 배경 작업에서 확인하세요.",
     },
     cacheClearConfirmModal: {
       title: "캐시 삭제",

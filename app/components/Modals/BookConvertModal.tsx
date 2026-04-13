@@ -1,8 +1,10 @@
 import { BookConvertForm } from "@/components/BookConvertForm/BookConvertForm"
 import { Button } from "@/components/Button/Button"
 import { Heading } from "@/components/Heading/Heading"
+import { translate } from "@/i18n"
 import { useBookConvert } from "@/screens/BookConvertScreen/useBookConvert"
 import { observer } from "mobx-react-lite"
+import { Alert } from "react-native"
 import type { ModalComponentProp } from "react-native-modalfy"
 import { Body } from "./Body"
 import { CloseButton } from "./CloseButton"
@@ -26,10 +28,12 @@ export function BookConvertModalTemplate(props: BookConvertModalProps) {
     selectedBook,
     inputFormats,
     outputFormats,
+    isLoadingFormats,
     form,
     convertStatus,
     errorMessage,
     handleConvert,
+    handleStartConvert,
   } = useBookConvert()
   const outputFormat = form.watch("outputFormat") ?? ""
   const isConverting = convertStatus === "converting"
@@ -37,9 +41,16 @@ export function BookConvertModalTemplate(props: BookConvertModalProps) {
   const bookTitle = selectedBook?.metaData?.title ?? ""
 
   const handleConvertAndNotify = async () => {
-    await handleConvert()
-    if (props.modal.params.onConvertComplete) {
-      props.modal.params.onConvertComplete()
+    const success = await handleStartConvert()
+    if (success) {
+      if (props.modal.params.onConvertComplete) {
+        props.modal.params.onConvertComplete()
+      }
+      Alert.alert(
+        translate("bookConvertModal.title"),
+        translate("bookConvertModal.conversionStarted"),
+        [{ text: translate("common.ok"), onPress: () => props.modal.closeModal() }],
+      )
     }
   }
 
@@ -60,6 +71,7 @@ export function BookConvertModalTemplate(props: BookConvertModalProps) {
         <BookConvertForm
           inputFormats={inputFormats}
           outputFormats={outputFormats}
+          isLoadingFormats={isLoadingFormats}
           control={form.control}
           watch={form.watch}
           convertStatus={convertStatus}

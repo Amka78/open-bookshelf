@@ -11,6 +11,7 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   Icon,
+  Spinner,
 } from "@gluestack-ui/themed"
 import { type Control, Controller, type UseFormWatch } from "react-hook-form"
 import type { ConvertOptions } from "./ConvertOptions"
@@ -27,6 +28,8 @@ export type BookConvertFormProps = {
   inputFormats: string[]
   /** 出力先フォーマット一覧 (Calibre が変換可能なフォーマット) */
   outputFormats: string[]
+  /** 出力フォーマット読込中フラグ */
+  isLoadingFormats?: boolean
   /** react-hook-form control */
   control: Control<ConvertOptions>
   /** watch for outputFormat to show format-specific section */
@@ -38,7 +41,15 @@ export type BookConvertFormProps = {
 }
 
 export function BookConvertForm(props: BookConvertFormProps) {
-  const { inputFormats, outputFormats, control, watch, convertStatus, errorMessage } = props
+  const {
+    inputFormats,
+    outputFormats,
+    isLoadingFormats = false,
+    control,
+    watch,
+    convertStatus,
+    errorMessage,
+  } = props
 
   const isConverting = convertStatus === "converting"
   const isSuccess = convertStatus === "success"
@@ -62,7 +73,9 @@ export function BookConvertForm(props: BookConvertFormProps) {
       {/* ===== 変換先フォーマット選択 ===== */}
       <VStack space={"xs"}>
         <Text fontWeight="$bold" tx={"bookConvertScreen.outputFormat"} />
-        {outputFormats.length > 0 ? (
+        {isLoadingFormats ? (
+          <Spinner size="small" color="$gray500" />
+        ) : outputFormats.length > 0 ? (
           <Controller
             control={control}
             name={"outputFormat"}

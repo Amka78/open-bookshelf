@@ -118,6 +118,7 @@ const en = {
     },
     bookConvertModal: {
       title: "Convert Book",
+      conversionStarted: "Conversion started. Check Background Jobs for progress.",
     },
     bookDetailModal: {
       title: "Book detail",

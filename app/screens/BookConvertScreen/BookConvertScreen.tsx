@@ -17,6 +17,7 @@ export const BookConvertScreen: FC = observer(() => {
     selectedBook,
     inputFormats,
     outputFormats,
+    isLoadingFormats,
     form,
     convertStatus,
     errorMessage,
@@ -43,6 +44,7 @@ export const BookConvertScreen: FC = observer(() => {
       <BookConvertForm
         inputFormats={inputFormats}
         outputFormats={outputFormats}
+        isLoadingFormats={isLoadingFormats}
         control={form.control}
         watch={form.watch}
         convertStatus={convertStatus}

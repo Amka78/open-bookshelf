@@ -191,12 +191,12 @@ export const BookImageItem = memo(function BookImageItem({
 
 const styles = StyleSheet.create({
   imageSize: {
-    height: 320,
-    width: 280,
+    height: 300,
+    width: 240,
   },
   imageContainer: {
-    height: 320,
-    width: 280,
+    height: 300,
+    width: 240,
     position: "relative",
     overflow: "hidden",
   },

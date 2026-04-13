@@ -129,6 +129,7 @@ const ar: Translations = {
     },
     bookConvertModal: {
       title: "تحويل الكتاب",
+      conversionStarted: "بدأ التحويل. تحقق من الوظائف الخلفية لمعرفة التقدم.",
     },
     cacheClearConfirmModal: {
       title: "مسح التخزين المؤقت",
