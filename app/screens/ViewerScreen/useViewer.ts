@@ -7,6 +7,7 @@ import type { MetadataSnapshotIn } from "@/models/calibre"
 import { api } from "@/services/api"
 import type { BookReadingStyleType } from "@/type/types"
 import { isCalibreHtmlViewerFormat, isCalibreSerializedHtmlPath } from "@/utils/calibreHtmlViewer"
+import { generateCfiForPage } from "@/utils/cfi"
 import { logger } from "@/utils/logger"
 import { useEffect, useRef, useState } from "react"
 import { useConvergence } from "../../hooks/useConvergence"
@@ -242,33 +243,75 @@ export function useViewer() {
   }
 
   const onPageChange = async (page: number) => {
-    if (history?.currentPage !== page) {
-      history?.setCurrentPage(page)
+    if (!selectedBook || !selectedLibraryId || !history) {
+      return
+    }
 
-      if (selectedBook && selectedLibraryId && history) {
-        const totalPages = selectedBook.path.length || 1
-        const posFrac = totalPages > 1 ? page / (totalPages - 1) : 0
-        const epoch = Math.floor(Date.now() / 1000)
-        history.setServerPosition(posFrac, epoch)
+    // Skip if page hasn't changed (avoid redundant API calls)
+    if (history.currentPage === page) {
+      return
+    }
 
+    // Always update local currentPage
+    history.setCurrentPage(page)
+
+    // Compute position fraction and schedule server sync
+    const totalPages = selectedBook.path.length || 1
+    const posFrac = totalPages > 1 ? page / (totalPages - 1) : 0
+    const epoch = Math.floor(Date.now() / 1000)
+    history.setServerPosition(posFrac, epoch)
+
+    // Generate proper CFI for the current page
+    const cfi = generateCfiForPage(page)
+
+    // Debounce server sync to avoid excessive API calls during rapid page turns
+    clearTimeout(syncTimerRef.current)
+    syncTimerRef.current = setTimeout(() => {
+      // Sync with both the legacy endpoint (app-internal) and the standard Calibre endpoint.
+      Promise.all([
+        api
+          .syncReadingPositionFull(selectedLibraryId, selectedBook.id, history.format, posFrac, cfi)
+          .catch((err) => logger.warn("Failed to sync reading position (standard)", err)),
+      ])
+    }, SYNC_DEBOUNCE_MS)
+  }
+
+  // Flush pending position sync when viewer unmounts
+  useEffect(() => {
+    return () => {
+      if (syncTimerRef.current !== undefined) {
         clearTimeout(syncTimerRef.current)
-        syncTimerRef.current = setTimeout(() => {
-          // Sync with the legacy endpoint (app-internal) and the standard Calibre endpoint.
-          Promise.all([
-            api
-              .syncReadingPositionFull(
-                selectedLibraryId,
-                selectedBook.id,
-                history.format,
-                posFrac,
-                `epubcfi(/2/2/4/0[page_${page}]@00:00.00)`,
-              )
-              .catch((err) => logger.warn("Failed to sync reading position (standard)", err)),
-          ])
-        }, SYNC_DEBOUNCE_MS)
+        syncTimerRef.current = undefined
       }
     }
-  }
+  }, [])
+
+  // Send initial position to server when viewer becomes ready
+  useEffect(() => {
+    if (!viewerReady || !selectedBook || !selectedLibraryId || !history) {
+      return
+    }
+
+    const currentPage = history.currentPage ?? initialPage ?? 0
+    const totalPages = selectedBook.path.length || 1
+    const posFrac = totalPages > 1 ? currentPage / (totalPages - 1) : 0
+    const epoch = Math.floor(Date.now() / 1000)
+    const cfi = generateCfiForPage(currentPage)
+
+    history.setServerPosition(posFrac, epoch)
+
+    // Sync initial position to server without debounce
+    api
+      .syncReadingPositionFull(
+        selectedLibraryId,
+        selectedBook.id,
+        history.format,
+        posFrac,
+        cfi,
+        epoch,
+      )
+      .catch((err) => logger.warn("Failed to sync initial reading position (standard)", err))
+  }, [viewerReady, selectedBook, selectedLibraryId, history, initialPage])
 
   const onLastPage = () => {
     if (!selectedBook || !selectedLibrary) {

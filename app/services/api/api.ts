@@ -1230,16 +1230,16 @@ export class Api {
     bookId: number,
     format: string,
     posFrac: number,
-    epoch: string,
+    cfi: string,
   ): Promise<{ kind: "ok" } | GeneralApiProblem> {
-    logger.debug(epoch)
+    const body: Record<string, unknown> = {
+      device: "open-bookshelf",
+      cfi,
+      pos_frac: posFrac,
+    }
     const response: ApiResponse<unknown> = await this.apisauce.post(
       `book-set-last-read-position/${libraryId}/${bookId}/${format}`,
-      {
-        device: "open-bookshelf",
-        cfi: "epubcfi(/2/2/4/66[page_33]@50:49.94)",
-        pos_frac: posFrac,
-      },
+      body,
     )
     if (!response.ok) {
       const problem = getGeneralApiProblem(response)
