@@ -269,48 +269,26 @@ export const BookModel = types
         // AZW3 / KF8 / KF8:joint → HTML spine files rendered by BookHtmlPage
         pathList.push(...result.spine)
       } else if (result.book_format === "EPUB") {
-        // EPUB → pre-rendered JPEG images extracted from the spine
-        const spineResponse = yield api.getLibraryInformation(
-          libraryId,
-          root.id,
-          result.book_format,
-          root.metaData?.size ?? 0,
-          result.book_hash.mtime,
-          result.spine[0],
-        )
+        // EPUB → pre-rendered JPEG images from files metadata
+        // This is faster than the old approach because:
+        // 1. No extra API call (getLibraryInformation) needed
+        // 2. No DOM parsing overhead
+        // 3. Natural filename sorting for proper page order
+        // 4. Raster cover name detection
+        const imagePaths = Object.entries(result.files)
+          .filter(([_, metadata]) => !metadata.is_html && metadata.mimetype?.startsWith("image/"))
+          .map(([path]) => path)
+          .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }))
 
-        if (spineResponse.kind === "ok") {
-          Object.values(spineResponse.data.tree.c[1].c).forEach((path: { a: unknown }) => {
-            Object.values(path.a).forEach((avalue) => {
-              if (avalue[0] === "data-calibre-src") {
-                pathList.push(avalue[1])
-              }
-            })
-          })
+        if (result.raster_cover_name && imagePaths.includes(result.raster_cover_name)) {
+          const coverIndex = imagePaths.indexOf(result.raster_cover_name)
+          if (coverIndex > 0) {
+            imagePaths.splice(coverIndex, 1)
+            imagePaths.unshift(result.raster_cover_name)
+          }
         }
 
-        Object.values(result.spine).forEach((value: string, index) => {
-          if (index !== 0) {
-            const pagePath = value
-              .replace(".xhtml", ".jpg")
-              .replace("xhtml", "image")
-              .replace("text", "image")
-
-            const prefixImagePath = pagePath.replace("p", "i")
-
-            if (result.files[prefixImagePath]) {
-              pathList.push(prefixImagePath)
-              return
-            }
-
-            const numberOnlyPath = pagePath.replace("p-", "")
-            if (result.files[numberOnlyPath]) {
-              pathList.push(numberOnlyPath)
-              return
-            }
-            pathList.push(pagePath)
-          }
-        })
+        pathList.push(...imagePaths)
       } else if (result.is_comic) {
         // Comic formats (CBZ, CBR, CB7, CBC, …) → use files metadata directly
         // This is faster than parsing XHTML DOM because:
@@ -359,8 +337,9 @@ export const BookModel = types
       root.setProp("manifestServerPosFrac", latestPosition ? latestPosition.pos_frac : null)
       root.setProp("manifestServerEpoch", latestPosition ? latestPosition.epoch : null)
 
-      // Pass CBZ metadata to onPostConvert for caching in ReadingHistory
-      const comicMetadata = result.is_comic
+      // Pass image-based format metadata to onPostConvert for caching in ReadingHistory
+      const isImageBasedFormat = result.is_comic || result.book_format === "EPUB"
+      const formatMetadata = isImageBasedFormat
         ? {
             isComic: result.is_comic,
             rasterCoverName: result.raster_cover_name ?? null,
@@ -369,7 +348,7 @@ export const BookModel = types
           }
         : undefined
 
-      const postConvertResult = onPostConvert(comicMetadata)
+      const postConvertResult = onPostConvert(formatMetadata)
       if (postConvertResult) {
         yield postConvertResult
       }

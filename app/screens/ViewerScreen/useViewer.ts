@@ -9,7 +9,7 @@ import type { BookReadingStyleType } from "@/type/types"
 import { isCalibreHtmlViewerFormat, isCalibreSerializedHtmlPath } from "@/utils/calibreHtmlViewer"
 import { generateCfiForPage } from "@/utils/cfi"
 import { logger } from "@/utils/logger"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useConvergence } from "../../hooks/useConvergence"
 
 const SYNC_DEBOUNCE_MS = 1000
@@ -71,6 +71,7 @@ export function useViewer() {
   const pendingPromptKeyRef = useRef<string | undefined>(undefined)
   const handledRatingPromptKeyRef = useRef<string | undefined>(undefined)
   const syncTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const resumePageRef = useRef<number>(0)
 
   const convergenceHook = useConvergence()
 
@@ -83,22 +84,27 @@ export function useViewer() {
   const selectedFormat = selectedBook?.metaData.selectedFormat
   const isHtmlViewerFormat = isCalibreHtmlViewerFormat(selectedFormat)
   const normalizedSelectedFormat = selectedFormat?.toUpperCase()
-  const histories =
-    selectedBook && selectedLibraryId
-      ? calibreRootStore.readingHistories.filter((value) => {
-          return value.bookId === selectedBook.id && value.libraryId === selectedLibraryId
-        })
-      : []
+  const histories = useMemo(
+    () =>
+      selectedBook && selectedLibraryId
+        ? calibreRootStore.readingHistories.filter((value) => {
+            return value.bookId === selectedBook.id && value.libraryId === selectedLibraryId
+          })
+        : [],
+    [selectedBook, selectedLibraryId, calibreRootStore.readingHistories],
+  )
 
-  const history = selectedBook
-    ? histories.find((value) => {
-        return (
-          normalizedSelectedFormat !== null &&
-          normalizedSelectedFormat !== undefined &&
-          value.format.toUpperCase() === normalizedSelectedFormat
-        )
-      }) ?? (!normalizedSelectedFormat ? histories[histories.length - 1] : undefined)
-    : undefined
+  const history = useMemo(() => {
+    return selectedBook
+      ? histories.find((value) => {
+          return (
+            normalizedSelectedFormat !== null &&
+            normalizedSelectedFormat !== undefined &&
+            value.format.toUpperCase() === normalizedSelectedFormat
+          )
+        }) ?? (!normalizedSelectedFormat ? histories[histories.length - 1] : undefined)
+      : undefined
+  }, [selectedBook, histories, normalizedSelectedFormat])
 
   // Update selected format if needed
   useEffect(() => {
@@ -174,8 +180,11 @@ export function useViewer() {
 
       const maxPage = Math.max(availablePathLength - 1, 0)
       const resumePage = hasLocalProgress
-        ? Math.max(0, Math.min(history?.currentPage, maxPage))
+        ? Math.max(0, Math.min(history?.currentPage ?? 0, maxPage))
         : Math.max(0, Math.min(serverEstimatedPage, maxPage))
+
+      // Store in ref so callbacks always use the latest value
+      resumePageRef.current = resumePage
 
       let secondFrame: number | undefined
       const firstFrame = runOnNextFrame(() => {
@@ -192,7 +201,7 @@ export function useViewer() {
             onOKPress: () => {
               pendingPromptKeyRef.current = undefined
               resolvedPromptKeyRef.current = promptKey
-              setInitialPage(resumePage)
+              setInitialPage(resumePageRef.current)
               setViewerReady(true)
             },
             onCancelPress: () => {
@@ -213,7 +222,7 @@ export function useViewer() {
     }
 
     return cleanup
-  }, [availablePathLength, history, modal, promptKey, serverEstimatedPage])
+  }, [availablePathLength, promptKey, serverEstimatedPage, history?.currentPage, history?.serverPosFrac, history?.format, modal])
 
   // Client setting management
   let tempClientSetting = selectedBook

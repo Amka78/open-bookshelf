@@ -1,5 +1,5 @@
-import { describe, expect, test } from "bun:test"
-import { detectCoverImagePath } from "./bookImageCache"
+import { describe, expect, mock, test, jest, beforeAll, afterEach } from "bun:test"
+import { detectCoverImagePath, verifyCachedBookImages, reCacheMissingImages } from "./bookImageCache"
 
 describe("detectCoverImagePath", () => {
   test("returns null for empty path list", () => {
@@ -67,5 +67,64 @@ describe("detectCoverImagePath", () => {
     const paths = ["only-image.jpg"]
     expect(detectCoverImagePath(paths, null)).toBe("only-image.jpg")
     expect(detectCoverImagePath(paths, "only-image.jpg")).toBe("only-image.jpg")
+  })
+})
+
+describe("verifyCachedBookImages", () => {
+  test("returns allExist=true on web platform", async () => {
+    const paths = ["http://example.com/image1.jpg", "http://example.com/image2.jpg"]
+    const result = await verifyCachedBookImages(paths)
+    expect(result.allExist).toBe(true)
+    expect(result.missingIndices).toEqual([])
+  })
+
+  test("returns allExist=true for empty path list", async () => {
+    const result = await verifyCachedBookImages([])
+    expect(result.allExist).toBe(true)
+    expect(result.missingIndices).toEqual([])
+  })
+
+  test("skips remote URLs", async () => {
+    const paths = [
+      "http://example.com/image1.jpg",
+      "file:///cache/book-images/1/epub/image2.jpg",
+      "https://example.com/image3.jpg",
+    ]
+    const result = await verifyCachedBookImages(paths)
+    // Remote URLs are skipped, only local path is checked
+    // On web, all pass. On native, depends on file existence.
+    expect(result.missingIndices.length).toBeLessThanOrEqual(1)
+  })
+})
+
+describe("reCacheMissingImages", () => {
+  test("returns original paths when no missing indices", async () => {
+    const paths = ["path1.jpg", "path2.jpg"]
+    const result = await reCacheMissingImages({
+      bookId: 1,
+      format: "EPUB",
+      libraryId: "lib1",
+      baseUrl: "http://example.com",
+      size: 100,
+      hash: 123,
+      cachedPaths: paths,
+      missingIndices: [],
+    })
+    expect(result).toEqual(paths)
+  })
+
+  test("returns original paths on web platform", async () => {
+    const paths = ["http://example.com/image1.jpg"]
+    const result = await reCacheMissingImages({
+      bookId: 1,
+      format: "EPUB",
+      libraryId: "lib1",
+      baseUrl: "http://example.com",
+      size: 100,
+      hash: 123,
+      cachedPaths: paths,
+      missingIndices: [0],
+    })
+    expect(result).toEqual(paths)
   })
 })

@@ -289,6 +289,90 @@ describe("BookModel.convert", () => {
     expect(receivedComicMetadata).toBeUndefined()
   })
 
+  test("EPUB extracts images using files metadata", async () => {
+    mockCheckBookConverting.mockResolvedValue(
+      createManifest({
+        book_format: "EPUB",
+        is_comic: false,
+        raster_cover_name: "cover.jpg",
+        total_length: 3,
+        files: {
+          "cover.jpg": {
+            is_virtualized: false,
+            size: 50000,
+            mimetype: "image/jpeg",
+            is_html: false,
+          },
+          "image/i-0001.jpg": {
+            is_virtualized: false,
+            size: 30000,
+            mimetype: "image/jpeg",
+            is_html: false,
+          },
+          "image/i-0002.jpg": {
+            is_virtualized: false,
+            size: 32000,
+            mimetype: "image/jpeg",
+            is_html: false,
+          },
+          "text/part0000.xhtml": {
+            is_virtualized: false,
+            size: 5000,
+            mimetype: "application/xhtml+xml",
+            is_html: true,
+            length: 100,
+            has_maths: false,
+            anchor_map: [],
+          },
+        },
+      }),
+    )
+    const book = createBook()
+    let receivedFormatMetadata: unknown
+
+    await book.convert("EPUB", "lib1", async (metadata) => {
+      receivedFormatMetadata = metadata
+    })
+
+    // Should use files metadata, no DOM parsing needed
+    expect(book.path.slice()).toEqual(["cover.jpg", "image/i-0001.jpg", "image/i-0002.jpg"])
+    // Verify EPUB metadata is passed to onPostConvert
+    expect(receivedFormatMetadata).toEqual({
+      isComic: false,
+      rasterCoverName: "cover.jpg",
+      totalLength: 3,
+      fileMetadata: {
+        "cover.jpg": {
+          is_virtualized: false,
+          size: 50000,
+          mimetype: "image/jpeg",
+          is_html: false,
+        },
+        "image/i-0001.jpg": {
+          is_virtualized: false,
+          size: 30000,
+          mimetype: "image/jpeg",
+          is_html: false,
+        },
+        "image/i-0002.jpg": {
+          is_virtualized: false,
+          size: 32000,
+          mimetype: "image/jpeg",
+          is_html: false,
+        },
+        "text/part0000.xhtml": {
+          is_virtualized: false,
+          size: 5000,
+          mimetype: "application/xhtml+xml",
+          is_html: true,
+          length: 100,
+          has_maths: false,
+          anchor_map: [],
+        },
+      },
+    })
+  })
+
   test("FB2 pushes spine HTML paths", async () => {
     mockCheckBookConverting.mockResolvedValue(
       createManifest({ book_format: "FB2", is_comic: false, spine: ["book.xhtml"] }),

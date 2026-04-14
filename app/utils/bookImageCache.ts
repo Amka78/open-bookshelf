@@ -290,3 +290,91 @@ export async function deleteCachedBookImages(pathList: string[]): Promise<void> 
   )
 }
 
+/**
+ * Verify that all cached image files for a book exist on disk.
+ * Returns which paths are missing.
+ */
+export async function verifyCachedBookImages(cachedPaths: string[]): Promise<{
+  allExist: boolean
+  missingIndices: number[]
+}> {
+  if (Platform.OS === "web") {
+    // Web always uses remote URLs, so we consider them "existing"
+    return { allExist: true, missingIndices: [] }
+  }
+
+  const missingIndices: number[] = []
+
+  for (let i = 0; i < cachedPaths.length; i++) {
+    const path = cachedPaths[i]
+    if (isRemoteBookImagePath(path)) continue // Skip remote URLs
+
+    const file = new File(path)
+    if (!file.exists) {
+      missingIndices.push(i)
+    }
+  }
+
+  return {
+    allExist: missingIndices.length === 0,
+    missingIndices,
+  }
+}
+
+/**
+ * Re-download missing image files for a book.
+ * Returns the updated list of cached paths (with newly downloaded paths).
+ */
+export async function reCacheMissingImages(input: {
+  bookId: number
+  format: string
+  libraryId: string
+  baseUrl: string
+  size: number
+  hash: number
+  cachedPaths: string[]
+  missingIndices: number[]
+}): Promise<string[]> {
+  if (input.missingIndices.length === 0) {
+    return input.cachedPaths
+  }
+
+  if (Platform.OS === "web") {
+    // Web uses remote URLs, so nothing to re-cache
+    return input.cachedPaths
+  }
+
+  const cacheDir = getBookImageCacheDir(input.bookId, input.format)
+  cacheDir.create({ idempotent: true, intermediates: true })
+
+  const updatedPaths = [...input.cachedPaths]
+
+  await Promise.all(
+    input.missingIndices.map(async (index) => {
+      const originalPath = updatedPaths[index]
+      // Extract the relative path from the cached URI
+      // Format: file:///.../book-images/{bookId}/{format}/{relativePath}
+      const cacheDirPrefix = `${cacheDir.uri}`
+      const relativePath = originalPath.replace(cacheDirPrefix, "")
+
+      const targetFile = new File(cacheDir, relativePath)
+      targetFile.parentDirectory.create({ idempotent: true, intermediates: true })
+
+      const url = buildBookImageUrl(
+        input.baseUrl,
+        input.bookId,
+        input.format,
+        input.size,
+        input.hash,
+        relativePath,
+        input.libraryId,
+      )
+
+      await api.downloadFileWithAuth(url, targetFile, { idempotent: true })
+      updatedPaths[index] = targetFile.uri
+    }),
+  )
+
+  return updatedPaths
+}
+

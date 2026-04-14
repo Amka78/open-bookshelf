@@ -27,6 +27,10 @@ export const ReadingHistoryModel = types
     fileMetadataJson: types.maybeNull(types.string),
     /** Book hash (mtime) from manifest, used for cache invalidation */
     bookHash: types.maybeNull(types.number),
+    /** Whether cached images are verified to exist on disk */
+    cacheVerified: types.maybeNull(types.boolean),
+    /** Timestamp of last cache verification (Unix epoch seconds) */
+    cacheVerifiedAt: types.maybeNull(types.number),
   })
   .actions((root) => ({
     setCachePath: (bookImagePathList: string[]) => {
@@ -39,6 +43,10 @@ export const ReadingHistoryModel = types
     setServerPosition: (posFrac: number, epoch: number) => {
       root.serverPosFrac = posFrac
       root.serverEpoch = epoch
+    },
+    setCacheVerified: (verified: boolean) => {
+      root.cacheVerified = verified
+      root.cacheVerifiedAt = Math.floor(Date.now() / 1000)
     },
   }))
 export type ReadingHistory = Instance<typeof ReadingHistoryModel>

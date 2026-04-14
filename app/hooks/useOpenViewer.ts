@@ -2,8 +2,14 @@ import type { ModalStackParams } from "@/components/Modals/Types"
 import { useStores } from "@/models"
 import { type Book, ReadingHistoryModel } from "@/models/calibre"
 import type { ApppNavigationProp } from "@/navigators/types"
-import { cacheBookFile, cacheBookImages } from "@/utils/bookImageCache"
+import {
+  cacheBookFile,
+  cacheBookImages,
+  reCacheMissingImages,
+  verifyCachedBookImages,
+} from "@/utils/bookImageCache"
 import { isCalibreHtmlViewerFormat, isCalibreSerializedHtmlPath } from "@/utils/calibreHtmlViewer"
+import { isNetworkAvailable } from "@/utils/network"
 import { useNavigation } from "@react-navigation/native"
 import type { UsableModalProp } from "react-native-modalfy"
 
@@ -61,6 +67,52 @@ export function useOpenViewer() {
       }
 
       if (history) {
+        // History exists - verify cache before navigating to viewer
+        const cachedPaths = history.cachedPath?.length ? history.cachedPath : []
+        const hasCachedPaths = cachedPaths.length > 0
+        const firstPath = cachedPaths[0] ?? ""
+        const isImageBasedFormat = !isHtmlViewerFormat && !isCalibreSerializedHtmlPath(firstPath)
+
+        if (hasCachedPaths && isImageBasedFormat) {
+          // Verify cached images exist on disk
+          const { allExist, missingIndices } = await verifyCachedBookImages(cachedPaths)
+
+          if (!allExist) {
+            // Some files are missing - check network
+            const online = await isNetworkAvailable()
+
+            if (!online) {
+              // Offline and cache is incomplete
+              modal.openModal("ErrorModal", {
+                message: "This book is not fully cached and you are offline. Please connect to the internet to read.",
+                titleTx: "common.error",
+              })
+              return
+            }
+
+            // Online - re-download missing images
+            const hash = book.hash ?? history.bookHash ?? 0
+            const size = book.metaData?.formatSizes.get(format) ?? 0
+            const updatedPaths = await reCacheMissingImages({
+              bookId: book.id,
+              format,
+              libraryId: selectedLibraryId,
+              baseUrl: settingStore.api.baseUrl,
+              size,
+              hash,
+              cachedPaths: history.cachedPath.slice(),
+              missingIndices,
+            })
+
+            // Update history with new paths
+            history.setCachePath(updatedPaths)
+            history.setCacheVerified(true)
+          } else {
+            // All files exist
+            history.setCacheVerified(true)
+          }
+        }
+
         navigation.navigate("Viewer")
       } else {
         await book.convert(format, selectedLibraryId, async (comicMetadata) => {
@@ -97,6 +149,8 @@ export function useOpenViewer() {
             totalLength: comicMetadata?.totalLength ?? null,
             fileMetadataJson: comicMetadata?.fileMetadata ? JSON.stringify(comicMetadata.fileMetadata) : null,
             bookHash: hash,
+            // Cache is verified immediately after caching
+            cacheVerified: true,
           })
           calibreRootStore.addReadingHistory(historyModel)
           navigation.navigate("Viewer")
