@@ -138,18 +138,135 @@ describe("BookModel.convert", () => {
     expect(book.path.slice()).toEqual(["xhtml/main.xhtml"])
   })
 
-  test("is_comic=true (CBR/CB7/CBC) extracts images via data-calibre-src", async () => {
+  test("is_comic=true (CBZ/CBR/CB7) extracts images using files metadata", async () => {
     mockCheckBookConverting.mockResolvedValue(
-      createManifest({ book_format: "CBR", is_comic: true, spine: ["wrapper.xhtml"] }),
-    )
-    mockGetLibraryInformation.mockResolvedValue(
-      createBookTree(["cover.jpg", "page001.jpg", "page002.jpg"]),
+      createManifest({
+        book_format: "CBZ",
+        is_comic: true,
+        raster_cover_name: "cover.jpg",
+        total_length: 3,
+        files: {
+          "cover.jpg": {
+            is_virtualized: false,
+            size: 150000,
+            mimetype: "image/jpeg",
+            is_html: false,
+          },
+          "page001.jpg": {
+            is_virtualized: false,
+            size: 120000,
+            mimetype: "image/jpeg",
+            is_html: false,
+          },
+          "page002.jpg": {
+            is_virtualized: false,
+            size: 130000,
+            mimetype: "image/jpeg",
+            is_html: false,
+          },
+        },
+      }),
     )
     const book = createBook()
+    let receivedComicMetadata: unknown
 
-    await book.convert("CBR", "lib1", async () => {})
+    await book.convert("CBZ", "lib1", async (metadata) => {
+      receivedComicMetadata = metadata
+    })
 
+    // Should use files metadata, not DOM parsing
     expect(book.path.slice()).toEqual(["cover.jpg", "page001.jpg", "page002.jpg"])
+    // Verify CBZ metadata is passed to onPostConvert
+    expect(receivedComicMetadata).toEqual({
+      isComic: true,
+      rasterCoverName: "cover.jpg",
+      totalLength: 3,
+      fileMetadata: {
+        "cover.jpg": {
+          is_virtualized: false,
+          size: 150000,
+          mimetype: "image/jpeg",
+          is_html: false,
+        },
+        "page001.jpg": {
+          is_virtualized: false,
+          size: 120000,
+          mimetype: "image/jpeg",
+          is_html: false,
+        },
+        "page002.jpg": {
+          is_virtualized: false,
+          size: 130000,
+          mimetype: "image/jpeg",
+          is_html: false,
+        },
+      },
+    })
+  })
+
+  test("CBZ passes metadata to onPostConvert even when files is empty", async () => {
+    mockCheckBookConverting.mockResolvedValue(
+      createManifest({
+        book_format: "CBZ",
+        is_comic: true,
+        raster_cover_name: null,
+        total_length: 0,
+        files: {},
+      }),
+    )
+    const book = createBook()
+    let receivedComicMetadata: unknown
+
+    await book.convert("CBZ", "lib1", async (metadata) => {
+      receivedComicMetadata = metadata
+    })
+
+    expect(receivedComicMetadata).toEqual({
+      isComic: true,
+      rasterCoverName: null,
+      totalLength: 0,
+      fileMetadata: {},
+    })
+  })
+
+  test("CBZ natural sorting works without raster_cover_name", async () => {
+    mockCheckBookConverting.mockResolvedValue(
+      createManifest({
+        book_format: "CBZ",
+        is_comic: true,
+        raster_cover_name: null,
+        total_length: 3,
+        files: {
+          "page10.jpg": {
+            is_virtualized: false,
+            size: 120000,
+            mimetype: "image/jpeg",
+            is_html: false,
+          },
+          "page2.jpg": {
+            is_virtualized: false,
+            size: 120000,
+            mimetype: "image/jpeg",
+            is_html: false,
+          },
+          "page1.jpg": {
+            is_virtualized: false,
+            size: 120000,
+            mimetype: "image/jpeg",
+            is_html: false,
+          },
+        },
+      }),
+    )
+    const book = createBook()
+    let receivedComicMetadata: unknown
+
+    await book.convert("CBZ", "lib1", async (metadata) => {
+      receivedComicMetadata = metadata
+    })
+
+    expect(book.path.slice()).toEqual(["page1.jpg", "page2.jpg", "page10.jpg"])
+    expect(receivedComicMetadata).toHaveProperty("isComic", true)
   })
 
   test("MOBI (old, non-KF8) pushes spine HTML paths", async () => {
@@ -161,10 +278,15 @@ describe("BookModel.convert", () => {
       }),
     )
     const book = createBook()
+    let receivedComicMetadata: unknown
 
-    await book.convert("MOBI", "lib1", async () => {})
+    await book.convert("MOBI", "lib1", async (metadata) => {
+      receivedComicMetadata = metadata
+    })
 
     expect(book.path.slice()).toEqual(["content.html", "content-2.html"])
+    // MOBI is not a comic, so no metadata is passed
+    expect(receivedComicMetadata).toBeUndefined()
   })
 
   test("FB2 pushes spine HTML paths", async () => {

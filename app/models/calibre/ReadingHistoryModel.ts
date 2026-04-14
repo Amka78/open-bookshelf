@@ -16,6 +16,17 @@ export const ReadingHistoryModel = types
     serverPosFrac: types.maybeNull(types.number),
     /** Unix epoch (seconds) of the server-side position, for recency comparison. */
     serverEpoch: types.maybeNull(types.number),
+    // CBZ metadata cache for fast reload
+    /** Whether this book is a comic format (CBZ, CBR, CB7, CBC, etc.) */
+    isComic: types.maybeNull(types.boolean),
+    /** Filename of the raster cover image (e.g., "cover.jpg") */
+    rasterCoverName: types.maybeNull(types.string),
+    /** Total number of images/files in the comic archive */
+    totalLength: types.maybeNull(types.number),
+    /** JSON-serialized file metadata map (contains size, mimetype, etc. for each file) */
+    fileMetadataJson: types.maybeNull(types.string),
+    /** Book hash (mtime) from manifest, used for cache invalidation */
+    bookHash: types.maybeNull(types.number),
   })
   .actions((root) => ({
     setCachePath: (bookImagePathList: string[]) => {

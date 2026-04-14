@@ -1,10 +1,4 @@
-import {
-  type Instance,
-  type SnapshotIn,
-  type SnapshotOut,
-  flow,
-  types,
-} from "mobx-state-tree"
+import { type Instance, type SnapshotIn, type SnapshotOut, flow, types } from "mobx-state-tree"
 
 import type { ConvertOptions } from "@/components/BookConvertForm/ConvertOptions"
 import { isCalibreHtmlViewerFormat } from "@/utils/calibreHtmlViewer"
@@ -185,7 +179,12 @@ export const BookModel = types
     convert: flow(function* (
       format: string,
       libraryId: string,
-      onPostConvert: () => void | Promise<void>,
+      onPostConvert: (comicMetadata?: {
+        isComic: boolean
+        rasterCoverName: string | null
+        totalLength: number | null
+        fileMetadata: Record<string, ImageFileType | HtmlFileType> | null
+      }) => void | Promise<void>,
       convertOptions?: ConvertOptions,
     ) {
       const convertParams = convertOptions ? convertOptionsToParams(convertOptions) : undefined
@@ -313,28 +312,25 @@ export const BookModel = types
           }
         })
       } else if (result.is_comic) {
-        // Comic formats (CBZ, CBR, CB7, CBC, …) → images embedded in a single
-        // wrapper XHTML; extract each image via its data-calibre-src attribute.
-        if (result.spine.length > 0) {
-          const spineResponse = yield api.getLibraryInformation(
-            libraryId,
-            root.id,
-            result.book_format,
-            root.metaData?.size ?? 0,
-            result.book_hash.mtime,
-            result.spine[0],
-          )
+        // Comic formats (CBZ, CBR, CB7, CBC, …) → use files metadata directly
+        // This is faster than parsing XHTML DOM because:
+        // 1. No DOM parsing overhead
+        // 2. Natural filename sorting for proper page order
+        // 3. Raster cover name detection
+        const imagePaths = Object.entries(result.files)
+          .filter(([_, metadata]) => !metadata.is_html && metadata.mimetype?.startsWith("image/"))
+          .map(([path]) => path)
+          .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }))
 
-          if (spineResponse.kind === "ok") {
-            Object.values(spineResponse.data.tree.c[1].c).forEach((path: { a: unknown }) => {
-              Object.values(path.a).forEach((avalue) => {
-                if (avalue[0] === "data-calibre-src") {
-                  pathList.push(avalue[1])
-                }
-              })
-            })
+        if (result.raster_cover_name && imagePaths.includes(result.raster_cover_name)) {
+          const coverIndex = imagePaths.indexOf(result.raster_cover_name)
+          if (coverIndex > 0) {
+            imagePaths.splice(coverIndex, 1)
+            imagePaths.unshift(result.raster_cover_name)
           }
         }
+
+        pathList.push(...imagePaths)
       } else {
         // All other text-based formats (MOBI old, FB2, RTF, DOCX, TXT, HTML, …)
         // Calibre renders these as XHTML spine files; use HTML viewer path.
@@ -363,7 +359,17 @@ export const BookModel = types
       root.setProp("manifestServerPosFrac", latestPosition ? latestPosition.pos_frac : null)
       root.setProp("manifestServerEpoch", latestPosition ? latestPosition.epoch : null)
 
-      const postConvertResult = onPostConvert()
+      // Pass CBZ metadata to onPostConvert for caching in ReadingHistory
+      const comicMetadata = result.is_comic
+        ? {
+            isComic: result.is_comic,
+            rasterCoverName: result.raster_cover_name ?? null,
+            totalLength: result.total_length ?? null,
+            fileMetadata: result.files ?? null,
+          }
+        : undefined
+
+      const postConvertResult = onPostConvert(comicMetadata)
       if (postConvertResult) {
         yield postConvertResult
       }

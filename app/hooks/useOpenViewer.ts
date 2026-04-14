@@ -63,7 +63,7 @@ export function useOpenViewer() {
       if (history) {
         navigation.navigate("Viewer")
       } else {
-        await book.convert(format, selectedLibraryId, async () => {
+        await book.convert(format, selectedLibraryId, async (comicMetadata) => {
           const size = book.metaData?.formatSizes.get(format) ?? 0
           const hash = book.hash ?? 0
           // Text-based formats (MOBI, FB2, DOCX, RTF, TXT, etc.) populate book.path
@@ -91,6 +91,12 @@ export function useOpenViewer() {
             format: format,
             serverPosFrac: book.manifestServerPosFrac ?? null,
             serverEpoch: book.manifestServerEpoch ?? null,
+            // Cache CBZ metadata from convert result for fast reload on next launch
+            isComic: comicMetadata?.isComic ?? null,
+            rasterCoverName: comicMetadata?.rasterCoverName ?? null,
+            totalLength: comicMetadata?.totalLength ?? null,
+            fileMetadataJson: comicMetadata?.fileMetadata ? JSON.stringify(comicMetadata.fileMetadata) : null,
+            bookHash: hash,
           })
           calibreRootStore.addReadingHistory(historyModel)
           navigation.navigate("Viewer")
