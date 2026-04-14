@@ -113,22 +113,6 @@ export function useViewer() {
     }
   }, [history?.format, selectedBook, selectedFormat])
 
-  // Restore cached CBZ metadata if available
-  // Note: CBZ metadata is now stored in ReadingHistory, not BookModel
-  // The metadata is automatically available via history.isComic, etc.
-  useEffect(() => {
-    if (!selectedBook || !history) return
-
-    if (history.isComic !== null || history.rasterCoverName !== null || history.totalLength !== null) {
-      logger.debug("CBZ metadata available from history", {
-        bookId: selectedBook.id,
-        isComic: history.isComic,
-        totalLength: history.totalLength,
-        hashMatch: history.bookHash === (selectedBook.hash ?? 0),
-      })
-    }
-  }, [selectedBook, history])
-
   // The book spine/path list is the authoritative page source for the viewer.
   // Cached paths are only optional render replacements for image-based formats.
   const cachedPathList = history?.cachedPath?.length ? history.cachedPath : undefined

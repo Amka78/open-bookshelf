@@ -30,13 +30,15 @@ export const PDFViewerScreen = observer(() => {
       const renderStartTime = performance.now()
 
       const availableHeight = renderProps.availableHeight ?? windowDimension.height
-      const isFacingPage = renderProps.pageType !== "singlePage"
-      const maxWidth = calculatePageWidth(isFacingPage, windowDimension.width)
+      const availableWidth = renderProps.availableWidth ?? windowDimension.width
 
-      let pageWidth = maxWidth
-      if (pageAspectRatio !== undefined) {
-        const widthForHeight = Math.floor(availableHeight * pageAspectRatio)
-        pageWidth = Math.min(maxWidth, widthForHeight)
+      // Scale page width to fit within both availableWidth and availableHeight
+      // using the PDF page aspect ratio. This ensures the page fills the space
+      // without overflowing vertically or leaving horizontal gaps.
+      let pageWidth = availableWidth
+      if (pageAspectRatio !== undefined && availableHeight > 0) {
+        const maxWidthForHeight = Math.floor(availableHeight * pageAspectRatio)
+        pageWidth = Math.min(availableWidth, maxWidthForHeight)
       }
 
       const pageContainerStyle =
@@ -73,7 +75,7 @@ export const PDFViewerScreen = observer(() => {
         </View>
       )
     },
-    [windowDimension.height, windowDimension.width, calculatePageWidth, pageAspectRatio],
+    [windowDimension.width, pageAspectRatio],
   )
 
   const preloadPageIndices = useMemo(
@@ -162,10 +164,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   leftPage: {
-    alignItems: "center",
+    alignItems: "flex-end",
   },
   rightPage: {
-    alignItems: "center",
+    alignItems: "flex-start",
   },
   // 先読みページ専用コンテナ: DOM上に保持しつつ完全に非表示・クリップ
   preloadContainer: {
