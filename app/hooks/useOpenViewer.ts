@@ -70,10 +70,45 @@ export function useOpenViewer() {
         // History exists - verify cache before navigating to viewer
         const cachedPaths = history.cachedPath?.length ? history.cachedPath : []
         const hasCachedPaths = cachedPaths.length > 0
-        const firstPath = cachedPaths[0] ?? ""
+        const needsSourcePathResolution = !hasCachedPaths && book.path.length === 0
+
+        if (needsSourcePathResolution) {
+          await book.convert(format, selectedLibraryId, async () => {})
+        }
+
+        if (!hasCachedPaths && book.path.length === 0) {
+          throw new Error("Book content could not be prepared for viewing")
+        }
+
+        const firstPath = cachedPaths[0] ?? book.path[0] ?? ""
         const isImageBasedFormat = !isHtmlViewerFormat && !isCalibreSerializedHtmlPath(firstPath)
 
-        if (hasCachedPaths && isImageBasedFormat) {
+        if (!hasCachedPaths && isImageBasedFormat) {
+          const online = await isNetworkAvailable()
+
+          if (!online) {
+            modal.openModal("ErrorModal", {
+              message: "This book is not cached and you are offline. Please connect to the internet to read.",
+              titleTx: "common.error",
+            })
+            return
+          }
+
+          const size = book.metaData?.formatSizes.get(format) ?? 0
+          const hash = book.hash ?? history.bookHash ?? 0
+          const updatedPaths = await cacheBookImages({
+            bookId: book.id,
+            format,
+            libraryId: selectedLibraryId,
+            baseUrl: settingStore.api.baseUrl,
+            size,
+            hash,
+            pathList: book.path.slice(),
+          })
+
+          history.setCachePath(updatedPaths)
+          history.setCacheVerified(true)
+        } else if (hasCachedPaths && isImageBasedFormat) {
           // Verify cached images exist on disk
           const { allExist, missingIndices } = await verifyCachedBookImages(cachedPaths)
 

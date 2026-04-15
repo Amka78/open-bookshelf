@@ -2,6 +2,7 @@ import type { ModalStackParams } from "@/components/Modals/Types"
 import { useStores } from "@/models"
 import { ReadingHistoryModel } from "@/models/calibre"
 import * as bookImageCache from "@/utils/bookImageCache"
+import * as network from "@/utils/network"
 import { useNavigation } from "@react-navigation/native"
 import type { UsableModalProp } from "react-native-modalfy"
 import { useOpenViewer } from "./useOpenViewer"
@@ -24,6 +25,7 @@ type MockSelectedBook = {
   convert: jest.Mock
   metaData: {
     formats: string[]
+    formatSizes: Map<string, number>
     size: number
     setProp: jest.Mock
   }
@@ -34,7 +36,9 @@ type ReadingHistoryEntry = {
   bookId: number
   format: string
   cachedPath?: string[]
+  bookHash?: number
   setCachePath?: jest.Mock
+  setCacheVerified?: jest.Mock
 }
 
 describe("useOpenViewer", () => {
@@ -185,7 +189,20 @@ describe("useOpenViewer", () => {
     })
     setupStore({
       selectedBook,
-      readingHistories: [{ libraryId: "lib1", bookId: 2, format: "EPUB" }],
+      readingHistories: [
+        {
+          libraryId: "lib1",
+          bookId: 2,
+          format: "EPUB",
+          cachedPath: ["file:///cache/2.png"],
+          setCacheVerified: jest.fn(),
+        },
+      ],
+    })
+
+    jest.spyOn(bookImageCache, "verifyCachedBookImages").mockResolvedValue({
+      allExist: true,
+      missingIndices: [],
     })
 
     const { execute } = useOpenViewer()
@@ -193,6 +210,105 @@ describe("useOpenViewer", () => {
 
     expect(navigate).toHaveBeenCalledWith("Viewer")
     expect(selectedBook.convert).not.toHaveBeenCalled()
+  })
+
+  test("rebuilds missing image cache for existing history before navigating", async () => {
+    const navigate = jest.fn()
+    ;(useNavigation as jest.Mock).mockReturnValue({ navigate })
+
+    const selectedBook = createSelectedBook({
+      id: 7,
+      hash: 13,
+      path: ["page001.jpg", "page002.jpg"],
+      metaData: {
+        formats: ["EPUB"],
+        formatSizes: new Map([["EPUB", 250]]),
+        size: 250,
+        setProp: jest.fn(),
+      },
+    })
+
+    const setCachePath = jest.fn()
+    const setCacheVerified = jest.fn()
+
+    setupStore({
+      selectedBook,
+      readingHistories: [
+        {
+          libraryId: "lib1",
+          bookId: 7,
+          format: "EPUB",
+          cachedPath: [],
+          bookHash: 13,
+          setCachePath,
+          setCacheVerified,
+        },
+      ],
+    })
+
+    jest.spyOn(network, "isNetworkAvailable").mockResolvedValue(true)
+    jest
+      .spyOn(bookImageCache, "cacheBookImages")
+      .mockResolvedValue(["file:///cache/page001.jpg", "file:///cache/page002.jpg"])
+
+    const { execute } = useOpenViewer()
+    await execute(createModal())
+
+    expect(bookImageCache.cacheBookImages).toHaveBeenCalledWith(
+      expect.objectContaining({
+        bookId: 7,
+        format: "EPUB",
+        libraryId: "lib1",
+        pathList: ["page001.jpg", "page002.jpg"],
+      }),
+    )
+    expect(setCachePath).toHaveBeenCalledWith(["file:///cache/page001.jpg", "file:///cache/page002.jpg"])
+    expect(setCacheVerified).toHaveBeenCalledWith(true)
+    expect(navigate).toHaveBeenCalledWith("Viewer")
+  })
+
+  test("re-converts text-based formats when history exists without cached pages", async () => {
+    const navigate = jest.fn()
+    ;(useNavigation as jest.Mock).mockReturnValue({ navigate })
+
+    const selectedBook = createSelectedBook({
+      id: 8,
+      hash: 14,
+      path: [],
+      convert: jest.fn(async (_format, _libraryId, callback) => {
+        selectedBook.path = ["index.xhtml", "chapter-1.xhtml"]
+        await callback()
+      }),
+      metaData: {
+        formats: ["MOBI"],
+        formatSizes: new Map([["MOBI", 175]]),
+        size: 175,
+        setProp: jest.fn(),
+      },
+    })
+
+    setupStore({
+      selectedBook,
+      readingHistories: [
+        {
+          libraryId: "lib1",
+          bookId: 8,
+          format: "MOBI",
+          cachedPath: [],
+          setCachePath: jest.fn(),
+          setCacheVerified: jest.fn(),
+        },
+      ],
+    })
+
+    const cacheSpy = jest.spyOn(bookImageCache, "cacheBookImages")
+
+    const { execute } = useOpenViewer()
+    await execute(createModal())
+
+    expect(selectedBook.convert).toHaveBeenCalled()
+    expect(cacheSpy).not.toHaveBeenCalled()
+    expect(navigate).toHaveBeenCalledWith("Viewer")
   })
 
   test("converts, caches images, and stores history when history does not exist", async () => {

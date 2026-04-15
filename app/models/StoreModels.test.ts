@@ -36,4 +36,21 @@ describe("Store models", () => {
     store.setAutoPageTurnIntervalMs(1234.9)
     expect(store.autoPageTurnIntervalMs).toBe(1234)
   })
+
+  test("SettingStoreModel uses list as the mobile library default and grid on large screens", () => {
+    const store = SettingStoreModel.create({})
+
+    expect(store.getLibraryViewMode(false)).toBe("list")
+    expect(store.getLibraryViewMode(true)).toBe("grid")
+  })
+
+  test("SettingStoreModel stores library view mode separately for mobile and large screens", () => {
+    const store = SettingStoreModel.create({})
+
+    store.setLibraryViewMode("grid", false)
+    store.setLibraryViewMode("list", true)
+
+    expect(store.getLibraryViewMode(false)).toBe("grid")
+    expect(store.getLibraryViewMode(true)).toBe("list")
+  })
 })
