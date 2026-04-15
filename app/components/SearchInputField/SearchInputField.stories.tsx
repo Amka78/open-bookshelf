@@ -5,6 +5,7 @@ import { useState } from "react"
 import { SearchInputField } from "./SearchInputField"
 import {
   playBackspaceRemovesText,
+  playBlurClosesSuggestions,
   playFocusShowsSuggestions,
   playSelectSuggestionClosesSuggestions,
   playTypingFiltersSuggestions,
@@ -14,7 +15,7 @@ import {
 export function SearchInputFieldStoryWrapper() {
   const [value, setValue] = useState("")
 
-  const suggestions = ["title:=", "author:=", "series:=", "tag:=", "AND", "OR", "NOT"]
+  const suggestions = ["title:=", "authors:=", "series:=", "tag:=", "AND", "OR", "NOT"]
 
   return (
     <Box width="$full" padding="$4">
@@ -57,6 +58,10 @@ export const TypingFiltersSuggestions: Story = {
 
 export const SelectSuggestionClosesSuggestions: Story = {
   play: playSelectSuggestionClosesSuggestions,
+}
+
+export const BlurClosesSuggestions: Story = {
+  play: playBlurClosesSuggestions,
 }
 
 export const BackspaceRemovesText: Story = {

@@ -9,11 +9,12 @@ export type SortMenuProps = {
   selectedSortOrder?: string
   field?: SortField[]
   onSortChange?: (sortId: string) => void
+  isLargeScreen?: boolean
 } & Omit<ComponentProps<typeof Menu>, "trigger">
 export function SortMenu(props: SortMenuProps) {
   return (
     <Menu
-      placement="left bottom"
+      placement={props.isLargeScreen ? "bottom" : "left bottom"}
       trigger={(triggerProps) => {
         return (
           <Pressable {...triggerProps}>

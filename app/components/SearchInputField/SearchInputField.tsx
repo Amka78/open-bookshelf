@@ -4,8 +4,8 @@ import { IconButton } from "@/components/IconButton/IconButton"
 import { InputField } from "@/components/InputField/InputField"
 import type { MessageKey } from "@/i18n"
 import { HStack, Input } from "@gluestack-ui/themed"
-import { useRef, useState } from "react"
-import type { TextInput as RNTextInput } from "react-native"
+import { useCallback, useEffect, useRef, useState } from "react"
+import type { DimensionValue, TextInput as RNTextInput } from "react-native"
 
 const MAX_SUGGESTIONS = 8
 const SAVED_SEARCH_PREFIX = "🔖 "
@@ -28,7 +28,7 @@ type Props = {
   placeholder?: string
   placeholderTx?: MessageKey
   size?: string
-  width?: number | string
+  width?: DimensionValue | "$full"
   testID?: string
   autoFocus?: boolean
   savedSearches?: Array<{ name: string; query: string }>
@@ -59,6 +59,19 @@ export function SearchInputField({
 }: Props) {
   const [isSuggestionOpen, setIsSuggestionOpen] = useState(false)
   const inputRef = useRef<RNTextInput | null>(null)
+  const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const clearBlurTimeout = useCallback(() => {
+    if (!blurTimeoutRef.current) return
+    clearTimeout(blurTimeoutRef.current)
+    blurTimeoutRef.current = null
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      clearBlurTimeout()
+    }
+  }, [clearBlurTimeout])
 
   const { prefix, token } = getCurrentToken(value)
   const lowerToken = token.toLowerCase()
@@ -110,6 +123,28 @@ export function SearchInputField({
         : recentSearchCandidates
   const isOpen = isSuggestionOpen && activeCandidates.length > 0
 
+  const getChangedText = (
+    event: unknown,
+  ): string | undefined => {
+    if (!event || typeof event !== "object") return undefined
+
+    const target =
+      "target" in event && event.target && typeof event.target === "object" ? event.target : undefined
+    if (target && "value" in target && typeof target.value === "string") {
+      return target.value
+    }
+
+    const nativeEvent =
+      "nativeEvent" in event && event.nativeEvent && typeof event.nativeEvent === "object"
+        ? event.nativeEvent
+        : undefined
+    if (nativeEvent && "text" in nativeEvent && typeof nativeEvent.text === "string") {
+      return nativeEvent.text
+    }
+
+    return undefined
+  }
+
   const handleSaveSearch = () => {
     if (onSaveSearch && value.trim().length > 0) {
       onSaveSearch(value.trim(), value.trim())
@@ -120,7 +155,7 @@ export function SearchInputField({
   const isSaved = Boolean(savedSearches?.find((s) => s.name === value.trim()))
 
   return (
-    <HStack width={(width ?? "$full") as any} alignItems="center" space="xs">
+    <HStack width={width ?? "$full"} alignItems="center" space="xs">
       <Box flex={1}>
         <FormSuggestionPopover
           trigger={(triggerProps) => {
@@ -132,14 +167,22 @@ export function SearchInputField({
                     value={value}
                     onChange={(e) => {
                       // Web: ensure text value is updated on every change including backspace
-                      const text = e?.target?.value ?? e?.nativeEvent?.text
+                      const text = getChangedText(e)
                       if (typeof text === "string" && text !== value) {
                         setIsSuggestionOpen(true)
                         onChangeText(text)
                       }
                     }}
                     onFocus={() => {
+                      clearBlurTimeout()
                       setIsSuggestionOpen(true)
+                    }}
+                    onBlur={() => {
+                      clearBlurTimeout()
+                      blurTimeoutRef.current = setTimeout(() => {
+                        setIsSuggestionOpen(false)
+                        blurTimeoutRef.current = null
+                      }, 0)
                     }}
                     onSubmitEditing={() => onSubmit?.(value)}
                     returnKeyType="search"
@@ -163,6 +206,7 @@ export function SearchInputField({
           onClose={() => setIsSuggestionOpen(false)}
           candidates={activeCandidates}
           onSelect={(candidate) => {
+            clearBlurTimeout()
             if (candidate.startsWith(SAVED_SEARCH_PREFIX) && onLoadSearch) {
               const name = candidate.slice(SAVED_SEARCH_PREFIX.length)
               const saved = savedSearches?.find((s) => s.name === name)

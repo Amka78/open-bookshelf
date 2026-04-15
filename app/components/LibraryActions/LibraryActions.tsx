@@ -3,50 +3,27 @@ import {
   AuthButton,
   IconButton,
   LibraryViewModeButton,
-  SortMenu,
-  VirtualLibraryButton,
 } from "@/components"
+import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import { translate } from "@/i18n"
 import { useStores } from "@/models"
 import type { ApppNavigationProp } from "@/navigators/types"
-import { useElectrobunModal } from "@/hooks/useElectrobunModal"
-import { Menu, MenuItem, MenuItemLabel, Pressable } from "@gluestack-ui/themed"
+import { Menu, MenuItem, MenuItemLabel } from "@gluestack-ui/themed"
 import type { DocumentPickerAsset } from "expo-document-picker"
 import type React from "react"
-import type { NavigationProp } from "@react-navigation/native"
 
 type LibraryActionsProps = {
   viewMode: "grid" | "list"
   onToggleViewMode: () => void
-  onSearch: (query?: string) => Promise<void>
-  onSort: (sortKey: string) => void
-  onSelectVirtualLibrary: (vl: string | null) => Promise<void>
   onUploadFile: (documents: DocumentPickerAsset[]) => Promise<void>
-  navigation: NavigationProp<ApppNavigationProp>
-  isLargeScreen: boolean
-  sortField?: Array<{ id: string; name: string }>
-  selectedSort?: string
-  selectedSortOrder?: string
-  virtualLibraries?: Array<{ name: string; path: string }>
-  selectedVl?: string | null
-  searchSettingVl?: string | null
+  navigation: ApppNavigationProp
 }
 
 export function LibraryActions({
   viewMode,
   onToggleViewMode,
-  onSearch,
-  onSort,
-  onSelectVirtualLibrary,
   onUploadFile,
   navigation,
-  isLargeScreen,
-  sortField,
-  selectedSort,
-  selectedSortOrder,
-  virtualLibraries,
-  selectedVl,
-  searchSettingVl,
 }: LibraryActionsProps) {
   const { authenticationStore } = useStores()
   const modal = useElectrobunModal()
@@ -75,9 +52,9 @@ export function LibraryActions({
           onPress={() => {
             modal.openModal("JobQueueModal", {})
           }}
-        >
-          <MenuItemLabel>{translate("jobQueue.title")}</MenuItemLabel>
-        </MenuItem>
+      >
+        <MenuItemLabel>{translate("jobQueue.title")}</MenuItemLabel>
+      </MenuItem>
         <MenuItem
           key="reading-stats"
           textValue="reading-stats"
@@ -102,28 +79,12 @@ export function LibraryActions({
           navigation.navigate("Connect")
         }}
       />
-      <VirtualLibraryButton
-        virtualLibraries={virtualLibraries?.slice() ?? []}
-        selectedVl={searchSettingVl ?? selectedVl}
-        onSelect={(name) => {
-          onSelectVirtualLibrary(name)
-        }}
-        isLargeScreen={isLargeScreen}
-      />
       <AddFileButton
         onDocumentSelect={async (documents) => {
           await onUploadFile(documents)
         }}
       />
       <LibraryViewModeButton mode={viewMode} onToggle={onToggleViewMode} />
-      <SortMenu
-        selectedSort={selectedSort}
-        selectedSortOrder={selectedSortOrder}
-        field={sortField}
-        onSortChange={(val) => {
-          onSort(val)
-        }}
-      />
     </>
   )
 }

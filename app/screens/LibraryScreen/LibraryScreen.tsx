@@ -7,7 +7,9 @@ import {
   LeftSideMenu,
   LibraryActions,
   SelectionActionBar,
+  SortMenu,
   StaggerContainer,
+  VirtualLibraryButton,
 } from "@/components"
 import { BookListItem } from "@/components/BookListItem"
 import type { CalibreFieldOperator, QueryOperator } from "@/components/LeftSideMenu/LeftSideMenu"
@@ -15,9 +17,7 @@ import {
   buildItemKey,
   buildTagQuery,
   normalizeTagQuery,
-  parseTagQuery,
 } from "@/components/LeftSideMenu/LeftSideMenu"
-import { LibraryViewModeButton } from "@/components/LibraryViewModeButton"
 import { SearchInputField } from "@/components/SearchInputField"
 import { useBulkDownloadBooks } from "@/hooks/useBulkDownloadBooks"
 import { useConvergence } from "@/hooks/useConvergence"
@@ -30,33 +30,38 @@ import type { Book } from "@/models/calibre"
 import type { ApppNavigationProp } from "@/navigators/types"
 import { api } from "@/services/api"
 import { deleteCachedBookImages } from "@/utils/bookImageCache"
-import { logger } from "@/utils/logger"
 import { useIsFocused, useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import type React from "react"
 import { type FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Platform, useWindowDimensions } from "react-native"
 import { buildThumbnailSourceCache } from "./buildThumbnailSourceCache"
+import {
+  buildQueryFromParts,
+  getLeftSideMenuSelectedNames,
+  getNextLeftSideMenuSelectionState,
+  parseQueryParts,
+} from "./librarySearchState"
 import { useLibrary } from "./useLibrary"
-
-/** Split a query string by AND or OR, returning individual conditions. */
-function parseQueryParts(query: string): string[] {
-  if (!query.trim()) return []
-  return query
-    .split(/ AND | OR /i)
-    .map((q) => q.trim())
-    .filter(Boolean)
-}
 
 type LibrarySearchHeaderProps = {
   convergenceHook: ReturnType<typeof useConvergence>
   libraryHook: ReturnType<typeof useLibrary>
   selectedLibrary: ReturnType<typeof useStores>["calibreRootStore"]["selectedLibrary"]
   settingStore: ReturnType<typeof useStores>["settingStore"]
+  onSort: (sortKey: string) => void
+  onSelectVirtualLibrary: (vl: string | null) => Promise<void>
 }
 
 const LibrarySearchHeader = observer(
-  ({ convergenceHook, libraryHook, selectedLibrary, settingStore }: LibrarySearchHeaderProps) => {
+  ({
+    convergenceHook,
+    libraryHook,
+    selectedLibrary,
+    settingStore,
+    onSort,
+    onSelectVirtualLibrary,
+  }: LibrarySearchHeaderProps) => {
     const [draftText, setDraftText] = useState(libraryHook.headerSearchText)
 
     // Only sync draft text when headerSearchText changes externally (e.g., after search)
@@ -71,38 +76,55 @@ const LibrarySearchHeader = observer(
     }, [libraryHook.headerSearchText])
 
     return (
-      <HStack alignItems="center" flex={1} pl={convergenceHook.isLarge ? "$48" : 0}>
-        <SearchInputField
-          value={draftText}
-          onChangeText={(text) => {
-            // Immediately update draft text for each keystroke including backspace
-            setDraftText(text)
+      <HStack alignItems="center" flex={1} pl={convergenceHook.isLarge ? "$48" : 0} space="sm">
+        <Box flex={1} minWidth={0} maxWidth={convergenceHook.isLarge ? 700 : undefined}>
+          <SearchInputField
+            value={draftText}
+            onChangeText={(text) => {
+              setDraftText(text)
+              libraryHook.setHeaderSearchText(text)
+            }}
+            onSubmit={(text) => {
+              // Apply completion at search time to avoid interfering with IME
+              const withParam = libraryHook.completeSearchParameter(text)
+              const withOperator = libraryHook.completeOperator(withParam)
+              libraryHook.setHeaderSearchText(withOperator)
+              libraryHook.onSearch(withOperator)
+            }}
+            suggestions={libraryHook.getSearchSuggestions()}
+            placeholderTx={
+              selectedLibrary?.ftsEnabled
+                ? "libraryScreen.searchPlaceholderFts"
+                : "libraryScreen.searchPlaceholder"
+            }
+            size="md"
+            width="$full"
+            testID="library-search-input"
+            savedSearches={selectedLibrary?.savedSearches?.slice() ?? []}
+            onSaveSearch={(name, query) => {
+              selectedLibrary?.addSavedSearch(name, query)
+            }}
+            onLoadSearch={(query) => {
+              libraryHook.setHeaderSearchText(query)
+              libraryHook.onSearch(query)
+            }}
+            recentSearches={settingStore.recentSearches.slice()}
+          />
+        </Box>
+        <VirtualLibraryButton
+          virtualLibraries={selectedLibrary?.virtualLibraries?.slice() ?? []}
+          selectedVl={selectedLibrary?.searchSetting?.vl}
+          onSelect={(name) => {
+            void onSelectVirtualLibrary(name)
           }}
-          onSubmit={(text) => {
-            // Apply completion at search time to avoid interfering with IME
-            const withParam = libraryHook.completeSearchParameter(text)
-            const withOperator = libraryHook.completeOperator(withParam)
-            libraryHook.setHeaderSearchText(withOperator)
-            libraryHook.onSearch(withOperator)
-          }}
-          suggestions={libraryHook.getSearchSuggestions()}
-          placeholderTx={
-            selectedLibrary?.ftsEnabled
-              ? "libraryScreen.searchPlaceholderFts"
-              : "libraryScreen.searchPlaceholder"
-          }
-          size="md"
-          width={convergenceHook.isLarge ? 700 : "100%"}
-          testID="library-search-input"
-          savedSearches={selectedLibrary?.savedSearches?.slice() ?? []}
-          onSaveSearch={(name, query) => {
-            selectedLibrary?.addSavedSearch(name, query)
-          }}
-          onLoadSearch={(query) => {
-            libraryHook.setHeaderSearchText(query)
-            libraryHook.onSearch(query)
-          }}
-          recentSearches={settingStore.recentSearches.slice()}
+          isLargeScreen={convergenceHook.isLarge}
+        />
+        <SortMenu
+          selectedSort={selectedLibrary?.searchSetting?.sort}
+          selectedSortOrder={selectedLibrary?.searchSetting?.sortOrder}
+          field={selectedLibrary?.sortField}
+          onSortChange={onSort}
+          isLargeScreen={convergenceHook.isLarge}
         />
       </HStack>
     )
@@ -110,7 +132,7 @@ const LibrarySearchHeader = observer(
 )
 
 export const LibraryScreen: FC = observer(() => {
-  const { authenticationStore, calibreRootStore, settingStore } = useStores()
+  const { calibreRootStore, settingStore } = useStores()
 
   const selectedLibrary = calibreRootStore.selectedLibrary
   const navigation = useNavigation<ApppNavigationProp>()
@@ -200,17 +222,8 @@ export const LibraryScreen: FC = observer(() => {
     <LibraryActions
       viewMode={viewMode}
       onToggleViewMode={handleToggleViewMode}
-      onSearch={libraryHook.onSearch}
-      onSort={libraryHook.onSort}
-      onSelectVirtualLibrary={libraryHook.onSelectVirtualLibrary}
       onUploadFile={libraryHook.onUploadFile}
       navigation={navigation}
-      isLargeScreen={convergenceHook.isLarge}
-      sortField={selectedLibrary?.sortField}
-      selectedSort={selectedLibrary?.searchSetting?.sort}
-      selectedSortOrder={selectedLibrary?.searchSetting?.sortOrder}
-      virtualLibraries={selectedLibrary?.virtualLibraries}
-      searchSettingVl={selectedLibrary?.searchSetting?.vl}
     />
   )
 
@@ -238,6 +251,8 @@ export const LibraryScreen: FC = observer(() => {
           libraryHook={libraryHook}
           selectedLibrary={selectedLibrary}
           settingStore={settingStore}
+          onSort={libraryHook.onSort}
+          onSelectVirtualLibrary={libraryHook.onSelectVirtualLibrary}
         />
       ),
       headerRight: convergenceHook.isLarge
@@ -568,54 +583,26 @@ export const LibraryScreen: FC = observer(() => {
       <Box flex={0.1}>
         <LeftSideMenu
           onNodePress={async (query) => {
-            const currentQuery = selectedLibrary?.searchSetting?.query ?? ""
-            const currentParts = parseQueryParts(currentQuery)
-            const normalizedNew = normalizeTagQuery(query)
-            const alreadySelected = currentParts.some((q) => normalizeTagQuery(q) === normalizedNew)
-            let nextParts: string[]
-            let nextOperators: Record<string, QueryOperator>
-            if (alreadySelected) {
-              nextParts = currentParts.filter((q) => normalizeTagQuery(q) !== normalizedNew)
-              const removedParsed = currentParts.find((q) => normalizeTagQuery(q) === normalizedNew)
-              const removedItemKey = removedParsed
-                ? (() => {
-                    const p = parseTagQuery(removedParsed)
-                    return p ? buildItemKey(p.categoryKey, p.value) : null
-                  })()
-                : null
-              nextOperators = { ...itemOperators }
-              if (removedItemKey) delete nextOperators[removedItemKey]
-            } else {
-              nextParts = [...currentParts, query.trim()]
-              nextOperators = { ...itemOperators }
+            const nextSelectionState = getNextLeftSideMenuSelectionState({
+              currentSearchText: libraryHook.headerSearchText,
+              clickedQuery: query,
+              itemOperators,
+            })
+
+            if (nextSelectionState.shouldResetMenuSettings) {
+              setItemCalibreOperators({})
             }
-            setItemOperators(nextOperators)
-            const nextQuery = nextParts.reduce((acc, part, i) => {
-              if (i === 0) return part
-              const prevParsed = parseTagQuery(nextParts[i - 1])
-              const prevKey = prevParsed
-                ? buildItemKey(prevParsed.categoryKey, prevParsed.value)
-                : ""
-              const op = nextOperators[prevKey] ?? "AND"
-              return `${acc} ${op} ${part}`
-            }, "")
-            libraryHook.setHeaderSearchText(nextQuery)
-            await libraryHook.onSearch(nextQuery)
+
+            setItemOperators(nextSelectionState.nextOperators)
+            libraryHook.setHeaderSearchText(nextSelectionState.nextQuery)
+            await libraryHook.onSearch(nextSelectionState.nextQuery)
           }}
           onItemOperatorChange={async (itemKey, op) => {
             const nextOperators = { ...itemOperators, [itemKey]: op }
             setItemOperators(nextOperators)
-            const currentQuery = selectedLibrary?.searchSetting?.query ?? ""
+            const currentQuery = libraryHook.headerSearchText
             const parts = parseQueryParts(currentQuery)
-            const nextQuery = parts.reduce((acc, part, i) => {
-              if (i === 0) return part
-              const prevParsed = parseTagQuery(parts[i - 1])
-              const prevKey = prevParsed
-                ? buildItemKey(prevParsed.categoryKey, prevParsed.value)
-                : ""
-              const partOp = nextOperators[prevKey] ?? "AND"
-              return `${acc} ${partOp} ${part}`
-            }, "")
+            const nextQuery = buildQueryFromParts(parts, nextOperators)
             libraryHook.setHeaderSearchText(nextQuery)
             await libraryHook.onSearch(nextQuery)
           }}
@@ -623,34 +610,28 @@ export const LibraryScreen: FC = observer(() => {
             const itemKey = buildItemKey(categoryKey, value)
             const oldOp = itemCalibreOperators[itemKey] ?? "="
             setItemCalibreOperators((prev) => ({ ...prev, [itemKey]: newOp }))
-            const currentQuery = selectedLibrary?.searchSetting?.query ?? ""
+            const currentQuery = libraryHook.headerSearchText
             const parts = parseQueryParts(currentQuery)
             const oldNorm = normalizeTagQuery(buildTagQuery(categoryKey, value, oldOp))
             const updatedParts = parts.map((p) =>
               normalizeTagQuery(p) === oldNorm ? buildTagQuery(categoryKey, value, newOp) : p,
             )
             if (updatedParts.some((p, i) => p !== parts[i])) {
-              const nextQuery = updatedParts.reduce((acc, part, i) => {
-                if (i === 0) return part
-                const prevParsed = parseTagQuery(updatedParts[i - 1])
-                const prevKey = prevParsed
-                  ? buildItemKey(prevParsed.categoryKey, prevParsed.value)
-                  : ""
-                const op = itemOperators[prevKey] ?? "AND"
-                return `${acc} ${op} ${part}`
-              }, "")
+              const nextQuery = buildQueryFromParts(updatedParts, itemOperators)
               libraryHook.setHeaderSearchText(nextQuery)
               await libraryHook.onSearch(nextQuery)
             }
           }}
           onSubCategoryLongPress={(name) => {
+            setItemOperators({})
+            setItemCalibreOperators({})
             libraryHook.setHeaderSearchText(name)
             libraryHook.onSearch(name)
           }}
           tagBrowser={selectedLibrary?.tagBrowser}
           itemOperators={itemOperators}
           itemCalibreOperators={itemCalibreOperators}
-          selectedNames={parseQueryParts(selectedLibrary?.searchSetting?.query ?? "")}
+          selectedNames={getLeftSideMenuSelectedNames(libraryHook.headerSearchText)}
         />
       </Box>
       <Box flex={1}>{LibraryCore}</Box>

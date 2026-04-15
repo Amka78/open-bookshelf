@@ -1,10 +1,19 @@
-import { describe as baseDescribe, test as baseTest, beforeAll, expect, jest, mock } from "bun:test"
-import { act, fireEvent, render, screen } from "@testing-library/react"
+import { beforeAll, describe as baseDescribe, test as baseTest, jest, mock } from "bun:test"
+import { render } from "@testing-library/react"
 import type { ReactNode } from "react"
-import { useState } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
+import {
+  playBackspaceRemovesText,
+  playBlurClosesSuggestions,
+  playFocusShowsSuggestions,
+  playSelectSuggestionClosesSuggestions,
+  playTypingFiltersSuggestions,
+  playTypingKeepsSuggestionsVisible,
+} from "./SearchInputField.storyPlay"
 
-// Mock dependencies
+const describe = localizeTestRegistrar(baseDescribe)
+const test = localizeTestRegistrar(baseTest)
+
 mock.module("@/theme", () => ({
   usePalette: jest.fn().mockReturnValue({
     surface: "#111",
@@ -24,6 +33,18 @@ mock.module("@/components/Box/Box", () => ({
     <div data-testid={testID} {...(props as object)}>
       {children}
     </div>
+  ),
+}))
+
+mock.module("@/components/Pressable/Pressable", () => ({
+  Pressable: ({
+    children,
+    testID,
+    ...props
+  }: Record<string, unknown> & { children?: ReactNode; testID?: string }) => (
+    <button data-testid={testID} type="button" {...(props as object)}>
+      {children}
+    </button>
   ),
 }))
 
@@ -147,115 +168,40 @@ mock.module("@/components/IconButton/IconButton", () => ({
   ),
 }))
 
-mock.module("@/components/Popover/Popover", () => ({
-  Popover: () => null,
-  PopoverBackdrop: () => null,
-  PopoverContent: () => null,
-  PopoverBody: () => null,
-}))
-
-localizeTestRegistrar("SearchInputField")
-
-let SearchInputField: typeof import("./SearchInputField").SearchInputField
+let SearchInputFieldStoryWrapper: typeof import("./SearchInputField.stories").SearchInputFieldStoryWrapper
 
 beforeAll(async () => {
-  ;({ SearchInputField } = await import("./SearchInputField"))
+  ;({ SearchInputFieldStoryWrapper } = await import("./SearchInputField.stories"))
 })
 
-function SearchInputFieldTestWrapper({ initialValue }: { initialValue?: string }) {
-  const [value, setValue] = useState(initialValue ?? "")
-  const suggestions = [
-    "title:=",
-    "title:~",
-    "title:!=",
-    "title:!~",
-    "authors:=",
-    "authors:~",
-    "authors:!=",
-    "authors:!~",
-    "series:=",
-    "AND",
-    "OR",
-    "NOT",
-  ]
-
-  return (
-    <div>
-      <SearchInputField
-        value={value}
-        onChangeText={setValue}
-        suggestions={suggestions}
-        width="100%"
-        testID="search-input-story"
-        placeholder="Type to search..."
-      />
-      <div data-testid="current-value">Value: {value}</div>
-    </div>
-  )
-}
-
-const describe = localizeTestRegistrar(baseDescribe)
-const test = localizeTestRegistrar(baseTest)
-
-describe("SearchInputField backspace functionality", () => {
-  beforeAll(() => {
-    jest.useFakeTimers()
+describe("SearchInputField story play", () => {
+  test("focus shows suggestions", async () => {
+    const { container } = render(<SearchInputFieldStoryWrapper />)
+    await playFocusShowsSuggestions({ canvasElement: container })
   })
 
-  test("backspace removes text from authors:=", async () => {
-    render(<SearchInputFieldTestWrapper initialValue="authors:=" />)
-
-    const input = screen.getByTestId("search-input-story")
-    expect((input as HTMLInputElement).value).toBe("authors:=")
-
-    // Simulate backspace - should remove "="
-    fireEvent.change(input, { target: { value: "authors:" } })
-    expect((input as HTMLInputElement).value).toBe("authors:")
-
-    // Simulate another backspace - should remove ":"
-    fireEvent.change(input, { target: { value: "authors" } })
-    expect((input as HTMLInputElement).value).toBe("authors")
-
-    // Simulate another backspace - should remove "s"
-    fireEvent.change(input, { target: { value: "author" } })
-    expect((input as HTMLInputElement).value).toBe("author")
+  test("typing keeps suggestions visible", async () => {
+    const { container } = render(<SearchInputFieldStoryWrapper />)
+    await playTypingKeepsSuggestionsVisible({ canvasElement: container })
   })
 
-  test("backspace works with colon-suffix selection", async () => {
-    render(<SearchInputFieldTestWrapper initialValue="authors:" />)
-
-    const input = screen.getByTestId("search-input-story")
-    expect((input as HTMLInputElement).value).toBe("authors:")
-
-    // Simulate backspace - should remove ":"
-    fireEvent.change(input, { target: { value: "authors" } })
-    expect((input as HTMLInputElement).value).toBe("authors")
+  test("typing filters suggestions", async () => {
+    const { container } = render(<SearchInputFieldStoryWrapper />)
+    await playTypingFiltersSuggestions({ canvasElement: container })
   })
 
-  test("backspace works with operator-suffix selection", async () => {
-    render(<SearchInputFieldTestWrapper initialValue="title:~" />)
-
-    const input = screen.getByTestId("search-input-story")
-    expect((input as HTMLInputElement).value).toBe("title:~")
-
-    // Simulate backspace - should remove "~"
-    fireEvent.change(input, { target: { value: "title:" } })
-    expect((input as HTMLInputElement).value).toBe("title:")
+  test("selecting a suggestion closes suggestions", async () => {
+    const { container } = render(<SearchInputFieldStoryWrapper />)
+    await playSelectSuggestionClosesSuggestions({ canvasElement: container })
   })
 
-  test("suggestions close when the input loses focus", async () => {
-    render(<SearchInputFieldTestWrapper initialValue="a" />)
+  test("blur closes suggestions", async () => {
+    const { container } = render(<SearchInputFieldStoryWrapper />)
+    await playBlurClosesSuggestions({ canvasElement: container })
+  })
 
-    const input = screen.getByTestId("search-input-story")
-
-    fireEvent.focus(input)
-    expect(screen.getByTestId("search-input-suggestion-authors%3A%3D")).toBeTruthy()
-
-    await act(async () => {
-      fireEvent.blur(input)
-      jest.runAllTimers()
-    })
-
-    expect(screen.queryByTestId("search-input-suggestion-authors%3A%3D")).toBeNull()
+  test("backspace removes text", async () => {
+    const { container } = render(<SearchInputFieldStoryWrapper />)
+    await playBackspaceRemovesText({ canvasElement: container })
   })
 })
