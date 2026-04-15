@@ -1,6 +1,6 @@
 import { type MessageKey, translate } from "@/i18n"
 import { InputField as Template } from "@gluestack-ui/themed"
-import type { ComponentProps, Ref } from "react"
+import type { ChangeEvent, ComponentProps, Ref } from "react"
 import { useCallback, useEffect, useRef } from "react"
 import { Platform } from "react-native"
 
@@ -10,12 +10,37 @@ export type InputFieldProps = ComponentProps<typeof Template> & {
 }
 
 export const InputField = ({ ref, ...props }: InputFieldProps) => {
-  const { onChangeText, onChange: propsOnChange, ...restProps } = props
-  const inputRef = useRef<any>(null)
+  type TemplateElement = React.ElementRef<typeof Template>
+  type WebChangeEvent = ChangeEvent<HTMLInputElement> & {
+    nativeEvent?: {
+      text?: string
+    }
+  }
+  const {
+    onChangeText,
+    onChange: propsOnChange,
+    placeholderTx,
+    placeholder,
+    ...restProps
+  } = props
+  const inputRef = useRef<TemplateElement | null>(null)
+
+  const assignRef = useCallback(
+    (element: TemplateElement | null) => {
+      inputRef.current = element
+
+      if (typeof ref === "function") {
+        ref(element)
+      } else if (ref) {
+        ref.current = element
+      }
+    },
+    [ref],
+  )
 
   // On web, ensure onChange properly wires to both onChangeText and any onChange handler
   const handleChange = useCallback(
-    (e: any) => {
+    (e: WebChangeEvent) => {
       const text = e?.target?.value ?? e?.nativeEvent?.text ?? ""
       propsOnChange?.(e)
       onChangeText?.(text)
@@ -42,26 +67,24 @@ export const InputField = ({ ref, ...props }: InputFieldProps) => {
     }
   }, [onChangeText])
 
-  const webProps =
+  const templateProps =
     Platform.OS === "web"
       ? {
+          ...restProps,
           onChange: handleChange,
-          ref: (el: any) => {
-            inputRef.current = el
-            if (typeof ref === "function") {
-              ref(el)
-            } else if (ref) {
-              ;(ref as any).current = el
-            }
-          },
+          ref: assignRef,
         }
-      : { ref }
+      : {
+          ...restProps,
+          onChange: propsOnChange,
+          onChangeText,
+          ref: assignRef,
+        }
 
   return (
     <Template
-      {...restProps}
-      {...webProps}
-      placeholder={props.placeholderTx ? translate(props.placeholderTx) : props.placeholder}
+      {...templateProps}
+      placeholder={placeholderTx ? translate(placeholderTx) : placeholder}
     />
   )
 }

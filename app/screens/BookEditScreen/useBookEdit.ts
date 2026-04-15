@@ -71,6 +71,7 @@ export function useBookEdit() {
       hasLangNames && bookMetaDataSnapshot ? toLanguageNamesForUpdate(value, langNames) : value
 
     selectedBook.update(selectedLibrary.id, updatedValue, Object.keys(updatedValue))
+    calibreRootStore.bumpBookThumbnailRevision(selectedLibrary.id, selectedBook.id)
     navigation.goBack()
   })
 
@@ -158,6 +159,7 @@ export function useBookEdit() {
       const blob = await fetchResponse.blob()
       const result = await api.setCoverBinary(selectedLibrary.id, selectedBook.id, blob)
       if (result.kind === "ok") {
+        calibreRootStore.bumpBookThumbnailRevision(selectedLibrary.id, selectedBook.id)
         // biome-ignore lint/suspicious/noExplicitAny: react-hook-form setValue path requires any for dynamic field names not in the inferred form schema
         form.setValue("cover" as any, url)
         setCoverUrlInput("")

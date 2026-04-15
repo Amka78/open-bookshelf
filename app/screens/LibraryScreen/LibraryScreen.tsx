@@ -209,7 +209,11 @@ export const LibraryScreen: FC = observer(() => {
     authStateVersion,
     bookList,
     getAuthHeaders: (url) => api.getAuthHeaders(url),
-    getBookThumbnailUrl: (bookId, libraryId) => api.getBookThumbnailUrl(bookId, libraryId),
+    getBookThumbnailUrl: (bookId, libraryId) => {
+      const thumbnailUrl = api.getBookThumbnailUrl(bookId, libraryId)
+      const revision = calibreRootStore.getBookThumbnailRevision(libraryId, bookId)
+      return `${thumbnailUrl}&rev=${revision}`
+    },
     libraryId: selectedLibrary.id,
     previousCache: thumbnailSourceCacheRef.current,
   })

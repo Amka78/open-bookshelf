@@ -80,6 +80,9 @@ const mockFetchWithAuth = jest.fn().mockResolvedValue({
   blob: async () => new Blob([new Uint8Array([137, 80, 78, 71])], { type: "image/png" }),
 })
 const mockSetCoverBinary = jest.fn().mockResolvedValue({ kind: "ok" })
+const mockExpoFile = jest.fn((path: string) => {
+  return new Blob([new Uint8Array([137, 80, 78, 71])], { type: "image/png" })
+})
 
 mock.module("@/models", () => ({
   useStores: useStoresMock,
@@ -106,6 +109,12 @@ mock.module("/home/amka78/open-bookshelf/app/services/api/index.ts", () => ({
     getBookFileUrl: (...args: Parameters<typeof mockGetBookFileUrl>) => mockGetBookFileUrl(...args),
     fetchWithAuth: (...args: Parameters<typeof mockFetchWithAuth>) => mockFetchWithAuth(...args),
     setCoverBinary: (...args: Parameters<typeof mockSetCoverBinary>) => mockSetCoverBinary(...args),
+  },
+}))
+
+mock.module("expo-file-system", () => ({
+  File: function MockExpoFile(path: string) {
+    return mockExpoFile(path)
   },
 }))
 
@@ -155,6 +164,7 @@ describe("useViewer", () => {
     metaData: {
       selectedFormat: "pdf",
       size: 100,
+      formatSizes: new Map([["pdf", 100]]),
       title: "Test Book",
       rating: 0,
       setProp: jest.fn(),
@@ -163,6 +173,7 @@ describe("useViewer", () => {
   }
 
   const mockSetServerPosition = jest.fn()
+  const mockBumpBookThumbnailRevision = jest.fn()
 
   const mockHistory = {
     bookId: 1,
@@ -185,6 +196,7 @@ describe("useViewer", () => {
   const mockCalibreRootStore = {
     selectedLibrary: mockSelectedLibrary,
     readingHistories: [mockHistory],
+    bumpBookThumbnailRevision: mockBumpBookThumbnailRevision,
   }
   const originalRequestAnimationFrame = globalThis.requestAnimationFrame
   const originalCancelAnimationFrame = globalThis.cancelAnimationFrame
@@ -660,6 +672,14 @@ describe("useViewer", () => {
   })
 
   test("sets the cover when source page path is available", async () => {
+    useStoresMock.mockReturnValue({
+      calibreRootStore: {
+        selectedLibrary: mockSelectedLibrary,
+        readingHistories: [{ ...mockHistory, cachedPath: [] }],
+        bumpBookThumbnailRevision: mockBumpBookThumbnailRevision,
+      },
+    })
+
     const { result } = renderHook(() => useViewer())
 
     await act(async () => {
@@ -672,6 +692,43 @@ describe("useViewer", () => {
       expect.objectContaining({ method: "GET" }),
     )
     expect(mockSetCoverBinary).toHaveBeenCalledWith("lib-1", 1, expect.any(Blob))
+    expect(mockBumpBookThumbnailRevision).toHaveBeenCalledWith("lib-1", 1)
+  })
+
+  test("prefers cached viewer page over selectedBook.path when both exist", async () => {
+    useStoresMock.mockReturnValue({
+      calibreRootStore: {
+        selectedLibrary: {
+          ...mockSelectedLibrary,
+          selectedBook: {
+            ...mockSelectedBook,
+            path: ["page1.png", "page2.png"],
+            update: mockUpdate,
+          },
+        },
+        readingHistories: [
+          {
+            ...mockHistory,
+            cachedPath: [
+              "http://calibrelocal/book-file/1/pdf/100/123/cached-page1.png?library_id=lib-1",
+              "http://calibrelocal/book-file/1/pdf/100/123/cached-page2.png?library_id=lib-1",
+            ],
+          },
+        ],
+      },
+    })
+
+    const { result } = renderHook(() => useViewer())
+
+    await act(async () => {
+      await result.current.onSetCoverByPage(1)
+    })
+
+    expect(mockFetchWithAuth).toHaveBeenCalledWith(
+      "http://calibrelocal/book-file/1/pdf/100/123/cached-page2.png?library_id=lib-1",
+      expect.objectContaining({ method: "GET" }),
+    )
+    expect(mockGetBookFileUrl).not.toHaveBeenCalled()
   })
 
   test("opens an error modal when source page path is unavailable", async () => {
@@ -741,6 +798,44 @@ describe("useViewer", () => {
     expect(mockSetCoverBinary).toHaveBeenCalledWith("lib-1", 1, expect.any(Blob))
   })
 
+  test("uses local cached file path directly without fetching again", async () => {
+    useStoresMock.mockReturnValue({
+      calibreRootStore: {
+        selectedLibrary: {
+          ...mockSelectedLibrary,
+          selectedBook: {
+            ...mockSelectedBook,
+            path: ["page1.png", "page2.png"],
+            hash: undefined,
+            update: mockUpdate,
+          },
+        },
+        readingHistories: [
+          {
+            ...mockHistory,
+            cachedPath: [
+              "file:///cache/book-images/1/pdf/page1.png",
+              "file:///cache/book-images/1/pdf/page2.png",
+            ],
+          },
+        ],
+        bumpBookThumbnailRevision: mockBumpBookThumbnailRevision,
+      },
+    })
+
+    const { result } = renderHook(() => useViewer())
+
+    await act(async () => {
+      await result.current.onSetCoverByPage(1)
+    })
+
+    expect(mockExpoFile).toHaveBeenCalledWith("file:///cache/book-images/1/pdf/page2.png")
+    expect(mockFetchWithAuth).not.toHaveBeenCalled()
+    expect(mockGetBookFileUrl).not.toHaveBeenCalled()
+    expect(mockSetCoverBinary).toHaveBeenCalledWith("lib-1", 1, expect.any(Blob))
+    expect(mockBumpBookThumbnailRevision).toHaveBeenCalledWith("lib-1", 1)
+  })
+
   test("opens an error modal when cover update fails", async () => {
     // Both setCoverBinary and the data URL fallback (selectedBook.update) must fail
     mockSetCoverBinary.mockResolvedValueOnce({ kind: "rejected" })
@@ -778,6 +873,7 @@ describe("useViewer", () => {
       expect.objectContaining({ cover: expect.stringContaining("data:") }),
       ["cover"],
     )
+    expect(mockBumpBookThumbnailRevision).toHaveBeenCalledWith("lib-1", 1)
     expect(returnValue).toBe(true)
   })
 
@@ -816,7 +912,7 @@ describe("useViewer", () => {
             update: mockUpdate,
           },
         },
-        readingHistories: [mockHistory],
+        readingHistories: [{ ...mockHistory, cachedPath: [] }],
       },
     })
 

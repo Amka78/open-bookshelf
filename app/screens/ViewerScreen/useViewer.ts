@@ -9,6 +9,7 @@ import type { BookReadingStyleType } from "@/type/types"
 import { isCalibreHtmlViewerFormat, isCalibreSerializedHtmlPath } from "@/utils/calibreHtmlViewer"
 import { generateCfiForPage } from "@/utils/cfi"
 import { logger } from "@/utils/logger"
+import { File as ExpoFile } from "expo-file-system"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useConvergence } from "../../hooks/useConvergence"
 
@@ -39,6 +40,15 @@ export async function blobToDataUrl(blob: Blob): Promise<string> {
     binary += String.fromCharCode.apply(null, Array.from(chunk))
   }
   return `data:${blob.type || "application/octet-stream"};base64,${btoa(binary)}`
+}
+
+function inferImageMimeTypeFromPath(path: string): string | null {
+  const normalizedPath = path.toLowerCase()
+
+  if (normalizedPath.endsWith(".png")) return "image/png"
+  if (normalizedPath.endsWith(".jpg") || normalizedPath.endsWith(".jpeg")) return "image/jpeg"
+
+  return null
 }
 
 const runOnNextFrame = (callback: () => void) => {
@@ -359,17 +369,16 @@ export function useViewer() {
 
     const selectedFormat = selectedBook.metaData?.selectedFormat
     const hash = selectedBook.hash
-    const size = selectedBook.metaData?.size ?? 0
+    const size = selectedBook.metaData?.formatSizes?.get(selectedFormat ?? "") ?? 0
 
-    // Use the same source path resolution as ViewerScreen:
-    // selectedBook.path first, then cachedPathList as fallback for image-based formats.
-    const sourcePath = selectedBook.path?.[page] ?? cachedPathList?.[page]
+     // Use the same source path resolution as ViewerScreen:
+    // cachedPathList first, then selectedBook.path as fallback for image-based formats.
+    const sourcePath = cachedPathList?.[page] ?? selectedBook.path?.[page]
 
-    if (!sourcePath || !selectedFormat || hash === null || hash === undefined) {
-      logger.warn("[onSetCoverByPage] Missing sourcePath/format/hash", {
+    if (!sourcePath || !selectedFormat) {
+      logger.warn("[onSetCoverByPage] Missing sourcePath/format", {
         sourcePath,
         selectedFormat,
-        hash,
         bookPathLength: selectedBook.path?.length,
         cachedPathListLength: cachedPathList?.length,
       })
@@ -391,42 +400,69 @@ export function useViewer() {
     }
 
     try {
-      // Determine the fetch URL.
-      // cachedPathList entries on web are already full URLs (http://…); use them directly.
-      // selectedBook.path entries are relative paths that need getBookFileUrl.
+      const isLocalFileUri = sourcePath.startsWith("file://")
       const isFullUrl = sourcePath.startsWith("http://") || sourcePath.startsWith("https://")
-      const coverSourceUrl = isFullUrl
-        ? sourcePath
-        : api.getBookFileUrl(
-            selectedBook.id,
-            selectedFormat,
-            size,
-            hash,
+      let blob: Blob
+      let responseContentType: string | null = null
+
+      if (isLocalFileUri) {
+        logger.debug("[onSetCoverByPage] Reading local cached file", { sourcePath })
+        blob = new ExpoFile(sourcePath)
+      } else {
+        if (hash === null || hash === undefined) {
+          logger.warn("[onSetCoverByPage] Missing hash for remote source path", {
             sourcePath,
-            selectedLibrary.id,
-          )
-      logger.debug("[onSetCoverByPage] Fetching image", { coverSourceUrl })
+            selectedFormat,
+          })
+          modal.openModal("ErrorModal", {
+            titleTx: "common.error",
+            messageTx: "viewerMenu.failedToUpdateCover",
+          })
+          return false
+        }
 
-      const sourceResponse = await api.fetchWithAuth(coverSourceUrl, { method: "GET" })
-      logger.debug("[onSetCoverByPage] Fetch response", {
-        ok: sourceResponse.ok,
-        status: sourceResponse.status,
-        contentType: sourceResponse.headers.get("content-type"),
-      })
+        // cachedPathList entries on web are already full URLs (http://…); use them directly.
+        // selectedBook.path entries are relative paths that need getBookFileUrl.
+        const coverSourceUrl = isFullUrl
+          ? sourcePath
+          : api.getBookFileUrl(
+              selectedBook.id,
+              selectedFormat,
+              size,
+              hash,
+              sourcePath,
+              selectedLibrary.id,
+            )
+        logger.debug("[onSetCoverByPage] Fetching image", { coverSourceUrl })
 
-      if (!sourceResponse.ok) {
-        logger.warn("[onSetCoverByPage] Image fetch failed", {
+        const sourceResponse = await api.fetchWithAuth(coverSourceUrl, { method: "GET" })
+        responseContentType = sourceResponse.headers.get("content-type")
+        logger.debug("[onSetCoverByPage] Fetch response", {
+          ok: sourceResponse.ok,
           status: sourceResponse.status,
+          contentType: responseContentType,
         })
-        modal.openModal("ErrorModal", {
-          titleTx: "common.error",
-          messageTx: "viewerMenu.failedToUpdateCover",
-        })
-        return false
+
+        if (!sourceResponse.ok) {
+          logger.warn("[onSetCoverByPage] Image fetch failed", {
+            status: sourceResponse.status,
+          })
+          modal.openModal("ErrorModal", {
+            titleTx: "common.error",
+            messageTx: "viewerMenu.failedToUpdateCover",
+          })
+          return false
+        }
+
+        blob = await sourceResponse.blob()
       }
 
-      const blob = await sourceResponse.blob()
-      const blobType = (blob.type || "").toLowerCase()
+      const blobType = (
+        blob.type ||
+        responseContentType ||
+        inferImageMimeTypeFromPath(sourcePath) ||
+        ""
+      ).toLowerCase()
       logger.debug("[onSetCoverByPage] Blob obtained", {
         size: blob.size,
         type: blobType,
@@ -459,6 +495,7 @@ export function useViewer() {
       logger.debug("[onSetCoverByPage] Trying setCoverBinary (cdb/set-cover)")
       const binaryResult = await api.setCoverBinary(selectedLibrary.id, selectedBook.id, blob)
       if (binaryResult.kind === "ok") {
+        calibreRootStore.bumpBookThumbnailRevision(selectedLibrary.id, selectedBook.id)
         logger.debug("[onSetCoverByPage] setCoverBinary succeeded")
         return true
       }
@@ -480,6 +517,7 @@ export function useViewer() {
       )
 
       if (updateSuccess) {
+        calibreRootStore.bumpBookThumbnailRevision(selectedLibrary.id, selectedBook.id)
         logger.debug("[onSetCoverByPage] update via set-fields succeeded")
         return true
       }

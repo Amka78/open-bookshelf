@@ -39,4 +39,17 @@ describe("CalibreRootStore test", () => {
       expect(model.libraryMap.has("test2")).toBeTruthy()
     })
   })
+
+  test("bumpBookThumbnailRevision increments revision per library and book", () => {
+    const model = CalibreRootStore.create({})
+
+    expect(model.getBookThumbnailRevision("main", 42)).toBe(0)
+
+    model.bumpBookThumbnailRevision("main", 42)
+    expect(model.getBookThumbnailRevision("main", 42)).toBe(1)
+
+    model.bumpBookThumbnailRevision("main", 42)
+    expect(model.getBookThumbnailRevision("main", 42)).toBe(2)
+    expect(model.getBookThumbnailRevision("main", 7)).toBe(0)
+  })
 })

@@ -37,8 +37,14 @@ export const CalibreRootStore = types
     libraryMap: types.map(LibraryMapModel),
     selectedLibrary: types.maybe(types.reference(types.late(() => LibraryMapModel))),
     readingHistories: types.array(ReadingHistoryModel),
+    thumbnailRevisions: types.optional(types.map(types.number), {}),
     isFetchingMore: types.optional(types.boolean, false),
   })
+  .views((root) => ({
+    getBookThumbnailRevision(libraryId: string, bookId: number) {
+      return root.thumbnailRevisions.get(`${libraryId}:${bookId}`) ?? 0
+    },
+  }))
   .actions(withSetPropAction)
   .actions((root) => ({
     initialize: flow(function* () {
@@ -212,6 +218,11 @@ export const CalibreRootStore = types
       })
       root.readingHistories.replace(remainedHistories)
     },
+    bumpBookThumbnailRevision: (libraryId: string, bookId: number) => {
+      const revisionKey = `${libraryId}:${bookId}`
+      const currentRevision = root.thumbnailRevisions.get(revisionKey) ?? 0
+      root.thumbnailRevisions.set(revisionKey, currentRevision + 1)
+    },
   }))
 
 export type CalibreRoot = Instance<typeof CalibreRootStore>
@@ -295,13 +306,13 @@ function convertLibraryInformation(bookInfo: ApiBookInfo, libraryInfo: LibraryMa
   Object.keys(fieldMetadataRecord).forEach((key) => {
     const fm = fieldMetadataRecord[key]
     let display = undefined
-    if (fm.display !== undefined && fm.display.date_format) {
+    if (fm.display?.date_format) {
       display = DateFormatModel.create({
         dateFormat: fm.display.date_format,
       })
     }
     let isMultiple = undefined
-    if (fm.is_multiple !== undefined && fm.is_multiple.cache_to_list) {
+    if (fm.is_multiple?.cache_to_list) {
       isMultiple = IsMultipleModel.create({
         cacheToList: fm.is_multiple.cache_to_list as string,
         listToUi: fm.is_multiple.list_to_ui as string | null,

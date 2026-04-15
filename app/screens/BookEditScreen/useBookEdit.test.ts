@@ -21,6 +21,7 @@ mock.module("@/services/api", () => ({
   api: {
     uploadBookFormat: jest.fn(),
     deleteBookFormat: jest.fn(),
+    setCoverBinary: jest.fn(),
   },
 }))
 
@@ -56,6 +57,7 @@ describe("useBookEdit", () => {
   const mockUpdate = jest.fn()
   const mockGoBack = jest.fn()
   const mockHandleSubmit = jest.fn()
+  const mockBumpBookThumbnailRevision = jest.fn()
 
   const mockBook = {
     id: 1,
@@ -95,6 +97,7 @@ describe("useBookEdit", () => {
     useStoresMock.mockReturnValue({
       calibreRootStore: {
         selectedLibrary: mockSelectedLibrary,
+        bumpBookThumbnailRevision: mockBumpBookThumbnailRevision,
       },
     })
     useNavigationMock.mockReturnValue({
@@ -156,6 +159,14 @@ describe("useBookEdit", () => {
     result.current.onSubmit()
 
     expect(mockGoBack).toHaveBeenCalled()
+  })
+
+  test("onSubmit bumps thumbnail revision after updating the book", () => {
+    const { result } = renderHook(() => useBookEdit())
+
+    result.current.onSubmit()
+
+    expect(mockBumpBookThumbnailRevision).toHaveBeenCalledWith("lib1", 1)
   })
 
   test("onSubmit uses form.handleSubmit", () => {
