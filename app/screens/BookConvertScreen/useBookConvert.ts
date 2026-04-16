@@ -100,17 +100,29 @@ export function useBookConvert() {
 
   const handleStartConvert = useCallback(async () => {
     const values = form.getValues()
-    if (!values.outputFormat) return
+    if (!values.outputFormat) return null
+
+    setConvertStatus("converting")
+    setErrorMessage(null)
 
     try {
-      await selectedBook.startConvert(values.outputFormat, selectedLibrary.id, values)
-      return true
+      const jobId = await selectedBook.startConvert(values.outputFormat, selectedLibrary.id, values)
+      calibreRootStore.addConversionJob({
+        jobId,
+        libraryId: selectedLibrary.id,
+        bookId: selectedBook.id,
+        bookTitle: selectedBook.metaData?.title ?? "",
+        inputFormat: values.inputFormat ?? "",
+        outputFormat: values.outputFormat,
+      })
+      setConvertStatus("success")
+      return jobId
     } catch (e) {
       setConvertStatus("error")
       setErrorMessage(e instanceof Error ? e.message : String(e))
-      return false
+      return null
     }
-  }, [form, selectedBook, selectedLibrary.id])
+  }, [calibreRootStore, form, selectedBook, selectedLibrary.id])
 
   const handleReset = useCallback(() => {
     form.reset({

@@ -16,6 +16,43 @@ describe("Store models", () => {
     expect(store.calibreRootStore).toBeDefined()
   })
 
+  test("CalibreRootStore tracks conversion jobs by library and updates their status", () => {
+    const store = RootStoreModel.create({})
+
+    store.calibreRootStore.addConversionJob({
+      jobId: 12,
+      libraryId: "main",
+      bookId: 99,
+      bookTitle: "Queued Book",
+      inputFormat: "EPUB",
+      outputFormat: "AZW3",
+    })
+
+    expect(store.calibreRootStore.getConversionJobsForLibrary("main")).toHaveLength(1)
+
+    store.calibreRootStore.updateConversionJobRunning("main", 12, 0.4, "Converting")
+    let [job] = store.calibreRootStore.getConversionJobsForLibrary("main")
+    expect(job.percent).toBe(0.4)
+    expect(job.status).toBe("running")
+
+    store.calibreRootStore.updateConversionJobFinished({
+      libraryId: "main",
+      jobId: 12,
+      ok: true,
+      wasAborted: false,
+      traceback: null,
+      log: null,
+      size: 1234,
+      format: "AZW3",
+    })
+
+    ;[job] = store.calibreRootStore.getConversionJobsForLibrary("main")
+    expect(job.status).toBe("done")
+    expect(job.percent).toBe(1)
+    expect(job.format).toBe("AZW3")
+    expect(job.size).toBe(1234)
+  })
+
   test("SettingStoreModel setConnectionSetting handles OPDS URL", async () => {
     const setUrl = jest.spyOn(api, "setUrl").mockImplementation(() => undefined)
     const store = SettingStoreModel.create({})

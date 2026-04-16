@@ -21,6 +21,8 @@ mock.module("@/services/api", () => ({
 
 describe("useBookConvert", () => {
   const mockConvert = jest.fn()
+  const mockStartConvert = jest.fn()
+  const mockAddConversionJob = jest.fn()
 
   const mockSelectedBook = {
     id: 1,
@@ -29,6 +31,7 @@ describe("useBookConvert", () => {
       formats: ["EPUB", "PDF", "MOBI"],
     },
     convert: mockConvert,
+    startConvert: mockStartConvert,
   }
 
   const mockSelectedLibrary = {
@@ -38,6 +41,7 @@ describe("useBookConvert", () => {
 
   const mockCalibreRootStore = {
     selectedLibrary: mockSelectedLibrary,
+    addConversionJob: mockAddConversionJob,
   }
 
   beforeEach(() => {
@@ -325,6 +329,62 @@ describe("useBookConvert", () => {
 
       expect(result.current.convertStatus).toBe("error")
       expect(result.current.errorMessage).toBe("string error")
+    })
+  })
+
+  describe("handleStartConvert", () => {
+    test("startConvert registers the job in the root store and returns the job id", async () => {
+      mockStartConvert.mockResolvedValue(42)
+
+      const { result } = renderHook(() => useBookConvert())
+
+      act(() => {
+        result.current.form.setValue("outputFormat", "AZW3")
+        result.current.form.setValue("inputFormat", "EPUB")
+      })
+
+      let jobId: number | null | undefined
+      await act(async () => {
+        jobId = await result.current.handleStartConvert()
+      })
+
+      expect(jobId).toBe(42)
+      expect(mockStartConvert).toHaveBeenCalledWith(
+        "AZW3",
+        "test-library",
+        expect.objectContaining({ inputFormat: "EPUB", outputFormat: "AZW3" }),
+      )
+      expect(mockAddConversionJob).toHaveBeenCalledWith({
+        jobId: 42,
+        libraryId: "test-library",
+        bookId: 1,
+        bookTitle: "Test Book",
+        inputFormat: "EPUB",
+        outputFormat: "AZW3",
+      })
+      expect(result.current.convertStatus).toBe("success")
+      expect(result.current.errorMessage).toBeNull()
+    })
+
+    test("startConvert reports errors from the API", async () => {
+      mockStartConvert.mockRejectedValue(new Error("queue failed"))
+
+      const { result } = renderHook(() => useBookConvert())
+
+      act(() => {
+        result.current.form.setValue("outputFormat", "AZW3")
+        result.current.form.setValue("inputFormat", "EPUB")
+      })
+
+      let jobId: number | null | undefined
+      await act(async () => {
+        jobId = await result.current.handleStartConvert()
+      })
+
+      expect(jobId).toBeNull()
+      expect(mockAddConversionJob).not.toHaveBeenCalled()
+      expect(result.current.convertStatus).toBe("error")
+      expect(result.current.errorMessage).toBe("queue failed")
     })
   })
 

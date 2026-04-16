@@ -1,6 +1,7 @@
 export * from "./AnnotationModel"
 export * from "./CategoryModel"
 export * from "./ClientSettingModel"
+export * from "./ConversionJobModel"
 export * from "./FieldMetadataModel"
 export * from "./MetadataModel"
 export * from "./SearchSettingModel"

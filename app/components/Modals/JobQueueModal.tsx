@@ -3,11 +3,11 @@ import { Heading } from "@/components/Heading/Heading"
 import { Text } from "@/components/Text/Text"
 import type { MessageKey } from "@/i18n"
 import { useStores } from "@/models"
+import type { ConversionJob } from "@/models/calibre"
 import { api } from "@/services/api"
-import type { CalibreJob } from "@/services/api/api.types"
 import { HStack, ScrollView, VStack, View } from "@gluestack-ui/themed"
 import { observer } from "mobx-react-lite"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { StyleSheet } from "react-native"
 import type { ModalComponentProp } from "react-native-modalfy"
 import { Body } from "./Body"
@@ -19,25 +19,108 @@ import type { ModalStackParams } from "./Types"
 
 export type JobQueueModalProps = ModalComponentProp<ModalStackParams, void, "JobQueueModal">
 
+type JobQueueItem = {
+  id: string
+  name: string
+  percent: number
+  running: boolean
+  done: boolean
+  failed: boolean
+}
+
+function buildTrackedJobItem(job: ConversionJob): JobQueueItem {
+  return {
+    id: `conversion:${job.id}`,
+    name: job.bookTitle
+      ? `${job.bookTitle} (${job.inputFormat} -> ${job.outputFormat})`
+      : `${job.inputFormat} -> ${job.outputFormat}`,
+    percent: job.percent ?? 0,
+    running: job.status === "running",
+    done: job.status === "done",
+    failed: job.status === "failed" || job.status === "aborted",
+  }
+}
+
 export const JobQueueModal = observer((props: JobQueueModalProps) => {
   const { calibreRootStore } = useStores()
   const selectedLibrary = calibreRootStore.selectedLibrary
-  const [jobs, setJobs] = useState<CalibreJob[]>([])
+  const [jobs, setJobs] = useState<JobQueueItem[]>([])
   const [loading, setLoading] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  const fetchJobs = async () => {
+  const fetchJobs = useCallback(async () => {
     if (!selectedLibrary?.id) return
     setLoading(true)
+
     try {
-      const result = await api.getJobs(selectedLibrary.id)
-      if (result.kind === "ok") {
-        setJobs(result.data)
+      const trackedJobs = calibreRootStore.getConversionJobsForLibrary(selectedLibrary.id)
+      const runningTrackedJobs = trackedJobs.filter((job) => job.status === "running")
+
+      const [serverJobsResult, trackedStatuses] = await Promise.all([
+        api.getJobs(selectedLibrary.id),
+        Promise.all(
+          runningTrackedJobs.map(async (job) => ({
+            job,
+            result: await api.getConversionStatus(selectedLibrary.id, job.jobId),
+          })),
+        ),
+      ])
+
+      for (const { job, result } of trackedStatuses) {
+        if (result.kind !== "ok") {
+          continue
+        }
+
+        if (result.data.running) {
+          calibreRootStore.updateConversionJobRunning(
+            selectedLibrary.id,
+            job.jobId,
+            result.data.percent,
+            result.data.msg,
+          )
+          continue
+        }
+
+        calibreRootStore.updateConversionJobFinished({
+          libraryId: selectedLibrary.id,
+          jobId: job.jobId,
+          ok: result.data.ok,
+          wasAborted: result.data.was_aborted,
+          traceback: result.data.traceback,
+          log: result.data.log,
+          size: result.data.size,
+          format: result.data.fmt,
+        })
       }
+
+      const mergedJobs = new Map<string, JobQueueItem>()
+      const currentTrackedJobs = calibreRootStore.getConversionJobsForLibrary(selectedLibrary.id)
+
+      for (const trackedJob of currentTrackedJobs) {
+        mergedJobs.set(trackedJob.id, buildTrackedJobItem(trackedJob))
+      }
+
+      if (serverJobsResult.kind === "ok") {
+        for (const job of serverJobsResult.data) {
+          const key = `server:${job.id}`
+          if (!mergedJobs.has(`${selectedLibrary.id}:${job.id}`)) {
+            mergedJobs.set(key, {
+              id: key,
+              name: job.name,
+              percent: job.percent ?? 0,
+              running: job.running,
+              done: job.done,
+              failed: job.failed,
+            })
+          }
+        }
+      }
+
+      setJobs(Array.from(mergedJobs.values()))
     } finally {
       setLoading(false)
     }
-  }
+  }, [calibreRootStore, selectedLibrary?.id])
 
   useEffect(() => {
     fetchJobs()
@@ -61,13 +144,13 @@ export const JobQueueModal = observer((props: JobQueueModalProps) => {
     }
   }, [jobs, fetchJobs])
 
-  const getStatusTx = (job: CalibreJob): MessageKey => {
+  const getStatusTx = (job: JobQueueItem): MessageKey => {
     if (job.failed) return "jobQueue.failed"
     if (job.done) return "jobQueue.done"
     return "jobQueue.running"
   }
 
-  const getStatusColor = (job: CalibreJob) => {
+  const getStatusColor = (job: JobQueueItem) => {
     if (job.failed) return "$red500"
     if (job.done) return "$green500"
     return "$blue500"

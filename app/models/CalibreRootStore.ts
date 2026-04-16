@@ -17,6 +17,7 @@ import {
   LibraryMapModel,
   MetadataModel,
   NodeModel,
+  ConversionJobModel,
   type ReadingHistory,
   ReadingHistoryModel,
   SearchSettingModel,
@@ -37,12 +38,16 @@ export const CalibreRootStore = types
     libraryMap: types.map(LibraryMapModel),
     selectedLibrary: types.maybe(types.reference(types.late(() => LibraryMapModel))),
     readingHistories: types.array(ReadingHistoryModel),
+    conversionJobs: types.optional(types.array(ConversionJobModel), []),
     thumbnailRevisions: types.optional(types.map(types.number), {}),
     isFetchingMore: types.optional(types.boolean, false),
   })
   .views((root) => ({
     getBookThumbnailRevision(libraryId: string, bookId: number) {
       return root.thumbnailRevisions.get(`${libraryId}:${bookId}`) ?? 0
+    },
+    getConversionJobsForLibrary(libraryId: string) {
+      return root.conversionJobs.filter((job) => job.libraryId === libraryId)
     },
   }))
   .actions(withSetPropAction)
@@ -211,6 +216,94 @@ export const CalibreRootStore = types
     },
     addReadingHistory: (model: ReadingHistory) => {
       root.readingHistories.push(model)
+    },
+    addConversionJob: (params: {
+      jobId: number
+      libraryId: string
+      bookId: number
+      bookTitle: string
+      inputFormat: string
+      outputFormat: string
+    }) => {
+      const id = `${params.libraryId}:${params.jobId}`
+      const existingJob = root.conversionJobs.find((job) => job.id === id)
+
+      if (existingJob) {
+        existingJob.setProp("bookId", params.bookId)
+        existingJob.setProp("bookTitle", params.bookTitle)
+        existingJob.setProp("inputFormat", params.inputFormat)
+        existingJob.setProp("outputFormat", params.outputFormat)
+        existingJob.setProp("status", "running")
+        existingJob.setProp("percent", 0)
+        existingJob.setProp("message", null)
+        existingJob.setProp("log", null)
+        existingJob.setProp("traceback", null)
+        existingJob.setProp("size", null)
+        existingJob.setProp("format", null)
+        existingJob.setProp("updatedAt", Date.now())
+        return
+      }
+
+      const now = Date.now()
+      root.conversionJobs.push({
+        id,
+        jobId: params.jobId,
+        libraryId: params.libraryId,
+        bookId: params.bookId,
+        bookTitle: params.bookTitle,
+        inputFormat: params.inputFormat,
+        outputFormat: params.outputFormat,
+        status: "running",
+        percent: 0,
+        message: null,
+        log: null,
+        traceback: null,
+        size: null,
+        format: null,
+        createdAt: now,
+        updatedAt: now,
+      })
+    },
+    updateConversionJobRunning: (
+      libraryId: string,
+      jobId: number,
+      percent: number,
+      message: string | null = null,
+    ) => {
+      const job = root.conversionJobs.find((item) => item.id === `${libraryId}:${jobId}`)
+      if (!job) return
+      job.markRunning(percent, message)
+    },
+    updateConversionJobFinished: (params: {
+      libraryId: string
+      jobId: number
+      ok: boolean
+      wasAborted: boolean
+      traceback: string | null
+      log: string | null
+      size?: number | null
+      format?: string | null
+    }) => {
+      const job = root.conversionJobs.find((item) => item.id === `${params.libraryId}:${params.jobId}`)
+      if (!job) return
+
+      if (params.ok) {
+        job.markDone(params.format ?? null, params.size ?? null)
+        return
+      }
+
+      if (params.wasAborted) {
+        job.markAborted(params.traceback, params.log)
+        return
+      }
+
+      job.markFailed(params.traceback, params.log)
+    },
+    removeConversionJob: (libraryId: string, jobId: number) => {
+      const index = root.conversionJobs.findIndex((job) => job.id === `${libraryId}:${jobId}`)
+      if (index >= 0) {
+        root.conversionJobs.splice(index, 1)
+      }
     },
     removeReadingHistoriesByBook: (libraryId: string, bookId: number) => {
       const remainedHistories = root.readingHistories.filter((history) => {
