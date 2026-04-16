@@ -70,6 +70,7 @@ export function BookHtmlPage(props: BookHtmlPageProps) {
         source={{ html }}
         style={styles.webView}
         javaScriptEnabled
+        forceDarkOn={false}
         scrollEnabled={!autoHeight}
         nestedScrollEnabled={!autoHeight}
         onMessage={(event) => {

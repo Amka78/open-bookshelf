@@ -5,6 +5,7 @@ module.exports = function androiManifestPlugin(config) {
     const androidManifest = config.modResults.manifest
 
     androidManifest.application[0].$["android:largeHeap"] = "true"
+    androidManifest.application[0].$["android:forceDarkAllowed"] = "false"
 
     return config
   })

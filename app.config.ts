@@ -31,7 +31,7 @@ export default {
     slug: "OpenBookShelf",
     version: "1.0.0",
     orientation: "default",
-    icon: "./assets/images/app-icon-all.png",
+    icon: "./assets/images/app-icon.png",
     experiments: {
       tsconfigPaths: true,
     },
@@ -53,11 +53,13 @@ export default {
       package: `com.openbookshelf${idSuffix}`,
     },
     ios: {
+      icon: "./assets/images/app-icon.png",
       supportsTablet: true,
       bundleIdentifier: `com.openbookshelf${idSuffix}`,
     },
     web: {
       bundler: "metro",
+      favicon: "./assets/images/app-icon-web.png",
       output: "single",
       publicPath: process.env.GITHUB_PAGES === "true" ? "/open-bookshelf/" : "/",
     },

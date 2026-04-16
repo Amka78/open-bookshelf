@@ -1,0 +1,28 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1024" height="1024" rx="228" fill="#111318" />
+  <rect x="96" y="96" width="832" height="832" rx="196" stroke="#2A2F3A" stroke-width="8" />
+  <path d="M262 768V388C262 266.497 360.497 168 482 168H542C663.503 168 762 266.497 762 388V768" stroke="#E6EAF1" stroke-width="46" stroke-linecap="round" stroke-linejoin="round" />
+  <rect x="286" y="362" width="74" height="334" rx="22" fill="#E6EAF1" />
+  <rect x="364" y="346" width="60" height="350" rx="20" fill="#2A2F3A" />
+  <rect x="430" y="392" width="48" height="304" rx="18" fill="#E6EAF1" />
+  <rect x="486" y="350" width="64" height="346" rx="22" fill="#B7BCC7" />
+  <rect x="560" y="392" width="48" height="304" rx="18" fill="#E6EAF1" />
+  <rect x="602" y="338" width="64" height="358" rx="22" fill="#B7BCC7" />
+  <rect x="664" y="362" width="74" height="334" rx="22" fill="#E6EAF1" />
+  <ellipse cx="390" cy="722" rx="52" ry="16" fill="#0B0C0F" fill-opacity="0.2" />
+  <rect x="346" y="308" width="72" height="404" rx="22" fill="#F7F9FC" />
+  <rect x="360" y="334" width="10" height="208" rx="5" fill="#0B0C0F" fill-opacity="0.18" />
+  <rect x="382" y="348" width="22" height="8" rx="4" fill="#B6BDC9" />
+  <rect x="382" y="374" width="30" height="10" rx="5" fill="#B6BDC9" />
+  <path d="M354 712H410" stroke="#D6DBE4" stroke-width="10" stroke-linecap="round" />
+  <rect x="312" y="428" width="10" height="172" rx="5" fill="#0B0C0F" fill-opacity="0.16" />
+  <rect x="433" y="448" width="8" height="146" rx="4" fill="#0B0C0F" fill-opacity="0.16" />
+  <rect x="509" y="412" width="10" height="180" rx="5" fill="#0B0C0F" fill-opacity="0.16" />
+  <rect x="577" y="448" width="8" height="146" rx="4" fill="#0B0C0F" fill-opacity="0.16" />
+  <rect x="628" y="404" width="10" height="192" rx="5" fill="#0B0C0F" fill-opacity="0.16" />
+  <rect x="702" y="428" width="10" height="172" rx="5" fill="#0B0C0F" fill-opacity="0.16" />
+  <path d="M286 696H360" stroke="#0B0C0F" stroke-opacity="0.16" stroke-width="8" stroke-linecap="round" />
+  <path d="M364 696H550" stroke="#0B0C0F" stroke-opacity="0.16" stroke-width="8" stroke-linecap="round" />
+  <path d="M560 696H738" stroke="#0B0C0F" stroke-opacity="0.16" stroke-width="8" stroke-linecap="round" />
+  <path d="M408 752H616" stroke="#B7BCC7" stroke-width="18" stroke-linecap="round" stroke-opacity="0.35" />
+</svg>
