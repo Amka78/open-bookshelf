@@ -146,9 +146,9 @@ export const LibraryScreen: FC = observer(() => {
   const convergenceHook = useConvergence()
   const window = useWindowDimensions()
 
-  const viewMode = settingStore.libraryViewMode
+  const viewMode = settingStore.getLibraryViewMode(convergenceHook.isLarge)
   const handleToggleViewMode = () => {
-    settingStore.setLibraryViewMode(viewMode === "grid" ? "list" : "grid")
+    settingStore.setLibraryViewMode(viewMode === "grid" ? "list" : "grid", convergenceHook.isLarge)
   }
 
   const openViewerHook = useOpenViewer()
