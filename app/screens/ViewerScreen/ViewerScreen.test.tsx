@@ -1,125 +1,39 @@
 import {
-  afterAll,
   afterEach,
-  describe as baseDescribe,
-  test as baseTest,
   beforeAll,
   beforeEach,
+  describe as baseDescribe,
   expect,
   jest,
   mock,
+  test as baseTest,
 } from "bun:test"
-import { act, cleanup, render, screen } from "@testing-library/react"
+import { cleanup, render, screen } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
-function createViewerScreenFrameScheduler() {
-  let nextId = 1
-  const callbacks = new Map<number, FrameRequestCallback>()
-  return {
-    requestAnimationFrame: (callback: FrameRequestCallback) => {
-      const id = nextId++
-      callbacks.set(id, callback)
-      return id
-    },
-    cancelAnimationFrame: (id: number) => {
-      callbacks.delete(id)
-    },
-    flushFrame: () => {
-      const next = callbacks.entries().next().value as [number, FrameRequestCallback] | undefined
-      if (!next) return false
-      const [id, callback] = next
-      callbacks.delete(id)
-      callback(0)
-      return true
-    },
-  }
-}
-
-async function playViewerScreenResumePromptAppears({ flushFrame }: { flushFrame: () => boolean }) {
-  await act(async () => {
-    flushFrame()
-    flushFrame()
-  })
-}
-
-async function playViewerScreenResumePromptDoesNotReopenOnRerender({
-  rerender,
-  flushFrame,
-}: { rerender: () => void; flushFrame: () => boolean }) {
-  await playViewerScreenResumePromptAppears({ flushFrame })
-  await act(async () => {
-    rerender()
-  })
-  await act(async () => {
-    flushFrame()
-    flushFrame()
-  })
-}
-
-async function playViewerScreenResumePromptAccepts({
-  flushFrame,
-  onAccept,
-}: { flushFrame: () => boolean; onAccept: () => void }) {
-  await playViewerScreenResumePromptAppears({ flushFrame })
-  await act(async () => {
-    onAccept()
-  })
-}
-
-async function playViewerScreenResumePromptDeclines({
-  flushFrame,
-  onDecline,
-}: { flushFrame: () => boolean; onDecline: () => void }) {
-  await playViewerScreenResumePromptAppears({ flushFrame })
-  await act(async () => {
-    onDecline()
-  })
-}
+const describe = localizeTestRegistrar(baseDescribe)
+const test = localizeTestRegistrar(baseTest)
 
 const useStoresMock = jest.fn()
 const useNavigationMock = jest.fn()
-const useConvergenceMock = jest.fn()
-const useModalMock = jest.fn()
+const useViewerMock = jest.fn()
+const useViewerPreparationMock = jest.fn()
 
 mock.module("@/models", () => ({
   useStores: useStoresMock,
 }))
 
-mock.module("/home/amka78/open-bookshelf/app/models/index.ts", () => ({
-  useStores: useStoresMock,
-}))
-
 mock.module("@react-navigation/native", () => ({
-  ...(global as { __navMock?: Record<string, unknown> }).__navMock,
   useNavigation: useNavigationMock,
-  createNavigationContainerRef: () => ({
-    isReady: () => false,
-    canGoBack: () => false,
-    goBack: jest.fn(),
-    getRootState: jest.fn(),
-  }),
 }))
 
-mock.module("react-native-modalfy", () => ({
-  useModal: () => useModalMock(),
-  modalfy: jest.fn(),
+mock.module("./useViewer", () => ({
+  useViewer: () => useViewerMock(),
 }))
 
-mock.module(
-  "/home/amka78/open-bookshelf/node_modules/react-native-modalfy/lib/commonjs/index.js",
-  () => ({
-    useModal: () => useModalMock(),
-    modalfy: jest.fn(),
-  }),
-)
-
-mock.module("@/hooks/useElectrobunModal", () => ({
-  useElectrobunModal: () => useModalMock(),
-}))
-
-mock.module("../../hooks/useConvergence", () => ({
-  useConvergence: () => useConvergenceMock(),
+mock.module("./useViewerPreparation", () => ({
+  useViewerPreparation: () => useViewerPreparationMock(),
 }))
 
 mock.module("mobx-react-lite", () => ({
@@ -127,7 +41,6 @@ mock.module("mobx-react-lite", () => ({
 }))
 
 mock.module("@/components", () => ({
-  ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
   BookPage: ({ children }: { children?: ReactNode }) => (
     <div data-testid="viewer-screen-book-page">{children}</div>
   ),
@@ -142,7 +55,7 @@ mock.module("@/components", () => ({
     totalPage?: number
     renderPage?: (props: {
       page: number
-      pageType: "single"
+      pageType: "singlePage"
       availableWidth: number
       availableHeight: number
       onPress: () => void
@@ -155,17 +68,18 @@ mock.module("@/components", () => ({
       data-initial-page={initialPage ?? -1}
       data-total-page={totalPage ?? -1}
     >
-      {typeof renderPage === "function"
-        ? renderPage({
-            page: initialPage ?? 0,
-            pageType: "single",
-            availableWidth: 320,
-            availableHeight: 480,
-            onPress: () => {},
-            onLongPress: () => {},
-          })
-        : null}
+      {renderPage?.({
+        page: initialPage ?? 0,
+        pageType: "singlePage",
+        availableWidth: 320,
+        availableHeight: 480,
+        onPress: () => {},
+        onLongPress: () => {},
+      })}
     </div>
+  ),
+  LabeledSpinner: ({ labelTx }: { labelTx?: string }) => (
+    <div data-testid="viewer-screen-loading" data-label-tx={labelTx} />
   ),
 }))
 
@@ -175,203 +89,114 @@ mock.module("@/components/BookHtmlPage", () => ({
 
 let ViewerScreen: typeof import("./ViewerScreen").ViewerScreen
 
-const describe = localizeTestRegistrar(baseDescribe)
-const test = localizeTestRegistrar(baseTest)
+beforeAll(async () => {
+  ;({ ViewerScreen } = await import("./ViewerScreen"))
+})
 
-describe("ViewerScreen resume modal", () => {
-  const openModal = jest.fn()
+describe("ViewerScreen", () => {
   const navigate = jest.fn()
-  const originalRequestAnimationFrame = globalThis.requestAnimationFrame
-  const originalCancelAnimationFrame = globalThis.cancelAnimationFrame
-  const originalElectrobunFlag = window.__ELECTROBUN__
 
-  const createStoreState = ({
-    currentPage = 2,
-    selectedBook,
-  }: {
-    currentPage?: number
-    selectedBook?: Record<string, unknown> | null
-  } = {}) => ({
-    authenticationStore: {
-      getHeader: jest.fn().mockReturnValue({ Authorization: "Basic token" }),
-    },
-    calibreRootStore: {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    useNavigationMock.mockReturnValue({ navigate })
+    useViewerPreparationMock.mockReturnValue({
+      messageTx: "viewerPreparation.preparing",
+      phase: "ready",
+    })
+    useStoresMock.mockReturnValue({
+      authenticationStore: {
+        getHeader: jest.fn().mockReturnValue({ Authorization: "Basic token" }),
+      },
+    })
+    useViewerMock.mockReturnValue({
       selectedLibrary: {
         id: "library-1",
-        selectedBook:
-          selectedBook === undefined
-            ? {
-                id: 1,
-                path: ["page1.png", "page2.png", "page3.png"],
-                hash: 1,
-                metaData: {
-                  selectedFormat: "EPUB",
-                  title: "Sample Book",
-                  formatSizes: new Map([["EPUB", 123]]),
-                  setProp: jest.fn(),
-                },
-                update: jest.fn(),
-              }
-            : selectedBook,
-        clientSetting: [],
       },
-      readingHistories: [
-        {
-          libraryId: "library-1",
-          bookId: 1,
-          format: "EPUB",
-          currentPage,
-          cachedPath: ["cache1.png", "cache2.png", "cache3.png"],
-          setCurrentPage: jest.fn(),
+      selectedBook: {
+        id: 1,
+        path: ["page-1.jpg", "page-2.jpg"],
+        hash: 101,
+        metaData: {
+          selectedFormat: "EPUB",
+          title: "Sample Book",
+          formatSizes: new Map([["EPUB", 120]]),
         },
-      ],
-    },
-  })
-
-  const getLastModalArgs = <T,>(modalName: string) => {
-    const matchedCall = [...openModal.mock.calls]
-      .reverse()
-      .find(([calledName]) => calledName === modalName)
-    return matchedCall?.[1] as T | undefined
-  }
-
-  beforeAll(async () => {
-    ;({ ViewerScreen } = await import("./ViewerScreen"))
-  })
-
-  afterAll(() => {
-    globalThis.requestAnimationFrame = originalRequestAnimationFrame
-    globalThis.cancelAnimationFrame = originalCancelAnimationFrame
-    window.__ELECTROBUN__ = originalElectrobunFlag
+      },
+      initialPage: 1,
+      viewerReady: true,
+      cachedPathList: ["file:///cache/page-1.jpg", "file:///cache/page-2.jpg"],
+      onPageChange: jest.fn(),
+      onLastPage: jest.fn(),
+    })
   })
 
   afterEach(() => {
     cleanup()
   })
 
-  beforeEach(() => {
-    jest.clearAllMocks()
-    useNavigationMock.mockReturnValue({ navigate })
-    window.__ELECTROBUN__ = false
-    useModalMock.mockReturnValue({ openModal })
-    useConvergenceMock.mockReturnValue({ isLarge: false, orientation: "vertical" })
-    useStoresMock.mockReturnValue(createStoreState())
-  })
-
-  test("opens the resume reading modal only once even if the screen rerenders", async () => {
-    const frames = createViewerScreenFrameScheduler()
-    globalThis.requestAnimationFrame = frames.requestAnimationFrame
-    globalThis.cancelAnimationFrame = frames.cancelAnimationFrame
-
-    const view = render(<ViewerScreen />)
-
-    await playViewerScreenResumePromptAppears({
-      flushFrame: frames.flushFrame,
+  test("shows preparation progress before the viewer becomes ready", () => {
+    useViewerPreparationMock.mockReturnValue({
+      messageTx: "viewerPreparation.converting",
+      phase: "preparing",
     })
-
-    expect(openModal).toHaveBeenCalledTimes(1)
-    expect(openModal).toHaveBeenCalledWith(
-      "ConfirmModal",
-      expect.objectContaining({
-        titleTx: "modal.resumeReadingConfirmModal.title",
-        messageTx: "modal.resumeReadingConfirmModal.message",
-      }),
-    )
-
-    await playViewerScreenResumePromptDoesNotReopenOnRerender({
-      rerender: () => view.rerender(<ViewerScreen />),
-      flushFrame: frames.flushFrame,
-    })
-
-    expect(openModal).toHaveBeenCalledTimes(1)
-  })
-
-  test("renders the book viewer from the saved page after confirming resume", async () => {
-    const frames = createViewerScreenFrameScheduler()
-    globalThis.requestAnimationFrame = frames.requestAnimationFrame
-    globalThis.cancelAnimationFrame = frames.cancelAnimationFrame
 
     render(<ViewerScreen />)
 
-    await playViewerScreenResumePromptAccepts({
-      flushFrame: frames.flushFrame,
-      onAccept: () => getLastModalArgs<{ onOKPress: () => void }>("ConfirmModal")?.onOKPress(),
-    })
+    expect(screen.getByTestId("viewer-screen-loading").getAttribute("data-label-tx")).toBe(
+      "viewerPreparation.converting",
+    )
+  })
+
+  test("renders the book viewer when preparation is complete", () => {
+    render(<ViewerScreen />)
 
     const viewer = screen.getByTestId("viewer-screen-book-viewer")
-    expect(viewer).toBeTruthy()
-    expect(viewer.getAttribute("data-initial-page")).toBe("2")
-    expect(viewer.getAttribute("data-total-page")).toBe("3")
+    expect(viewer.getAttribute("data-book-title")).toBe("Sample Book")
+    expect(viewer.getAttribute("data-initial-page")).toBe("1")
+    expect(viewer.getAttribute("data-total-page")).toBe("2")
     expect(screen.getByTestId("viewer-screen-book-page")).toBeTruthy()
   })
 
-  test("starts from the first page after declining the resume modal", async () => {
-    const frames = createViewerScreenFrameScheduler()
-    globalThis.requestAnimationFrame = frames.requestAnimationFrame
-    globalThis.cancelAnimationFrame = frames.cancelAnimationFrame
-
-    render(<ViewerScreen />)
-
-    await playViewerScreenResumePromptDeclines({
-      flushFrame: frames.flushFrame,
-      onDecline: () =>
-        getLastModalArgs<{ onCancelPress: () => void }>("ConfirmModal")?.onCancelPress(),
-    })
-
-    const viewer = screen.getByTestId("viewer-screen-book-viewer")
-    expect(viewer.getAttribute("data-initial-page")).toBe("0")
-    expect(viewer.getAttribute("data-total-page")).toBe("3")
-  })
-
-  test("renders the viewer immediately without a resume modal when saved progress is at the first page", () => {
-    useStoresMock.mockReturnValue(createStoreState({ currentPage: 0 }))
-
-    render(<ViewerScreen />)
-
-    const viewer = screen.getByTestId("viewer-screen-book-viewer")
-    expect(viewer.getAttribute("data-initial-page")).toBe("0")
-    expect(openModal).not.toHaveBeenCalled()
-  })
-
-  test("navigates back to Library when no selected book is available", async () => {
-    useStoresMock.mockReturnValue(createStoreState({ selectedBook: null }))
-
-    render(<ViewerScreen />)
-
-    await act(async () => {})
-
-    expect(navigate).toHaveBeenCalledWith("Library")
-  })
-
-  test("renders the html page component when the current page path is a serialized html entry", async () => {
-    useStoresMock.mockReturnValue(
-      createStoreState({
-        selectedBook: {
-          id: 1,
-          path: ["page/page-1/index.html"],
-          hash: 1,
-          metaData: {
-            selectedFormat: "EPUB",
-            title: "Sample Book",
-            formatSizes: new Map([["EPUB", 123]]),
-            setProp: jest.fn(),
-          },
-          update: jest.fn(),
+  test("renders serialized html pages with BookHtmlPage", () => {
+    useViewerMock.mockReturnValue({
+      selectedLibrary: {
+        id: "library-1",
+      },
+      selectedBook: {
+        id: 1,
+        path: ["text/chapter-1/index.html"],
+        hash: 101,
+        metaData: {
+          selectedFormat: "EPUB",
+          title: "Sample Book",
+          formatSizes: new Map([["EPUB", 120]]),
         },
-      }),
-    )
-
-    const frames = createViewerScreenFrameScheduler()
-    globalThis.requestAnimationFrame = frames.requestAnimationFrame
-    globalThis.cancelAnimationFrame = frames.cancelAnimationFrame
+      },
+      initialPage: 0,
+      viewerReady: true,
+      cachedPathList: undefined,
+      onPageChange: jest.fn(),
+      onLastPage: jest.fn(),
+    })
 
     render(<ViewerScreen />)
-
-    await playViewerScreenResumePromptAccepts({
-      flushFrame: frames.flushFrame,
-      onAccept: () => getLastModalArgs<{ onOKPress: () => void }>("ConfirmModal")?.onOKPress(),
-    })
 
     expect(screen.getByTestId("viewer-screen-html-page")).toBeTruthy()
+  })
+
+  test("navigates back to Library when no selected book is available", () => {
+    useViewerMock.mockReturnValue({
+      selectedLibrary: null,
+      selectedBook: null,
+      initialPage: 0,
+      viewerReady: true,
+      cachedPathList: undefined,
+      onPageChange: jest.fn(),
+      onLastPage: jest.fn(),
+    })
+
+    render(<ViewerScreen />)
+
+    expect(navigate).toHaveBeenCalledWith("Library")
   })
 })

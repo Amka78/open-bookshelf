@@ -180,6 +180,15 @@ const en = {
     savedSearches: "Saved searches",
     noSavedSearches: "No saved searches",
   },
+  viewerPreparation: {
+    preparing: "Preparing book...",
+    checkingCache: "Checking cached pages...",
+    cachingPdf: "Caching PDF...",
+    converting: "Converting book...",
+    cachingImages: "Caching pages...",
+    verifyingCache: "Verifying cached pages...",
+    recachingMissingFiles: "Re-downloading missing pages...",
+  },
   readingStats: {
     title: "Reading Stats",
     booksInProgress: "Books in Progress",

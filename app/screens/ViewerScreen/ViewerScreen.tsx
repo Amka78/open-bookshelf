@@ -1,4 +1,4 @@
-import { BookPage, BookViewer, type RenderPageProps } from "@/components"
+import { BookPage, BookViewer, LabeledSpinner, type RenderPageProps } from "@/components"
 import { BookHtmlPage } from "@/components/BookHtmlPage"
 import { useStores } from "@/models"
 import type { ApppNavigationProp } from "@/navigators/types"
@@ -9,8 +9,10 @@ import { logger } from "@/utils/logger"
 import { useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import React, { type FC, useCallback, useEffect, useLayoutEffect, useMemo } from "react"
+import { StyleSheet } from "react-native"
+import { useViewerPreparation } from "./useViewerPreparation"
 
-export const ViewerScreen: FC = observer(() => {
+const ViewerScreenContent: FC = observer(() => {
   const { authenticationStore } = useStores()
   const navigation = useNavigation<ApppNavigationProp>()
 
@@ -128,4 +130,30 @@ export const ViewerScreen: FC = observer(() => {
       onLastPage={onLastPage}
     />
   )
+})
+
+export const ViewerScreen: FC = observer(() => {
+  const { messageTx, phase } = useViewerPreparation("Viewer")
+
+  if (phase === "preparing") {
+    return (
+      <LabeledSpinner
+        labelDirection="vertical"
+        labelTx={messageTx}
+        containerStyle={styles.loadingRoot}
+      />
+    )
+  }
+
+  if (phase === "error") {
+    return null
+  }
+
+  return <ViewerScreenContent />
+})
+
+const styles = StyleSheet.create({
+  loadingRoot: {
+    flex: 1,
+  },
 })

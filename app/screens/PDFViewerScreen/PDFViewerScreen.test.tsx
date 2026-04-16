@@ -20,6 +20,7 @@ const _realUsePDFViewer = Object.assign({}, _realUsePDFViewerNs)
 
 const usePDFViewerMock = jest.fn()
 const useViewerMock = jest.fn()
+const useViewerPreparationMock = jest.fn()
 const fileExistsMock = jest.fn()
 const fileBase64Mock = jest.fn()
 const loggerWarnMock = jest.fn()
@@ -35,6 +36,10 @@ mock.module("@/screens/PDFViewerScreen/usePDFViewer", () => ({
 
 mock.module("@/screens/ViewerScreen/useViewer", () => ({
   useViewer: () => useViewerMock(),
+}))
+
+mock.module("@/screens/ViewerScreen/useViewerPreparation", () => ({
+  useViewerPreparation: () => useViewerPreparationMock(),
 }))
 
 mock.module("@/utils/logger", () => ({
@@ -84,6 +89,11 @@ mock.module("@/library/PDF/PDFWebPage", () => ({
 
 mock.module("@/components", () => ({
   ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
+  LabeledSpinner: ({
+    labelTx,
+  }: {
+    labelTx?: string
+  }) => <div data-testid="pdf-viewer-loading" data-label-tx={labelTx} />,
   BookViewer: ({
     bookTitle,
     totalPage,
@@ -140,6 +150,10 @@ describe("PDFViewerScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks()
     fileBase64Mock.mockResolvedValue("ZmFrZS1iYXNlNjQ=")
+    useViewerPreparationMock.mockReturnValue({
+      messageTx: "viewerPreparation.preparing",
+      phase: "ready",
+    })
 
     useViewerMock.mockReturnValue({
       initialPage: 2,
@@ -210,6 +224,21 @@ describe("PDFViewerScreen", () => {
 
     expect(screen.getByTestId("pdf-page-count").getAttribute("data-uri")).toBe(
       "file:///cache/book.pdf",
+    )
+  })
+
+  test("preparing 中はローディングと進行メッセージを表示する", async () => {
+    useViewerPreparationMock.mockReturnValue({
+      messageTx: "viewerPreparation.cachingPdf",
+      phase: "preparing",
+    })
+
+    await act(async () => {
+      render(<PDFViewerScreen />)
+    })
+
+    expect(screen.getByTestId("pdf-viewer-loading").getAttribute("data-label-tx")).toBe(
+      "viewerPreparation.cachingPdf",
     )
   })
 })

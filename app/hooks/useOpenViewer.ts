@@ -1,15 +1,6 @@
 import type { ModalStackParams } from "@/components/Modals/Types"
 import { useStores } from "@/models"
-import { type Book, ReadingHistoryModel } from "@/models/calibre"
 import type { ApppNavigationProp } from "@/navigators/types"
-import {
-  cacheBookFile,
-  cacheBookImages,
-  reCacheMissingImages,
-  verifyCachedBookImages,
-} from "@/utils/bookImageCache"
-import { isCalibreHtmlViewerFormat, isCalibreSerializedHtmlPath } from "@/utils/calibreHtmlViewer"
-import { isNetworkAvailable } from "@/utils/network"
 import { useNavigation } from "@react-navigation/native"
 import type { UsableModalProp } from "react-native-modalfy"
 
@@ -17,186 +8,27 @@ export function useOpenViewer() {
   const navigation = useNavigation<ApppNavigationProp>()
   const { calibreRootStore, settingStore } = useStores()
 
-  const onItemPress = async (
-    book: Book,
-    format: string,
-    selectedLibraryId: string,
-    modal: UsableModalProp<ModalStackParams>,
-  ) => {
+  const onItemPress = async (format: string, selectedLibraryId: string) => {
+    const book = calibreRootStore.selectedLibrary.selectedBook
     book.metaData.setProp("selectedFormat", format)
-    try {
-      const history = calibreRootStore.readingHistories.find((value) => {
-        return (
-          value.libraryId === selectedLibraryId &&
-          value.bookId === book.id &&
-          value.format === format
-        )
-      })
-
-      if (format === "PDF") {
-        const cachedPdfPath = await cacheBookFile({
+    if (format === "PDF") {
+      navigation.navigate("PDFViewer", {
+        request: {
           bookId: book.id,
-          format,
           libraryId: selectedLibraryId,
-          baseUrl: settingStore.api.baseUrl,
-        })
-
-        if (history) {
-          if (history.cachedPath.length !== 1 || history.cachedPath[0] !== cachedPdfPath) {
-            history.setCachePath([cachedPdfPath])
-          }
-        } else {
-          const historyModel = ReadingHistoryModel.create({
-            bookId: book.id,
-            currentPage: 0,
-            libraryId: selectedLibraryId,
-            cachedPath: [cachedPdfPath],
-            format: format,
-          })
-          calibreRootStore.addReadingHistory(historyModel)
-        }
-
-        navigation.navigate("PDFViewer")
-        return
-      }
-
-      const isHtmlViewerFormat = isCalibreHtmlViewerFormat(format)
-
-      if (isHtmlViewerFormat && book.path.length === 0) {
-        await book.convert(format, selectedLibraryId, async () => {})
-      }
-
-      if (history) {
-        // History exists - verify cache before navigating to viewer
-        const cachedPaths = history.cachedPath?.length ? history.cachedPath : []
-        const hasCachedPaths = cachedPaths.length > 0
-        const needsSourcePathResolution = !hasCachedPaths && book.path.length === 0
-
-        if (needsSourcePathResolution) {
-          await book.convert(format, selectedLibraryId, async () => {})
-        }
-
-        if (!hasCachedPaths && book.path.length === 0) {
-          throw new Error("Book content could not be prepared for viewing")
-        }
-
-        const firstPath = cachedPaths[0] ?? book.path[0] ?? ""
-        const isImageBasedFormat = !isHtmlViewerFormat && !isCalibreSerializedHtmlPath(firstPath)
-
-        if (!hasCachedPaths && isImageBasedFormat) {
-          const online = await isNetworkAvailable()
-
-          if (!online) {
-            modal.openModal("ErrorModal", {
-              message: "This book is not cached and you are offline. Please connect to the internet to read.",
-              titleTx: "common.error",
-            })
-            return
-          }
-
-          const size = book.metaData?.formatSizes.get(format) ?? 0
-          const hash = book.hash ?? history.bookHash ?? 0
-          const updatedPaths = await cacheBookImages({
-            bookId: book.id,
-            format,
-            libraryId: selectedLibraryId,
-            baseUrl: settingStore.api.baseUrl,
-            size,
-            hash,
-            pathList: book.path.slice(),
-          })
-
-          history.setCachePath(updatedPaths)
-          history.setCacheVerified(true)
-        } else if (hasCachedPaths && isImageBasedFormat) {
-          // Verify cached images exist on disk
-          const { allExist, missingIndices } = await verifyCachedBookImages(cachedPaths)
-
-          if (!allExist) {
-            // Some files are missing - check network
-            const online = await isNetworkAvailable()
-
-            if (!online) {
-              // Offline and cache is incomplete
-              modal.openModal("ErrorModal", {
-                message: "This book is not fully cached and you are offline. Please connect to the internet to read.",
-                titleTx: "common.error",
-              })
-              return
-            }
-
-            // Online - re-download missing images
-            const hash = book.hash ?? history.bookHash ?? 0
-            const size = book.metaData?.formatSizes.get(format) ?? 0
-            const updatedPaths = await reCacheMissingImages({
-              bookId: book.id,
-              format,
-              libraryId: selectedLibraryId,
-              baseUrl: settingStore.api.baseUrl,
-              size,
-              hash,
-              cachedPaths: history.cachedPath.slice(),
-              missingIndices,
-            })
-
-            // Update history with new paths
-            history.setCachePath(updatedPaths)
-            history.setCacheVerified(true)
-          } else {
-            // All files exist
-            history.setCacheVerified(true)
-          }
-        }
-
-        navigation.navigate("Viewer")
-      } else {
-        await book.convert(format, selectedLibraryId, async (comicMetadata) => {
-          const size = book.metaData?.formatSizes.get(format) ?? 0
-          const hash = book.hash ?? 0
-          // Text-based formats (MOBI, FB2, DOCX, RTF, TXT, etc.) populate book.path
-          // with XHTML spine files. Detect this at runtime to avoid downloading
-          // HTML documents through the image cache pipeline.
-          const pathsAreHtml = book.path.length > 0 && isCalibreSerializedHtmlPath(book.path[0])
-          const bookImageList =
-            isHtmlViewerFormat || pathsAreHtml
-              ? book.path.slice()
-              : await cacheBookImages({
-                  bookId: book.id,
-                  format,
-                  libraryId: calibreRootStore.selectedLibrary.id,
-                  baseUrl: settingStore.api.baseUrl,
-                  size,
-                  hash,
-                  pathList: book.path.slice(),
-                })
-
-          const historyModel = ReadingHistoryModel.create({
-            bookId: book.id,
-            currentPage: 0,
-            libraryId: selectedLibraryId,
-            cachedPath: bookImageList,
-            format: format,
-            serverPosFrac: book.manifestServerPosFrac ?? null,
-            serverEpoch: book.manifestServerEpoch ?? null,
-            // Cache CBZ metadata from convert result for fast reload on next launch
-            isComic: comicMetadata?.isComic ?? null,
-            rasterCoverName: comicMetadata?.rasterCoverName ?? null,
-            totalLength: comicMetadata?.totalLength ?? null,
-            fileMetadataJson: comicMetadata?.fileMetadata ? JSON.stringify(comicMetadata.fileMetadata) : null,
-            bookHash: hash,
-            // Cache is verified immediately after caching
-            cacheVerified: true,
-          })
-          calibreRootStore.addReadingHistory(historyModel)
-          navigation.navigate("Viewer")
-        })
-      }
-    } catch (e) {
-      modal.openModal("ErrorModal", {
-        message: e.message,
-        titleTx: "errors.failedConvert",
+          format,
+        },
       })
+      return
     }
+
+    navigation.navigate("Viewer", {
+      request: {
+        bookId: book.id,
+        libraryId: selectedLibraryId,
+        format,
+      },
+    })
   }
   const execute = async (modal: UsableModalProp<ModalStackParams>) => {
     const selectedLibraryId = calibreRootStore.selectedLibrary.id
@@ -204,17 +36,17 @@ export function useOpenViewer() {
     if (book.metaData.formats.length > 1) {
       const preferredFormat = settingStore.preferredFormat
       if (preferredFormat && book.metaData.formats.includes(preferredFormat)) {
-        await onItemPress(book, preferredFormat, selectedLibraryId, modal)
+        await onItemPress(preferredFormat, selectedLibraryId)
         return
       }
       modal.openModal("FormatSelectModal", {
         formats: book.metaData.formats,
         onSelectFormat: async (format) => {
-          await onItemPress(book, format, selectedLibraryId, modal)
+          await onItemPress(format, selectedLibraryId)
         },
       })
     } else {
-      await onItemPress(book, book.metaData.formats[0], selectedLibraryId, modal)
+      await onItemPress(book.metaData.formats[0], selectedLibraryId)
     }
   }
   return {

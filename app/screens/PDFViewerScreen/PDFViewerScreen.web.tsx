@@ -1,6 +1,7 @@
-import { BookViewer, type RenderPageProps } from "@/components"
+import { BookViewer, LabeledSpinner, type RenderPageProps } from "@/components"
 import { usePDFViewer } from "@/screens/PDFViewerScreen/usePDFViewer"
 import { useViewer } from "@/screens/ViewerScreen/useViewer"
+import { useViewerPreparation } from "@/screens/ViewerScreen/useViewerPreparation"
 import { observer } from "mobx-react-lite"
 import React, { useCallback, useMemo, useState } from "react"
 import { StyleSheet, View } from "react-native"
@@ -9,7 +10,7 @@ import { Document, Page, pdfjs } from "react-pdf"
 import pdfDiagnostics from "@/services/performance/pdfDiagnostics"
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`
 
-export const PDFViewerScreen = observer(() => {
+const PDFViewerScreenContent = observer(() => {
   const pdfHook = usePDFViewer()
   const { initialPage, onPageChange } = useViewer()
   // PDFページのアスペクト比 (width / height)。最初のページロード時に取得する
@@ -153,7 +154,30 @@ export const PDFViewerScreen = observer(() => {
   )
 })
 
+export const PDFViewerScreen = observer(() => {
+  const { messageTx, phase } = useViewerPreparation("PDFViewer")
+
+  if (phase === "preparing") {
+    return (
+      <LabeledSpinner
+        labelDirection="vertical"
+        labelTx={messageTx}
+        containerStyle={styles.loadingRoot}
+      />
+    )
+  }
+
+  if (phase === "error") {
+    return null
+  }
+
+  return <PDFViewerScreenContent />
+})
+
 const styles = StyleSheet.create({
+  loadingRoot: {
+    flex: 1,
+  },
   page: {
     flex: 1,
     height: "100%",

@@ -182,6 +182,15 @@ const ja: Translations = {
     savedSearches: "保存済み検索",
     noSavedSearches: "保存済み検索はありません",
   },
+  viewerPreparation: {
+    preparing: "書籍を準備中...",
+    checkingCache: "キャッシュを確認中...",
+    cachingPdf: "PDFをキャッシュ中...",
+    converting: "書籍を変換中...",
+    cachingImages: "ページをキャッシュ中...",
+    verifyingCache: "キャッシュ済みページを検証中...",
+    recachingMissingFiles: "不足しているページを再取得中...",
+  },
   readingStats: {
     title: "読書統計",
     booksInProgress: "読書中の書籍",

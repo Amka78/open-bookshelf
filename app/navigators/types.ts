@@ -5,6 +5,12 @@ import type {
 
 import type { Link } from "../models/opds"
 
+export type ViewerOpenRequest = {
+  bookId: number
+  libraryId: string
+  format: string
+}
+
 export type AppStackParamList = {
   Welcome: undefined
   Connect: undefined
@@ -14,8 +20,8 @@ export type AppStackParamList = {
   Acquisition: {
     link: Link
   }
-  Viewer: undefined
-  PDFViewer: undefined
+  Viewer: { request: ViewerOpenRequest } | undefined
+  PDFViewer: { request: ViewerOpenRequest } | undefined
   BookDetail: {
     imageUrl: string
     onLinkPress: (query: string) => void

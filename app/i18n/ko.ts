@@ -181,6 +181,15 @@ const ko: Translations = {
     savedSearches: "저장된 검색",
     noSavedSearches: "저장된 검색 없음",
   },
+  viewerPreparation: {
+    preparing: "책을 준비하는 중...",
+    checkingCache: "캐시된 페이지를 확인하는 중...",
+    cachingPdf: "PDF를 캐시하는 중...",
+    converting: "책을 변환하는 중...",
+    cachingImages: "페이지를 캐시하는 중...",
+    verifyingCache: "캐시된 페이지를 검증하는 중...",
+    recachingMissingFiles: "누락된 페이지를 다시 다운로드하는 중...",
+  },
   readingStats: {
     title: "독서 통계",
     booksInProgress: "읽는 중인 책",

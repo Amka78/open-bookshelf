@@ -181,6 +181,15 @@ const ar: Translations = {
     savedSearches: "عمليات البحث المحفوظة",
     noSavedSearches: "لا توجد عمليات بحث محفوظة",
   },
+  viewerPreparation: {
+    preparing: "جارٍ تجهيز الكتاب...",
+    checkingCache: "جارٍ التحقق من الصفحات المخزنة مؤقتًا...",
+    cachingPdf: "جارٍ تخزين PDF مؤقتًا...",
+    converting: "جارٍ تحويل الكتاب...",
+    cachingImages: "جارٍ تخزين الصفحات مؤقتًا...",
+    verifyingCache: "جارٍ التحقق من الصفحات المخزنة مؤقتًا...",
+    recachingMissingFiles: "جارٍ إعادة تنزيل الصفحات المفقودة...",
+  },
   readingStats: {
     title: "إحصائيات القراءة",
     booksInProgress: "الكتب قيد القراءة",

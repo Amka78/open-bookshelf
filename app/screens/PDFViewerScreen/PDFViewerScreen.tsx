@@ -1,15 +1,16 @@
-import { BookViewer, type RenderPageProps, Text } from "@/components"
+import { BookViewer, LabeledSpinner, type RenderPageProps, Text } from "@/components"
 import { PDFWebPage } from "@/library/PDF/PDFWebPage"
 import { PDF } from "@/library/PDF/Pdf"
 import { usePDFViewer } from "@/screens/PDFViewerScreen/usePDFViewer"
 import { useViewer } from "@/screens/ViewerScreen/useViewer"
+import { useViewerPreparation } from "@/screens/ViewerScreen/useViewerPreparation"
 import { logger } from "@/utils/logger"
 import { File } from "expo-file-system"
 import { observer } from "mobx-react-lite"
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { type FlexAlignType, StyleSheet, View, type ViewStyle } from "react-native"
 
-export const PDFViewerScreen = observer(() => {
+const PDFViewerScreenContent = observer(() => {
   const pdfHook = usePDFViewer()
   const { initialPage, onPageChange } = useViewer()
   const [sourcePageSize, setSourcePageSize] = useState<{ width: number; height: number }>()
@@ -217,8 +218,31 @@ export const PDFViewerScreen = observer(() => {
   )
 })
 
+export const PDFViewerScreen = observer(() => {
+  const { messageTx, phase } = useViewerPreparation("PDFViewer")
+
+  if (phase === "preparing") {
+    return (
+      <LabeledSpinner
+        labelDirection="vertical"
+        labelTx={messageTx}
+        containerStyle={styles.loadingRoot}
+      />
+    )
+  }
+
+  if (phase === "error") {
+    return null
+  }
+
+  return <PDFViewerScreenContent />
+})
+
 const styles = StyleSheet.create({
   fullscreen: {
+    flex: 1,
+  },
+  loadingRoot: {
     flex: 1,
   },
   errorRoot: {
