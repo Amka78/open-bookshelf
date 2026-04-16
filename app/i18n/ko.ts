@@ -273,6 +273,12 @@ const ko: Translations = {
     shareLinkTooltip: "링크 공유",
     setStatusTooltip: "읽기 상태 설정",
   },
+  bookImage: {
+    hoverSearchAuthors: "저자",
+    hoverSearchSeries: "시리즈",
+    hoverSearchTags: "태그",
+    hoverSearchFormats: "형식",
+  },
   userPreferences: {
     title: "사용자 환경설정",
     preferredFormat: "선호 형식",

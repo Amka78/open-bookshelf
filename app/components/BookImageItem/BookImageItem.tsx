@@ -1,22 +1,42 @@
 import type React from "react"
-import { memo, useEffect, useRef, useState } from "react"
+import { memo, useEffect, useMemo, useRef, useState } from "react"
 import { StyleSheet, View } from "react-native"
 
 import {
   BookDetailMenu,
   Box,
+  HStack,
   Image,
   type ImageProps,
   LabeledSpinner,
   MaterialCommunityIcon,
   type MaterialCommunityIconProps,
+  Text,
+  VStack,
 } from "@/components"
 import type { BookDetailMenuProps } from "@/components"
+import type { MessageKey } from "@/i18n"
 import { Pressable } from "@gluestack-ui/themed"
 
 type IconName = MaterialCommunityIconProps["name"]
 
 export type ReadStatusValue = "want-to-read" | "reading" | "finished"
+export type BookImageHoverSearchMetadata = {
+  authors?: string[]
+  series?: string | null
+  tags?: string[]
+  formats?: string[]
+}
+
+type HoverSearchField = "authors" | "series" | "tags" | "formats"
+type HoverSearchSection = {
+  field: HoverSearchField
+  titleTx: MessageKey
+  links: Array<{
+    label: string
+    query: string
+  }>
+}
 
 export type BookImageprops = Pick<ImageProps, "source"> & {
   onPress?: () => Promise<void>
@@ -30,6 +50,8 @@ export type BookImageprops = Pick<ImageProps, "source"> & {
   readingProgress?: number | null
   readStatus?: ReadStatusValue | null
   onOpenBookDetail?: () => void
+  hoverSearchMetadata?: BookImageHoverSearchMetadata
+  onHoverSearchPress?: (query: string) => void | Promise<void>
 }
 
 const STATUS_ICON: Record<ReadStatusValue, { name: IconName; color: string }> = {
@@ -43,6 +65,46 @@ type BoxWithHoverProps = React.ComponentPropsWithRef<typeof Box> & {
   onMouseLeave?: () => void
 }
 const BoxWithHover = Box as React.ComponentType<BoxWithHoverProps>
+
+function uniqNonEmpty(values: Array<string | null | undefined>): string[] {
+  return Array.from(
+    new Set(
+      values
+        .map((value) => value?.trim())
+        .filter((value): value is string => Boolean(value && value.length > 0)),
+    ),
+  )
+}
+
+function buildHoverSearchSections(metadata?: BookImageHoverSearchMetadata): HoverSearchSection[] {
+  if (!metadata) {
+    return []
+  }
+
+  const authors = uniqNonEmpty(metadata.authors ?? []).map((author) => ({
+    label: author,
+    query: `authors:=${author}`,
+  }))
+  const series = uniqNonEmpty([metadata.series]).map((value) => ({
+    label: value,
+    query: `series:=${value}`,
+  }))
+  const tags = uniqNonEmpty(metadata.tags ?? []).map((tag) => ({
+    label: tag,
+    query: `tags:=${tag}`,
+  }))
+  const formats = uniqNonEmpty(metadata.formats ?? []).map((format) => ({
+    label: format.toUpperCase(),
+    query: `formats:=${format.toUpperCase()}`,
+  }))
+
+  return [
+    { field: "authors", titleTx: "bookImage.hoverSearchAuthors", links: authors },
+    { field: "series", titleTx: "bookImage.hoverSearchSeries", links: series },
+    { field: "tags", titleTx: "bookImage.hoverSearchTags", links: tags },
+    { field: "formats", titleTx: "bookImage.hoverSearchFormats", links: formats },
+  ].filter((section) => section.links.length > 0)
+}
 
 // React.memo: prevents re-rendering when parent's renderItem creates
 // new closure props but all values are referentially equal.
@@ -58,8 +120,15 @@ export const BookImageItem = memo(function BookImageItem({
   const [loadingState, setLoadingState] = useState(props.loading)
   const [isHovered, setIsHovered] = useState(false)
   const hoverOutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const hoverSearchSections = useMemo(
+    () => buildHoverSearchSections(props.hoverSearchMetadata),
+    [props.hoverSearchMetadata],
+  )
 
   const showDetailMenu = Boolean(props.detailMenuProps && isHovered)
+  const showHoverSearchOverlay = Boolean(
+    props.onHoverSearchPress && hoverSearchSections.length > 0 && isHovered,
+  )
 
   const handleHoverIn = () => {
     if (hoverOutTimerRef.current) {
@@ -98,6 +167,7 @@ export const BookImageItem = memo(function BookImageItem({
   const shouldUsePressable = Boolean(props.onPress || props.onLongPress || props.detailMenuProps)
   const contentWithMenu = (
     <BoxWithHover
+      testID="book-image-hover-surface"
       style={styles.imageContainer}
       onMouseEnter={handleHoverIn}
       onMouseLeave={handleHoverOut}
@@ -128,6 +198,41 @@ export const BookImageItem = memo(function BookImageItem({
             style={[styles.progressBarFill, { width: `${(props.readingProgress ?? 0) * 100}%` }]}
           />
         </View>
+      ) : null}
+      {showHoverSearchOverlay ? (
+        <Box style={styles.hoverSearchOverlay} testID="book-image-hover-overlay">
+          <VStack space="xs" alignItems="center">
+            {hoverSearchSections.map((section) => (
+              <VStack key={section.field} space="xs" alignItems="center">
+                <Text
+                  tx={section.titleTx}
+                  fontSize="$2xs"
+                  style={styles.hoverSearchTitle}
+                  testID={`book-image-hover-title-${section.field}`}
+                />
+                <HStack style={styles.hoverSearchLinkRow}>
+                  {section.links.map((link) => (
+                    <Pressable
+                      key={`${section.field}-${link.query}`}
+                      variant="link"
+                      testID={`book-image-hover-link-${section.field}-${link.label}`}
+                      style={styles.hoverSearchLinkButton}
+                      onPress={async (event) => {
+                        event?.stopPropagation?.()
+                        event?.preventDefault?.()
+                        if (props.onHoverSearchPress) {
+                          await props.onHoverSearchPress(link.query)
+                        }
+                      }}
+                    >
+                      <Text style={styles.hoverSearchLinkText}>{link.label}</Text>
+                    </Pressable>
+                  ))}
+                </HStack>
+              </VStack>
+            ))}
+          </VStack>
+        </Box>
       ) : null}
       {showDetailMenu ? (
         <Box style={styles.detailMenuOverlay}>
@@ -241,6 +346,37 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingBottom: 6,
     paddingTop: 6,
+  },
+  hoverSearchOverlay: {
+    position: "absolute",
+    top: 28,
+    left: 6,
+    right: 6,
+    borderRadius: 10,
+    backgroundColor: "rgba(0, 0, 0, 0.72)",
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+  },
+  hoverSearchTitle: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+    opacity: 0.85,
+  },
+  hoverSearchLinkRow: {
+    flexWrap: "wrap",
+    justifyContent: "center",
+  },
+  hoverSearchLinkButton: {
+    minHeight: 20,
+    marginHorizontal: 2,
+    marginVertical: 1,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+  },
+  hoverSearchLinkText: {
+    color: "#F8FAFC",
+    fontSize: 12,
+    fontWeight: "600",
   },
   detailMenuIcon: {
     backgroundColor: "rgba(0, 0, 0, 0.35)",

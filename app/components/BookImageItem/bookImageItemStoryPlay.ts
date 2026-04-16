@@ -1,0 +1,33 @@
+import { act, fireEvent } from "@testing-library/react"
+
+function findElementByTestId(canvasElement: HTMLElement, testId: string): HTMLElement {
+  const found = canvasElement.querySelector(`[data-testid="${testId}"]`) as HTMLElement | null
+
+  if (!found) {
+    throw new Error(`Element with data-testid='${testId}' was not found.`)
+  }
+
+  return found
+}
+
+export async function playBookImageItemHoverSearchPressesAuthorLink({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  const hoverSurface = findElementByTestId(canvasElement, "book-image-hover-surface")
+
+  await act(async () => {
+    fireEvent.mouseEnter(hoverSurface)
+  })
+
+  findElementByTestId(canvasElement, "book-image-hover-overlay")
+  findElementByTestId(canvasElement, "book-image-hover-title-authors")
+  findElementByTestId(canvasElement, "book-image-hover-title-series")
+  findElementByTestId(canvasElement, "book-image-hover-title-tags")
+  findElementByTestId(canvasElement, "book-image-hover-title-formats")
+
+  await act(async () => {
+    fireEvent.click(findElementByTestId(canvasElement, "book-image-hover-link-authors-Ursula K. Le Guin"))
+  })
+}

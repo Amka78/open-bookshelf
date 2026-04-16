@@ -210,6 +210,12 @@ const ar: Translations = {
     shareLinkTooltip: "مشاركة الرابط",
     setStatusTooltip: "تعيين حالة القراءة",
   },
+  bookImage: {
+    hoverSearchAuthors: "المؤلفون",
+    hoverSearchSeries: "السلسلة",
+    hoverSearchTags: "الوسوم",
+    hoverSearchFormats: "التنسيقات",
+  },
   userPreferences: {
     title: "تفضيلات المستخدم",
     preferredFormat: "التنسيق المفضل",

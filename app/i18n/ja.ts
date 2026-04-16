@@ -211,6 +211,12 @@ const ja: Translations = {
     shareLinkTooltip: "リンクを共有",
     setStatusTooltip: "読書ステータスを設定",
   },
+  bookImage: {
+    hoverSearchAuthors: "著者",
+    hoverSearchSeries: "シリーズ",
+    hoverSearchTags: "タグ",
+    hoverSearchFormats: "形式",
+  },
   userPreferences: {
     title: "ユーザー設定",
     preferredFormat: "優先フォーマット",

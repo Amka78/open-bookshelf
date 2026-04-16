@@ -293,6 +293,10 @@ export const LibraryScreen: FC = observer(() => {
         headers: api.getAuthHeaders(thumbnailUri),
       }
       const imageUrl = imageSource.uri
+      const handleBookMetadataSearch = async (query: string) => {
+        libraryHook.setHeaderSearchText(query)
+        await libraryHook.onSearch(query)
+      }
 
       const onLongPress = async () => {
         selectedLibrary.setBook(item.id)
@@ -423,8 +427,7 @@ export const LibraryScreen: FC = observer(() => {
               libraryHook.isSelectionMode
                 ? undefined
                 : (author) => {
-                    libraryHook.setHeaderSearchText(`authors:="${author}"`)
-                    libraryHook.onSearch(`authors:="${author}"`)
+                    void handleBookMetadataSearch(`authors:=${author}`)
                   }
             }
           />
@@ -444,6 +447,23 @@ export const LibraryScreen: FC = observer(() => {
             }
             onLongPress={onLongPress}
             onOpenBookDetail={libraryHook.isSelectionMode ? undefined : onOpenBookDetail}
+            hoverSearchMetadata={
+              libraryHook.isSelectionMode
+                ? undefined
+                : {
+                    authors: [...item.metaData.authors],
+                    series: item.metaData.series,
+                    tags: [...item.metaData.tags],
+                    formats: [...item.metaData.formats],
+                  }
+            }
+            onHoverSearchPress={
+              libraryHook.isSelectionMode
+                ? undefined
+                : (query) => {
+                    void handleBookMetadataSearch(query)
+                  }
+            }
             detailMenuProps={
               libraryHook.isSelectionMode
                 ? undefined

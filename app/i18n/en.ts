@@ -209,6 +209,12 @@ const en = {
     shareLinkTooltip: "Share Link",
     setStatusTooltip: "Set reading status",
   },
+  bookImage: {
+    hoverSearchAuthors: "Authors",
+    hoverSearchSeries: "Series",
+    hoverSearchTags: "Tags",
+    hoverSearchFormats: "Formats",
+  },
   userPreferences: {
     title: "User Preferences",
     preferredFormat: "Preferred Format",

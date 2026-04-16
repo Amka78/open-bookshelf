@@ -1,6 +1,7 @@
 import { BookImageItem } from "@/components"
 import type { Meta, StoryFn, StoryObj } from "@storybook/react"
 import React from "react"
+import { playBookImageItemHoverSearchPressesAuthorLink } from "./bookImageItemStoryPlay"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
@@ -33,4 +34,19 @@ export const Loading: BookImageItemStory = {
   args: {
     loading: true,
   },
+}
+
+export const HoverSearchLinks: BookImageItemStory = {
+  argTypes: {
+    onHoverSearchPress: { action: "search book metadata" },
+  },
+  args: {
+    hoverSearchMetadata: {
+      authors: ["Ursula K. Le Guin"],
+      series: "Earthsea",
+      tags: ["Fantasy"],
+      formats: ["epub"],
+    },
+  },
+  play: playBookImageItemHoverSearchPressesAuthorLink,
 }
