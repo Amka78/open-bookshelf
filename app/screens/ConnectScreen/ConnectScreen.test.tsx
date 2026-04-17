@@ -31,8 +31,8 @@ mock.module("mobx-react-lite", () => ({
   observer: (component: unknown) => component,
 }))
 
-mock.module("@/components", () => ({
-  ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
+const componentsMock = {
+  ...((global as { __componentsMock?: Record<string, unknown> }).__componentsMock ?? {}),
   RootContainer: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   VStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   Heading: ({ testID, tx }: { testID?: string; tx?: string }) => (
@@ -74,7 +74,12 @@ mock.module("@/components", () => ({
       {tx === "connectScreen.connect" ? "Connect" : tx}
     </button>
   ),
-}))
+}
+
+;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
+
+mock.module("@/components", () => componentsMock)
+mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
 let ConnectScreen: typeof import("./ConnectScreen").ConnectScreen
 

@@ -95,6 +95,7 @@ export function BookDetailModalTemplate(props: BookDetailModalTemplateProps) {
             <BookDetailMenu
               onOpenBook={props.modal.params.onOpenBook}
               onDownloadBook={props.modal.params.onDownloadBook}
+              onOpenBookDetail={() => {}}
               onConvertBook={props.modal.params.onConvertBook}
               onEditBook={props.modal.params.onEditBook}
               onDeleteBook={props.modal.params.onDeleteBook}

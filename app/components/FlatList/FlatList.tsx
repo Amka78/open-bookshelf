@@ -6,13 +6,24 @@ import { LabeledSpinner } from "../LabeledSpinner/LabeledSpinner"
 export type FlatListProps<T> = FlashListProps<T> & {
   preparing?: boolean
 }
-export function FlatList<T>({ preparing = false, ...restProps }: FlatListProps<T>) {
+
+type FlatListRef = React.ElementRef<typeof Origin>
+type FlatListComponent = <T>(
+  props: FlatListProps<T> & { ref?: React.Ref<FlatListRef> },
+) => React.JSX.Element
+
+export const FlatList = React.forwardRef(function FlatListInner<T>(
+  { preparing = false, ...restProps }: FlatListProps<T>,
+  ref: React.ForwardedRef<FlatListRef>,
+) {
   const props = { preparing, ...restProps }
   const [loading, setLoading] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
+
   return !preparing ? (
     <Origin
       {...props}
+      ref={ref}
       onMomentumScrollBegin={() => {
         setLoading(true)
       }}
@@ -38,4 +49,4 @@ export function FlatList<T>({ preparing = false, ...restProps }: FlatListProps<T
       <LabeledSpinner labelDirection="vertical" labelTx={"libraryScreen.dataSearching"} />
     </Center>
   )
-}
+}) as FlatListComponent

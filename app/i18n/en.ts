@@ -103,6 +103,10 @@ const en = {
   },
   bookImage: {
     loading: "Preparing to read the book.",
+    hoverSearchAuthors: "Authors",
+    hoverSearchSeries: "Series",
+    hoverSearchTags: "Tags",
+    hoverSearchFormats: "Formats",
   },
   modal: {
     viewerHeaderAutoPageTurn: {
@@ -212,12 +216,6 @@ const en = {
     deleteTooltip: "Delete book",
     shareLinkTooltip: "Share Link",
     setStatusTooltip: "Set reading status",
-  },
-  bookImage: {
-    hoverSearchAuthors: "Authors",
-    hoverSearchSeries: "Series",
-    hoverSearchTags: "Tags",
-    hoverSearchFormats: "Formats",
   },
   userPreferences: {
     title: "User Preferences",

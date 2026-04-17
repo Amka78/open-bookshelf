@@ -14,12 +14,17 @@ async function playODSRootInitializationCompletes() {
 function playODSRootReadsEntryTitles({ entries }: { entries: Array<{ title: string }> }) {
   return entries.map((entry) => entry.title)
 }
-mock.module("@/components", () => ({
-  ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
+const componentsMock = {
+  ...((global as { __componentsMock?: Record<string, unknown> }).__componentsMock ?? {}),
   Box: "div",
   Image: "img",
   Text: "span",
-}))
+}
+
+;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
+
+mock.module("@/components", () => componentsMock)
+mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
 let useODSRoot: typeof import("./useOPDSRoot").useODSRoot
 

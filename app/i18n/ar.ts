@@ -104,6 +104,10 @@ const ar: Translations = {
   },
   bookImage: {
     loading: "يتم تجهيز الكتاب للقراءة.",
+    hoverSearchAuthors: "المؤلفون",
+    hoverSearchSeries: "السلسلة",
+    hoverSearchTags: "الوسوم",
+    hoverSearchFormats: "التنسيقات",
   },
   modal: {
     viewerHeaderAutoPageTurn: {
@@ -213,12 +217,6 @@ const ar: Translations = {
     deleteTooltip: "حذف الكتاب",
     shareLinkTooltip: "مشاركة الرابط",
     setStatusTooltip: "تعيين حالة القراءة",
-  },
-  bookImage: {
-    hoverSearchAuthors: "المؤلفون",
-    hoverSearchSeries: "السلسلة",
-    hoverSearchTags: "الوسوم",
-    hoverSearchFormats: "التنسيقات",
   },
   userPreferences: {
     title: "تفضيلات المستخدم",

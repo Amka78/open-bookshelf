@@ -22,8 +22,8 @@ mock.module("@/theme", () => ({
   }),
 }))
 
-mock.module("@/components", () => ({
-  ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
+const componentsMock = {
+  ...((global as { __componentsMock?: Record<string, unknown> }).__componentsMock ?? {}),
   Box: ({
     children,
     testID,
@@ -66,7 +66,12 @@ mock.module("@/components", () => ({
       icon
     </button>
   ),
-}))
+}
+
+;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
+
+mock.module("@/components", () => componentsMock)
+mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
 mock.module("@/components/Box/Box", () => ({
   Box: ({

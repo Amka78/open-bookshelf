@@ -327,7 +327,6 @@ export function useViewer() {
         history.format,
         posFrac,
         cfi,
-        epoch,
       )
       .catch((err) => logger.warn("Failed to sync initial reading position (standard)", err))
   }, [viewerReady, selectedBook, selectedLibraryId, history, initialPage])

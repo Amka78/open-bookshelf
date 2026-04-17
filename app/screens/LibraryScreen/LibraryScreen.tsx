@@ -34,7 +34,7 @@ import { useIsFocused, useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import type React from "react"
 import { type FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
-import { Platform, useWindowDimensions } from "react-native"
+import { Platform, type NativeScrollEvent, type NativeSyntheticEvent, useWindowDimensions } from "react-native"
 import { buildThumbnailSourceCache } from "./buildThumbnailSourceCache"
 import {
   buildQueryFromParts,
@@ -43,6 +43,7 @@ import {
   parseQueryParts,
 } from "./librarySearchState"
 import { useLibrary } from "./useLibrary"
+import { useLibraryScrollPosition } from "./useLibraryScrollPosition"
 
 type LibrarySearchHeaderProps = {
   convergenceHook: ReturnType<typeof useConvergence>
@@ -156,6 +157,7 @@ export const LibraryScreen: FC = observer(() => {
   const downloadBookHook = useDownloadBook()
   const bulkDownloadHook = useBulkDownloadBooks()
   const libraryHook = useLibrary()
+  const listRef = useRef<React.ElementRef<typeof FlatList>>(null)
   const [authStateVersion, setAuthStateVersion] = useState(() => api.getAuthStateVersion())
 
   useEffect(() => {
@@ -177,6 +179,31 @@ export const LibraryScreen: FC = observer(() => {
   const bookList = selectedLibrary?.books ? Array.from(selectedLibrary.books.values()) : []
   const visibleBookIds = useMemo(() => bookList.map((book) => book.id), [bookList])
   const allVisibleBooksSelected = libraryHook.areAllBooksSelected(visibleBookIds)
+  const restoreListScrollOffset = useCallback((offset: number) => {
+    requestAnimationFrame(() => {
+      listRef.current?.scrollToOffset({ animated: false, offset })
+    })
+  }, [])
+  const { rememberScrollOffset, restoreScrollOffset } = useLibraryScrollPosition({
+    libraryId: selectedLibrary?.id,
+    isFocused,
+    onRestoreOffset: restoreListScrollOffset,
+  })
+
+  useEffect(() => {
+    if (bookList.length === 0) {
+      return
+    }
+
+    restoreScrollOffset()
+  }, [bookList.length, restoreScrollOffset])
+
+  const handleListScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      rememberScrollOffset(event.nativeEvent.contentOffset.y)
+    },
+    [rememberScrollOffset],
+  )
 
   // O(1) lookup for cached books instead of O(n) scan per renderItem
   const cachedBookIds = useMemo(() => {
@@ -560,11 +587,15 @@ export const LibraryScreen: FC = observer(() => {
       )}
       {selectedLibrary ? (
         <FlatList<Book>
+          ref={listRef}
           key={`${libraryHook.currentListStyle}-${viewMode}`} // to force re-render when list style or view mode changes
           data={bookList}
           renderItem={renderItem}
           keyExtractor={(item) => `${item.id}`}
           numColumns={viewMode === "list" ? 1 : Math.floor(window.width / 242)}
+          onContentSizeChange={() => {
+            restoreScrollOffset()
+          }}
           onRefresh={
             convergenceHook.isLarge
               ? undefined
@@ -572,6 +603,8 @@ export const LibraryScreen: FC = observer(() => {
                   await libraryHook.onSearch()
                 }
           }
+          onScroll={handleListScroll}
+          scrollEventThrottle={16}
           onEndReached={async () => {
             if (!isFocused) {
               return

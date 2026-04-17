@@ -4,7 +4,7 @@ import type { ComponentType, ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 const mockOpenModal = jest.fn()
-const reactNativeMockFactory = () => ({
+const reactNativeMock = {
   ...((global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock ?? {}),
   Pressable: ({
     children,
@@ -24,13 +24,26 @@ const reactNativeMockFactory = () => ({
   View: ({ children, ...props }: Record<string, unknown> & { children?: ReactNode }) => (
     <div {...(props as object)}>{children}</div>
   ),
-})
+}
 
-mock.module("@/components", () => ({
-  ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
+;(global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock = reactNativeMock
+
+const componentsMock = {
+  ...((global as { __componentsMock?: Record<string, unknown> }).__componentsMock ?? {}),
+  BookDetailMenu: () => <div data-testid="book-detail-menu" />,
+  Box: ({ children }: Record<string, unknown> & { children?: ReactNode }) => <div>{children}</div>,
+  Button: ({
+    children,
+    onPress,
+  }: Record<string, unknown> & { children?: ReactNode; onPress?: () => void }) => (
+    <button type="button" onClick={onPress}>
+      {children}
+    </button>
+  ),
   HStack: ({ children, ...props }: Record<string, unknown> & { children?: ReactNode }) => (
     <div {...(props as object)}>{children}</div>
   ),
+  Image: () => <img alt="mock" />,
   Text: ({
     children,
     tx,
@@ -51,7 +64,15 @@ mock.module("@/components", () => ({
       {name}
     </button>
   ),
-}))
+  LabeledSpinner: () => <div data-testid="labeled-spinner" />,
+  MaterialCommunityIcon: () => <span data-testid="material-community-icon" />,
+  VStack: ({ children }: Record<string, unknown> & { children?: ReactNode }) => <div>{children}</div>,
+}
+
+;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
+
+mock.module("@/components", () => componentsMock)
+mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
 mock.module("@/hooks/useElectrobunModal", () => ({
   useElectrobunModal: () => ({
@@ -59,11 +80,8 @@ mock.module("@/hooks/useElectrobunModal", () => ({
   }),
 }))
 
-mock.module("react-native", reactNativeMockFactory)
-mock.module(
-  "/home/amka78/private/open-bookshelf/node_modules/react-native/index.js",
-  reactNativeMockFactory,
-)
+mock.module("react-native", () => reactNativeMock)
+mock.module("/home/amka78/private/open-bookshelf/node_modules/react-native/index.js", () => reactNativeMock)
 
 mock.module("@/i18n", () => ({
   translate: (key: string) => key,

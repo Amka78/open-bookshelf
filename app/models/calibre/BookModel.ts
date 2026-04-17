@@ -8,6 +8,8 @@ import { delay } from "@/utils/delay"
 import {
   type ApiBookManifestResultType,
   type CommonFieldName,
+  type HtmlFileType,
+  type ImageFileType,
   type LastReadPosition,
   api,
 } from "../../services/api"
@@ -63,7 +65,15 @@ function isConversionRunningResponse(
 
 function isConversionFinishedResponse(response: ConversionStatusResponse): response is {
   kind: "ok"
-  data: { running: false; ok: boolean; was_aborted: boolean; traceback: string; log: string }
+  data: {
+    running: false
+    ok: boolean
+    was_aborted: boolean
+    traceback: string
+    log: string
+    size?: number
+    fmt?: string
+  }
 } {
   return response.kind === "ok" && response.data.running === false
 }

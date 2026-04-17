@@ -4,10 +4,15 @@ import type { Book } from "@/models/calibre/BookModel"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
-mock.module("react-native", () => ({
-  ...(global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock,
+const reactNativeMock = {
+  ...((global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock ?? {}),
   Text: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
-}))
+}
+
+;(global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock = reactNativeMock
+
+mock.module("react-native", () => reactNativeMock)
+mock.module("/home/amka78/private/open-bookshelf/node_modules/react-native/index.js", () => reactNativeMock)
 
 mock.module("@/theme", () => ({
   usePalette: () => ({
@@ -40,33 +45,52 @@ mock.module("@/theme/typography", () => ({
   },
 }))
 
-mock.module("@/components", () => ({
-  ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
-  Box: ({ children, ...props }: { children?: ReactNode }) => <div {...props}>{children}</div>,
+const componentsMock = {
+  ...((global as { __componentsMock?: Record<string, unknown> }).__componentsMock ?? {}),
+  BookDetailMenu: () => <div data-testid="book-detail-menu" />,
+  Box: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   HStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   VStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  Text: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
   Image: () => <img alt="cover" />,
-  MaterialCommunityIcon: () => <span />,
+  MaterialCommunityIcon: () => <span data-testid="mock-icon" />,
+  LabeledSpinner: () => <div data-testid="labeled-spinner" />,
   Button: ({ children, onPress }: { children?: ReactNode; onPress?: () => void }) => (
     <button type="button" onClick={onPress}>
       {children}
     </button>
   ),
-}))
+  IconButton: ({ children, onPress }: { children?: ReactNode; onPress?: () => void }) => (
+    <button type="button" onClick={onPress}>
+      {children}
+    </button>
+  ),
+}
+
+;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
+
+mock.module("@/components", () => componentsMock)
+mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
 mock.module("@gluestack-ui/themed", () => ({
   ...(global as { __gluestackMock?: Record<string, unknown> }).__gluestackMock,
   Pressable: ({
     children,
     onPress,
+    onLongPress,
   }: {
     children?: ReactNode
     onPress?: (e: React.MouseEvent) => void
+    onLongPress?: () => void
   }) => (
     <div
       onClick={onPress as unknown as React.MouseEventHandler}
       onKeyDown={(e) => {
         if (e.key === "Enter") onPress?.(e as unknown as React.MouseEvent)
+      }}
+      onContextMenu={(e) => {
+        e.preventDefault()
+        onLongPress?.()
       }}
       role="button"
       tabIndex={0}

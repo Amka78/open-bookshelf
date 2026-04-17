@@ -104,6 +104,10 @@ const ko: Translations = {
   },
   bookImage: {
     loading: "책을 읽을 준비 중입니다.",
+    hoverSearchAuthors: "저자",
+    hoverSearchSeries: "시리즈",
+    hoverSearchTags: "태그",
+    hoverSearchFormats: "형식",
   },
   modal: {
     viewerHeaderAutoPageTurn: {
@@ -276,12 +280,6 @@ const ko: Translations = {
     deleteTooltip: "책 삭제",
     shareLinkTooltip: "링크 공유",
     setStatusTooltip: "읽기 상태 설정",
-  },
-  bookImage: {
-    hoverSearchAuthors: "저자",
-    hoverSearchSeries: "시리즈",
-    hoverSearchTags: "태그",
-    hoverSearchFormats: "형식",
   },
   userPreferences: {
     title: "사용자 환경설정",

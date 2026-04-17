@@ -4,6 +4,7 @@ import { Text } from "@/components/Text/Text"
 import type { MessageKey } from "@/i18n"
 import { useStores } from "@/models"
 import type { ConversionJob } from "@/models/calibre"
+import type { ApiConversionStatus, ApiConversionStatusFinished } from "@/services/api/api.types"
 import { api } from "@/services/api"
 import { HStack, ScrollView, VStack, View } from "@gluestack-ui/themed"
 import { observer } from "mobx-react-lite"
@@ -39,6 +40,12 @@ function buildTrackedJobItem(job: ConversionJob): JobQueueItem {
     done: job.status === "done",
     failed: job.status === "failed" || job.status === "aborted",
   }
+}
+
+function isFinishedConversionStatus(
+  status: ApiConversionStatus,
+): status is ApiConversionStatusFinished {
+  return status.running === false
 }
 
 export const JobQueueModal = observer((props: JobQueueModalProps) => {
@@ -78,19 +85,18 @@ export const JobQueueModal = observer((props: JobQueueModalProps) => {
             result.data.percent,
             result.data.msg,
           )
-          continue
+        } else if (isFinishedConversionStatus(result.data)) {
+          calibreRootStore.updateConversionJobFinished({
+            libraryId: selectedLibrary.id,
+            jobId: job.jobId,
+            ok: result.data.ok,
+            wasAborted: result.data.was_aborted,
+            traceback: result.data.traceback,
+            log: result.data.log,
+            size: result.data.size,
+            format: result.data.fmt,
+          })
         }
-
-        calibreRootStore.updateConversionJobFinished({
-          libraryId: selectedLibrary.id,
-          jobId: job.jobId,
-          ok: result.data.ok,
-          wasAborted: result.data.was_aborted,
-          traceback: result.data.traceback,
-          log: result.data.log,
-          size: result.data.size,
-          format: result.data.fmt,
-        })
       }
 
       const mergedJobs = new Map<string, JobQueueItem>()

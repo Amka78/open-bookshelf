@@ -28,6 +28,7 @@ const scrollToEndMock = jest.fn()
 const mockUpdate = jest.fn()
 const mockSetOptions = jest.fn()
 const mockGoBack = jest.fn()
+const mockBumpBookThumbnailRevision = jest.fn()
 
 mock.module("react-native", () => ({
   ...(global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock,
@@ -162,6 +163,7 @@ beforeEach(async () => {
   useConvergenceMock.mockReturnValue({ isLarge: false })
   useStoresMock.mockReturnValue({
     calibreRootStore: {
+      bumpBookThumbnailRevision: mockBumpBookThumbnailRevision,
       selectedLibrary: {
         id: "lib1",
         selectedBook: {

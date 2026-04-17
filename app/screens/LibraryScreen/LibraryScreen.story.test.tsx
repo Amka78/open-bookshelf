@@ -6,6 +6,7 @@ import {
   playLibraryChangesListStyle,
   playLibraryChangesSort,
   playLibraryOpensBook,
+  playLibraryRestoresScrollPosition,
   playLibrarySearchesByQuery,
   playLibraryShowsSearchInput,
   playLibraryTogglesSelectAllVisible,
@@ -75,6 +76,41 @@ describe("LibraryScreen story play", () => {
     return render(<SelectionToggleProbe />)
   }
 
+  const renderScrollRestoreDom = () => {
+    function ScrollRestoreProbe() {
+      const scrollRef = React.useRef<HTMLDivElement>(null)
+      const savedScrollTopRef = React.useRef(0)
+
+      return (
+        <div>
+          <div data-testid="library-scroll-region" ref={scrollRef} />
+          <button
+            data-testid="library-save-scroll"
+            onClick={() => {
+              savedScrollTopRef.current = scrollRef.current?.scrollTop ?? 0
+            }}
+            type="button"
+          >
+            Save Scroll
+          </button>
+          <button
+            data-testid="library-restore-scroll"
+            onClick={() => {
+              if (scrollRef.current) {
+                scrollRef.current.scrollTop = savedScrollTopRef.current
+              }
+            }}
+            type="button"
+          >
+            Restore Scroll
+          </button>
+        </div>
+      )
+    }
+
+    return render(<ScrollRestoreProbe />)
+  }
+
   test("shows the search input in the library story play", async () => {
     const { container } = renderStoryDom()
 
@@ -138,5 +174,16 @@ describe("LibraryScreen story play", () => {
     })
 
     expect(getByText("Clear visible selection")).toBeTruthy()
+  })
+
+  test("restoring scroll position returns the list to the saved offset in the library story play", async () => {
+    const { container, getByTestId } = renderScrollRestoreDom()
+
+    await playLibraryRestoresScrollPosition({
+      canvasElement: container,
+      scrollTop: 240,
+    })
+
+    expect((getByTestId("library-scroll-region") as HTMLDivElement).scrollTop).toBe(240)
   })
 })

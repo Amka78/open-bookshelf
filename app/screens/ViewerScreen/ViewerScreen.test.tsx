@@ -40,7 +40,8 @@ mock.module("mobx-react-lite", () => ({
   observer: (component: unknown) => component,
 }))
 
-mock.module("@/components", () => ({
+const componentsMock = {
+  ...((global as { __componentsMock?: Record<string, unknown> }).__componentsMock ?? {}),
   BookPage: ({ children }: { children?: ReactNode }) => (
     <div data-testid="viewer-screen-book-page">{children}</div>
   ),
@@ -81,7 +82,12 @@ mock.module("@/components", () => ({
   LabeledSpinner: ({ labelTx }: { labelTx?: string }) => (
     <div data-testid="viewer-screen-loading" data-label-tx={labelTx} />
   ),
-}))
+}
+
+;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
+
+mock.module("@/components", () => componentsMock)
+mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
 mock.module("@/components/BookHtmlPage", () => ({
   BookHtmlPage: () => <div data-testid="viewer-screen-html-page" />,

@@ -343,40 +343,52 @@ describe("useViewer", () => {
     jest.useRealTimers()
   })
 
-  test("onPageChange calls syncReadingPosition after debounce", async () => {
+  test("onPageChange calls syncReadingPositionFull after debounce", async () => {
     jest.useFakeTimers()
     const { result } = renderHook(() => useViewer())
 
     await act(async () => {
-      await result.current.onPageChange(5)
+      await result.current.onPageChange(4)
     })
 
-    expect(mockSyncReadingPosition).not.toHaveBeenCalled()
+    expect(mockSyncReadingPositionFull).not.toHaveBeenCalled()
 
     await act(async () => {
       jest.advanceTimersByTime(1000)
     })
 
-    expect(mockSyncReadingPosition).toHaveBeenCalledWith("lib-1", 1, "pdf", 5)
+    expect(mockSyncReadingPositionFull).toHaveBeenCalledWith(
+      "lib-1",
+      1,
+      "pdf",
+      1,
+      "epubcfi(/2/2/4/10[page_5]@50:49.87)",
+    )
     jest.useRealTimers()
   })
 
-  test("onPageChange debounces rapid page changes and only syncs final page", async () => {
+  test("onPageChange debounces rapid page changes and only syncs the final page", async () => {
     jest.useFakeTimers()
     const { result } = renderHook(() => useViewer())
 
     await act(async () => {
+      await result.current.onPageChange(2)
       await result.current.onPageChange(3)
       await result.current.onPageChange(4)
-      await result.current.onPageChange(5)
     })
 
     await act(async () => {
       jest.advanceTimersByTime(1000)
     })
 
-    expect(mockSyncReadingPosition).toHaveBeenCalledTimes(1)
-    expect(mockSyncReadingPosition).toHaveBeenCalledWith("lib-1", 1, "pdf", 5)
+    expect(mockSyncReadingPositionFull).toHaveBeenCalledTimes(1)
+    expect(mockSyncReadingPositionFull).toHaveBeenCalledWith(
+      "lib-1",
+      1,
+      "pdf",
+      1,
+      "epubcfi(/2/2/4/10[page_5]@50:49.87)",
+    )
     jest.useRealTimers()
   })
 
@@ -392,7 +404,7 @@ describe("useViewer", () => {
       jest.advanceTimersByTime(1000)
     })
 
-    expect(mockSyncReadingPosition).not.toHaveBeenCalled()
+    expect(mockSyncReadingPositionFull).not.toHaveBeenCalled()
     jest.useRealTimers()
   })
 

@@ -5,9 +5,15 @@ import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 const capturedWebViewProps: Record<string, unknown>[] = []
 
-mock.module("@/components", () => ({
+const componentsMock = {
+  ...((global as { __componentsMock?: Record<string, unknown> }).__componentsMock ?? {}),
   Text: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
-}))
+}
+
+;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
+
+mock.module("@/components", () => componentsMock)
+mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
 mock.module("@/theme", () => ({
   usePalette: () => ({
@@ -16,12 +22,18 @@ mock.module("@/theme", () => ({
   }),
 }))
 
-mock.module("react-native", () => ({
+const reactNativeMock = {
+  ...((global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock ?? {}),
   ActivityIndicator: () => <div data-testid="spinner" />,
   StyleSheet: { create: <T,>(styles: T) => styles },
   View: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
   useColorScheme: () => "dark",
-}))
+}
+
+;(global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock = reactNativeMock
+
+mock.module("react-native", () => reactNativeMock)
+mock.module("/home/amka78/private/open-bookshelf/node_modules/react-native/index.js", () => reactNativeMock)
 
 mock.module("react-native-webview", () => ({
   WebView: (props: Record<string, unknown>) => {

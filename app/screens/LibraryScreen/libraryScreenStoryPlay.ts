@@ -79,3 +79,20 @@ export async function playLibraryTogglesSelectAllVisible({
   const button = await findByTestId(canvasElement, "selection-action-bar-toggle-visible")
   fireEvent.click(button)
 }
+
+export async function playLibraryRestoresScrollPosition({
+  canvasElement,
+  scrollTop,
+}: {
+  canvasElement: HTMLElement
+  scrollTop: number
+}) {
+  const scrollRegion = await findByTestId(canvasElement, "library-scroll-region")
+  const saveButton = await findByTestId(canvasElement, "library-save-scroll")
+  const restoreButton = await findByTestId(canvasElement, "library-restore-scroll")
+
+  scrollRegion.scrollTop = scrollTop
+  fireEvent.click(saveButton)
+  scrollRegion.scrollTop = 0
+  fireEvent.click(restoreButton)
+}

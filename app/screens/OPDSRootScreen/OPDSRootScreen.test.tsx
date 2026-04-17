@@ -28,8 +28,8 @@ mock.module("react-native", () => ({
   View: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-mock.module("@/components", () => ({
-  ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
+const componentsMock = {
+  ...((global as { __componentsMock?: Record<string, unknown> }).__componentsMock ?? {}),
   RootContainer: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   Text: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
   ListItem: ({ LeftComponent, onPress }: { LeftComponent?: ReactNode; onPress?: () => void }) => (
@@ -54,7 +54,12 @@ mock.module("@/components", () => ({
   ),
   Box: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   Image: () => <img alt="opds-icon" />,
-}))
+}
+
+;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
+
+mock.module("@/components", () => componentsMock)
+mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
 let OPDSRootScreen: typeof import("./OPDSRootScreen").OPDSRootScreen
 

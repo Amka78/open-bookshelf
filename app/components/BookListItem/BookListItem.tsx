@@ -57,8 +57,8 @@ export const BookListItem = memo(function BookListItem({
   const palette = usePalette()
   const meta = book.metaData
   const title = meta?.title ?? ""
-  const authors = meta?.authors?.join(", ") ?? ""
-  const authorList = meta?.authors ?? []
+  const authorList: string[] = meta?.authors ? Array.from(meta.authors) : []
+  const authors = authorList.join(", ")
   const formats: string[] = meta?.formats ? [...meta.formats] : []
   const progressPct =
     typeof readingProgress === "number" && readingProgress > 0

@@ -77,7 +77,7 @@ type BookManifestChildren = {
   id: number
 }
 
-type HtmlFileType = {
+export type HtmlFileType = {
   mimetype: string
   size: number
   is_virtualized: boolean
@@ -87,7 +87,7 @@ type HtmlFileType = {
   anchor_map: string[]
 }
 
-type ImageFileType = {
+export type ImageFileType = {
   is_virtualized: boolean
   size: number
   mimetype: string

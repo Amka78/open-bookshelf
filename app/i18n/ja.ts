@@ -105,6 +105,10 @@ const ja: Translations = {
   },
   bookImage: {
     loading: "書籍を開く準備中です。",
+    hoverSearchAuthors: "著者",
+    hoverSearchSeries: "シリーズ",
+    hoverSearchTags: "タグ",
+    hoverSearchFormats: "形式",
   },
   modal: {
     viewerHeaderAutoPageTurn: {
@@ -215,12 +219,6 @@ const ja: Translations = {
     deleteTooltip: "書籍を削除",
     shareLinkTooltip: "リンクを共有",
     setStatusTooltip: "読書ステータスを設定",
-  },
-  bookImage: {
-    hoverSearchAuthors: "著者",
-    hoverSearchSeries: "シリーズ",
-    hoverSearchTags: "タグ",
-    hoverSearchFormats: "形式",
   },
   userPreferences: {
     title: "ユーザー設定",

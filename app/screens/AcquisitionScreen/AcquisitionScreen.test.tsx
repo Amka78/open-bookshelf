@@ -50,8 +50,8 @@ mock.module("expo-image", () => ({
   Image: () => <img alt="cover" />,
 }))
 
-mock.module("@/components", () => ({
-  ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
+const componentsMock = {
+  ...((global as { __componentsMock?: Record<string, unknown> }).__componentsMock ?? {}),
   RootContainer: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   Text: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
   Box: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
@@ -77,7 +77,12 @@ mock.module("@/components", () => ({
       ))}
     </div>
   ),
-}))
+}
+
+;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
+
+mock.module("@/components", () => componentsMock)
+mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
 let AcquisitionScreen: typeof import("./AcquisitionScreen").AcquisitionScreen
 

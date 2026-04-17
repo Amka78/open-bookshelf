@@ -87,8 +87,8 @@ mock.module("@/library/PDF/PDFWebPage", () => ({
   PDFWebPage: ({ uri }: { uri: string }) => <div data-testid="pdf-page-count" data-uri={uri} />,
 }))
 
-mock.module("@/components", () => ({
-  ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
+const componentsMock = {
+  ...((global as { __componentsMock?: Record<string, unknown> }).__componentsMock ?? {}),
   LabeledSpinner: ({
     labelTx,
   }: {
@@ -131,7 +131,12 @@ mock.module("@/components", () => ({
   Text: ({ children, tx, style }: { children?: ReactNode; tx?: string; style?: unknown }) => (
     <div data-style={JSON.stringify(style)}>{tx ?? children}</div>
   ),
-}))
+}
+
+;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
+
+mock.module("@/components", () => componentsMock)
+mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
 let PDFViewerScreen: typeof import("./PDFViewerScreen").PDFViewerScreen
 

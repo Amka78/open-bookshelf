@@ -15,7 +15,8 @@ import { playBookImageItemHoverSearchPressesAuthorLink } from "./bookImageItemSt
 const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 
-mock.module("@/components", () => ({
+const componentsMock = {
+  ...((global as { __componentsMock?: Record<string, unknown> }).__componentsMock ?? {}),
   BookDetailMenu: () => <div data-testid="book-image-detail-menu" />,
   Box: ({
     children,
@@ -75,6 +76,17 @@ mock.module("@/components", () => ({
       style={style as React.CSSProperties | undefined}
     />
   ),
+  IconButton: ({
+    children,
+    onPress,
+  }: {
+    children?: ReactNode
+    onPress?: () => void
+  }) => (
+    <button type="button" onClick={onPress}>
+      {children}
+    </button>
+  ),
   LabeledSpinner: () => <div data-testid="book-image-loading" />,
   MaterialCommunityIcon: () => <span data-testid="book-image-icon" />,
   Text: ({
@@ -93,7 +105,12 @@ mock.module("@/components", () => ({
     </span>
   ),
   VStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-}))
+}
+
+;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
+
+mock.module("@/components", () => componentsMock)
+mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
 mock.module("@gluestack-ui/themed", () => ({
   Pressable: ({

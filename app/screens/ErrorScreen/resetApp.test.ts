@@ -43,7 +43,7 @@ describe("resetAppToConnect", () => {
     expect(storageClearMock).toHaveBeenCalledTimes(1)
     expect(resetRootMock).toHaveBeenCalledWith({
       index: 0,
-      routes: [{ name: "Connect" }],
+      routes: [{ key: "connect-reset", name: "Connect" }],
     })
   })
 

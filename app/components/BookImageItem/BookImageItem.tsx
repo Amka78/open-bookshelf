@@ -98,12 +98,14 @@ function buildHoverSearchSections(metadata?: BookImageHoverSearchMetadata): Hove
     query: `formats:=${format.toUpperCase()}`,
   }))
 
-  return [
+  const sections: HoverSearchSection[] = [
     { field: "authors", titleTx: "bookImage.hoverSearchAuthors", links: authors },
     { field: "series", titleTx: "bookImage.hoverSearchSeries", links: series },
     { field: "tags", titleTx: "bookImage.hoverSearchTags", links: tags },
     { field: "formats", titleTx: "bookImage.hoverSearchFormats", links: formats },
-  ].filter((section) => section.links.length > 0)
+  ]
+
+  return sections.filter((section) => section.links.length > 0)
 }
 
 // React.memo: prevents re-rendering when parent's renderItem creates
@@ -214,7 +216,6 @@ export const BookImageItem = memo(function BookImageItem({
                   {section.links.map((link) => (
                     <Pressable
                       key={`${section.field}-${link.query}`}
-                      variant="link"
                       testID={`book-image-hover-link-${section.field}-${link.label}`}
                       style={styles.hoverSearchLinkButton}
                       onPress={async (event) => {

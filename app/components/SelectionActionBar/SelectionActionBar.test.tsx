@@ -3,7 +3,8 @@ import { fireEvent, render } from "@testing-library/react"
 import type { ComponentType, ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
-mock.module("@/components", () => ({
+const componentsMock = {
+  ...((global as { __componentsMock?: Record<string, unknown> }).__componentsMock ?? {}),
   HStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   Text: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
   IconButton: ({
@@ -21,7 +22,12 @@ mock.module("@/components", () => ({
       {labelTx}
     </button>
   ),
-}))
+}
+
+;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
+
+mock.module("@/components", () => componentsMock)
+mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
 mock.module("@/i18n", () => ({
   translate: (key: string, params?: Record<string, unknown>) =>

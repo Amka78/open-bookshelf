@@ -1,7 +1,7 @@
 import { type MessageKey, translate } from "@/i18n"
 import { InputField as Template } from "@gluestack-ui/themed"
-import type { ChangeEvent, ComponentProps, Ref } from "react"
-import { useCallback, useEffect, useRef } from "react"
+import type { ComponentProps, Ref } from "react"
+import { useCallback, useRef } from "react"
 import { Platform } from "react-native"
 
 export type InputFieldProps = ComponentProps<typeof Template> & {
@@ -11,11 +11,7 @@ export type InputFieldProps = ComponentProps<typeof Template> & {
 
 export const InputField = ({ ref, ...props }: InputFieldProps) => {
   type TemplateElement = React.ElementRef<typeof Template>
-  type WebChangeEvent = ChangeEvent<HTMLInputElement> & {
-    nativeEvent?: {
-      text?: string
-    }
-  }
+  type TemplateOnChange = NonNullable<ComponentProps<typeof Template>["onChange"]>
   const {
     onChangeText,
     onChange: propsOnChange,
@@ -38,45 +34,33 @@ export const InputField = ({ ref, ...props }: InputFieldProps) => {
     [ref],
   )
 
-  // On web, ensure onChange properly wires to both onChangeText and any onChange handler
-  const handleChange = useCallback(
-    (e: WebChangeEvent) => {
-      const text = e?.target?.value ?? e?.nativeEvent?.text ?? ""
-      propsOnChange?.(e)
-      onChangeText?.(text)
+  const handleChange = useCallback<TemplateOnChange>(
+    (event) => {
+      propsOnChange?.(event)
+
+      const text =
+        event.nativeEvent.text ??
+        (event as unknown as { target?: { value?: string } }).target?.value ??
+        ""
+
+      if (Platform.OS === "web") {
+        onChangeText?.(text)
+      }
     },
     [propsOnChange, onChangeText],
   )
-
-  // On web, also listen to onInput event which fires more reliably
-  useEffect(() => {
-    if (Platform.OS !== "web") return
-    const inputEl = inputRef.current
-    if (!inputEl) return
-
-    const handleInput = (e: Event) => {
-      const target = e.target as HTMLInputElement
-      if (target && typeof target.value === "string") {
-        onChangeText?.(target.value)
-      }
-    }
-
-    inputEl.addEventListener("input", handleInput)
-    return () => {
-      inputEl.removeEventListener("input", handleInput)
-    }
-  }, [onChangeText])
 
   const templateProps =
     Platform.OS === "web"
       ? {
           ...restProps,
           onChange: handleChange,
+          onChangeText: undefined,
           ref: assignRef,
         }
       : {
           ...restProps,
-          onChange: propsOnChange,
+          onChange: handleChange,
           onChangeText,
           ref: assignRef,
         }
