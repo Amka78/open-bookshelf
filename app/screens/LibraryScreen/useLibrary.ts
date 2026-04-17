@@ -34,6 +34,31 @@ export function useLibrary() {
     })
   }
 
+  const areAllBooksSelected = (bookIds: number[]) => {
+    return bookIds.length > 0 && bookIds.every((bookId) => selectedBookIds.has(bookId))
+  }
+
+  const toggleBooksSelection = (bookIds: number[]) => {
+    if (bookIds.length === 0) {
+      return
+    }
+
+    setSelectedBookIds((prev) => {
+      const next = new Set(prev)
+      const allSelected = bookIds.every((bookId) => next.has(bookId))
+
+      for (const bookId of bookIds) {
+        if (allSelected) {
+          next.delete(bookId)
+        } else {
+          next.add(bookId)
+        }
+      }
+
+      return next
+    })
+  }
+
   const clearSelection = () => {
     setSelectedBookIds(new Set())
   }
@@ -226,6 +251,8 @@ export function useLibrary() {
     selectedBookIds,
     isSelectionMode,
     toggleBookSelection,
+    toggleBooksSelection,
+    areAllBooksSelected,
     clearSelection,
     isBookSelected,
     selectedBooks,

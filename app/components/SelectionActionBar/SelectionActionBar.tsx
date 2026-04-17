@@ -4,18 +4,24 @@ import { usePalette } from "@/theme"
 
 export type SelectionActionBarProps = {
   selectedCount: number
+  allVisibleSelected: boolean
+  onToggleVisibleSelection: () => void
   onBulkEdit: () => void
   onBulkDownload: () => void
   onBulkDelete?: () => void
   onClearSelection: () => void
+  toggleVisibleSelectionDisabled?: boolean
 }
 
 export function SelectionActionBar({
   selectedCount,
+  allVisibleSelected,
+  onToggleVisibleSelection,
   onBulkEdit,
   onBulkDownload,
   onBulkDelete,
   onClearSelection,
+  toggleVisibleSelectionDisabled = false,
 }: SelectionActionBarProps) {
   const palette = usePalette()
 
@@ -30,6 +36,18 @@ export function SelectionActionBar({
         {translate("multiSelectBar.selectedCount", { count: selectedCount })}
       </Text>
       <HStack space="xs">
+        <IconButton
+          name={allVisibleSelected ? "checkbox-multiple-blank-outline" : "checkbox-multiple-marked"}
+          iconSize="md-"
+          labelTx={
+            allVisibleSelected
+              ? "multiSelectBar.clearVisibleSelection"
+              : "multiSelectBar.selectAllVisible"
+          }
+          onPress={onToggleVisibleSelection}
+          disabled={toggleVisibleSelectionDisabled}
+          testID="selection-action-bar-toggle-visible"
+        />
         <IconButton
           name="book-edit"
           iconSize="md-"

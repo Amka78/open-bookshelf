@@ -175,6 +175,8 @@ export const LibraryScreen: FC = observer(() => {
   >(new Map())
 
   const bookList = selectedLibrary?.books ? Array.from(selectedLibrary.books.values()) : []
+  const visibleBookIds = useMemo(() => bookList.map((book) => book.id), [bookList])
+  const allVisibleBooksSelected = libraryHook.areAllBooksSelected(visibleBookIds)
 
   // O(1) lookup for cached books instead of O(n) scan per renderItem
   const cachedBookIds = useMemo(() => {
@@ -545,10 +547,15 @@ export const LibraryScreen: FC = observer(() => {
       {libraryHook.isSelectionMode && (
         <SelectionActionBar
           selectedCount={libraryHook.selectedBookIds.size}
+          allVisibleSelected={allVisibleBooksSelected}
+          onToggleVisibleSelection={() => {
+            libraryHook.toggleBooksSelection(visibleBookIds)
+          }}
           onBulkEdit={onBulkEdit}
           onBulkDownload={onBulkDownload}
           onBulkDelete={onBulkDelete}
           onClearSelection={libraryHook.clearSelection}
+          toggleVisibleSelectionDisabled={visibleBookIds.length === 0}
         />
       )}
       {selectedLibrary ? (

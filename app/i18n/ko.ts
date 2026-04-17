@@ -173,6 +173,8 @@ const ko: Translations = {
   },
   multiSelectBar: {
     selectedCount: "{{count}}개 선택됨",
+    selectAllVisible: "표시 중인 항목 전체 선택",
+    clearVisibleSelection: "표시 중인 선택 해제",
     bulkEdit: "일괄 편집",
     bulkDownload: "일괄 다운로드",
     bulkDelete: "전체 삭제",

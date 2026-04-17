@@ -172,6 +172,8 @@ const en = {
   },
   multiSelectBar: {
     selectedCount: "{{count}} selected",
+    selectAllVisible: "Select all visible",
+    clearVisibleSelection: "Clear visible selection",
     bulkEdit: "Edit All",
     bulkDownload: "Download All",
     bulkDelete: "Delete All",

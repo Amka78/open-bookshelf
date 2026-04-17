@@ -32,7 +32,11 @@ describe("useLibrary", () => {
 
   const mockSelectedLibrary = {
     id: "test-library",
-    books: {},
+    books: new Map([
+      ["1", { id: 1, metaData: { title: "Book 1" } }],
+      ["2", { id: 2, metaData: { title: "Book 2" } }],
+      ["3", { id: 3, metaData: { title: "Book 3" } }],
+    ]),
     searchSetting: {
       query: "",
       sort: "title",
@@ -268,5 +272,38 @@ describe("useLibrary", () => {
     const { result } = await renderUseLibrary()
 
     expect(result.current.currentListStyle).toBe("gridView")
+  })
+
+  test("toggleBooksSelection selects all visible books when some are not yet selected", async () => {
+    const { result } = await renderUseLibrary()
+
+    act(() => {
+      result.current.toggleBookSelection(1)
+      result.current.toggleBooksSelection([1, 2])
+    })
+
+    expect(result.current.isBookSelected(1)).toBe(true)
+    expect(result.current.isBookSelected(2)).toBe(true)
+    expect(result.current.areAllBooksSelected([1, 2])).toBe(true)
+  })
+
+  test("toggleBooksSelection clears only the visible selection when all visible books are selected", async () => {
+    const { result } = await renderUseLibrary()
+
+    act(() => {
+      result.current.toggleBooksSelection([1, 2, 3])
+      result.current.toggleBooksSelection([1, 2])
+    })
+
+    expect(result.current.isBookSelected(1)).toBe(false)
+    expect(result.current.isBookSelected(2)).toBe(false)
+    expect(result.current.isBookSelected(3)).toBe(true)
+    expect(result.current.areAllBooksSelected([1, 2])).toBe(false)
+  })
+
+  test("areAllBooksSelected returns false when the list is empty", async () => {
+    const { result } = await renderUseLibrary()
+
+    expect(result.current.areAllBooksSelected([])).toBe(false)
   })
 })

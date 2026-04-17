@@ -173,6 +173,8 @@ const ar: Translations = {
   },
   multiSelectBar: {
     selectedCount: "{{count}} محدد",
+    selectAllVisible: "تحديد كل المعروض",
+    clearVisibleSelection: "إلغاء تحديد المعروض",
     bulkEdit: "تعديل الكل",
     bulkDownload: "تنزيل الكل",
     bulkDelete: "حذف الكل",

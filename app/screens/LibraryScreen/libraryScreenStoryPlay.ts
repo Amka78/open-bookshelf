@@ -70,3 +70,12 @@ export async function playLibraryShowsGridItem({
 }) {
   await findByTestId(canvasElement, "library-grid-item")
 }
+
+export async function playLibraryTogglesSelectAllVisible({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  const button = await findByTestId(canvasElement, "selection-action-bar-toggle-visible")
+  fireEvent.click(button)
+}

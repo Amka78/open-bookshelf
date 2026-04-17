@@ -1,5 +1,6 @@
 import { describe as baseDescribe, test as baseTest, expect, jest } from "bun:test"
 import { render } from "@testing-library/react"
+import React from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 import {
   playLibraryChangesListStyle,
@@ -7,6 +8,7 @@ import {
   playLibraryOpensBook,
   playLibrarySearchesByQuery,
   playLibraryShowsSearchInput,
+  playLibraryTogglesSelectAllVisible,
 } from "./libraryScreenStoryPlay"
 
 const describe = localizeTestRegistrar(baseDescribe)
@@ -52,6 +54,26 @@ describe("LibraryScreen story play", () => {
         </button>
       </div>,
     )
+
+  const renderSelectionBarDom = () => {
+    function SelectionToggleProbe() {
+      const [allVisibleSelected, setAllVisibleSelected] = React.useState(false)
+
+      return (
+        <button
+          data-testid="selection-action-bar-toggle-visible"
+          onClick={() => {
+            setAllVisibleSelected((prev) => !prev)
+          }}
+          type="button"
+        >
+          {allVisibleSelected ? "Clear visible selection" : "Select all visible"}
+        </button>
+      )
+    }
+
+    return render(<SelectionToggleProbe />)
+  }
 
   test("shows the search input in the library story play", async () => {
     const { container } = renderStoryDom()
@@ -104,5 +126,17 @@ describe("LibraryScreen story play", () => {
     })
 
     expect(onOpenBook).toHaveBeenCalledWith("Book Alpha")
+  })
+
+  test("pressing the selection bar toggle switches from select-all to clear-visible in the library story play", async () => {
+    const { container, getByText } = renderSelectionBarDom()
+
+    expect(getByText("Select all visible")).toBeTruthy()
+
+    await playLibraryTogglesSelectAllVisible({
+      canvasElement: container,
+    })
+
+    expect(getByText("Clear visible selection")).toBeTruthy()
   })
 })

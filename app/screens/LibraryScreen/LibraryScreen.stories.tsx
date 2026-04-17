@@ -2,7 +2,11 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { LibraryScreen } from "./LibraryScreen"
 
 import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
-import { playLibraryChangesListStyle, playLibraryShowsSearchInput } from "./libraryScreenStoryPlay"
+import {
+  playLibraryChangesListStyle,
+  playLibraryShowsSearchInput,
+  playLibraryTogglesSelectAllVisible,
+} from "./libraryScreenStoryPlay"
 
 export default {
   component: LibraryScreen,
@@ -30,5 +34,11 @@ export const EmptyLibrary: LibraryStory = {}
 export const ChangeListStyle: LibraryStory = {
   play: async ({ canvasElement }) => {
     await playLibraryChangesListStyle({ canvasElement }).catch(() => {})
+  },
+}
+
+export const ToggleSelectAllVisible: LibraryStory = {
+  play: async ({ canvasElement }) => {
+    await playLibraryTogglesSelectAllVisible({ canvasElement }).catch(() => {})
   },
 }

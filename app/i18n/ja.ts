@@ -175,6 +175,8 @@ const ja: Translations = {
   },
   multiSelectBar: {
     selectedCount: "{{count}}件選択中",
+    selectAllVisible: "表示中を全選択",
+    clearVisibleSelection: "表示中の選択解除",
     bulkEdit: "一括編集",
     bulkDownload: "一括ダウンロード",
     bulkDelete: "一括削除",
