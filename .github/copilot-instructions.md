@@ -90,6 +90,8 @@ Translation keys are typed (`MessageKey`). Locale files are in `app/i18n/` (en, 
 
 ## Testing & Play Functions
 
+**Any code change or fix must add or update verification tests that cover the changed behavior.** Do not leave a behavioral change without a corresponding automated test.
+
 **Play functions are only created when a Storybook story file (`*.stories.tsx`) exists for the component or screen.** If no story file exists, skip play functions and write plain unit tests directly.
 
 ### Play Functions
@@ -169,9 +171,12 @@ describe("useViewer", () => {
 
 ### Checklist for Every Implementation
 
-When Copilot adds or modifies any hook, utility, or component logic, it **must** also:
+When Copilot adds or modifies any hook, utility, component logic, screen behavior, or bug fix, it **must** also:
 
 1. **If a `*.stories.tsx` exists**: Create (or update) a `*StoryPlay.ts` file with at least one play function per meaningful scenario. Each play function **must** be wired to a story's `play:` field **and** called in `*.story.test.tsx`.
-2. **If no `*.stories.tsx` exists**: Create (or update) a `*.test.ts` / `*.test.tsx` unit test file with direct assertions.
-3. Verify the tests pass with `bun run test:unit`.
-
+2. **If a component or screen is changed and a `*.stories.tsx` exists**: Adding or updating the corresponding play function is mandatory, not optional.
+3. **If no `*.stories.tsx` exists**: Create (or update) a `*.test.ts` / `*.test.tsx` unit test file with direct assertions.
+4. **Every fix or behavior change must have a matching automated test** that would fail without the change.
+5. **Do not consider the task complete until both of these commands pass**:
+   - `bun run test:unit`
+   - `bun run compile`

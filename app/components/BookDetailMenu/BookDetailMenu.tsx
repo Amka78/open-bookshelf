@@ -1,6 +1,8 @@
-import { HStack, TooltipIconButton } from "@/components"
-import type { MaterialCommunityIconProps } from "@/components"
-import type { HStackProps, IconButtonProps } from "@/components"
+import { HStack } from "../HStack/HStack"
+import type { HStackProps } from "../HStack/HStack"
+import type { IconButtonProps } from "../IconButton/IconButton"
+import type { MaterialCommunityIconProps } from "../MaterialCommunityIcon/MaterialCommunityIcon"
+import { TooltipIconButton } from "../TooltipIconButton/TooltipIconButton"
 import { StyleSheet } from "react-native"
 
 type IconName = MaterialCommunityIconProps["name"]
@@ -64,6 +66,13 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
     : "bookmark-plus-outline"
 
   const iconSize = props.wrap ? "sm" : "md-"
+  const wrapMenuAction = (action: () => void | Promise<void>) => {
+    return async (event?: { stopPropagation?: () => void; preventDefault?: () => void }) => {
+      event?.stopPropagation?.()
+      event?.preventDefault?.()
+      await action()
+    }
+  }
 
   return (
     <HStack
@@ -77,7 +86,7 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
         {...sharedIconButtonProps}
         name={"book-open"}
         iconSize={iconSize}
-        onPress={props.onOpenBook}
+        onPress={wrapMenuAction(props.onOpenBook)}
         testID="book-detail-open-button"
         tooltipTx="bookDetailMenu.openBookTooltip"
       />
@@ -85,7 +94,7 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
         {...sharedIconButtonProps}
         name={"download"}
         iconSize={iconSize}
-        onPress={props.onDownloadBook}
+        onPress={wrapMenuAction(props.onDownloadBook)}
         testID="book-detail-download-button"
         tooltipTx="bookDetailMenu.downloadTooltip"
       />
@@ -93,7 +102,7 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
         {...sharedIconButtonProps}
         name={"information-outline"}
         iconSize={iconSize}
-        onPress={props.onOpenBookDetail}
+        onPress={wrapMenuAction(props.onOpenBookDetail)}
         testID="book-detail-info-button"
         tooltipTx="bookDetailMenu.bookDetailTooltip"
       />
@@ -102,7 +111,7 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
           {...sharedIconButtonProps}
           name={"share-variant"}
           iconSize={iconSize}
-          onPress={props.onShareLink}
+          onPress={wrapMenuAction(props.onShareLink)}
           testID="book-detail-share-button"
           tooltipTx="bookDetailMenu.shareLinkTooltip"
         />
@@ -112,7 +121,7 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
           {...sharedIconButtonProps}
           name={"email-edit-outline"}
           iconSize={iconSize}
-          onPress={props.onSendByEmail}
+          onPress={wrapMenuAction(props.onSendByEmail)}
           testID="book-detail-send-email-button"
           tooltipTx="emailDelivery.buttonTooltip"
         />
@@ -122,7 +131,7 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
           {...sharedIconButtonProps}
           name={statusIconName}
           iconSize={iconSize}
-          onPress={handleCycleStatus}
+          onPress={wrapMenuAction(handleCycleStatus)}
           testID="book-detail-status-button"
           tooltipTx="bookDetailMenu.setStatusTooltip"
         />
@@ -131,7 +140,7 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
         {...sharedIconButtonProps}
         name={"sync-circle"}
         iconSize={iconSize}
-        onPress={props.onConvertBook}
+        onPress={wrapMenuAction(props.onConvertBook)}
         testID="book-detail-convert-button"
         tooltipTx="bookDetailMenu.convertTooltip"
       />
@@ -139,7 +148,7 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
         {...sharedIconButtonProps}
         name={"book-edit"}
         iconSize={iconSize}
-        onPress={props.onEditBook}
+        onPress={wrapMenuAction(props.onEditBook)}
         testID="book-detail-edit-button"
         tooltipTx="bookDetailMenu.editTooltip"
       />
@@ -147,7 +156,7 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
         {...sharedIconButtonProps}
         name={"trash-can"}
         iconSize={iconSize}
-        onPress={props.onDeleteBook}
+        onPress={wrapMenuAction(props.onDeleteBook)}
         testID="book-detail-delete-button"
         tooltipTx="bookDetailMenu.deleteTooltip"
       />

@@ -1,5 +1,6 @@
 import { BookDetailMenu } from "@/components"
 import type { Meta, StoryObj } from "@storybook/react"
+import { playBookDetailMenuEditDoesNotBubble } from "./bookDetailMenuStoryPlay"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
@@ -30,3 +31,7 @@ export default {
 type StoryProps = StoryObj<typeof BookDetailMenu>
 
 export const Basic: StoryProps = {}
+
+export const EditDoesNotBubble: StoryProps = {
+  play: playBookDetailMenuEditDoesNotBubble,
+}

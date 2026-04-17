@@ -28,6 +28,24 @@ export async function playBookImageItemHoverSearchPressesAuthorLink({
   findElementByTestId(canvasElement, "book-image-hover-title-formats")
 
   await act(async () => {
-    fireEvent.click(findElementByTestId(canvasElement, "book-image-hover-link-authors-Ursula K. Le Guin"))
+    fireEvent.click(
+      findElementByTestId(canvasElement, "book-image-hover-link-authors-Ursula K. Le Guin"),
+    )
+  })
+}
+
+export async function playBookImageItemEditButtonDoesNotTriggerParentPress({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  const hoverSurface = findElementByTestId(canvasElement, "book-image-hover-surface")
+
+  await act(async () => {
+    fireEvent.mouseEnter(hoverSurface)
+  })
+
+  await act(async () => {
+    fireEvent.click(findElementByTestId(canvasElement, "book-detail-edit-button"))
   })
 }
