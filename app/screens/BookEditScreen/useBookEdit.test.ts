@@ -16,7 +16,7 @@ import * as reactHookForm from "react-hook-form"
 
 const useStoresMock = jest.fn()
 const useNavigationMock = jest.fn()
-const alertMock = jest.fn()
+const mockOpenModal = jest.fn()
 
 mock.module("@/services/api", () => ({
   api: {
@@ -35,10 +35,10 @@ mock.module("@react-navigation/native", () => ({
   useNavigation: useNavigationMock,
 }))
 
-mock.module("react-native", () => ({
-  Alert: {
-    alert: alertMock,
-  },
+mock.module("@/hooks/useElectrobunModal", () => ({
+  useElectrobunModal: () => ({
+    openModal: mockOpenModal,
+  }),
 }))
 
 mock.module("mobx-state-tree", () => ({
@@ -354,8 +354,10 @@ describe("useBookEdit", () => {
     const { result } = renderHook(() => useBookEdit())
     const deletePromise = result.current.onDeleteFormat("PDF")
 
-    const alertButtons = alertMock.mock.calls[0]?.[2] as Array<{ onPress?: () => void }> | undefined
-    alertButtons?.[1]?.onPress?.()
+    const modalParams = mockOpenModal.mock.calls[0]?.[1] as
+      | { onOKPress?: () => Promise<void> }
+      | undefined
+    await modalParams?.onOKPress?.()
     const deleted = await deletePromise
 
     expect(deleteSpy).toHaveBeenCalledWith("lib1", 1, "PDF")
@@ -366,23 +368,16 @@ describe("useBookEdit", () => {
     const { result } = renderHook(() => useBookEdit())
     const deletePromise = result.current.onDeleteFormat("PDF")
 
-    expect(alertMock).toHaveBeenCalledWith(
-      "bookEditScreen.deleteFormatConfirmTitle",
-      "bookEditScreen.deleteFormatConfirmMessage",
-      expect.arrayContaining([
-        expect.objectContaining({
-          text: "common.cancel",
-        }),
-        expect.objectContaining({
-          text: "common.ok",
-          style: "destructive",
-        }),
-      ]),
-      expect.objectContaining({ cancelable: true }),
+    expect(mockOpenModal).toHaveBeenCalledWith(
+      "ConfirmModal",
+      expect.objectContaining({
+        titleTx: "bookEditScreen.deleteFormatConfirmTitle",
+        message: expect.any(String),
+      }),
     )
 
-    const alertButtons = alertMock.mock.calls[0]?.[2] as Array<{ onPress?: () => void }> | undefined
-    alertButtons?.[0]?.onPress?.()
+    const modalParams = mockOpenModal.mock.calls[0]?.[1] as { onCancelPress?: () => void } | undefined
+    modalParams?.onCancelPress?.()
     const deleted = await deletePromise
 
     expect(deleted).toBe(false)
@@ -398,8 +393,10 @@ describe("useBookEdit", () => {
     const { result } = renderHook(() => useBookEdit())
     const deletePromise = result.current.onDeleteFormat("PDF")
 
-    const alertButtons = alertMock.mock.calls[0]?.[2] as Array<{ onPress?: () => void }> | undefined
-    alertButtons?.[1]?.onPress?.()
+    const modalParams = mockOpenModal.mock.calls[0]?.[1] as
+      | { onOKPress?: () => Promise<void> }
+      | undefined
+    await modalParams?.onOKPress?.()
     const deleted = await deletePromise
 
     expect(deleted).toBe(false)

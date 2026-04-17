@@ -3,7 +3,28 @@ import { fireEvent, render } from "@testing-library/react"
 import type { ComponentType, ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
-const mockAlertFn = jest.fn()
+const mockOpenModal = jest.fn()
+const reactNativeMockFactory = () => ({
+  ...((global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock ?? {}),
+  Pressable: ({
+    children,
+    onPress,
+    testID,
+    ...props
+  }: Record<string, unknown> & {
+    children?: ReactNode
+    onPress?: () => void
+    testID?: string
+  }) => (
+    <button data-testid={testID} type="button" onClick={onPress} {...(props as object)}>
+      {children}
+    </button>
+  ),
+  StyleSheet: { create: (s: Record<string, unknown>) => s },
+  View: ({ children, ...props }: Record<string, unknown> & { children?: ReactNode }) => (
+    <div {...(props as object)}>{children}</div>
+  ),
+})
 
 mock.module("@/components", () => ({
   ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
@@ -32,27 +53,17 @@ mock.module("@/components", () => ({
   ),
 }))
 
-mock.module("react-native", () => ({
-  Alert: { alert: mockAlertFn },
-  Pressable: ({
-    children,
-    onPress,
-    testID,
-    ...props
-  }: Record<string, unknown> & {
-    children?: ReactNode
-    onPress?: () => void
-    testID?: string
-  }) => (
-    <button data-testid={testID} type="button" onClick={onPress} {...(props as object)}>
-      {children}
-    </button>
-  ),
-  StyleSheet: { create: (s: Record<string, unknown>) => s },
-  View: ({ children, ...props }: Record<string, unknown> & { children?: ReactNode }) => (
-    <div {...(props as object)}>{children}</div>
-  ),
+mock.module("@/hooks/useElectrobunModal", () => ({
+  useElectrobunModal: () => ({
+    openModal: mockOpenModal,
+  }),
 }))
+
+mock.module("react-native", reactNativeMockFactory)
+mock.module(
+  "/home/amka78/private/open-bookshelf/node_modules/react-native/index.js",
+  reactNativeMockFactory,
+)
 
 mock.module("@/i18n", () => ({
   translate: (key: string) => key,
@@ -105,8 +116,8 @@ describe("BookFormatList", () => {
     expect(onDownload).toHaveBeenCalledWith("EPUB")
   })
 
-  test("calls Alert.alert when delete button is pressed (confirmation flow)", () => {
-    mockAlertFn.mockClear()
+  test("opens the confirmation modal when delete button is pressed", () => {
+    mockOpenModal.mockClear()
     const { getByTestId } = render(
       <BookFormatList
         formats={["PDF"]}
@@ -116,7 +127,33 @@ describe("BookFormatList", () => {
       />,
     )
     fireEvent.click(getByTestId("delete-PDF"))
-    expect(mockAlertFn).toHaveBeenCalled()
+    expect(mockOpenModal).toHaveBeenCalledWith(
+      "ConfirmModal",
+      expect.objectContaining({
+        titleTx: "bookFormatList.deleteTooltip",
+        messageTx: "bookFormatList.deleteConfirm",
+      }),
+    )
+  })
+
+  test("calls onDelete after the confirmation modal OK handler runs", () => {
+    mockOpenModal.mockClear()
+    const onDelete = jest.fn()
+    const { getByTestId } = render(
+      <BookFormatList
+        formats={["PDF"]}
+        onDownload={jest.fn()}
+        onDelete={onDelete}
+        onUpload={jest.fn()}
+      />,
+    )
+
+    fireEvent.click(getByTestId("delete-PDF"))
+
+    const modalParams = mockOpenModal.mock.calls[0]?.[1] as { onOKPress?: () => void } | undefined
+    modalParams?.onOKPress?.()
+
+    expect(onDelete).toHaveBeenCalledWith("PDF")
   })
 
   test("calls onUpload when upload button is pressed", () => {

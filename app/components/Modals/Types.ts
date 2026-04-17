@@ -28,6 +28,10 @@ export type ModalStackParams = {
     messageTx?: MessageKey
   }
   FormatSelectModal: {
+    title?: string
+    titleTx?: MessageKey
+    message?: string
+    messageTx?: MessageKey
     formats: string[]
     onSelectFormat: (format: string) => void
   }

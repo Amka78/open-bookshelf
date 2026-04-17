@@ -1,10 +1,9 @@
 import { BookConvertForm } from "@/components/BookConvertForm/BookConvertForm"
 import { Button } from "@/components/Button/Button"
 import { Heading } from "@/components/Heading/Heading"
-import { translate } from "@/i18n"
+import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import { useBookConvert } from "@/screens/BookConvertScreen/useBookConvert"
 import { observer } from "mobx-react-lite"
-import { Alert } from "react-native"
 import type { ModalComponentProp } from "react-native-modalfy"
 import { Body } from "./Body"
 import { CloseButton } from "./CloseButton"
@@ -24,6 +23,7 @@ export const BookConvertModal = observer((props: BookConvertModalProps) => {
 })
 
 export function BookConvertModalTemplate(props: BookConvertModalProps) {
+  const modal = useElectrobunModal()
   const {
     selectedBook,
     inputFormats,
@@ -32,7 +32,6 @@ export function BookConvertModalTemplate(props: BookConvertModalProps) {
     form,
     convertStatus,
     errorMessage,
-    handleConvert,
     handleStartConvert,
   } = useBookConvert()
   const outputFormat = form.watch("outputFormat") ?? ""
@@ -46,11 +45,11 @@ export function BookConvertModalTemplate(props: BookConvertModalProps) {
       if (props.modal.params.onConvertComplete) {
         props.modal.params.onConvertComplete()
       }
-      Alert.alert(
-        translate("bookConvertModal.title"),
-        translate("bookConvertModal.conversionStarted"),
-        [{ text: translate("common.ok"), onPress: () => props.modal.closeModal() }],
-      )
+      modal.openModal("ErrorModal", {
+        titleTx: "modal.bookConvertModal.title",
+        messageTx: "modal.bookConvertModal.conversionStarted",
+      })
+      props.modal.closeModal()
     }
   }
 

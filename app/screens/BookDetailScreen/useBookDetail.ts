@@ -1,13 +1,13 @@
 import { useConvergence } from "@/hooks/useConvergence"
 import { useElectrobunModal } from "@/hooks/useElectrobunModal"
-import { translate } from "@/i18n"
+import { type MessageKey, translate } from "@/i18n"
 import { useStores } from "@/models"
 import type { AppStackParamList, ApppNavigationProp } from "@/navigators/types"
 import { api } from "@/services/api"
 import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import * as DocumentPicker from "expo-document-picker"
 import { useLayoutEffect } from "react"
-import { Alert, Linking, Share } from "react-native"
+import { Linking, Share } from "react-native"
 import { useDeleteBook } from "../../hooks/useDeleteBook"
 import { useDownloadBook } from "../../hooks/useDownloadBook"
 import { useOpenViewer } from "../../hooks/useOpenViewer"
@@ -119,47 +119,49 @@ export function useBookDetail() {
     const library = calibreRootStore.selectedLibrary
     if (!book || !library) return
 
+    const openMessageModal = (titleTx: MessageKey, messageTx: MessageKey) => {
+      modal.openModal("ErrorModal", {
+        titleTx,
+        messageTx,
+      })
+    }
+
+    const openSendConfirmModal = (format: string) => {
+      modal.openModal("ConfirmModal", {
+        titleTx: "emailDelivery.confirmTitle",
+        message: translate("emailDelivery.confirmMessage", {
+          format,
+          title: book.metaData?.title ?? "",
+        }),
+        okTx: "emailDelivery.send",
+        onOKPress: async () => {
+          const result = await api.sendBookByEmail(library.id, book.id, format)
+          if (result.kind === "ok") {
+            openMessageModal("emailDelivery.sentTitle", "emailDelivery.sentMessage")
+          } else {
+            openMessageModal("common.error", "emailDelivery.errorMessage")
+          }
+        },
+      })
+    }
+
     const formats: string[] = (book.metaData?.formats as string[] | undefined) ?? []
     if (formats.length === 0) {
-      Alert.alert(translate("emailDelivery.noFormats"))
+      openMessageModal("common.error", "emailDelivery.noFormats")
       return
     }
 
-    const formatOptions = formats.map((fmt: string) => ({
-      text: fmt,
-      onPress: () => {
-        Alert.alert(
-          translate("emailDelivery.confirmTitle"),
-          translate("emailDelivery.confirmMessage", {
-            format: fmt,
-            title: book.metaData?.title ?? "",
-          }),
-          [
-            { text: translate("common.cancel"), style: "cancel" as const },
-            {
-              text: translate("emailDelivery.send"),
-              onPress: async () => {
-                const result = await api.sendBookByEmail(library.id, book.id, fmt)
-                if (result.kind === "ok") {
-                  Alert.alert(
-                    translate("emailDelivery.sentTitle"),
-                    translate("emailDelivery.sentMessage"),
-                  )
-                } else {
-                  Alert.alert(translate("common.error"), translate("emailDelivery.errorMessage"))
-                }
-              },
-            },
-          ],
-        )
-      },
-    }))
-    formatOptions.push({ text: translate("common.cancel"), onPress: () => {} })
-    Alert.alert(
-      translate("emailDelivery.selectFormat"),
-      translate("emailDelivery.selectFormatMessage"),
-      formatOptions,
-    )
+    if (formats.length === 1) {
+      openSendConfirmModal(formats[0])
+      return
+    }
+
+    modal.openModal("FormatSelectModal", {
+      titleTx: "emailDelivery.selectFormat",
+      messageTx: "emailDelivery.selectFormatMessage",
+      formats,
+      onSelectFormat: openSendConfirmModal,
+    })
   }
 
   const handleFieldPress = (query: string) => {
@@ -184,7 +186,10 @@ export function useBookDetail() {
     try {
       const result = await api.deleteBookFormat(selectedLibrary.id, selectedBook.id, format)
       if (result.kind === "ok") {
-        Alert.alert(translate("common.ok"), translate("bookFormatList.deleteSuccess"))
+        modal.openModal("ErrorModal", {
+          titleTx: "common.ok",
+          messageTx: "bookFormatList.deleteSuccess",
+        })
       }
     } catch (error) {
       console.error("deleteFormat error", error)
@@ -212,7 +217,10 @@ export function useBookDetail() {
         filePayload,
       )
       if (uploadResult.kind === "ok") {
-        Alert.alert(translate("common.ok"), translate("bookFormatList.uploadSuccess"))
+        modal.openModal("ErrorModal", {
+          titleTx: "common.ok",
+          messageTx: "bookFormatList.uploadSuccess",
+        })
       }
     } catch (error) {
       console.error("uploadFormat error", error)

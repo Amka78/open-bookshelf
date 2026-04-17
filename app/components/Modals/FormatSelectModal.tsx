@@ -1,5 +1,6 @@
 import { Button } from "@/components/Button/Button"
 import { Heading } from "@/components/Heading/Heading"
+import { Text } from "@/components/Text/Text"
 import { ScrollView } from "@gluestack-ui/themed"
 import React from "react"
 import type { ModalComponentProp } from "react-native-modalfy"
@@ -14,10 +15,15 @@ import type { ModalStackParams } from "./Types"
 export type FormatSelectModalProps = ModalComponentProp<ModalStackParams, void, "FormatSelectModal">
 
 export function FormatSelectModal(props: FormatSelectModalProps) {
+  const titleTx = props.modal.params.titleTx ?? "modal.formatSelectModal.title"
+  const title = props.modal.params.title
+  const messageTx = props.modal.params.messageTx
+  const message = props.modal.params.message
+
   return (
     <Root>
       <Header>
-        <Heading tx={"modal.formatSelectModal.title"} />
+        <Heading tx={titleTx}>{title}</Heading>
         <CloseButton
           onPress={() => {
             props.modal.closeModal()
@@ -26,6 +32,7 @@ export function FormatSelectModal(props: FormatSelectModalProps) {
       </Header>
       <Body>
         <ScrollView>
+          {messageTx || message ? <Text tx={messageTx}>{message}</Text> : null}
           {props.modal.params.formats.map((format) => {
             return (
               <Button

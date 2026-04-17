@@ -11,6 +11,7 @@ import {
 import { useStores } from "@/models"
 import { useNavigation, useRoute } from "@react-navigation/native"
 import { act, renderHook } from "@testing-library/react"
+import * as DocumentPicker from "expo-document-picker"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 const describe = localizeTestRegistrar(baseDescribe)
@@ -23,14 +24,27 @@ const mockUseOpenViewer = jest.fn()
 const mockUseElectrobunModal = jest.fn()
 const mockShareShare = jest.fn()
 const mockGetBookDownloadUrl = jest.fn()
-
-mock.module("react-native", () => ({
-  ...(global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock,
+const mockDeleteBookFormat = jest.fn()
+const mockUploadBookFormat = jest.fn()
+const mockSendBookByEmail = jest.fn()
+const reactNativeMockFactory = () => ({
+  ...((global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock ?? {}),
   Share: { share: mockShareShare },
-}))
+})
+
+mock.module("react-native", reactNativeMockFactory)
+mock.module(
+  "/home/amka78/private/open-bookshelf/node_modules/react-native/index.js",
+  reactNativeMockFactory,
+)
 
 mock.module("@/services/api", () => ({
-  api: { getBookDownloadUrl: mockGetBookDownloadUrl },
+  api: {
+    getBookDownloadUrl: mockGetBookDownloadUrl,
+    deleteBookFormat: mockDeleteBookFormat,
+    uploadBookFormat: mockUploadBookFormat,
+    sendBookByEmail: mockSendBookByEmail,
+  },
 }))
 
 mock.module("@/hooks/useConvergence", () => ({
@@ -91,6 +105,7 @@ describe("useBookDetail", () => {
   const mockBookDisplayFields = ["title", "authors"]
 
   const mockSelectedLibrary = {
+    id: "lib1",
     selectedBook: mockSelectedBook,
     fieldMetadataList: mockFieldMetadataList,
     bookDisplayFields: mockBookDisplayFields,
@@ -139,6 +154,9 @@ describe("useBookDetail", () => {
       execute: mockDownloadBookExecute,
     })
     mockGetBookDownloadUrl.mockReturnValue("https://example.com/download/EPUB/1")
+    mockDeleteBookFormat.mockResolvedValue({ kind: "ok" })
+    mockUploadBookFormat.mockResolvedValue({ kind: "ok" })
+    mockSendBookByEmail.mockResolvedValue({ kind: "ok" })
     mockShareShare.mockResolvedValue(undefined)
   })
 
@@ -374,7 +392,7 @@ describe("useBookDetail", () => {
         await result.current.handleShareLink()
       })
 
-      expect(mockGetBookDownloadUrl).toHaveBeenCalledWith("EPUB", 1, undefined)
+      expect(mockGetBookDownloadUrl).toHaveBeenCalledWith("EPUB", 1, "lib1")
       expect(mockShareShare).toHaveBeenCalledWith(
         expect.objectContaining({ url: "https://example.com/download/EPUB/1" }),
       )
@@ -403,6 +421,167 @@ describe("useBookDetail", () => {
 
       expect(mockShareShare).not.toHaveBeenCalled()
       expect(mockOpenModal).not.toHaveBeenCalled()
+    })
+  })
+
+  describe("handleSendByEmail", () => {
+    test("opens an error modal when no formats are available", () => {
+      const noFormatsBook = {
+        ...mockSelectedBook,
+        metaData: { ...mockSelectedBook.metaData, formats: [] },
+      }
+      ;(useStores as jest.Mock).mockReturnValue({
+        calibreRootStore: {
+          selectedLibrary: {
+            ...mockSelectedLibrary,
+            selectedBook: noFormatsBook,
+          },
+        },
+        settingStore: mockSettingStore,
+      })
+
+      const { result } = renderHook(() => useBookDetail())
+
+      result.current.handleSendByEmail()
+
+      expect(mockOpenModal).toHaveBeenCalledWith("ErrorModal", {
+        titleTx: "common.error",
+        messageTx: "emailDelivery.noFormats",
+      })
+    })
+
+    test("opens the format select modal when multiple email formats are available", () => {
+      const { result } = renderHook(() => useBookDetail())
+
+      result.current.handleSendByEmail()
+
+      expect(mockOpenModal).toHaveBeenCalledWith(
+        "FormatSelectModal",
+        expect.objectContaining({
+          titleTx: "emailDelivery.selectFormat",
+          messageTx: "emailDelivery.selectFormatMessage",
+          formats: ["EPUB", "PDF"],
+        }),
+      )
+    })
+
+    test("opens a send confirmation modal after selecting an email format", () => {
+      const { result } = renderHook(() => useBookDetail())
+
+      result.current.handleSendByEmail()
+
+      const formatModalParams = mockOpenModal.mock.calls[0]?.[1] as
+        | { onSelectFormat?: (format: string) => void }
+        | undefined
+
+      formatModalParams?.onSelectFormat?.("PDF")
+
+      expect(mockOpenModal).toHaveBeenNthCalledWith(
+        2,
+        "ConfirmModal",
+        expect.objectContaining({
+          titleTx: "emailDelivery.confirmTitle",
+          okTx: "emailDelivery.send",
+          message: expect.any(String),
+        }),
+      )
+    })
+
+    test("shows a sent message after confirming email delivery", async () => {
+      const { result } = renderHook(() => useBookDetail())
+
+      result.current.handleSendByEmail()
+
+      const formatModalParams = mockOpenModal.mock.calls[0]?.[1] as
+        | { onSelectFormat?: (format: string) => void }
+        | undefined
+      formatModalParams?.onSelectFormat?.("PDF")
+
+      const confirmParams = mockOpenModal.mock.calls[1]?.[1] as
+        | { onOKPress?: () => Promise<void> }
+        | undefined
+
+      await act(async () => {
+        await confirmParams?.onOKPress?.()
+      })
+
+      expect(mockSendBookByEmail).toHaveBeenCalledWith("lib1", 1, "PDF")
+      expect(mockOpenModal).toHaveBeenNthCalledWith(3, "ErrorModal", {
+        titleTx: "emailDelivery.sentTitle",
+        messageTx: "emailDelivery.sentMessage",
+      })
+    })
+
+    test("shows an error message when email delivery fails", async () => {
+      mockSendBookByEmail.mockResolvedValueOnce({ kind: "bad-data" })
+      const { result } = renderHook(() => useBookDetail())
+
+      result.current.handleSendByEmail()
+
+      const formatModalParams = mockOpenModal.mock.calls[0]?.[1] as
+        | { onSelectFormat?: (format: string) => void }
+        | undefined
+      formatModalParams?.onSelectFormat?.("PDF")
+
+      const confirmParams = mockOpenModal.mock.calls[1]?.[1] as
+        | { onOKPress?: () => Promise<void> }
+        | undefined
+
+      await act(async () => {
+        await confirmParams?.onOKPress?.()
+      })
+
+      expect(mockOpenModal).toHaveBeenNthCalledWith(3, "ErrorModal", {
+        titleTx: "common.error",
+        messageTx: "emailDelivery.errorMessage",
+      })
+    })
+  })
+
+  describe("format management", () => {
+    test("shows a success modal after deleting a format", async () => {
+      const { result } = renderHook(() => useBookDetail())
+
+      await act(async () => {
+        await result.current.handleDeleteFormat("PDF")
+      })
+
+      expect(mockDeleteBookFormat).toHaveBeenCalledWith("lib1", 1, "PDF")
+      expect(mockOpenModal).toHaveBeenCalledWith("ErrorModal", {
+        titleTx: "common.ok",
+        messageTx: "bookFormatList.deleteSuccess",
+      })
+    })
+
+    test("shows a success modal after uploading a format", async () => {
+      jest.spyOn(DocumentPicker, "getDocumentAsync").mockResolvedValue({
+        canceled: false,
+        assets: [
+          {
+            name: "uploaded.epub",
+            uri: "file:///tmp/uploaded.epub",
+            mimeType: "application/epub+zip",
+          },
+        ],
+      } as unknown as DocumentPicker.DocumentPickerResult)
+
+      const { result } = renderHook(() => useBookDetail())
+
+      await act(async () => {
+        await result.current.handleUploadFormat()
+      })
+
+      expect(mockUploadBookFormat).toHaveBeenCalledWith(
+        "lib1",
+        1,
+        "EPUB",
+        "uploaded.epub",
+        "file:///tmp/uploaded.epub",
+      )
+      expect(mockOpenModal).toHaveBeenCalledWith("ErrorModal", {
+        titleTx: "common.ok",
+        messageTx: "bookFormatList.uploadSuccess",
+      })
     })
   })
 })

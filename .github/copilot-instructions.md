@@ -84,6 +84,7 @@ Translation keys are typed (`MessageKey`). Locale files are in `app/i18n/` (en, 
 - **Biome** is the linter/formatter (not ESLint/Prettier). Line width: 100, indent: 2 spaces, no semicolons.
 - **Platform-specific code**: Use `.web.tsx` / `.native.tsx` / `.ios.tsx` suffixes for platform variants. Metro and Webpack resolve these automatically.
 - **PDF viewing**: Uses `pdfjs-dist` on web and a native viewer on mobile. PDF utilities are in `app/library/`.
+- **Modal UX**: Do not use React Native `Alert`. Always use `react-native-modalfy` for user-facing alerts, confirmations, and error dialogs.
 - **Reactotron**: MST is wired to Reactotron in development for time-travel debugging. Config is in `app/services/reactotron/`.
 - **Storybook**: Stories live alongside components. Run native Storybook by setting `EXPO_PUBLIC_STORYBOOK=true` or via the `storybook:native` script.
 - **Electrobun desktop**: `src-electrobun/` contains the Bun/Zig shell. `src-electrobun/main.ts` is the main process entry, `src-electrobun/preload.ts` injects bridge APIs into the webview. Desktop-specific logic should be gated behind `isElectrobun()` from `@/utils/electrobunBridge`.

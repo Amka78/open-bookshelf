@@ -1,7 +1,8 @@
 import { HStack, IconButton, Text } from "@/components"
+import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import { translate } from "@/i18n"
 import { usePalette } from "@/theme"
-import { Alert, Pressable, StyleSheet, View } from "react-native"
+import { Pressable, StyleSheet, View } from "react-native"
 
 export type BookFormatListProps = {
   formats: string[]
@@ -11,21 +12,15 @@ export type BookFormatListProps = {
 }
 
 export function BookFormatList({ formats, onDownload, onDelete, onUpload }: BookFormatListProps) {
+  const modal = useElectrobunModal()
   const palette = usePalette()
 
   const handleDelete = (format: string) => {
-    Alert.alert(
-      translate("bookFormatList.deleteTooltip"),
-      translate("bookFormatList.deleteConfirm"),
-      [
-        { text: translate("common.cancel"), style: "cancel" },
-        {
-          text: translate("common.ok"),
-          style: "destructive",
-          onPress: () => onDelete(format),
-        },
-      ],
-    )
+    modal.openModal("ConfirmModal", {
+      titleTx: "bookFormatList.deleteTooltip",
+      messageTx: "bookFormatList.deleteConfirm",
+      onOKPress: () => onDelete(format),
+    })
   }
 
   return (

@@ -1,3 +1,4 @@
+import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import { translate } from "@/i18n"
 import { useStores } from "@/models"
 import type { MetadataSnapshotIn } from "@/models/calibre"
@@ -8,7 +9,6 @@ import * as DocumentPicker from "expo-document-picker"
 import { getSnapshot } from "mobx-state-tree"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
-import { Alert } from "react-native"
 
 type MetadataFormValues = MetadataSnapshotIn
 
@@ -51,6 +51,7 @@ function toLanguageNamesForUpdate(
 export function useBookEdit() {
   const { calibreRootStore } = useStores()
   const navigation = useNavigation<ApppNavigationProp>()
+  const modal = useElectrobunModal()
 
   const selectedLibrary = calibreRootStore.selectedLibrary
   const selectedBook = selectedLibrary.selectedBook
@@ -167,28 +168,14 @@ export function useBookEdit() {
         }
       }
 
-      Alert.alert(
-        translate("bookEditScreen.deleteFormatConfirmTitle"),
-        translate("bookEditScreen.deleteFormatConfirmMessage", { format }),
-        [
-          {
-            text: translate("common.cancel"),
-            style: "cancel",
-            onPress: () => finish(false),
-          },
-          {
-            text: translate("common.ok"),
-            style: "destructive",
-            onPress: () => {
-              void handleDelete()
-            },
-          },
-        ],
-        {
-          cancelable: true,
-          onDismiss: () => finish(false),
+      modal.openModal("ConfirmModal", {
+        titleTx: "bookEditScreen.deleteFormatConfirmTitle",
+        message: translate("bookEditScreen.deleteFormatConfirmMessage", { format }),
+        onCancelPress: () => finish(false),
+        onOKPress: async () => {
+          await handleDelete()
         },
-      )
+      })
     })
   }
 
