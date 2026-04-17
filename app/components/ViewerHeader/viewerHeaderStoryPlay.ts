@@ -17,6 +17,7 @@ export async function playViewerHeaderShowsTitleAndActions({
   canvasElement: HTMLElement
 }) {
   await findByTestId(canvasElement, "viewer-header-title")
-  await findByTestId(canvasElement, "viewer-book-settings-trigger")
-  await findByTestId(canvasElement, "viewer-cover-settings-trigger")
+  await findByTestId(canvasElement, "viewer-toc-button")
+  await findByTestId(canvasElement, "viewer-bookmark-button")
+  await findByTestId(canvasElement, "viewer-overflow-trigger")
 }

@@ -308,6 +308,8 @@ const en = {
     title: "Reading Settings",
     fontSize: "Font Size",
     theme: "Theme",
+    autoPageTurning: "Automatic Page Turning",
+    autoPageTurnInterval: "Interval (ms)",
     themeDefault: "Default",
     themeSepia: "Sepia",
     themeDark: "Dark",

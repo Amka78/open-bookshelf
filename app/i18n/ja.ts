@@ -311,6 +311,8 @@ const ja: Translations = {
     title: "読書設定",
     fontSize: "文字サイズ",
     theme: "テーマ",
+    autoPageTurning: "自動ページ送り",
+    autoPageTurnInterval: "間隔 (ms)",
     themeDefault: "デフォルト",
     themeSepia: "セピア",
     themeDark: "ダーク",

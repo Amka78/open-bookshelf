@@ -11,8 +11,9 @@ describe("ViewerHeader story play", () => {
     const { container } = render(
       <div>
         <div data-testid="viewer-header-title">HeaderTitle</div>
-        <button data-testid="viewer-book-settings-trigger" type="button" />
-        <button data-testid="viewer-cover-settings-trigger" type="button" />
+        <button data-testid="viewer-toc-button" type="button" />
+        <button data-testid="viewer-bookmark-button" type="button" />
+        <button data-testid="viewer-overflow-trigger" type="button" />
       </div>,
     )
 

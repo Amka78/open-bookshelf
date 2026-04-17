@@ -10,8 +10,7 @@ describe("ViewerMenu story play", () => {
   test("shows actions trigger", async () => {
     const { container } = render(
       <div>
-        <button data-testid="viewer-book-settings-trigger" type="button" />
-        <button data-testid="viewer-cover-settings-trigger" type="button" />
+        <button data-testid="viewer-overflow-trigger" type="button" />
       </div>,
     )
     await playViewerMenuShowsActionsTrigger({ canvasElement: container })

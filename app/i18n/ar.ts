@@ -309,6 +309,8 @@ const ar: Translations = {
     title: "إعدادات القراءة",
     fontSize: "حجم الخط",
     theme: "المظهر",
+    autoPageTurning: "تقليب الصفحات تلقائيًا",
+    autoPageTurnInterval: "الفاصل الزمني (مللي ثانية)",
     themeDefault: "افتراضي",
     themeSepia: "سيبيا",
     themeDark: "داكن",

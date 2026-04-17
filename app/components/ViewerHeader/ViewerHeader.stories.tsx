@@ -16,13 +16,11 @@ export default {
     title: "HeaderTitle",
     visible: true,
     autoPageTurning: false,
-    autoPageTurnIntervalMs: 3000,
   },
   argTypes: {
     ...viewerMenuStoryArgTypes,
     onLeftArrowPress: { action: "Pressed Left Arrow." },
     onToggleAutoPageTurning: { action: "Toggle auto page turning." },
-    onAutoPageTurnIntervalChange: { action: "Change auto page interval." },
   },
   decorators: [
     (Story) => (

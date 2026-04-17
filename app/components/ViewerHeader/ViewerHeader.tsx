@@ -1,4 +1,4 @@
-import { HStack, IconButton, Text } from "@/components"
+import { HStack, IconButton, Text, TooltipIconButton } from "@/components"
 import { usePalette } from "@/theme"
 import { ViewerMenu, type ViewerMenuProps } from "../ViewerMenu/ViewerMenu"
 
@@ -7,9 +7,7 @@ export type ViewerHeaderProps = ViewerMenuProps & {
   onLeftArrowPress?: () => void
   title: string
   autoPageTurning: boolean
-  autoPageTurnIntervalMs: number
   onToggleAutoPageTurning?: () => void
-  onAutoPageTurnIntervalChange?: (intervalMs: number) => void
 }
 
 export function ViewerHeader(props: ViewerHeaderProps) {
@@ -40,21 +38,35 @@ export function ViewerHeader(props: ViewerHeaderProps) {
           </Text>
         </HStack>
         <HStack justifyContent={"flex-end"} marginRight={"$4"}>
+          {props.onShowToc ? (
+            <TooltipIconButton
+              name="table-of-contents"
+              iconSize="md-"
+              testID="viewer-toc-button"
+              tooltipTx="toc.title"
+              onPress={props.onShowToc}
+            />
+          ) : null}
+          {props.onAddBookmark ? (
+            <TooltipIconButton
+              name="bookmark-plus-outline"
+              iconSize="md-"
+              testID="viewer-bookmark-button"
+              tooltipTx="viewerMenu.addBookmark"
+              onPress={props.onAddBookmark}
+            />
+          ) : null}
           <ViewerMenu
             pageDirection={props.pageDirection}
             readingStyle={props.readingStyle}
             onSelectReadingStyle={props.onSelectReadingStyle}
             onSelectPageDirection={props.onSelectPageDirection}
-            autoPageTurning={props.autoPageTurning}
-            autoPageTurnIntervalMs={props.autoPageTurnIntervalMs}
-            onToggleAutoPageTurning={props.onToggleAutoPageTurning}
-            onAutoPageTurnIntervalChange={props.onAutoPageTurnIntervalChange}
             onSelectCurrentPageAsCover={props.onSelectCurrentPageAsCover}
             onSelectLeftPageAsCover={props.onSelectLeftPageAsCover}
             onSelectRightPageAsCover={props.onSelectRightPageAsCover}
-            onAddBookmark={props.onAddBookmark}
+            autoPageTurning={props.autoPageTurning}
+            onToggleAutoPageTurning={props.onToggleAutoPageTurning}
             onToggleAnnotationPanel={props.onToggleAnnotationPanel}
-            onShowToc={props.onShowToc}
             onShowReadingSettings={props.onShowReadingSettings}
           />
         </HStack>

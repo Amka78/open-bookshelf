@@ -309,6 +309,8 @@ const ko: Translations = {
     title: "읽기 설정",
     fontSize: "글자 크기",
     theme: "테마",
+    autoPageTurning: "자동 페이지 넘김",
+    autoPageTurnInterval: "간격 (ms)",
     themeDefault: "기본",
     themeSepia: "세피아",
     themeDark: "다크",

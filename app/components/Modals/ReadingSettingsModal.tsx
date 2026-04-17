@@ -1,11 +1,13 @@
 import { Button } from "@/components/Button/Button"
 import { Heading } from "@/components/Heading/Heading"
 import { IconButton } from "@/components/IconButton/IconButton"
+import { Input } from "@/components/Input/Input"
 import { Text } from "@/components/Text/Text"
 import { useStores } from "@/models"
 import { usePalette } from "@/theme"
-import { HStack, Pressable, VStack } from "@gluestack-ui/themed"
+import { HStack, InputField, Pressable, VStack } from "@gluestack-ui/themed"
 import { observer } from "mobx-react-lite"
+import { useState } from "react"
 import type { ModalComponentProp } from "react-native-modalfy"
 import { Body } from "./Body"
 import { CloseButton } from "./CloseButton"
@@ -28,6 +30,11 @@ export const ReadingSettingsModal = observer((props: ReadingSettingsModalProps) 
 
   const fontSize = settingStore.viewerFontSizePt
   const theme = settingStore.viewerTheme
+  const [intervalInput, setIntervalInput] = useState(
+    String(props.modal.params.autoPageTurnIntervalMs),
+  )
+  const intervalMs = Number(intervalInput)
+  const isInvalidInterval = !Number.isFinite(intervalMs) || intervalMs < 100
 
   const themeLabels = {
     default: "readingSettings.themeDefault",
@@ -98,10 +105,32 @@ export const ReadingSettingsModal = observer((props: ReadingSettingsModalProps) 
               })}
             </HStack>
           </VStack>
+
+          <VStack space="sm">
+            <Text tx="readingSettings.autoPageTurnInterval" fontWeight="$bold" />
+            <Input>
+              <InputField
+                value={intervalInput}
+                onChangeText={setIntervalInput}
+                keyboardType="number-pad"
+                inputMode="numeric"
+                testID="reading-settings-auto-page-interval"
+              />
+            </Input>
+            <Text tx="modal.viewerHeaderAutoPageTurn.minIntervalHelp" fontSize="$sm" />
+          </VStack>
         </VStack>
       </Body>
       <Footer>
-        <Button onPress={() => props.modal.closeModal()} tx="common.ok" />
+        <Button
+          onPress={() => {
+            if (isInvalidInterval) return
+            props.modal.params.onAutoPageTurnIntervalChange?.(Math.floor(intervalMs))
+            props.modal.closeModal()
+          }}
+          tx="common.ok"
+          isDisabled={isInvalidInterval}
+        />
       </Footer>
     </Root>
   )

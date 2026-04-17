@@ -2,7 +2,6 @@ export const viewerMenuStoryArgs = {
   pageDirection: "left",
   readingStyle: "singlePage",
   autoPageTurning: false,
-  autoPageTurnIntervalMs: 3000,
 }
 
 export const viewerMenuStoryArgTypes = {
@@ -12,5 +11,8 @@ export const viewerMenuStoryArgTypes = {
   onSelectLeftPageAsCover: { action: "Set left page as cover." },
   onSelectRightPageAsCover: { action: "Set right page as cover." },
   onToggleAutoPageTurning: { action: "Toggle auto page turning." },
-  onAutoPageTurnIntervalChange: { action: "Change auto page interval." },
+  onToggleAnnotationPanel: { action: "Toggle annotations panel." },
+  onShowReadingSettings: { action: "Show reading settings." },
+  onShowToc: { action: "Show table of contents." },
+  onAddBookmark: { action: "Add bookmark." },
 }

@@ -208,7 +208,14 @@ export function BookViewer(props: BookViewerProps) {
   }
 
   const handleShowReadingSettings = () => {
-    modal.openModal("ReadingSettingsModal", {})
+    modal.openModal("ReadingSettingsModal", {
+      autoPageTurnIntervalMs,
+      onAutoPageTurnIntervalChange: (intervalMs) => {
+        const normalizedIntervalMs = Math.max(100, Math.floor(intervalMs))
+        settingStore.setAutoPageTurnIntervalMs(normalizedIntervalMs)
+        setAutoPageTurnIntervalMs(normalizedIntervalMs)
+      },
+    })
   }
 
   // scrollIndex and viewerHook accessed via refs to avoid page-turn recreation of renderPage.
@@ -494,14 +501,8 @@ export function BookViewer(props: BookViewerProps) {
           title={props.bookTitle}
           visible={viewerHook.showMenu}
           autoPageTurning={autoPageTurning}
-          autoPageTurnIntervalMs={autoPageTurnIntervalMs}
           onToggleAutoPageTurning={() => {
             setAutoPageTurning((prev) => !prev)
-          }}
-          onAutoPageTurnIntervalChange={(intervalMs) => {
-            const normalizedIntervalMs = Math.max(100, Math.floor(intervalMs))
-            settingStore.setAutoPageTurnIntervalMs(normalizedIntervalMs)
-            setAutoPageTurnIntervalMs(normalizedIntervalMs)
           }}
           onLeftArrowPress={() => {
             navigation.goBack()
