@@ -216,7 +216,15 @@ export function useViewer() {
     }
 
     return cleanup
-  }, [availablePathLength, promptKey, serverEstimatedPage, history?.currentPage, history?.serverPosFrac, history?.format, modal])
+  }, [
+    availablePathLength,
+    promptKey,
+    serverEstimatedPage,
+    history?.currentPage,
+    history?.serverPosFrac,
+    history?.format,
+    modal,
+  ])
 
   // Client setting management
   let tempClientSetting = selectedBook
@@ -321,13 +329,7 @@ export function useViewer() {
 
     // Sync initial position to server without debounce
     api
-      .syncReadingPositionFull(
-        selectedLibraryId,
-        selectedBook.id,
-        history.format,
-        posFrac,
-        cfi,
-      )
+      .syncReadingPositionFull(selectedLibraryId, selectedBook.id, history.format, posFrac, cfi)
       .catch((err) => logger.warn("Failed to sync initial reading position (standard)", err))
   }, [viewerReady, selectedBook, selectedLibraryId, history, initialPage])
 
@@ -370,7 +372,7 @@ export function useViewer() {
     const hash = selectedBook.hash
     const size = selectedBook.metaData?.formatSizes?.get(selectedFormat ?? "") ?? 0
 
-     // Use the same source path resolution as ViewerScreen:
+    // Use the same source path resolution as ViewerScreen:
     // cachedPathList first, then selectedBook.path as fallback for image-based formats.
     const sourcePath = cachedPathList?.[page] ?? selectedBook.path?.[page]
 
@@ -538,7 +540,7 @@ export function useViewer() {
   }
 
   const onManageMenu = () => {
-    setShowMenu(!showMenu)
+    setShowMenu((currentValue) => !currentValue)
   }
 
   const toc: TocItem | null = (selectedBook?.manifestToc as TocItem | null | undefined) ?? null

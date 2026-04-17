@@ -301,6 +301,23 @@ describe("useViewer", () => {
     expect(typeof result.current.onManageMenu).toBe("function")
   })
 
+  test("onManageMenu toggles menu visibility even when the same callback instance is reused", () => {
+    const { result } = renderHook(() => useViewer())
+    const manageMenu = result.current.onManageMenu
+
+    act(() => {
+      manageMenu()
+    })
+
+    expect(result.current.showMenu).toBe(true)
+
+    act(() => {
+      manageMenu()
+    })
+
+    expect(result.current.showMenu).toBe(false)
+  })
+
   test("onSetBookReadingStyle calls setProp with correct style", () => {
     const { result } = renderHook(() => useViewer())
 
