@@ -1,3 +1,5 @@
+import { act } from "@testing-library/react"
+
 async function findByTestId(canvasElement: HTMLElement, testId: string): Promise<HTMLElement> {
   for (let retry = 0; retry < 15; retry += 1) {
     const found = canvasElement.querySelector(`[data-testid="${testId}"]`) as HTMLElement | null
@@ -36,7 +38,9 @@ export async function playClickFormatTriggersUpload({
   baseTestId: string
 }) {
   const formatButton = await findByTestId(canvasElement, `${baseTestId}-format-0`)
-  formatButton.click()
+  await act(async () => {
+    formatButton.click()
+  })
 }
 
 export async function playClickDisplayedFormatTextTriggersUpload({
@@ -52,7 +56,9 @@ export async function playClickDisplayedFormatTextTriggersUpload({
     }) as HTMLElement | undefined
 
     if (clickable) {
-      clickable.click()
+      await act(async () => {
+        clickable.click()
+      })
       return
     }
 
@@ -72,7 +78,9 @@ export async function playPlusUploadsAndAddsRow({
   await waitForRowCount(canvasElement, baseTestId, 2)
 
   const plusButton = await findByTestId(canvasElement, `${baseTestId}-plus-0`)
-  plusButton.click()
+  await act(async () => {
+    plusButton.click()
+  })
 
   await waitForRowCount(canvasElement, baseTestId, 3)
 }
@@ -87,7 +95,24 @@ export async function playMinusDeletesFormatRow({
   await waitForRowCount(canvasElement, baseTestId, 2)
 
   const minusButton = await findByTestId(canvasElement, `${baseTestId}-minus-1`)
-  minusButton.click()
+  await act(async () => {
+    minusButton.click()
+  })
 
   await waitForRowCount(canvasElement, baseTestId, 1)
+}
+
+export async function playSingleFormatHidesMinusButton({
+  canvasElement,
+  baseTestId,
+}: {
+  canvasElement: HTMLElement
+  baseTestId: string
+}) {
+  await waitForRowCount(canvasElement, baseTestId, 1)
+
+  const minusButton = canvasElement.querySelector(`[data-testid="${baseTestId}-minus-0"]`)
+  if (minusButton) {
+    throw new Error("Minus button should not be rendered when only one format exists.")
+  }
 }

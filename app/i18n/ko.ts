@@ -21,6 +21,8 @@ const ko: Translations = {
     authorSortAutoTooltip: "저자에서 author_sort 자동 생성",
     titleSortAutoTooltip: "제목에서 sort 자동 생성",
     titleSeriesAutoTooltip: "제목 끝 숫자를 series / series_index로 분리",
+    deleteFormatConfirmTitle: "형식 삭제",
+    deleteFormatConfirmMessage: "{{format}} 형식을 삭제하시겠습니까?",
     fetchCoverFromUrl: "URL에서 표지 가져오기",
     fetchCoverUrlPlaceholder: "이미지 URL 입력...",
     fetchingCover: "가져오는 중...",

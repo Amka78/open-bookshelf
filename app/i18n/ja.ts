@@ -21,6 +21,8 @@ const ja: Translations = {
     authorSortAutoTooltip: "著者から author_sort を自動生成",
     titleSortAutoTooltip: "タイトルから sort を自動生成",
     titleSeriesAutoTooltip: "タイトル末尾の数字を series / series_index に分割",
+    deleteFormatConfirmTitle: "形式を削除",
+    deleteFormatConfirmMessage: "{{format}}を削除します。よろしいですか？",
     fetchCoverFromUrl: "URLから表紙を取得",
     fetchCoverUrlPlaceholder: "画像URLを入力...",
     fetchingCover: "取得中...",
@@ -130,7 +132,8 @@ const ja: Translations = {
     },
     bookConvertModal: {
       title: "書籍変換",
-      conversionStarted: "変換処理を開始しました。変換処理の進行はBackground Jobsで確認してください。",
+      conversionStarted:
+        "変換処理を開始しました。変換処理の進行はBackground Jobsで確認してください。",
     },
     cacheClearConfirmModal: {
       title: "キャッシュ削除",

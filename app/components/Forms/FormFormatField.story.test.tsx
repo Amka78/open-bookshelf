@@ -8,6 +8,7 @@ import {
   playClickFormatTriggersUpload,
   playMinusDeletesFormatRow,
   playPlusUploadsAndAddsRow,
+  playSingleFormatHidesMinusButton,
 } from "./formFormatFieldStoryPlay"
 
 mock.module("@/components/VStack/VStack", () => ({
@@ -88,16 +89,18 @@ beforeAll(async () => {
 function TestHarness({
   onUploadFormat,
   onDeleteFormat,
+  defaultFormats = ["EPUB", "PDF"],
 }: {
   onUploadFormat: (params: { targetFormat?: string }) => Promise<{
     success: boolean
     format?: string
   }>
   onDeleteFormat: (format: string) => Promise<boolean>
+  defaultFormats?: string[]
 }) {
   const form = useForm<StoryForm>({
     defaultValues: {
-      formats: ["EPUB", "PDF"],
+      formats: defaultFormats,
     },
   })
 
@@ -186,5 +189,25 @@ describe("FormFormatField story play", () => {
     })
 
     expect(deleteMock).toHaveBeenCalledWith("PDF")
+  })
+
+  test("single format hides the minus button", async () => {
+    const uploadMock = jest
+      .fn<(params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>>()
+      .mockResolvedValue({ success: true })
+    const deleteMock = jest.fn<(format: string) => Promise<boolean>>().mockResolvedValue(true)
+
+    const { container } = render(
+      <TestHarness
+        onUploadFormat={uploadMock}
+        onDeleteFormat={deleteMock}
+        defaultFormats={["EPUB"]}
+      />,
+    )
+
+    await playSingleFormatHidesMinusButton({
+      canvasElement: container,
+      baseTestId: "form-format-story",
+    })
   })
 })

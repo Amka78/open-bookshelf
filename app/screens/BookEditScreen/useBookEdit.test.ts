@@ -16,6 +16,7 @@ import * as reactHookForm from "react-hook-form"
 
 const useStoresMock = jest.fn()
 const useNavigationMock = jest.fn()
+const alertMock = jest.fn()
 
 mock.module("@/services/api", () => ({
   api: {
@@ -32,6 +33,12 @@ mock.module("@/models", () => ({
 mock.module("@react-navigation/native", () => ({
   ...(global as { __navMock?: Record<string, unknown> }).__navMock,
   useNavigation: useNavigationMock,
+}))
+
+mock.module("react-native", () => ({
+  Alert: {
+    alert: alertMock,
+  },
 }))
 
 mock.module("mobx-state-tree", () => ({
@@ -103,7 +110,9 @@ describe("useBookEdit", () => {
     useNavigationMock.mockReturnValue({
       goBack: mockGoBack,
     })
-    jest.spyOn(reactHookForm, "useForm").mockReturnValue(mockForm as unknown as ReturnType<(typeof reactHookForm)["useForm"]>)
+    jest
+      .spyOn(reactHookForm, "useForm")
+      .mockReturnValue(mockForm as unknown as ReturnType<(typeof reactHookForm)["useForm"]>)
     mockHandleSubmit.mockImplementation((fn) => {
       return () => {
         fn({
@@ -327,7 +336,11 @@ describe("useBookEdit", () => {
       ],
     } as unknown as DocumentPicker.DocumentPickerResult)
 
-    jest.spyOn(api, "uploadBookFormat").mockResolvedValue({ kind: "bad-data" } as unknown as Awaited<ReturnType<typeof api.uploadBookFormat>>)
+    jest
+      .spyOn(api, "uploadBookFormat")
+      .mockResolvedValue({ kind: "bad-data" } as unknown as Awaited<
+        ReturnType<typeof api.uploadBookFormat>
+      >)
 
     const { result } = renderHook(() => useBookEdit())
     const uploaded = await result.current.onUploadFormat({ targetFormat: "EPUB" })
@@ -339,17 +352,55 @@ describe("useBookEdit", () => {
     const deleteSpy = jest.spyOn(api, "deleteBookFormat").mockResolvedValue({ kind: "ok" })
 
     const { result } = renderHook(() => useBookEdit())
-    const deleted = await result.current.onDeleteFormat("PDF")
+    const deletePromise = result.current.onDeleteFormat("PDF")
+
+    const alertButtons = alertMock.mock.calls[0]?.[2] as Array<{ onPress?: () => void }> | undefined
+    alertButtons?.[1]?.onPress?.()
+    const deleted = await deletePromise
 
     expect(deleteSpy).toHaveBeenCalledWith("lib1", 1, "PDF")
     expect(deleted).toBe(true)
   })
 
-  test("onDeleteFormat returns false when the format delete request fails", async () => {
-    jest.spyOn(api, "deleteBookFormat").mockResolvedValue({ kind: "bad-data" } as unknown as Awaited<ReturnType<typeof api.deleteBookFormat>>)
+  test("onDeleteFormat asks for confirmation before deleting", async () => {
+    const { result } = renderHook(() => useBookEdit())
+    const deletePromise = result.current.onDeleteFormat("PDF")
+
+    expect(alertMock).toHaveBeenCalledWith(
+      "bookEditScreen.deleteFormatConfirmTitle",
+      "bookEditScreen.deleteFormatConfirmMessage",
+      expect.arrayContaining([
+        expect.objectContaining({
+          text: "common.cancel",
+        }),
+        expect.objectContaining({
+          text: "common.ok",
+          style: "destructive",
+        }),
+      ]),
+      expect.objectContaining({ cancelable: true }),
+    )
+
+    const alertButtons = alertMock.mock.calls[0]?.[2] as Array<{ onPress?: () => void }> | undefined
+    alertButtons?.[0]?.onPress?.()
+    const deleted = await deletePromise
+
+    expect(deleted).toBe(false)
+  })
+
+  test("onDeleteFormat returns false when the format delete request fails after confirmation", async () => {
+    jest
+      .spyOn(api, "deleteBookFormat")
+      .mockResolvedValue({ kind: "bad-data" } as unknown as Awaited<
+        ReturnType<typeof api.deleteBookFormat>
+      >)
 
     const { result } = renderHook(() => useBookEdit())
-    const deleted = await result.current.onDeleteFormat("PDF")
+    const deletePromise = result.current.onDeleteFormat("PDF")
+
+    const alertButtons = alertMock.mock.calls[0]?.[2] as Array<{ onPress?: () => void }> | undefined
+    alertButtons?.[1]?.onPress?.()
+    const deleted = await deletePromise
 
     expect(deleted).toBe(false)
   })

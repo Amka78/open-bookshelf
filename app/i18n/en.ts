@@ -19,6 +19,8 @@ const en = {
     authorSortAutoTooltip: "Generate author sort from authors",
     titleSortAutoTooltip: "Generate sort from title",
     titleSeriesAutoTooltip: "Split trailing number from title to series/series_index",
+    deleteFormatConfirmTitle: "Delete format",
+    deleteFormatConfirmMessage: "Delete {{format}}? This action cannot be undone.",
     fetchCoverFromUrl: "Fetch cover from URL",
     fetchCoverUrlPlaceholder: "Enter image URL...",
     fetchingCover: "Fetching...",

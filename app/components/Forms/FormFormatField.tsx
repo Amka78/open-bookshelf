@@ -152,14 +152,16 @@ export function FormFormatField<T extends FieldValues>(props: FormFormatFieldPro
                     void handleAdd()
                   }}
                 />
-                <IconButton
-                  name="minus"
-                  iconSize="sm"
-                  testID={`${baseTestId}-minus-${index}`}
-                  onPress={() => {
-                    void handleDelete(index)
-                  }}
-                />
+                {formats.length > 1 ? (
+                  <IconButton
+                    name="minus"
+                    iconSize="sm"
+                    testID={`${baseTestId}-minus-${index}`}
+                    onPress={() => {
+                      void handleDelete(index)
+                    }}
+                  />
+                ) : null}
               </HStack>
             ))}
           </VStack>

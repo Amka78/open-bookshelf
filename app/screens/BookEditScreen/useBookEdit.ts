@@ -1,3 +1,4 @@
+import { translate } from "@/i18n"
 import { useStores } from "@/models"
 import type { MetadataSnapshotIn } from "@/models/calibre"
 import type { ApppNavigationProp } from "@/navigators/types"
@@ -7,6 +8,7 @@ import * as DocumentPicker from "expo-document-picker"
 import { getSnapshot } from "mobx-state-tree"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
+import { Alert } from "react-native"
 
 type MetadataFormValues = MetadataSnapshotIn
 
@@ -137,8 +139,57 @@ export function useBookEdit() {
   }
 
   const onDeleteFormat = async (format: string): Promise<boolean> => {
-    const deleteResult = await api.deleteBookFormat(selectedLibrary.id, selectedBook.id, format)
-    return deleteResult.kind === "ok"
+    return new Promise<boolean>((resolve, reject) => {
+      let settled = false
+
+      const finish = (value: boolean) => {
+        if (settled) {
+          return
+        }
+        settled = true
+        resolve(value)
+      }
+
+      const handleDelete = async () => {
+        try {
+          const deleteResult = await api.deleteBookFormat(
+            selectedLibrary.id,
+            selectedBook.id,
+            format,
+          )
+          finish(deleteResult.kind === "ok")
+        } catch (error) {
+          if (settled) {
+            return
+          }
+          settled = true
+          reject(error)
+        }
+      }
+
+      Alert.alert(
+        translate("bookEditScreen.deleteFormatConfirmTitle"),
+        translate("bookEditScreen.deleteFormatConfirmMessage", { format }),
+        [
+          {
+            text: translate("common.cancel"),
+            style: "cancel",
+            onPress: () => finish(false),
+          },
+          {
+            text: translate("common.ok"),
+            style: "destructive",
+            onPress: () => {
+              void handleDelete()
+            },
+          },
+        ],
+        {
+          cancelable: true,
+          onDismiss: () => finish(false),
+        },
+      )
+    })
   }
 
   const [coverUrlInput, setCoverUrlInput] = useState("")

@@ -21,6 +21,8 @@ const ar: Translations = {
     authorSortAutoTooltip: "إنشاء author_sort تلقائيًا من المؤلفين",
     titleSortAutoTooltip: "إنشاء sort تلقائيًا من العنوان",
     titleSeriesAutoTooltip: "تقسيم الرقم الأخير من العنوان إلى series / series_index",
+    deleteFormatConfirmTitle: "حذف التنسيق",
+    deleteFormatConfirmMessage: "هل تريد حذف التنسيق {{format}}؟",
     fetchCoverFromUrl: "جلب الغلاف من رابط",
     fetchCoverUrlPlaceholder: "أدخل رابط الصورة...",
     fetchingCover: "جارٍ الجلب...",
