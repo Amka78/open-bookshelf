@@ -14,7 +14,6 @@ type UploadResult = {
 export type FormFormatFieldProps<T> = Omit<ControllerProps<T>, "render"> & {
   testID?: string
   onUploadFormat?: (params: { targetFormat?: string }) => Promise<UploadResult>
-  onDeleteFormat?: (format: string) => Promise<boolean>
 }
 
 const normalizeFormat = (value: string | undefined | null) => {
@@ -35,7 +34,6 @@ export function FormFormatField<T extends FieldValues>(props: FormFormatFieldPro
     disabled,
     testID,
     onUploadFormat,
-    onDeleteFormat,
   } = props
 
   return (
@@ -108,17 +106,10 @@ export function FormFormatField<T extends FieldValues>(props: FormFormatFieldPro
           updateFormats([...formats, uploadedFormat])
         }
 
-        const handleDelete = async (index: number) => {
+        const handleDelete = (index: number) => {
           const targetFormat = formats[index]
           if (!targetFormat) {
             return
-          }
-
-          if (onDeleteFormat) {
-            const deleted = await onDeleteFormat(targetFormat)
-            if (!deleted) {
-              return
-            }
           }
 
           const nextFormats = [...formats]
@@ -158,7 +149,7 @@ export function FormFormatField<T extends FieldValues>(props: FormFormatFieldPro
                     iconSize="sm"
                     testID={`${baseTestId}-minus-${index}`}
                     onPress={() => {
-                      void handleDelete(index)
+                      handleDelete(index)
                     }}
                   />
                 ) : null}

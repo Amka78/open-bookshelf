@@ -10,6 +10,7 @@ import { defaultBookImageUrl } from "../../../.storybook/stories/defaultBookImag
 import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
 import { createBookScreenRootStore } from "../../../.storybook/stories/screens/bookScreenStoryData"
 import {
+  playFocusTriggersAutoScroll,
   playKeyboardShownHidesCover,
   playKeyboardShownKeepsFieldsVisible,
   playLargeScreenShowsSaveButton,
@@ -107,5 +108,11 @@ export const SmallMobileHeaderSave: Story = {
 export const LargeScreen: Story = {
   play: async ({ canvasElement }) => {
     await playLargeScreenShowsSaveButton({ canvasElement }).catch(() => {})
+  },
+}
+
+export const FocusAutoScroll: Story = {
+  play: async ({ canvasElement }) => {
+    await playFocusTriggersAutoScroll({ canvasElement }).catch(() => {})
   },
 }

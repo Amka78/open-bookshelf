@@ -13,7 +13,7 @@ import {
   type LastReadPosition,
   api,
 } from "../../services/api"
-import type { AnnotationsMap } from "../../services/api/api.types"
+import type { AddedFormatEntry, AnnotationsMap } from "../../services/api/api.types"
 import { handleCommonApiError } from "../errors/errors"
 import { withSetPropAction } from "../helpers/withSetPropAction"
 import { type Annotation, AnnotationModel } from "./AnnotationModel"
@@ -367,10 +367,17 @@ export const BookModel = types
       libraryId: string,
       updateInfo: Partial<SnapshotIn<typeof MetadataModel>>,
       updateField: string[],
+      formatChanges?: {
+        removed_formats?: string[]
+        added_formats?: AddedFormatEntry[]
+      },
     ) {
       const changes: Partial<Record<CommonFieldName, unknown>> = {}
 
-      updateField.map((field: string) => {
+      // Skip "formats" from regular field changes — handled via removed_formats/added_formats
+      const regularFields = updateField.filter((f) => f !== "formats")
+
+      regularFields.map((field: string) => {
         const fieldValue = normalizeUpdateFieldValue(
           field,
           updateInfo[field as keyof SnapshotIn<typeof MetadataModel>],
@@ -384,17 +391,37 @@ export const BookModel = types
               .join("\n")
           : fieldValue
       })
+
+      if (formatChanges?.removed_formats?.length) {
+        ;(changes as Record<string, unknown>).removed_formats = formatChanges.removed_formats
+      }
+      if (formatChanges?.added_formats?.length) {
+        ;(changes as Record<string, unknown>).added_formats = formatChanges.added_formats
+      }
+
       const response = yield api.editBook(libraryId, root.id, {
         changes: changes as Record<CommonFieldName, unknown>,
         loaded_book_ids: [root.id],
       })
       if (response.kind === "ok") {
-        updateField.map((field: string) => {
+        // Update regular fields
+        regularFields.map((field: string) => {
           ;(root.metaData as unknown as Record<string, unknown>)[field] = normalizeUpdateFieldValue(
             field,
             updateInfo[field as keyof SnapshotIn<typeof MetadataModel>],
           )
         })
+        // Update local formats list if format changes were made
+        if (formatChanges?.removed_formats?.length || formatChanges?.added_formats?.length) {
+          const currentFormats = [...(root.metaData?.formats ?? [])]
+          const removed = new Set(
+            (formatChanges?.removed_formats ?? []).map((f) => f.toUpperCase()),
+          )
+          const remaining = currentFormats.filter((f) => !removed.has(f.toUpperCase()))
+          const added = (formatChanges?.added_formats ?? []).map((f) => f.ext.toUpperCase())
+          const merged = [...new Set([...remaining, ...added])]
+          ;(root.metaData as unknown as Record<string, unknown>).formats = merged
+        }
         return true
       }
       handleCommonApiError(response)

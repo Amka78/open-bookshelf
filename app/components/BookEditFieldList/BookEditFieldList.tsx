@@ -18,7 +18,6 @@ export type BookEditFieldListProps = {
     success: boolean
     format?: string
   }>
-  onDeleteFormat?: (format: string) => Promise<boolean>
   /** フォーカス時にコンテナのnodeHandleを渡すコールバック */
   onTextInputFocus?: (getContainerHandle: () => number | null) => void
 } & ComponentProps<typeof Box>
@@ -136,7 +135,6 @@ export function BookEditFieldList(props: BookEditFieldListProps) {
         fieldMetadata={value}
         suggestions={suggestions}
         onUploadFormat={props.onUploadFormat}
-        onDeleteFormat={props.onDeleteFormat}
         onTextInputFocus={props.onTextInputFocus}
         onRegisterFocusChain={registerFocusChain}
         onSubmitEditing={() => focusNext(value.label)}

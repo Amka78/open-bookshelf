@@ -78,7 +78,6 @@ let FormFormatField: ComponentType<{
     success: boolean
     format?: string
   }>
-  onDeleteFormat: (format: string) => Promise<boolean>
 }>
 
 beforeAll(async () => {
@@ -88,14 +87,12 @@ beforeAll(async () => {
 
 function TestHarness({
   onUploadFormat,
-  onDeleteFormat,
   defaultFormats = ["EPUB", "PDF"],
 }: {
   onUploadFormat: (params: { targetFormat?: string }) => Promise<{
     success: boolean
     format?: string
   }>
-  onDeleteFormat: (format: string) => Promise<boolean>
   defaultFormats?: string[]
 }) {
   const form = useForm<StoryForm>({
@@ -110,7 +107,6 @@ function TestHarness({
       name="formats"
       testID="form-format-story"
       onUploadFormat={onUploadFormat}
-      onDeleteFormat={onDeleteFormat}
     />
   )
 }
@@ -123,10 +119,9 @@ describe("FormFormatField story play", () => {
     const uploadMock = jest
       .fn<(params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>>()
       .mockResolvedValue({ success: true })
-    const deleteMock = jest.fn<(format: string) => Promise<boolean>>().mockResolvedValue(true)
 
     const { container } = render(
-      <TestHarness onUploadFormat={uploadMock} onDeleteFormat={deleteMock} />,
+      <TestHarness onUploadFormat={uploadMock} />,
     )
 
     await playClickFormatTriggersUpload({
@@ -141,10 +136,9 @@ describe("FormFormatField story play", () => {
     const uploadMock = jest
       .fn<(params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>>()
       .mockResolvedValue({ success: true })
-    const deleteMock = jest.fn<(format: string) => Promise<boolean>>().mockResolvedValue(true)
 
     const { container } = render(
-      <TestHarness onUploadFormat={uploadMock} onDeleteFormat={deleteMock} />,
+      <TestHarness onUploadFormat={uploadMock} />,
     )
 
     await playClickDisplayedFormatTextTriggersUpload({
@@ -159,10 +153,9 @@ describe("FormFormatField story play", () => {
     const uploadMock = jest
       .fn<(params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>>()
       .mockResolvedValue({ success: true, format: "AZW3" })
-    const deleteMock = jest.fn<(format: string) => Promise<boolean>>().mockResolvedValue(true)
 
     const { container } = render(
-      <TestHarness onUploadFormat={uploadMock} onDeleteFormat={deleteMock} />,
+      <TestHarness onUploadFormat={uploadMock} />,
     )
 
     await playPlusUploadsAndAddsRow({
@@ -173,34 +166,29 @@ describe("FormFormatField story play", () => {
     expect(uploadMock).toHaveBeenCalledWith({})
   })
 
-  test("minus deletes the format shown on that row", async () => {
+  test("minus removes the format row from the form", async () => {
     const uploadMock = jest
       .fn<(params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>>()
       .mockResolvedValue({ success: true })
-    const deleteMock = jest.fn<(format: string) => Promise<boolean>>().mockResolvedValue(true)
 
     const { container } = render(
-      <TestHarness onUploadFormat={uploadMock} onDeleteFormat={deleteMock} />,
+      <TestHarness onUploadFormat={uploadMock} />,
     )
 
     await playMinusDeletesFormatRow({
       canvasElement: container,
       baseTestId: "form-format-story",
     })
-
-    expect(deleteMock).toHaveBeenCalledWith("PDF")
   })
 
   test("single format hides the minus button", async () => {
     const uploadMock = jest
       .fn<(params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>>()
       .mockResolvedValue({ success: true })
-    const deleteMock = jest.fn<(format: string) => Promise<boolean>>().mockResolvedValue(true)
 
     const { container } = render(
       <TestHarness
         onUploadFormat={uploadMock}
-        onDeleteFormat={deleteMock}
         defaultFormats={["EPUB"]}
       />,
     )

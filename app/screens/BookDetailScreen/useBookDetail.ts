@@ -184,8 +184,16 @@ export function useBookDetail() {
 
   const handleDeleteFormat = async (format: string) => {
     try {
-      const result = await api.deleteBookFormat(selectedLibrary.id, selectedBook.id, format)
+      const result = await api.editBook(selectedLibrary.id, selectedBook.id, {
+        changes: { removed_formats: [format.toUpperCase()] } as never,
+        loaded_book_ids: [selectedBook.id],
+      })
       if (result.kind === "ok") {
+        // Update local formats list
+        const currentFormats = [...(selectedBook.metaData?.formats ?? [])]
+        const upper = format.toUpperCase()
+        const remaining = currentFormats.filter((f) => f.toUpperCase() !== upper)
+        selectedBook.metaData?.setProp("formats", remaining as never)
         modal.openModal("ErrorModal", {
           titleTx: "common.ok",
           messageTx: "bookFormatList.deleteSuccess",
@@ -209,14 +217,30 @@ export function useBookDetail() {
       const filePayload = asset.file ?? asset.uri
       if (!filePayload) return
 
-      const uploadResult = await api.uploadBookFormat(
-        selectedLibrary.id,
-        selectedBook.id,
-        format,
-        asset.name,
-        filePayload,
-      )
+      const { fileToDataUrl } = await import("@/utils/fileToDataUrl")
+      const dataUrl = await fileToDataUrl(filePayload)
+
+      const uploadResult = await api.editBook(selectedLibrary.id, selectedBook.id, {
+        changes: {
+          added_formats: [
+            {
+              ext: format,
+              data_url: dataUrl,
+              name: asset.name,
+              size: asset.size ?? 0,
+              type: asset.mimeType ?? "application/octet-stream",
+            },
+          ],
+        } as never,
+        loaded_book_ids: [selectedBook.id],
+      })
       if (uploadResult.kind === "ok") {
+        // Update local formats list
+        const currentFormats = [...(selectedBook.metaData?.formats ?? [])]
+        if (!currentFormats.map((f) => f.toUpperCase()).includes(format)) {
+          currentFormats.push(format)
+          selectedBook.metaData?.setProp("formats", currentFormats as never)
+        }
         modal.openModal("ErrorModal", {
           titleTx: "common.ok",
           messageTx: "bookFormatList.uploadSuccess",

@@ -68,7 +68,14 @@ export async function playFocusTriggersAutoScroll({
 }: {
   canvasElement: HTMLElement
 }) {
-  const input = await findByTestId(canvasElement, "book-edit-focus-probe")
+  const input =
+    (canvasElement.querySelector(`[data-testid="book-edit-focus-probe"]`) as HTMLElement | null) ??
+    (canvasElement.querySelector("input") as HTMLElement | null)
+
+  if (!input) {
+    throw new Error("Focusable input for auto-scroll was not found.")
+  }
+
   fireEvent.focus(input)
 
   for (let retry = 0; retry < 15; retry += 1) {

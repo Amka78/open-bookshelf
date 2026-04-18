@@ -27,7 +27,6 @@ export type BookEditFieldProps = {
     success: boolean
     format?: string
   }>
-  onDeleteFormat?: (format: string) => Promise<boolean>
   /** フォーカス時にコンテナのnodeHandleを渡すコールバック */
   onTextInputFocus?: (getContainerHandle: () => number | null) => void
   /** キーボード「次へ」ナビゲーション用チェーン登録 */
@@ -140,7 +139,6 @@ export function BookEditField(props: BookEditFieldProps) {
               control={props.control}
               name={label}
               onUploadFormat={props.onUploadFormat}
-              onDeleteFormat={props.onDeleteFormat}
               testID={`book-edit-${String(label)}`}
             />
           )

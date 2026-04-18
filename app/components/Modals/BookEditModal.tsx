@@ -7,11 +7,12 @@ import type { ModalComponentProp } from "react-native-modalfy"
 
 import { useStores } from "@/models"
 import type { MetadataSnapshotIn } from "@/models/calibre"
-import { api } from "@/services/api"
+import type { AddedFormatEntry } from "@/services/api/api.types"
 import { logger } from "@/utils/logger"
 import * as DocumentPicker from "expo-document-picker"
 import { observer } from "mobx-react-lite"
 import { getSnapshot } from "mobx-state-tree"
+import { useRef } from "react"
 import { useForm } from "react-hook-form"
 import { Body } from "./Body"
 import { CloseButton } from "./CloseButton"
@@ -26,7 +27,6 @@ type BookEditModalTemplateProps = ModalComponentProp<ModalStackParams, object, "
     success: boolean
     format?: string
   }>
-  onDeleteFormat?: (format: string) => Promise<boolean>
 }
 
 export const BookEditModal = observer((props: BookEditModalProps) => {
@@ -52,6 +52,8 @@ export const BookEditModal = observer((props: BookEditModalProps) => {
     return normalizedFromName || normalizedFallback || undefined
   }
 
+  const pendingAddedFormats = useRef<AddedFormatEntry[]>([])
+
   const onUploadFormat = async ({ targetFormat }: { targetFormat?: string }) => {
     const result = await DocumentPicker.getDocumentAsync({
       multiple: false,
@@ -75,33 +77,34 @@ export const BookEditModal = observer((props: BookEditModalProps) => {
       return { success: false }
     }
 
-    const uploadResult = await api.uploadBookFormat(
-      selectedLibrary.id,
-      selectedBook.id,
-      pickedFormat,
-      pickedAsset.name,
-      filePayload,
-    )
+    try {
+      const { fileToDataUrl } = await import("@/utils/fileToDataUrl")
+      const dataUrl = await fileToDataUrl(filePayload)
 
-    if (uploadResult.kind !== "ok") {
+      pendingAddedFormats.current = pendingAddedFormats.current.filter(
+        (e) => e.ext.toUpperCase() !== pickedFormat,
+      )
+      pendingAddedFormats.current.push({
+        ext: pickedFormat,
+        data_url: dataUrl,
+        name: pickedAsset.name,
+        size: pickedAsset.size ?? 0,
+        type: pickedAsset.mimeType ?? "application/octet-stream",
+      })
+
+      return { success: true, format: pickedFormat }
+    } catch {
       return { success: false }
     }
-
-    return {
-      success: true,
-      format: pickedFormat,
-    }
   }
 
-  const onDeleteFormat = async (format: string) => {
-    const deleteResult = await api.deleteBookFormat(selectedLibrary.id, selectedBook.id, format)
-    return deleteResult.kind === "ok"
-  }
+  const originalFormats = selectedBook.metaData
+    ? [...(getSnapshot(selectedBook.metaData) as MetadataSnapshotIn).formats]
+    : []
 
   return (
     <BookEditModalTemplate
       onUploadFormat={onUploadFormat}
-      onDeleteFormat={onDeleteFormat}
       modal={{
         ...props.modal,
         params: {
@@ -110,7 +113,26 @@ export const BookEditModal = observer((props: BookEditModalProps) => {
           fieldMetadataList: selectedLibrary.fieldMetadataList,
           tagBrowser: selectedLibrary.tagBrowser,
           onOKPress(value, updateFields) {
-            selectedBook.update(selectedLibrary.id, value, updateFields)
+            // Compute removed formats
+            const currentFormats = (value.formats ?? []).map((f: string) =>
+              String(f).toUpperCase(),
+            )
+            const removedFormats = originalFormats
+              .map((f) => String(f).toUpperCase())
+              .filter((f) => !currentFormats.includes(f))
+
+            const formatChanges =
+              removedFormats.length > 0 || pendingAddedFormats.current.length > 0
+                ? {
+                    removed_formats: removedFormats.length > 0 ? removedFormats : undefined,
+                    added_formats:
+                      pendingAddedFormats.current.length > 0
+                        ? pendingAddedFormats.current
+                        : undefined,
+                  }
+                : undefined
+
+            selectedBook.update(selectedLibrary.id, value, updateFields, formatChanges)
             props.modal.closeModal()
           },
         },
@@ -165,7 +187,6 @@ export function BookEditModalTemplate(props: BookEditModalTemplateProps) {
             fieldMetadataList={props.modal.params.fieldMetadataList}
             tagBrowser={props.modal.params.tagBrowser}
             onUploadFormat={props.onUploadFormat}
-            onDeleteFormat={props.onDeleteFormat}
             height={320}
             width={240}
           />

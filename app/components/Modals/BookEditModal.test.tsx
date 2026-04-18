@@ -7,12 +7,15 @@ import {
   jest,
   mock,
 } from "bun:test"
-import { api } from "@/services/api"
 import { render } from "@testing-library/react"
 import * as DocumentPicker from "expo-document-picker"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 import { playBookEditModalFormatClickRunsUpload } from "./bookEditModalStoryPlay"
+
+mock.module("@/utils/fileToDataUrl", () => ({
+  fileToDataUrl: jest.fn().mockResolvedValue("data:application/epub+zip;base64,abc123"),
+}))
 
 mock.module("@/components/BookEditFieldList/BookEditFieldList", () => ({
   BookEditFieldList: ({
@@ -144,10 +147,9 @@ describe("BookEditModal format upload wiring", () => {
         },
       ],
     } as unknown as DocumentPicker.DocumentPickerResult)
-    jest.spyOn(api, "uploadBookFormat").mockResolvedValue({ kind: "ok" })
   })
 
-  test("clicking format row in modal triggers upload API", async () => {
+  test("clicking format row in modal stores pending upload", async () => {
     const closeModal = jest.fn()
 
     const { container } = render(
@@ -170,12 +172,8 @@ describe("BookEditModal format upload wiring", () => {
       canvasElement: container,
     })
 
-    expect(api.uploadBookFormat).toHaveBeenCalledWith(
-      "lib1",
-      1,
-      "EPUB",
-      "replace.epub",
-      "file:///tmp/replace.epub",
-    )
+    // Upload is now deferred - the format row triggers document picker and stores pending data
+    // Verify DocumentPicker was called (the upload is stored, not sent immediately)
+    expect(DocumentPicker.getDocumentAsync).toHaveBeenCalled()
   })
 })

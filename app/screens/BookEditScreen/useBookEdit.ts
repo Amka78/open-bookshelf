@@ -1,13 +1,12 @@
-import { useElectrobunModal } from "@/hooks/useElectrobunModal"
-import { translate } from "@/i18n"
 import { useStores } from "@/models"
 import type { MetadataSnapshotIn } from "@/models/calibre"
 import type { ApppNavigationProp } from "@/navigators/types"
 import { api } from "@/services/api"
+import type { AddedFormatEntry } from "@/services/api/api.types"
 import { useNavigation } from "@react-navigation/native"
 import * as DocumentPicker from "expo-document-picker"
 import { getSnapshot } from "mobx-state-tree"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 
 type MetadataFormValues = MetadataSnapshotIn
@@ -51,7 +50,6 @@ function toLanguageNamesForUpdate(
 export function useBookEdit() {
   const { calibreRootStore } = useStores()
   const navigation = useNavigation<ApppNavigationProp>()
-  const modal = useElectrobunModal()
 
   const selectedLibrary = calibreRootStore.selectedLibrary
   const selectedBook = selectedLibrary.selectedBook
@@ -69,11 +67,31 @@ export function useBookEdit() {
     defaultValues: normalizedDefaultValues,
   })
 
-  const onSubmit = form.handleSubmit((value: MetadataFormValues) => {
+  const pendingAddedFormats = useRef<AddedFormatEntry[]>([])
+
+  const onSubmit = form.handleSubmit(async (value: MetadataFormValues) => {
     const updatedValue =
       hasLangNames && bookMetaDataSnapshot ? toLanguageNamesForUpdate(value, langNames) : value
 
-    selectedBook.update(selectedLibrary.id, updatedValue, Object.keys(updatedValue))
+    // Compute removed formats by comparing original with current form value
+    const originalFormats = (bookMetaDataSnapshot?.formats ?? []).map((f) =>
+      String(f).toUpperCase(),
+    )
+    const currentFormats = (updatedValue.formats ?? []).map((f) => String(f).toUpperCase())
+    const removedFormats = originalFormats.filter((f) => !currentFormats.includes(f))
+
+    const formatChanges =
+      removedFormats.length > 0 || pendingAddedFormats.current.length > 0
+        ? {
+            removed_formats: removedFormats.length > 0 ? removedFormats : undefined,
+            added_formats:
+              pendingAddedFormats.current.length > 0
+                ? pendingAddedFormats.current
+                : undefined,
+          }
+        : undefined
+
+    selectedBook.update(selectedLibrary.id, updatedValue, Object.keys(updatedValue), formatChanges)
     calibreRootStore.bumpBookThumbnailRevision(selectedLibrary.id, selectedBook.id)
     navigation.goBack()
   })
@@ -121,62 +139,26 @@ export function useBookEdit() {
       return { success: false }
     }
 
-    const uploadResult = await api.uploadBookFormat(
-      selectedLibrary.id,
-      selectedBook.id,
-      pickedFormat,
-      pickedAsset.name,
-      filePayload,
-    )
+    try {
+      const { fileToDataUrl } = await import("@/utils/fileToDataUrl")
+      const dataUrl = await fileToDataUrl(filePayload)
 
-    if (uploadResult.kind !== "ok") {
+      // Remove any prior pending entry for the same format
+      pendingAddedFormats.current = pendingAddedFormats.current.filter(
+        (e) => e.ext.toUpperCase() !== pickedFormat,
+      )
+      pendingAddedFormats.current.push({
+        ext: pickedFormat,
+        data_url: dataUrl,
+        name: pickedAsset.name,
+        size: pickedAsset.size ?? 0,
+        type: pickedAsset.mimeType ?? "application/octet-stream",
+      })
+
+      return { success: true, format: pickedFormat }
+    } catch {
       return { success: false }
     }
-
-    return {
-      success: true,
-      format: pickedFormat,
-    }
-  }
-
-  const onDeleteFormat = async (format: string): Promise<boolean> => {
-    return new Promise<boolean>((resolve, reject) => {
-      let settled = false
-
-      const finish = (value: boolean) => {
-        if (settled) {
-          return
-        }
-        settled = true
-        resolve(value)
-      }
-
-      const handleDelete = async () => {
-        try {
-          const deleteResult = await api.deleteBookFormat(
-            selectedLibrary.id,
-            selectedBook.id,
-            format,
-          )
-          finish(deleteResult.kind === "ok")
-        } catch (error) {
-          if (settled) {
-            return
-          }
-          settled = true
-          reject(error)
-        }
-      }
-
-      modal.openModal("ConfirmModal", {
-        titleTx: "bookEditScreen.deleteFormatConfirmTitle",
-        message: translate("bookEditScreen.deleteFormatConfirmMessage", { format }),
-        onCancelPress: () => finish(false),
-        onOKPress: async () => {
-          await handleDelete()
-        },
-      })
-    })
   }
 
   const [coverUrlInput, setCoverUrlInput] = useState("")
@@ -219,7 +201,6 @@ export function useBookEdit() {
     selectedLibrary,
     onSubmit,
     onUploadFormat,
-    onDeleteFormat,
     coverUrlInput,
     setCoverUrlInput,
     isFetchingCover,

@@ -74,7 +74,7 @@ export function FormSuggestionPopover(props: FormSuggestionPopoverProps) {
                 testID={`${
                   candidateTestIDPrefix ?? `${testIdPrefix}-suggestion`
                 }-${encodeURIComponent(candidate)}`}
-                onPress={() => {
+                onPressIn={() => {
                   onSelect(candidate)
                 }}
               >
@@ -102,6 +102,7 @@ export function FormSuggestionPopover(props: FormSuggestionPopoverProps) {
       placement={popoverPlacement}
       shouldFlip={false}
       isKeyboardDismissable={false}
+      useRNModal={true}
       trigger={trigger}
       isOpen={isOpen}
       trapFocus={false}
@@ -138,7 +139,7 @@ export function FormSuggestionPopover(props: FormSuggestionPopoverProps) {
                 testID={`${
                   candidateTestIDPrefix ?? `${testIdPrefix}-suggestion`
                 }-${encodeURIComponent(candidate)}`}
-                onPress={() => {
+                onPressIn={() => {
                   onSelect(candidate)
                 }}
               >

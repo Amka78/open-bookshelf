@@ -20,8 +20,6 @@ const mockOpenModal = jest.fn()
 
 mock.module("@/services/api", () => ({
   api: {
-    uploadBookFormat: jest.fn(),
-    deleteBookFormat: jest.fn(),
     setCoverBinary: jest.fn(),
   },
 }))
@@ -39,6 +37,10 @@ mock.module("@/hooks/useElectrobunModal", () => ({
   useElectrobunModal: () => ({
     openModal: mockOpenModal,
   }),
+}))
+
+mock.module("@/utils/fileToDataUrl", () => ({
+  fileToDataUrl: jest.fn().mockResolvedValue("data:application/epub+zip;base64,abc123"),
 }))
 
 mock.module("mobx-state-tree", () => ({
@@ -72,6 +74,7 @@ describe("useBookEdit", () => {
       title: "Original Book",
       authors: ["Author 1"],
       languages: ["en", "ja"],
+      formats: ["EPUB", "PDF"],
       langNames: {
         en: "English",
         ja: "Japanese",
@@ -119,6 +122,7 @@ describe("useBookEdit", () => {
           title: "Test Book",
           authors: ["Author 1"],
           languages: ["English", "Japanese"],
+          formats: ["EPUB", "PDF"],
         })
       }
     })
@@ -236,31 +240,22 @@ describe("useBookEdit", () => {
     expect(result.current).toHaveProperty("onSubmit")
   })
 
-  test("onUploadFormat calls uploadBookFormat API in runtime flow", async () => {
-    const getDocumentAsyncSpy = jest.spyOn(DocumentPicker, "getDocumentAsync").mockResolvedValue({
+  test("onUploadFormat stores pending format data and returns success", async () => {
+    jest.spyOn(DocumentPicker, "getDocumentAsync").mockResolvedValue({
       canceled: false,
       assets: [
         {
           name: "sample.epub",
           uri: "file:///tmp/sample.epub",
           mimeType: "application/epub+zip",
+          size: 12345,
         },
       ],
     } as unknown as DocumentPicker.DocumentPickerResult)
 
-    const uploadSpy = jest.spyOn(api, "uploadBookFormat").mockResolvedValue({ kind: "ok" })
-
     const { result } = renderHook(() => useBookEdit())
     const uploaded = await result.current.onUploadFormat({ targetFormat: "EPUB" })
 
-    expect(getDocumentAsyncSpy).toHaveBeenCalled()
-    expect(uploadSpy).toHaveBeenCalledWith(
-      "lib1",
-      1,
-      "EPUB",
-      "sample.epub",
-      "file:///tmp/sample.epub",
-    )
     expect(uploaded).toEqual({ success: true, format: "EPUB" })
   })
 
@@ -272,22 +267,14 @@ describe("useBookEdit", () => {
           name: "sample.azw3",
           uri: "file:///tmp/sample.azw3",
           mimeType: "application/octet-stream",
+          size: 5000,
         },
       ],
     } as unknown as DocumentPicker.DocumentPickerResult)
 
-    const uploadSpy = jest.spyOn(api, "uploadBookFormat").mockResolvedValue({ kind: "ok" })
-
     const { result } = renderHook(() => useBookEdit())
     const uploaded = await result.current.onUploadFormat({})
 
-    expect(uploadSpy).toHaveBeenCalledWith(
-      "lib1",
-      1,
-      "AZW3",
-      "sample.azw3",
-      "file:///tmp/sample.azw3",
-    )
     expect(uploaded).toEqual({ success: true, format: "AZW3" })
   })
 
@@ -315,91 +302,10 @@ describe("useBookEdit", () => {
       ],
     } as unknown as DocumentPicker.DocumentPickerResult)
 
-    const uploadSpy = jest.spyOn(api, "uploadBookFormat")
-
     const { result } = renderHook(() => useBookEdit())
     const uploaded = await result.current.onUploadFormat({ targetFormat: "EPUB" })
 
     expect(uploaded).toEqual({ success: false })
-    expect(uploadSpy).not.toHaveBeenCalled()
-  })
-
-  test("onUploadFormat returns failure when uploading the picked format fails", async () => {
-    jest.spyOn(DocumentPicker, "getDocumentAsync").mockResolvedValue({
-      canceled: false,
-      assets: [
-        {
-          name: "sample.epub",
-          uri: "file:///tmp/sample.epub",
-          mimeType: "application/epub+zip",
-        },
-      ],
-    } as unknown as DocumentPicker.DocumentPickerResult)
-
-    jest
-      .spyOn(api, "uploadBookFormat")
-      .mockResolvedValue({ kind: "bad-data" } as unknown as Awaited<
-        ReturnType<typeof api.uploadBookFormat>
-      >)
-
-    const { result } = renderHook(() => useBookEdit())
-    const uploaded = await result.current.onUploadFormat({ targetFormat: "EPUB" })
-
-    expect(uploaded).toEqual({ success: false })
-  })
-
-  test("onDeleteFormat calls deleteBookFormat API", async () => {
-    const deleteSpy = jest.spyOn(api, "deleteBookFormat").mockResolvedValue({ kind: "ok" })
-
-    const { result } = renderHook(() => useBookEdit())
-    const deletePromise = result.current.onDeleteFormat("PDF")
-
-    const modalParams = mockOpenModal.mock.calls[0]?.[1] as
-      | { onOKPress?: () => Promise<void> }
-      | undefined
-    await modalParams?.onOKPress?.()
-    const deleted = await deletePromise
-
-    expect(deleteSpy).toHaveBeenCalledWith("lib1", 1, "PDF")
-    expect(deleted).toBe(true)
-  })
-
-  test("onDeleteFormat asks for confirmation before deleting", async () => {
-    const { result } = renderHook(() => useBookEdit())
-    const deletePromise = result.current.onDeleteFormat("PDF")
-
-    expect(mockOpenModal).toHaveBeenCalledWith(
-      "ConfirmModal",
-      expect.objectContaining({
-        titleTx: "bookEditScreen.deleteFormatConfirmTitle",
-        message: expect.any(String),
-      }),
-    )
-
-    const modalParams = mockOpenModal.mock.calls[0]?.[1] as { onCancelPress?: () => void } | undefined
-    modalParams?.onCancelPress?.()
-    const deleted = await deletePromise
-
-    expect(deleted).toBe(false)
-  })
-
-  test("onDeleteFormat returns false when the format delete request fails after confirmation", async () => {
-    jest
-      .spyOn(api, "deleteBookFormat")
-      .mockResolvedValue({ kind: "bad-data" } as unknown as Awaited<
-        ReturnType<typeof api.deleteBookFormat>
-      >)
-
-    const { result } = renderHook(() => useBookEdit())
-    const deletePromise = result.current.onDeleteFormat("PDF")
-
-    const modalParams = mockOpenModal.mock.calls[0]?.[1] as
-      | { onOKPress?: () => Promise<void> }
-      | undefined
-    await modalParams?.onOKPress?.()
-    const deleted = await deletePromise
-
-    expect(deleted).toBe(false)
   })
 
   test("onSubmit forwards the language values currently held by the edit form", () => {

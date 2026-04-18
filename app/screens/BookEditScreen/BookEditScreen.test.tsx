@@ -25,20 +25,30 @@ const useStoresMock = jest.fn()
 const useNavigationMock = jest.fn()
 const useRouteMock = jest.fn()
 const scrollToEndMock = jest.fn()
+const scrollToMock = jest.fn()
 const mockUpdate = jest.fn()
 const mockSetOptions = jest.fn()
 const mockGoBack = jest.fn()
 const mockBumpBookThumbnailRevision = jest.fn()
+const measureLayoutMock = jest.fn()
+const findNodeHandleMock = jest.fn()
+const currentlyFocusedInputMock = jest.fn()
+let platformOS: "android" | "web" = "web"
 
 mock.module("react-native", () => ({
   ...(global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock,
-  Platform: { OS: "web", select: (obj: Record<string, unknown>) => obj.web ?? obj.default },
+  Platform: {
+    get OS() {
+      return platformOS
+    },
+    select: (obj: Record<string, unknown>) => obj[platformOS] ?? obj.default,
+  },
   KeyboardAvoidingView: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   TextInput: Object.assign((props: Record<string, unknown>) => <input {...(props as object)} />, {
-    State: { currentlyFocusedInput: null },
+    State: { currentlyFocusedInput: currentlyFocusedInputMock },
   }),
-  UIManager: { measureLayout: jest.fn() },
-  findNodeHandle: jest.fn().mockReturnValue(null),
+  UIManager: { measureLayout: measureLayoutMock },
+  findNodeHandle: findNodeHandleMock,
 }))
 
 mock.module("@/hooks/useKeyboardVisibility", () => ({
@@ -96,6 +106,13 @@ mock.module("@/components/ScrollView/ScrollView", () => ({
     const rootRef = useRef<HTMLDivElement | null>(null)
 
     useImperativeHandle(ref, () => ({
+      scrollTo: (options?: { y?: number; animated?: boolean }) => {
+        scrollToMock(options)
+        const current = rootRef.current
+        if (!current) return
+
+        current.setAttribute("data-scroll-y", String(options?.y ?? 0))
+      },
       scrollToEnd: () => {
         scrollToEndMock()
         const current = rootRef.current
@@ -124,9 +141,13 @@ mock.module("@/components/Forms/FormImageUploader", () => ({
 }))
 
 mock.module("@/components/BookEditFieldList/BookEditFieldList", () => ({
-  BookEditFieldList: ({ onTextInputFocus }: { onTextInputFocus?: () => void }) => (
+  BookEditFieldList: ({
+    onTextInputFocus,
+  }: {
+    onTextInputFocus?: (getContainerHandle?: () => number | null) => void
+  }) => (
     <div data-testid="book-edit-field-list">
-      <input data-testid="book-edit-focus-probe" onFocus={onTextInputFocus} />
+      <input data-testid="book-edit-focus-probe" onFocus={() => onTextInputFocus?.(() => 321)} />
     </div>
   ),
 }))
@@ -152,6 +173,11 @@ let BookEditScreen: typeof import("./BookEditScreen").BookEditScreen
 beforeEach(async () => {
   jest.clearAllMocks()
   scrollToEndMock.mockReset()
+  scrollToMock.mockReset()
+  measureLayoutMock.mockReset()
+  findNodeHandleMock.mockReset().mockReturnValue(999)
+  currentlyFocusedInputMock.mockReset().mockReturnValue(null)
+  platformOS = "web"
 
   useRouteMock.mockReturnValue({
     params: {
@@ -229,6 +255,41 @@ describe("BookEditScreen keyboard handling", () => {
     })
 
     expect(scrollToEndMock).toHaveBeenCalled()
+  })
+
+  test("keeps suggestion space above a focused field while the keyboard is visible on native", async () => {
+    useKeyboardVisibilityMock.mockReturnValue({
+      isKeyboardVisible: true,
+      keyboardHeight: 280,
+    })
+    platformOS = "android"
+    measureLayoutMock.mockImplementation(
+      (
+        _containerHandle: number,
+        _scrollNode: number,
+        _onFail: () => void,
+        onSuccess: (_x: number, y: number) => void,
+      ) => {
+        onSuccess(0, 300)
+      },
+    )
+
+    const { container } = render(<BookEditScreen />)
+    const input = container.querySelector(
+      `[data-testid="book-edit-focus-probe"]`,
+    ) as HTMLInputElement | null
+
+    if (!input) {
+      throw new Error("Focus probe input was not found.")
+    }
+
+    input.focus()
+    await new Promise((resolve) => setTimeout(resolve, 120))
+
+    expect(scrollToMock).toHaveBeenCalledWith({
+      y: 80,
+      animated: true,
+    })
   })
 
   test("shows the save button on large screens", async () => {

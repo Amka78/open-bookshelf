@@ -35,7 +35,6 @@ export const BookEditScreen: FC = observer(() => {
     selectedLibrary,
     onSubmit,
     onUploadFormat,
-    onDeleteFormat,
     coverUrlInput,
     setCoverUrlInput,
     isFetchingCover,
@@ -78,8 +77,9 @@ export const BookEditScreen: FC = observer(() => {
             scrollViewRef.current?.scrollToEnd?.({ animated: true })
           },
           (_x: number, y: number) => {
-            // ラベルが見えるよう少し余裕を持たせてスクロール（ラベル上部から50px上）
-            const scrollY = Math.max(0, y - 50)
+            const scrollOffset = isKeyboardVisible ? SUGGESTION_AREA_CLEARANCE : 50
+            // 候補ポップオーバーが重ならないよう、キーボード表示中は十分な余白を確保する
+            const scrollY = Math.max(0, y - scrollOffset)
             scrollViewRef.current?.scrollTo?.({ y: scrollY, animated: true })
           },
         )
@@ -90,8 +90,8 @@ export const BookEditScreen: FC = observer(() => {
       const focusedInput = TextInput.State.currentlyFocusedInput?.()
       if (focusedInput != null && scrollNode != null) {
         focusedInput.measureLayout(
-        // biome-ignore lint/suspicious/noExplicitAny: measureLayout NodeHandle type requires cast for the scroll node returned by findNodeHandle
-        scrollNode as any,
+          // biome-ignore lint/suspicious/noExplicitAny: measureLayout NodeHandle type requires cast for the scroll node returned by findNodeHandle
+          scrollNode as any,
           (_x: number, y: number) => {
             // ドロップダウンがある場合は上に SUGGESTION_AREA_CLEARANCE 分スペースを確保
             const scrollY = Math.max(0, y - SUGGESTION_AREA_CLEARANCE)
@@ -186,7 +186,6 @@ export const BookEditScreen: FC = observer(() => {
                 fieldMetadataList={selectedLibrary.fieldMetadataList}
                 tagBrowser={selectedLibrary.tagBrowser}
                 onUploadFormat={onUploadFormat}
-                onDeleteFormat={onDeleteFormat}
                 onTextInputFocus={handleTextInputFocus}
                 marginTop={"$3"}
               />

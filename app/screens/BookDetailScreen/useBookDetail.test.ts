@@ -23,9 +23,8 @@ const mockUseDownloadBook = jest.fn()
 const mockUseOpenViewer = jest.fn()
 const mockUseElectrobunModal = jest.fn()
 const mockShareShare = jest.fn()
+const mockEditBook = jest.fn()
 const mockGetBookDownloadUrl = jest.fn()
-const mockDeleteBookFormat = jest.fn()
-const mockUploadBookFormat = jest.fn()
 const mockSendBookByEmail = jest.fn()
 const reactNativeMockFactory = () => ({
   ...((global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock ?? {}),
@@ -41,8 +40,7 @@ mock.module(
 mock.module("@/services/api", () => ({
   api: {
     getBookDownloadUrl: mockGetBookDownloadUrl,
-    deleteBookFormat: mockDeleteBookFormat,
-    uploadBookFormat: mockUploadBookFormat,
+    editBook: mockEditBook,
     sendBookByEmail: mockSendBookByEmail,
   },
 }))
@@ -65,6 +63,10 @@ mock.module("../../hooks/useOpenViewer", () => ({
 
 mock.module("@/hooks/useElectrobunModal", () => ({
   useElectrobunModal: mockUseElectrobunModal,
+}))
+
+mock.module("@/utils/fileToDataUrl", () => ({
+  fileToDataUrl: jest.fn().mockResolvedValue("data:application/epub+zip;base64,abc123"),
 }))
 
 let useBookDetail: typeof import("./useBookDetail").useBookDetail
@@ -154,8 +156,7 @@ describe("useBookDetail", () => {
       execute: mockDownloadBookExecute,
     })
     mockGetBookDownloadUrl.mockReturnValue("https://example.com/download/EPUB/1")
-    mockDeleteBookFormat.mockResolvedValue({ kind: "ok" })
-    mockUploadBookFormat.mockResolvedValue({ kind: "ok" })
+    mockEditBook.mockResolvedValue({ kind: "ok", data: {} })
     mockSendBookByEmail.mockResolvedValue({ kind: "ok" })
     mockShareShare.mockResolvedValue(undefined)
   })
@@ -546,7 +547,10 @@ describe("useBookDetail", () => {
         await result.current.handleDeleteFormat("PDF")
       })
 
-      expect(mockDeleteBookFormat).toHaveBeenCalledWith("lib1", 1, "PDF")
+      expect(mockEditBook).toHaveBeenCalledWith("lib1", 1, {
+        changes: { removed_formats: ["PDF"] },
+        loaded_book_ids: [1],
+      })
       expect(mockOpenModal).toHaveBeenCalledWith("ErrorModal", {
         titleTx: "common.ok",
         messageTx: "bookFormatList.deleteSuccess",
@@ -571,13 +575,18 @@ describe("useBookDetail", () => {
         await result.current.handleUploadFormat()
       })
 
-      expect(mockUploadBookFormat).toHaveBeenCalledWith(
-        "lib1",
-        1,
-        "EPUB",
-        "uploaded.epub",
-        "file:///tmp/uploaded.epub",
-      )
+      expect(mockEditBook).toHaveBeenCalledWith("lib1", 1, {
+        changes: {
+          added_formats: [
+            expect.objectContaining({
+              ext: "EPUB",
+              name: "uploaded.epub",
+              data_url: expect.stringContaining("data:"),
+            }),
+          ],
+        },
+        loaded_book_ids: [1],
+      })
       expect(mockOpenModal).toHaveBeenCalledWith("ErrorModal", {
         titleTx: "common.ok",
         messageTx: "bookFormatList.uploadSuccess",

@@ -122,24 +122,59 @@ describe("Api.fetchWithAuth", () => {
     )
   })
 
-  test("uploadBookFormat uses auth-aware fetch for Digest-protected uploads", async () => {
+  test("editBook sends removed_formats via cdb/set-fields", async () => {
     const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
-    const fetchWithAuthSpy = jest
-      .spyOn(api, "fetchWithAuth")
-      .mockResolvedValue({ ok: true, status: 200 } as Response)
+    const postSpy = jest.spyOn(api.apisauce, "post").mockResolvedValue({
+      ok: true,
+      status: 200,
+      data: {},
+      problem: null,
+    } as never)
 
-    await api.uploadBookFormat(
-      "config",
-      12,
-      "EPUB",
-      "sample.epub",
-      new File(["book"], "sample.epub"),
+    const result = await api.editBook("config", 12, {
+      changes: { removed_formats: ["EPUB"] } as never,
+      loaded_book_ids: [12],
+    })
+
+    expect(result).toEqual({ kind: "ok", data: {} })
+    expect(postSpy).toHaveBeenCalledWith(
+      "cdb/set-fields/12/config",
+      {
+        changes: { removed_formats: ["EPUB"] },
+        loaded_book_ids: [12],
+      },
     )
+  })
 
-    expect(fetchWithAuthSpy).toHaveBeenCalledTimes(1)
-    expect(fetchWithAuthSpy).toHaveBeenCalledWith(
-      "http://calibrelocal/cdb/add-format/12/EPUB/config",
-      expect.objectContaining({ method: "POST" }),
+  test("editBook sends added_formats via cdb/set-fields", async () => {
+    const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
+    const postSpy = jest.spyOn(api.apisauce, "post").mockResolvedValue({
+      ok: true,
+      status: 200,
+      data: {},
+      problem: null,
+    } as never)
+
+    const addedFormat = {
+      ext: "PDF",
+      data_url: "data:application/pdf;base64,abc123",
+      name: "book.pdf",
+      size: 1234,
+      type: "application/pdf",
+    }
+
+    const result = await api.editBook("config", 12, {
+      changes: { added_formats: [addedFormat] } as never,
+      loaded_book_ids: [12],
+    })
+
+    expect(result).toEqual({ kind: "ok", data: {} })
+    expect(postSpy).toHaveBeenCalledWith(
+      "cdb/set-fields/12/config",
+      {
+        changes: { added_formats: [addedFormat] },
+        loaded_book_ids: [12],
+      },
     )
   })
 

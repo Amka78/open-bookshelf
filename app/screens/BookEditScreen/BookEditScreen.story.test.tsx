@@ -2,6 +2,7 @@ import { describe as baseDescribe, test as baseTest, expect, jest } from "bun:te
 import { render } from "@testing-library/react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 import {
+  playFocusTriggersAutoScroll,
   playKeyboardShownHidesCover,
   playKeyboardShownKeepsFieldsVisible,
   playLargeScreenShowsSaveButton,
@@ -20,7 +21,13 @@ describe("BookEditScreen story play", () => {
     hasCover = false,
     paddingBottom = 20,
     scrollEndCalls = 0,
-  }: { hasCover?: boolean; paddingBottom?: number; scrollEndCalls?: number } = {}) =>
+    hasFocusProbe = false,
+  }: {
+    hasCover?: boolean
+    paddingBottom?: number
+    scrollEndCalls?: number
+    hasFocusProbe?: boolean
+  } = {}) =>
     render(
       <div>
         {hasCover && <div data-testid="book-edit-screen-cover-container" />}
@@ -30,6 +37,20 @@ describe("BookEditScreen story play", () => {
           data-padding-bottom={paddingBottom}
           data-scroll-end-calls={scrollEndCalls}
         />
+        {hasFocusProbe ? (
+          <input
+            data-testid="book-edit-focus-probe"
+            onFocus={(event) => {
+              const scroll = event.currentTarget.ownerDocument.querySelector(
+                `[data-testid="book-edit-screen-scroll"]`,
+              )
+              if (!scroll) return
+
+              const previous = Number(scroll.getAttribute("data-scroll-end-calls") ?? "0")
+              scroll.setAttribute("data-scroll-end-calls", String(previous + 1))
+            }}
+          />
+        ) : null}
       </div>,
     )
 
@@ -52,6 +73,12 @@ describe("BookEditScreen story play", () => {
   test("keyboard shown keeps fields visible with padding", async () => {
     const { container } = renderWithFields({ paddingBottom: 20 })
     await playKeyboardShownKeepsFieldsVisible({ canvasElement: container })
+  })
+
+  test("focus triggers auto scroll", async () => {
+    const { container } = renderWithFields({ scrollEndCalls: 0, hasFocusProbe: true })
+
+    await playFocusTriggersAutoScroll({ canvasElement: container })
   })
 
   test("large screen shows save button", async () => {

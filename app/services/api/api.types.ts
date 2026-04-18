@@ -416,8 +416,19 @@ export type AnnotationsMap = {
   bookmark?: CalibreAnnotation[]
 }
 
+export type AddedFormatEntry = {
+  ext: string
+  data_url: string
+  name: string
+  size: number
+  type: string
+}
+
 export type SetBookMetadata = {
-  changes: Record<CommonFieldName, unknown>
+  changes: Record<CommonFieldName, unknown> & {
+    removed_formats?: string[]
+    added_formats?: AddedFormatEntry[]
+  }
   loaded_book_ids: Array<number>
 }
 
