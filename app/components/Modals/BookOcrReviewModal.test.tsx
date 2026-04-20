@@ -20,6 +20,9 @@ const useNavigationMock = jest.fn()
 const useConvergenceMock = jest.fn()
 const recognizeCoverMock = jest.fn()
 const mockUpdate = jest.fn().mockResolvedValue(true)
+const rootPropsSpy = jest.fn()
+const bodyPropsSpy = jest.fn()
+const scrollViewPropsSpy = jest.fn()
 
 mock.module("@/models", () => ({
   useStores: useStoresMock,
@@ -67,11 +70,17 @@ mock.module("@/components/Heading/Heading", () => ({
 }))
 
 mock.module("@/components/ScrollView/ScrollView", () => ({
-  ScrollView: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  ScrollView: ({ children, ...props }: { children?: ReactNode }) => {
+    scrollViewPropsSpy(props)
+    return <div>{children}</div>
+  },
 }))
 
 mock.module("./Body", () => ({
-  Body: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  Body: ({ children, ...props }: { children?: ReactNode }) => {
+    bodyPropsSpy(props)
+    return <div>{children}</div>
+  },
 }))
 
 mock.module("./CloseButton", () => ({
@@ -91,7 +100,10 @@ mock.module("./ModalFooter", () => ({
 }))
 
 mock.module("./Root", () => ({
-  Root: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  Root: ({ children, ...props }: { children?: ReactNode }) => {
+    rootPropsSpy(props)
+    return <div>{children}</div>
+  },
 }))
 
 let BookOcrReviewModal: typeof import("./BookOcrReviewModal").BookOcrReviewModal
@@ -167,11 +179,58 @@ describe("BookOcrReviewModal", () => {
       expect(recognizeCoverMock).toHaveBeenCalled()
     })
 
+    expect(rootPropsSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        width: "96%",
+        maxWidth: 1180,
+        maxHeight: "92%",
+      }),
+    )
+    expect(bodyPropsSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        flex: 1,
+        minHeight: 0,
+      }),
+    )
+    expect(scrollViewPropsSpy).not.toHaveBeenCalled()
+
     fireEvent.click(getByTestId("book-ocr-save-button"))
 
     await waitFor(() => {
       expect(mockUpdate).toHaveBeenCalled()
       expect(closeModal).toHaveBeenCalledTimes(1)
     })
+  })
+
+  test("keeps the full modal content scrollable on small screens", async () => {
+    useConvergenceMock.mockReturnValue({
+      isLarge: false,
+    })
+
+    render(
+      <BookOcrReviewModal
+        modal={
+          {
+            closeModal: jest.fn(),
+            params: {
+              imageUrl: "https://example.com/ocr-image.jpg",
+            },
+          } as never
+        }
+      />,
+    )
+
+    await waitFor(() => {
+      expect(recognizeCoverMock).toHaveBeenCalled()
+    })
+
+    expect(scrollViewPropsSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        flex: 1,
+        minHeight: 0,
+        keyboardShouldPersistTaps: "handled",
+        testID: "book-ocr-review-modal-scroll",
+      }),
+    )
   })
 })

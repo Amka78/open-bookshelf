@@ -27,7 +27,7 @@ export const BookOcrReviewModal = observer((props: BookOcrReviewModalProps) => {
   })
 
   return (
-    <Root width="96%" maxWidth={1180}>
+    <Root width="96%" maxWidth={1180} maxHeight="92%">
       <Header>
         <Heading isTruncated={true} tx="bookOcrReviewScreen.title" />
         <CloseButton
@@ -36,8 +36,8 @@ export const BookOcrReviewModal = observer((props: BookOcrReviewModalProps) => {
           }}
         />
       </Header>
-      <Body>
-        <ScrollView keyboardShouldPersistTaps="handled" testID="book-ocr-review-modal-scroll">
+      <Body flex={1} minHeight={0}>
+        {controller.convergenceHook.isLarge ? (
           <BookOcrReviewContent
             convergenceHook={controller.convergenceHook}
             form={controller.form}
@@ -49,7 +49,26 @@ export const BookOcrReviewModal = observer((props: BookOcrReviewModalProps) => {
             imageUrl={controller.imageUrl}
             applyFieldEntry={controller.applyFieldEntry}
           />
-        </ScrollView>
+        ) : (
+          <ScrollView
+            flex={1}
+            minHeight={0}
+            keyboardShouldPersistTaps="handled"
+            testID="book-ocr-review-modal-scroll"
+          >
+            <BookOcrReviewContent
+              convergenceHook={controller.convergenceHook}
+              form={controller.form}
+              ocrState={controller.ocrState}
+              fieldSummaries={controller.fieldSummaries}
+              recognizedText={controller.recognizedText}
+              selectedBook={controller.selectedBook}
+              selectedLibrary={controller.selectedLibrary}
+              imageUrl={controller.imageUrl}
+              applyFieldEntry={controller.applyFieldEntry}
+            />
+          </ScrollView>
+        )}
       </Body>
       <Footer>
         <Button onPress={controller.onSubmit} testID="book-ocr-save-button" tx="common.save" />

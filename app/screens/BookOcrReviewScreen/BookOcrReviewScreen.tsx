@@ -25,19 +25,35 @@ export const BookOcrReviewScreen: FC = observer(() => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1, width: "100%" }}
       >
-        <ScrollView keyboardShouldPersistTaps="handled" testID="book-ocr-review-screen-scroll">
-          <BookOcrReviewContent
-            convergenceHook={convergenceHook}
-            form={form}
-            ocrState={ocrState}
-            fieldSummaries={fieldSummaries}
-            recognizedText={recognizedText}
-            selectedBook={selectedBook}
-            selectedLibrary={selectedLibrary}
-            imageUrl={imageUrl}
-            applyFieldEntry={applyFieldEntry}
-          />
-        </ScrollView>
+        {convergenceHook.isLarge ? (
+          <VStack flex={1} minHeight={0}>
+            <BookOcrReviewContent
+              convergenceHook={convergenceHook}
+              form={form}
+              ocrState={ocrState}
+              fieldSummaries={fieldSummaries}
+              recognizedText={recognizedText}
+              selectedBook={selectedBook}
+              selectedLibrary={selectedLibrary}
+              imageUrl={imageUrl}
+              applyFieldEntry={applyFieldEntry}
+            />
+          </VStack>
+        ) : (
+          <ScrollView keyboardShouldPersistTaps="handled" testID="book-ocr-review-screen-scroll">
+            <BookOcrReviewContent
+              convergenceHook={convergenceHook}
+              form={form}
+              ocrState={ocrState}
+              fieldSummaries={fieldSummaries}
+              recognizedText={recognizedText}
+              selectedBook={selectedBook}
+              selectedLibrary={selectedLibrary}
+              imageUrl={imageUrl}
+              applyFieldEntry={applyFieldEntry}
+            />
+          </ScrollView>
+        )}
         <VStack padding="$3">
           <Button onPress={onSubmit} testID="book-ocr-save-button" tx="common.save" />
         </VStack>

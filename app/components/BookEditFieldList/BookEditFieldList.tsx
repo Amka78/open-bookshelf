@@ -20,6 +20,7 @@ export type BookEditFieldListProps = {
   }>
   /** フォーカス時にコンテナのnodeHandleを渡すコールバック */
   onTextInputFocus?: (getContainerHandle: () => number | null) => void
+  scrollViewProps?: ComponentProps<typeof ScrollView>
 } & ComponentProps<typeof Box>
 
 const EditFieldSort = [
@@ -38,6 +39,7 @@ const EditFieldSort = [
   "comments",
 ]
 export function BookEditFieldList(props: BookEditFieldListProps) {
+  const { scrollViewProps, ...boxProps } = props
   const { suggestionMap, languageCodeSuggestions } = useEditFieldSuggestions({
     tagBrowser: props.tagBrowser,
     metaData: props.book.metaData,
@@ -158,8 +160,8 @@ export function BookEditFieldList(props: BookEditFieldListProps) {
     ))
 
   return (
-    <Box {...props}>
-      <ScrollView>
+    <Box {...boxProps}>
+      <ScrollView {...scrollViewProps}>
         {fields}
         {/* Custom columns section */}
         {customFields.length > 0 && (
