@@ -23,6 +23,12 @@ mock.module("@/hooks/useConvergence", () => ({
   useConvergence: mockUseConvergence,
 }))
 
+const mockUseNavigation = jest.fn()
+
+mock.module("@react-navigation/native", () => ({
+  useNavigation: mockUseNavigation,
+}))
+
 let useLibrary: typeof import("./useLibrary").useLibrary
 
 describe("useLibrary", () => {

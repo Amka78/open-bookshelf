@@ -159,3 +159,14 @@ export async function playBackspaceRemovesText({
   typeInput(input, "author")
   expectInputValue(input, "author")
 }
+
+export async function playSaveButtonHidesLabel({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  const saveButton = await findByTestId(canvasElement, "search-input-save-button")
+  if (saveButton.getAttribute("data-label-tx")) {
+    throw new Error("Expected the save button label to be hidden.")
+  }
+}

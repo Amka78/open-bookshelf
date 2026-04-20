@@ -7,13 +7,22 @@ import {
   playBackspaceRemovesText,
   playBlurClosesSuggestions,
   playFocusShowsSuggestions,
+  playSaveButtonHidesLabel,
   playSelectSuggestionClosesSuggestions,
   playTypingFiltersSuggestions,
   playTypingKeepsSuggestionsVisible,
 } from "./SearchInputField.storyPlay"
 
-export function SearchInputFieldStoryWrapper() {
-  const [value, setValue] = useState("")
+export function SearchInputFieldStoryWrapper({
+  enableSaveButton = false,
+  initialValue = "",
+  showSaveLabel = true,
+}: {
+  enableSaveButton?: boolean
+  initialValue?: string
+  showSaveLabel?: boolean
+}) {
+  const [value, setValue] = useState(initialValue)
 
   const suggestions = ["title:=", "authors:=", "series:=", "tag:=", "AND", "OR", "NOT"]
 
@@ -26,6 +35,8 @@ export function SearchInputFieldStoryWrapper() {
         width="$full"
         testID="search-input-story"
         placeholder="Type to see suggestions..."
+        onSaveSearch={enableSaveButton ? () => {} : undefined}
+        showSaveLabel={showSaveLabel}
       />
       {/* Outside area to test blur behavior */}
       <Pressable testID="search-input-story-outside">
@@ -66,4 +77,11 @@ export const BlurClosesSuggestions: Story = {
 
 export const BackspaceRemovesText: Story = {
   play: playBackspaceRemovesText,
+}
+
+export const SaveButtonHidesLabel: Story = {
+  render: () => (
+    <SearchInputFieldStoryWrapper enableSaveButton={true} initialValue="Dune" showSaveLabel={false} />
+  ),
+  play: playSaveButtonHidesLabel,
 }

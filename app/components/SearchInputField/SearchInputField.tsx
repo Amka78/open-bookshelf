@@ -33,6 +33,7 @@ type Props = {
   autoFocus?: boolean
   savedSearches?: Array<{ name: string; query: string }>
   onSaveSearch?: (name: string, query: string) => void
+  showSaveLabel?: boolean
   onLoadSearch?: (query: string) => void
   recentSearches?: string[]
 }
@@ -54,6 +55,7 @@ export function SearchInputField({
   autoFocus,
   savedSearches,
   onSaveSearch,
+  showSaveLabel = true,
   onLoadSearch,
   recentSearches,
 }: Props) {
@@ -243,7 +245,7 @@ export function SearchInputField({
         <IconButton
           name={isSaved ? "bookmark" : "bookmark-plus-outline"}
           iconSize="md-"
-          labelTx="searchBar.saveSearch"
+          labelTx={showSaveLabel ? "searchBar.saveSearch" : undefined}
           onPress={handleSaveSearch}
           testID="search-input-save-button"
         />

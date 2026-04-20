@@ -58,6 +58,11 @@ mock.module("@gluestack-ui/themed", () => ({
       {children}
     </div>
   ),
+  Menu: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  MenuItem: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  MenuItemLabel: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
+  Pressable: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  ScrollView: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
 mock.module("@/components/Forms/FormSuggestionPopover", () => ({
@@ -141,9 +146,10 @@ mock.module("@/components/InputField/InputField", () => ({
 mock.module("@/components/IconButton/IconButton", () => ({
   IconButton: ({
     testID,
+    labelTx,
     ...props
-  }: Record<string, unknown> & { testID?: string }) => (
-    <button data-testid={testID} type="button" {...(props as object)} />
+  }: Record<string, unknown> & { testID?: string; labelTx?: string }) => (
+    <button data-label-tx={labelTx ?? ""} data-testid={testID} type="button" {...(props as object)} />
   ),
 }))
 
@@ -257,5 +263,20 @@ describe("SearchInputField backspace functionality", () => {
     })
 
     expect(screen.queryByTestId("search-input-suggestion-authors%3A%3D")).toBeNull()
+  })
+
+  test("save button hides label when showSaveLabel is false", () => {
+    render(
+      <SearchInputField
+        value="Dune"
+        onChangeText={() => {}}
+        onSaveSearch={() => {}}
+        showSaveLabel={false}
+        testID="search-input-story"
+      />,
+    )
+
+    const saveButton = screen.getByTestId("search-input-save-button")
+    expect(saveButton.getAttribute("data-label-tx")).toBe("")
   })
 })

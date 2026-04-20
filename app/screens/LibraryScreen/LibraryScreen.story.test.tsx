@@ -9,7 +9,9 @@ import {
   playLibraryRestoresScrollPosition,
   playLibraryRunsCoverOcr,
   playLibrarySearchesByQuery,
+  playLibraryShowsGridItem,
   playLibraryShowsSearchInput,
+  playLibraryTogglesListCheckboxSelection,
   playLibraryTogglesSelectAllVisible,
 } from "./libraryScreenStoryPlay"
 
@@ -55,6 +57,10 @@ describe("LibraryScreen story play", () => {
         <button onClick={() => onOpenBook("Book Alpha")} type="button">
           Book Alpha
         </button>
+        <button data-testid="library-list-item-checkbox" onClick={() => onOpenBook("checkbox")} type="button">
+          Select checkbox
+        </button>
+        <div data-testid="library-grid-item">Grid Item</div>
         <button data-testid="library-run-cover-ocr" onClick={onRunCoverOcr} type="button">
           Run Cover OCR
         </button>
@@ -177,6 +183,24 @@ describe("LibraryScreen story play", () => {
     })
 
     expect(onRunCoverOcr).toHaveBeenCalledTimes(1)
+  })
+
+  test("grid item is present in the library story play", async () => {
+    const { container } = renderStoryDom()
+
+    await playLibraryShowsGridItem({
+      canvasElement: container,
+    })
+  })
+
+  test("pressing the list checkbox triggers list selection in the library story play", async () => {
+    const { container } = renderStoryDom()
+
+    await playLibraryTogglesListCheckboxSelection({
+      canvasElement: container,
+    })
+
+    expect(onOpenBook).toHaveBeenCalledWith("checkbox")
   })
 
   test("pressing the selection bar toggle switches from select-all to clear-visible in the library story play", async () => {

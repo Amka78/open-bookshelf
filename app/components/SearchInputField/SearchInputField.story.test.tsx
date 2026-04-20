@@ -6,6 +6,7 @@ import {
   playBackspaceRemovesText,
   playBlurClosesSuggestions,
   playFocusShowsSuggestions,
+  playSaveButtonHidesLabel,
   playSelectSuggestionClosesSuggestions,
   playTypingFiltersSuggestions,
   playTypingKeepsSuggestionsVisible,
@@ -79,6 +80,11 @@ mock.module("@gluestack-ui/themed", () => ({
       {children}
     </div>
   ),
+  Menu: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  MenuItem: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  MenuItemLabel: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
+  Pressable: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  ScrollView: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
 mock.module("@/components/Forms/FormSuggestionPopover", () => ({
@@ -162,9 +168,10 @@ mock.module("@/components/InputField/InputField", () => ({
 mock.module("@/components/IconButton/IconButton", () => ({
   IconButton: ({
     testID,
+    labelTx,
     ...props
-  }: Record<string, unknown> & { testID?: string }) => (
-    <button data-testid={testID} type="button" {...(props as object)} />
+  }: Record<string, unknown> & { testID?: string; labelTx?: string }) => (
+    <button data-label-tx={labelTx ?? ""} data-testid={testID} type="button" {...(props as object)} />
   ),
 }))
 
@@ -203,5 +210,12 @@ describe("SearchInputField story play", () => {
   test("backspace removes text", async () => {
     const { container } = render(<SearchInputFieldStoryWrapper />)
     await playBackspaceRemovesText({ canvasElement: container })
+  })
+
+  test("save button hides label when requested", async () => {
+    const { container } = render(
+      <SearchInputFieldStoryWrapper enableSaveButton={true} initialValue="Dune" showSaveLabel={false} />,
+    )
+    await playSaveButtonHidesLabel({ canvasElement: container })
   })
 })

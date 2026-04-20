@@ -80,6 +80,15 @@ export async function playLibraryShowsGridItem({
   await findByTestId(canvasElement, "library-grid-item")
 }
 
+export async function playLibraryTogglesListCheckboxSelection({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  const button = await findByTestId(canvasElement, "library-list-item-checkbox")
+  fireEvent.click(button)
+}
+
 export async function playLibraryTogglesSelectAllVisible({
   canvasElement,
 }: {

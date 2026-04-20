@@ -105,6 +105,7 @@ const LibrarySearchHeader = observer(
             onSaveSearch={(name, query) => {
               selectedLibrary?.addSavedSearch(name, query)
             }}
+            showSaveLabel={convergenceHook.isLarge}
             onLoadSearch={(query) => {
               libraryHook.setHeaderSearchText(query)
               libraryHook.onSearch(query)
@@ -479,11 +480,7 @@ export const LibraryScreen: FC = observer(() => {
                 : onPress
             }
             onLongPress={libraryHook.isSelectionMode ? undefined : onLongPress}
-            onSelectToggle={
-              libraryHook.isSelectionMode
-                ? () => libraryHook.toggleBookSelection(item.id)
-                : undefined
-            }
+            onSelectToggle={() => libraryHook.toggleBookSelection(item.id)}
             onAuthorPress={
               libraryHook.isSelectionMode
                 ? undefined
@@ -493,7 +490,7 @@ export const LibraryScreen: FC = observer(() => {
             }
           />
         )
-      } else if (libraryHook.currentListStyle === "gridView") {
+      } else {
         listItem = (
           <BookImageItem
             source={imageSource}
@@ -621,11 +618,11 @@ export const LibraryScreen: FC = observer(() => {
       {selectedLibrary ? (
         <FlatList<Book>
           ref={listRef}
-          key={`${libraryHook.currentListStyle}-${viewMode}`} // to force re-render when list style or view mode changes
+          key={viewMode} // to force re-render when the library view mode changes
           data={bookList}
           renderItem={renderItem}
           keyExtractor={(item) => `${item.id}`}
-          numColumns={viewMode === "list" ? 1 : Math.floor(window.width / 242)}
+          numColumns={viewMode === "list" ? 1 : Math.max(1, Math.floor(window.width / 242))}
           onContentSizeChange={() => {
             restoreScrollOffset()
           }}
