@@ -2,8 +2,8 @@ import { BookImageItem } from "@/components"
 import type { Meta, StoryObj } from "@storybook/react"
 import React from "react"
 import {
-  playBookImageItemHoverSearchPressesAuthorLink,
-  playBookImageItemShowsDetailMenuOnHover,
+  playBookImageItemSelectedSearchPressesAuthorLink,
+  playBookImageItemShowsDetailMenuWhenSelected,
 } from "./bookImageItemStoryPlay"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
@@ -39,11 +39,13 @@ export const Loading: BookImageItemStory = {
   },
 }
 
-export const HoverSearchLinks: BookImageItemStory = {
+export const SelectedSearchLinks: BookImageItemStory = {
   argTypes: {
     onHoverSearchPress: { action: "search book metadata" },
   },
   args: {
+    selected: true,
+    showSelectionDetails: true,
     hoverSearchMetadata: {
       authors: ["Ursula K. Le Guin"],
       series: "Earthsea",
@@ -51,11 +53,13 @@ export const HoverSearchLinks: BookImageItemStory = {
       formats: ["epub"],
     },
   },
-  play: playBookImageItemHoverSearchPressesAuthorLink,
+  play: playBookImageItemSelectedSearchPressesAuthorLink,
 }
 
-export const HoverDetailMenu: BookImageItemStory = {
+export const SelectedDetailMenu: BookImageItemStory = {
   args: {
+    selected: true,
+    showSelectionDetails: true,
     detailMenuProps: {
       onOpenBook: async () => {},
       onDownloadBook: () => {},
@@ -65,5 +69,5 @@ export const HoverDetailMenu: BookImageItemStory = {
       onOpenBookDetail: () => {},
     },
   },
-  play: playBookImageItemShowsDetailMenuOnHover,
+  play: playBookImageItemShowsDetailMenuWhenSelected,
 }

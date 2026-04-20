@@ -23,15 +23,15 @@ export const SettingStoreModel = types
     ),
     readStatuses: types.optional(types.map(types.string), {}),
     libraryViewMode: types.optional(
-      types.union(types.literal("grid"), types.literal("list")),
+      types.union(types.literal("grid"), types.literal("list"), types.literal("table")),
       "grid",
     ),
     libraryViewModeDesktop: types.optional(
-      types.union(types.literal("grid"), types.literal("list")),
+      types.union(types.literal("grid"), types.literal("list"), types.literal("table")),
       "grid",
     ),
     libraryViewModeMobile: types.optional(
-      types.union(types.literal("grid"), types.literal("list")),
+      types.union(types.literal("grid"), types.literal("list"), types.literal("table")),
       "list",
     ),
   })
@@ -39,7 +39,7 @@ export const SettingStoreModel = types
     getReadStatus(libraryId: string, bookId: number): string | undefined {
       return store.readStatuses.get(`${libraryId}:${bookId}`)
     },
-    getLibraryViewMode(isLargeScreen: boolean): "grid" | "list" {
+    getLibraryViewMode(isLargeScreen: boolean): "grid" | "list" | "table" {
       return isLargeScreen ? store.libraryViewModeDesktop : store.libraryViewModeMobile
     },
   }))
@@ -91,7 +91,7 @@ export const SettingStoreModel = types
         store.readStatuses.set(key, status)
       }
     },
-    setLibraryViewMode(mode: "grid" | "list", isLargeScreen: boolean) {
+    setLibraryViewMode(mode: "grid" | "list" | "table", isLargeScreen: boolean) {
       store.libraryViewMode = mode
       if (isLargeScreen) {
         store.libraryViewModeDesktop = mode

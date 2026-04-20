@@ -80,13 +80,21 @@ export async function playLibraryShowsGridItem({
   await findByTestId(canvasElement, "library-grid-item")
 }
 
-export async function playLibraryTogglesListCheckboxSelection({
+export async function playLibraryTogglesListItemSelection({
   canvasElement,
 }: {
   canvasElement: HTMLElement
 }) {
-  const button = await findByTestId(canvasElement, "library-list-item-checkbox")
+  const button = await findByTestId(canvasElement, "library-list-item")
   fireEvent.click(button)
+}
+
+export async function playLibraryShowsTableItem({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  await findByTestId(canvasElement, "library-table-item")
 }
 
 export async function playLibraryTogglesSelectAllVisible({

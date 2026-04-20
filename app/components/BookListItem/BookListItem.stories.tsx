@@ -52,8 +52,8 @@ type BookListItemStory = StoryObj<typeof BookListItem>
 
 export const Default: BookListItemStory = {
   argTypes: {
-    onPress: { action: "pressed (open book)" },
-    onLongPress: { action: "long pressed (detail)" },
+    onPress: { action: "pressed (toggle selection)" },
+    onLongPress: { action: "long pressed (open book)" },
   },
 }
 
@@ -62,26 +62,22 @@ export const WithImage: BookListItemStory = {
     source: require("../../../assets/images/sample-image-1.png"),
   },
   argTypes: {
-    onPress: { action: "pressed (open book)" },
-    onLongPress: { action: "long pressed (detail)" },
+    onPress: { action: "pressed (toggle selection)" },
+    onLongPress: { action: "long pressed (open book)" },
   },
 }
 
-export const SelectionModeWithCheckbox: BookListItemStory = {
+export const SelectionModeTogglesOnPress: BookListItemStory = {
   args: {
     source: require("../../../assets/images/sample-image-1.png"),
     isSelected: false,
     onPress: fn(),
-    onSelectToggle: fn(),
   },
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement)
-    // The checkbox icon should be clickable
-    const checkbox = canvas.getByRole("button")
-    await userEvent.click(checkbox)
-    await expect(args.onSelectToggle).toHaveBeenCalled()
-    // onPress should NOT be called when checkbox is clicked
-    await expect(args.onPress).not.toHaveBeenCalled()
+    const row = canvas.getByRole("button")
+    await userEvent.click(row)
+    await expect(args.onPress).toHaveBeenCalled()
   },
 }
 
@@ -89,12 +85,28 @@ export const SelectionModeChecked: BookListItemStory = {
   args: {
     source: require("../../../assets/images/sample-image-1.png"),
     isSelected: true,
-    onSelectToggle: fn(),
+    onPress: fn(),
   },
   argTypes: {
-    onPress: { action: "pressed (open book - disabled in selection mode)" },
-    onLongPress: { action: "long pressed (detail - disabled in selection mode)" },
-    onSelectToggle: { action: "toggle selection" },
+    onPress: { action: "pressed (toggle selection off)" },
+    onLongPress: { action: "long pressed (open book)" },
+  },
+}
+
+export const SingleSelectionActions: BookListItemStory = {
+  args: {
+    source: require("../../../assets/images/sample-image-1.png"),
+    isSelected: true,
+    showSelectionActions: true,
+    onPress: fn(),
+    detailMenuProps: {
+      onOpenBook: async () => {},
+      onDownloadBook: () => {},
+      onConvertBook: () => {},
+      onEditBook: () => {},
+      onDeleteBook: () => {},
+      onOpenBookDetail: () => {},
+    },
   },
 }
 
@@ -106,7 +118,7 @@ export const WithProgress: BookListItemStory = {
     readStatus: "reading",
   },
   argTypes: {
-    onPress: { action: "pressed (open book)" },
-    onLongPress: { action: "long pressed (detail)" },
+    onPress: { action: "pressed (toggle selection)" },
+    onLongPress: { action: "long pressed (open book)" },
   },
 }

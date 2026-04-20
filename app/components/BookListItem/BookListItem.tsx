@@ -1,4 +1,5 @@
 import {
+  BookDetailMenu,
   Box,
   Button,
   HStack,
@@ -6,9 +7,11 @@ import {
   type ImageProps,
   MaterialCommunityIcon,
   type MaterialCommunityIconProps,
+  ScrollView,
   Text,
   VStack,
 } from "@/components"
+import type { BookDetailMenuProps } from "@/components"
 import type { Book } from "@/models/calibre/BookModel"
 import { usePalette } from "@/theme"
 import { typography } from "@/theme/typography"
@@ -27,9 +30,13 @@ type BookListItemProps = {
   onLongPress?: () => void
   onSelectToggle?: () => void
   onAuthorPress?: (author: string) => void
+  detailMenuProps?: BookDetailMenuProps
+  showSelectionActions?: boolean
 }
 
 type ReadStatusValue = "want-to-read" | "reading" | "finished"
+const SELECTED_OUTLINE_COLOR = "#3B82F6"
+const SELECTED_OVERLAY_COLOR = "rgba(59, 130, 246, 0.08)"
 
 const STATUS_ICON: Record<
   ReadStatusValue,
@@ -53,6 +60,8 @@ export const BookListItem = memo(function BookListItem({
   onLongPress,
   onSelectToggle,
   onAuthorPress,
+  detailMenuProps,
+  showSelectionActions = false,
 }: BookListItemProps) {
   const palette = usePalette()
   const meta = book.metaData
@@ -68,26 +77,16 @@ export const BookListItem = memo(function BookListItem({
     readStatus && readStatus in STATUS_ICON ? STATUS_ICON[readStatus as ReadStatusValue] : null
 
   return (
-    <HStack
-      alignItems="center"
+    <VStack
       paddingHorizontal="$2"
       paddingVertical="$2"
       style={[
         styles.row,
         { borderBottomColor: palette.borderSubtle },
-        isSelected && { backgroundColor: palette.surfaceStrong },
+        isSelected && { backgroundColor: SELECTED_OVERLAY_COLOR },
       ]}
     >
-      {/* Selection checkbox - only shown in selection mode */}
-      <Pressable onPress={onSelectToggle} style={styles.checkboxContainer}>
-        <MaterialCommunityIcon
-          name={isSelected ? "checkbox-marked" : "checkbox-blank-outline"}
-          iconSize="sm"
-          color={isSelected ? "$primary500" : palette.textSecondary}
-        />
-      </Pressable>
-
-      <Pressable onPress={onPress} onLongPress={onLongPress} style={styles.rowContent}>
+      <Pressable onPress={onPress ?? onSelectToggle} onLongPress={onLongPress} style={styles.rowContent}>
         <HStack alignItems="center" space="md">
           {/* Cover image */}
           <Box style={styles.coverContainer}>
@@ -113,7 +112,15 @@ export const BookListItem = memo(function BookListItem({
               <HStack flexWrap="wrap" flex={1} alignItems="center">
                 {authorList.map((author, index) => (
                   <HStack key={author} alignItems="center">
-                    <Button variant="link" height="$5" onPress={() => onAuthorPress(author)}>
+                    <Button
+                      variant="link"
+                      height="$5"
+                      onPress={(event) => {
+                        event?.stopPropagation?.()
+                        event?.preventDefault?.()
+                        onAuthorPress(author)
+                      }}
+                    >
                       {author}
                     </Button>
                     {index < authorList.length - 1 && (
@@ -168,19 +175,35 @@ export const BookListItem = memo(function BookListItem({
           </VStack>
         </HStack>
       </Pressable>
-    </HStack>
+      {showSelectionActions && detailMenuProps ? (
+        <Box style={[styles.selectionActions, { borderTopColor: palette.borderSubtle }]}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <BookDetailMenu
+              {...detailMenuProps}
+              iconOpacity={0.9}
+              containerProps={{
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            />
+          </ScrollView>
+        </Box>
+      ) : null}
+      {isSelected ? (
+        <Box
+          pointerEvents="none"
+          style={styles.selectedOutline}
+          testID="book-list-item-selected-outline"
+        />
+      ) : null}
+    </VStack>
   )
 })
 
 const styles = StyleSheet.create({
   row: {
     borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  checkboxContainer: {
-    width: 28,
-    height: 28,
-    alignItems: "center",
-    justifyContent: "center",
+    position: "relative",
   },
   rowContent: {
     flex: 1,
@@ -216,5 +239,21 @@ const styles = StyleSheet.create({
   formatBadgeText: {
     fontSize: 9,
     fontWeight: "600",
+  },
+  selectionActions: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    marginTop: 8,
+    paddingTop: 8,
+  },
+  selectedOutline: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderColor: SELECTED_OUTLINE_COLOR,
+    borderRadius: 10,
+    borderWidth: 2,
+    pointerEvents: "none",
   },
 })

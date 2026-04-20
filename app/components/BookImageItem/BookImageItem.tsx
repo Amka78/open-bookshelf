@@ -1,5 +1,4 @@
-import type React from "react"
-import { memo, useEffect, useMemo, useRef, useState } from "react"
+import { memo, useMemo, useState } from "react"
 import { StyleSheet, View } from "react-native"
 
 import {
@@ -52,6 +51,7 @@ export type BookImageprops = Pick<ImageProps, "source"> & {
   onOpenBookDetail?: () => void
   hoverSearchMetadata?: BookImageHoverSearchMetadata
   onHoverSearchPress?: (query: string) => void | Promise<void>
+  showSelectionDetails?: boolean
 }
 
 const STATUS_ICON: Record<ReadStatusValue, { name: IconName; color: string }> = {
@@ -60,15 +60,12 @@ const STATUS_ICON: Record<ReadStatusValue, { name: IconName; color: string }> = 
   finished: { name: "check-circle-outline", color: "#22C55E" },
 }
 
-type BoxWithHoverProps = React.ComponentPropsWithRef<typeof Box> & {
-  onMouseEnter?: () => void
-  onMouseLeave?: () => void
-}
-const BoxWithHover = Box as React.ComponentType<BoxWithHoverProps>
 const IMAGE_ITEM_WIDTH = 240
 const IMAGE_ITEM_HEIGHT = 300
 const DETAIL_MENU_OVERLAY_INSET = 6
 const DETAIL_MENU_BUTTON_SIZE = 42
+const SELECTED_OUTLINE_COLOR = "#3B82F6"
+const SELECTED_OVERLAY_COLOR = "rgba(59, 130, 246, 0.12)"
 
 function uniqNonEmpty(values: Array<string | null | undefined>): string[] {
   return Array.from(
@@ -120,47 +117,20 @@ export const BookImageItem = memo(function BookImageItem({
   loading = false,
   selected,
   onSelectToggle,
+  showSelectionDetails = false,
   ...restProps
 }: BookImageprops) {
-  const props = { loading, selected, onSelectToggle, ...restProps }
+  const props = { loading, selected, onSelectToggle, showSelectionDetails, ...restProps }
   const [loadingState, setLoadingState] = useState(props.loading)
-  const [isHovered, setIsHovered] = useState(false)
-  const hoverOutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const hoverSearchSections = useMemo(
     () => buildHoverSearchSections(props.hoverSearchMetadata),
     [props.hoverSearchMetadata],
   )
 
-  const showDetailMenu = Boolean(props.detailMenuProps && isHovered)
+  const showDetailMenu = Boolean(props.detailMenuProps && props.showSelectionDetails)
   const showHoverSearchOverlay = Boolean(
-    props.onHoverSearchPress && hoverSearchSections.length > 0 && isHovered,
+    props.onHoverSearchPress && hoverSearchSections.length > 0 && props.showSelectionDetails,
   )
-
-  const handleHoverIn = () => {
-    if (hoverOutTimerRef.current) {
-      clearTimeout(hoverOutTimerRef.current)
-      hoverOutTimerRef.current = null
-    }
-    setIsHovered(true)
-  }
-
-  const handleHoverOut = () => {
-    if (hoverOutTimerRef.current) {
-      clearTimeout(hoverOutTimerRef.current)
-    }
-    hoverOutTimerRef.current = setTimeout(() => {
-      setIsHovered(false)
-      hoverOutTimerRef.current = null
-    }, 80)
-  }
-
-  useEffect(() => {
-    return () => {
-      if (hoverOutTimerRef.current) {
-        clearTimeout(hoverOutTimerRef.current)
-      }
-    }
-  }, [])
 
   const showProgressBar =
     typeof props.readingProgress === "number" &&
@@ -172,12 +142,7 @@ export const BookImageItem = memo(function BookImageItem({
   const image = <Image source={props.source} style={styles.imageSize} contentFit={"fill"} />
   const shouldUsePressable = Boolean(props.onPress || props.onLongPress || props.detailMenuProps)
   const contentWithMenu = (
-    <BoxWithHover
-      testID="book-image-hover-surface"
-      style={styles.imageContainer}
-      onMouseEnter={handleHoverIn}
-      onMouseLeave={handleHoverOut}
-    >
+    <Box testID="book-image-selection-surface" style={styles.imageContainer}>
       {image}
       {props.showCachedIcon ? (
         <Pressable
@@ -255,7 +220,7 @@ export const BookImageItem = memo(function BookImageItem({
           />
         </Box>
       ) : null}
-    </BoxWithHover>
+    </Box>
   )
   const content = shouldUsePressable ? (
     <Pressable
@@ -276,19 +241,8 @@ export const BookImageItem = memo(function BookImageItem({
     contentWithMenu
   )
 
-  const selectionOverlay = onSelectToggle ? (
-    <Pressable onPress={onSelectToggle} style={styles.selectionArea}>
-      <MaterialCommunityIcon
-        name={selected ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"}
-        iconSize="sm"
-        color={selected ? "$primary500" : "$textLight400"}
-      />
-    </Pressable>
-  ) : null
-
   return (
     <Box marginHorizontal={"$2"} marginTop={"$2"}>
-      {selectionOverlay}
       {loading || loadingState ? (
         <LabeledSpinner
           containerStyle={styles.imageSize}
@@ -298,7 +252,13 @@ export const BookImageItem = memo(function BookImageItem({
       ) : (
         content
       )}
-      {selected ? <Box style={styles.selectedOverlay} pointerEvents="none" /> : null}
+      {selected ? (
+        <Box
+          style={styles.selectedOverlay}
+          pointerEvents="none"
+          testID="book-image-selected-outline"
+        />
+      ) : null}
     </Box>
   )
 })
@@ -311,6 +271,7 @@ const styles = StyleSheet.create({
   imageContainer: {
     height: IMAGE_ITEM_HEIGHT,
     width: IMAGE_ITEM_WIDTH,
+    borderRadius: 10,
     position: "relative",
     overflow: "hidden",
   },
@@ -405,23 +366,16 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
-  selectionArea: {
-    height: 28,
-    width: 280,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 6,
-    backgroundColor: "rgba(0,0,0,0.04)",
-  },
   selectedOverlay: {
     position: "absolute",
-    top: 28,
+    top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.08)",
-    borderWidth: 2,
-    borderColor: "rgba(180,190,210,0.8)",
+    backgroundColor: SELECTED_OVERLAY_COLOR,
+    borderWidth: 3,
+    borderColor: SELECTED_OUTLINE_COLOR,
+    borderRadius: 10,
     pointerEvents: "none",
   },
 })

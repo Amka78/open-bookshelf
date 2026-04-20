@@ -10,17 +10,11 @@ function findElementByTestId(canvasElement: HTMLElement, testId: string): HTMLEl
   return found
 }
 
-export async function playBookImageItemHoverSearchPressesAuthorLink({
+export async function playBookImageItemSelectedSearchPressesAuthorLink({
   canvasElement,
 }: {
   canvasElement: HTMLElement
 }) {
-  const hoverSurface = findElementByTestId(canvasElement, "book-image-hover-surface")
-
-  await act(async () => {
-    fireEvent.mouseEnter(hoverSurface)
-  })
-
   findElementByTestId(canvasElement, "book-image-hover-overlay")
   findElementByTestId(canvasElement, "book-image-hover-title-authors")
   findElementByTestId(canvasElement, "book-image-hover-title-series")
@@ -39,27 +33,15 @@ export async function playBookImageItemEditButtonDoesNotTriggerParentPress({
 }: {
   canvasElement: HTMLElement
 }) {
-  const hoverSurface = findElementByTestId(canvasElement, "book-image-hover-surface")
-
-  await act(async () => {
-    fireEvent.mouseEnter(hoverSurface)
-  })
-
   await act(async () => {
     fireEvent.click(findElementByTestId(canvasElement, "book-detail-edit-button"))
   })
 }
 
-export async function playBookImageItemShowsDetailMenuOnHover({
+export async function playBookImageItemShowsDetailMenuWhenSelected({
   canvasElement,
 }: {
   canvasElement: HTMLElement
 }) {
-  const hoverSurface = findElementByTestId(canvasElement, "book-image-hover-surface")
-
-  await act(async () => {
-    fireEvent.mouseEnter(hoverSurface)
-  })
-
   findElementByTestId(canvasElement, "book-image-detail-menu-overlay")
 }

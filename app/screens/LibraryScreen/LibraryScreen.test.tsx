@@ -10,6 +10,7 @@ const useStoresMock = jest.fn()
 const useConvergenceMock = jest.fn()
 const bookListItemProps: Array<Record<string, unknown>> = []
 const bookImageItemProps: Array<Record<string, unknown>> = []
+const libraryTableItemProps: Array<Record<string, unknown>> = []
 const navigationMock = {
   goBack: jest.fn(),
   navigate: jest.fn(),
@@ -67,15 +68,18 @@ const componentsMock = {
   Button: ({ children }: { children?: ReactNode }) => <button type="button">{children}</button>,
   FlatList: ({
     data,
+    ListHeaderComponent,
     numColumns,
     renderItem,
   }: {
     data: Array<unknown>
+    ListHeaderComponent?: ReactNode
     numColumns?: number
     renderItem: (params: { item: unknown }) => ReactNode
   }) =>
     numColumns && numColumns > 0 ? (
       <div data-num-columns={String(numColumns)} data-testid="library-flat-list">
+        {ListHeaderComponent}
         {data.map((item, index) => (
           <div key={index}>{renderItem({ item })}</div>
         ))}
@@ -89,6 +93,7 @@ const componentsMock = {
   LeftSideMenu: () => null,
   LibraryActions: () => <div data-testid="library-actions" />,
   MaterialCommunityIcon: () => <span data-testid="mock-icon" />,
+  ScrollView: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   SelectionActionBar: () => <div data-testid="selection-action-bar" />,
   SortMenu: () => null,
   StaggerContainer: ({ children, menus }: { children?: ReactNode; menus?: ReactNode }) => (
@@ -154,6 +159,26 @@ mock.module("@/components/Text/Text", () => ({
 }))
 mock.module("@/components/VStack/VStack", () => ({
   VStack: componentsMock.VStack,
+}))
+mock.module("@/components/ScrollView/ScrollView", () => ({
+  ScrollView: componentsMock.ScrollView,
+}))
+mock.module("./LibraryTableItem", () => ({
+  createLibraryTableFieldLabels: () => ({
+    actions: "Actions",
+    authors: "Authors",
+    book: "Book",
+    publisher: "Publisher",
+    series: "Series",
+    tags: "Tags",
+    title: "Title",
+  }),
+  LibraryTableHeader: () => <div data-testid="library-table-header" />,
+  LibraryTableItem: (props: Record<string, unknown>) => {
+    libraryTableItemProps.push(props)
+    return <div data-testid="library-table-item" />
+  },
+  LIBRARY_TABLE_MIN_WIDTH: 700,
 }))
 
 mock.module("@/hooks/useBulkDownloadBooks", () => ({
@@ -280,7 +305,7 @@ function buildSelectedLibrary() {
 function renderLibraryScreen({
   viewMode = "list",
 }: {
-  viewMode?: "grid" | "list"
+  viewMode?: "grid" | "list" | "table"
 } = {}) {
   const selectedLibrary = buildSelectedLibrary()
   useConvergenceMock.mockReturnValue({
@@ -313,21 +338,22 @@ function renderLibraryScreen({
 beforeEach(() => {
   bookImageItemProps.length = 0
   bookListItemProps.length = 0
+  libraryTableItemProps.length = 0
   jest.clearAllMocks()
 })
 
 describe("LibraryScreen", () => {
-  test("list items keep the checkbox selectable before selection mode starts", async () => {
+  test("list items toggle selection when pressed", async () => {
     renderLibraryScreen({
       viewMode: "list",
     })
 
     const firstItem = bookListItemProps[0]
     expect(firstItem).toBeTruthy()
-    expect(firstItem.onSelectToggle).toBeInstanceOf(Function)
+    expect(firstItem.onPress).toBeInstanceOf(Function)
 
     await act(async () => {
-      ;(firstItem.onSelectToggle as () => void)()
+      await (firstItem.onPress as () => Promise<void>)()
     })
 
     expect(screen.getByTestId("selection-action-bar")).toBeTruthy()
@@ -341,5 +367,15 @@ describe("LibraryScreen", () => {
     expect(screen.getByTestId("library-flat-list").getAttribute("data-num-columns")).toBe("1")
     expect(screen.getByTestId("library-grid-item")).toBeTruthy()
     expect(bookImageItemProps.length).toBeGreaterThan(0)
+  })
+
+  test("table mode renders table header and items", () => {
+    renderLibraryScreen({
+      viewMode: "table",
+    })
+
+    expect(screen.getByTestId("library-table-header")).toBeTruthy()
+    expect(screen.getByTestId("library-table-item")).toBeTruthy()
+    expect(libraryTableItemProps.length).toBeGreaterThan(0)
   })
 })

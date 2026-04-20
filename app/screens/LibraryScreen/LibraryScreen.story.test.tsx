@@ -11,7 +11,8 @@ import {
   playLibrarySearchesByQuery,
   playLibraryShowsGridItem,
   playLibraryShowsSearchInput,
-  playLibraryTogglesListCheckboxSelection,
+  playLibraryShowsTableItem,
+  playLibraryTogglesListItemSelection,
   playLibraryTogglesSelectAllVisible,
 } from "./libraryScreenStoryPlay"
 
@@ -57,10 +58,11 @@ describe("LibraryScreen story play", () => {
         <button onClick={() => onOpenBook("Book Alpha")} type="button">
           Book Alpha
         </button>
-        <button data-testid="library-list-item-checkbox" onClick={() => onOpenBook("checkbox")} type="button">
-          Select checkbox
+        <button data-testid="library-list-item" onClick={() => onOpenBook("list-item")} type="button">
+          Select item
         </button>
         <div data-testid="library-grid-item">Grid Item</div>
+        <div data-testid="library-table-item">Table Item</div>
         <button data-testid="library-run-cover-ocr" onClick={onRunCoverOcr} type="button">
           Run Cover OCR
         </button>
@@ -193,14 +195,22 @@ describe("LibraryScreen story play", () => {
     })
   })
 
-  test("pressing the list checkbox triggers list selection in the library story play", async () => {
+  test("table item is present in the library story play", async () => {
     const { container } = renderStoryDom()
 
-    await playLibraryTogglesListCheckboxSelection({
+    await playLibraryShowsTableItem({
+      canvasElement: container,
+    })
+  })
+
+  test("pressing the list item triggers list selection in the library story play", async () => {
+    const { container } = renderStoryDom()
+
+    await playLibraryTogglesListItemSelection({
       canvasElement: container,
     })
 
-    expect(onOpenBook).toHaveBeenCalledWith("checkbox")
+    expect(onOpenBook).toHaveBeenCalledWith("list-item")
   })
 
   test("pressing the selection bar toggle switches from select-all to clear-visible in the library story play", async () => {

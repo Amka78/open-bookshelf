@@ -11,8 +11,8 @@ import { render } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 import {
-  playBookImageItemHoverSearchPressesAuthorLink,
-  playBookImageItemShowsDetailMenuOnHover,
+  playBookImageItemSelectedSearchPressesAuthorLink,
+  playBookImageItemShowsDetailMenuWhenSelected,
 } from "./bookImageItemStoryPlay"
 
 const describe = localizeTestRegistrar(baseDescribe)
@@ -25,20 +25,14 @@ const componentsMock = {
   Box: ({
     children,
     testID,
-    onMouseEnter,
-    onMouseLeave,
     style,
   }: {
     children?: ReactNode
     testID?: string
-    onMouseEnter?: () => void
-    onMouseLeave?: () => void
     style?: unknown
   }) => (
     <div
       data-testid={testID}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
       style={style as React.CSSProperties | undefined}
     >
       {children}
@@ -160,11 +154,13 @@ describe("BookImageItem story play", () => {
     jest.clearAllMocks()
   })
 
-  test("hover shows metadata links and pressing author runs search query", async () => {
+  test("single selection shows metadata links and pressing author runs search query", async () => {
     const { container } = render(
       <BookImageItem
         source={{ uri: "https://example.com/cover.jpg" }}
         onPress={onPress}
+        selected={true}
+        showSelectionDetails={true}
         hoverSearchMetadata={{
           authors: ["Ursula K. Le Guin"],
           series: "Earthsea",
@@ -175,16 +171,18 @@ describe("BookImageItem story play", () => {
       />,
     )
 
-    await playBookImageItemHoverSearchPressesAuthorLink({ canvasElement: container })
+    await playBookImageItemSelectedSearchPressesAuthorLink({ canvasElement: container })
 
     expect(onHoverSearchPress).toHaveBeenCalledWith("authors:=Ursula K. Le Guin")
     expect(onPress).not.toHaveBeenCalled()
   })
 
-  test("hover shows the detail menu using the image width for larger wrapped icons", async () => {
+  test("single selection shows the detail menu and selected outline", async () => {
     const { container } = render(
       <BookImageItem
         source={{ uri: "https://example.com/cover.jpg" }}
+        selected={true}
+        showSelectionDetails={true}
         detailMenuProps={{
           onOpenBook: async () => {},
           onDownloadBook: () => {},
@@ -196,7 +194,7 @@ describe("BookImageItem story play", () => {
       />,
     )
 
-    await playBookImageItemShowsDetailMenuOnHover({ canvasElement: container })
+    await playBookImageItemShowsDetailMenuWhenSelected({ canvasElement: container })
 
     const overlay = container.querySelector(
       '[data-testid="book-image-detail-menu-overlay"]',
@@ -205,6 +203,7 @@ describe("BookImageItem story play", () => {
     expect(overlay).toBeTruthy()
     expect(overlay?.style.left).toBe("6px")
     expect(overlay?.style.right).toBe("6px")
+    expect(container.querySelector('[data-testid="book-image-selected-outline"]')).toBeTruthy()
     expect(bookDetailMenuMock).toHaveBeenCalledWith(
       expect.objectContaining({
         wrap: true,

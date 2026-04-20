@@ -84,10 +84,10 @@ describe("Store models", () => {
   test("SettingStoreModel stores library view mode separately for mobile and large screens", () => {
     const store = SettingStoreModel.create({})
 
-    store.setLibraryViewMode("grid", false)
+    store.setLibraryViewMode("table", false)
     store.setLibraryViewMode("list", true)
 
-    expect(store.getLibraryViewMode(false)).toBe("grid")
+    expect(store.getLibraryViewMode(false)).toBe("table")
     expect(store.getLibraryViewMode(true)).toBe("list")
   })
 })

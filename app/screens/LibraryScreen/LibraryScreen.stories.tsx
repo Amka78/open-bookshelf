@@ -8,7 +8,8 @@ import {
   playLibraryRunsCoverOcr,
   playLibraryShowsGridItem,
   playLibraryShowsSearchInput,
-  playLibraryTogglesListCheckboxSelection,
+  playLibraryShowsTableItem,
+  playLibraryTogglesListItemSelection,
   playLibraryTogglesSelectAllVisible,
 } from "./libraryScreenStoryPlay"
 
@@ -39,6 +40,12 @@ export const ShowsGridItem: LibraryStory = {
   },
 }
 
+export const ShowsTableItem: LibraryStory = {
+  play: async ({ canvasElement }) => {
+    await playLibraryShowsTableItem({ canvasElement }).catch(() => {})
+  },
+}
+
 export const EmptyLibrary: LibraryStory = {}
 
 export const ChangeListStyle: LibraryStory = {
@@ -55,7 +62,7 @@ export const ToggleSelectAllVisible: LibraryStory = {
 
 export const ToggleListCheckboxSelection: LibraryStory = {
   play: async ({ canvasElement }) => {
-    await playLibraryTogglesListCheckboxSelection({ canvasElement }).catch(() => {})
+    await playLibraryTogglesListItemSelection({ canvasElement }).catch(() => {})
   },
 }
 

@@ -13,7 +13,7 @@ import type { DocumentPickerAsset } from "expo-document-picker"
 import type React from "react"
 
 type LibraryActionsProps = {
-  viewMode: "grid" | "list"
+  viewMode: "grid" | "list" | "table"
   onToggleViewMode: () => void
   onUploadFile: (documents: DocumentPickerAsset[]) => Promise<void>
   navigation: ApppNavigationProp

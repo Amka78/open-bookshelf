@@ -1,15 +1,27 @@
-import { describe as baseDescribe, test as baseTest, beforeAll, expect, mock } from "bun:test"
+import { beforeAll, beforeEach, describe as baseDescribe, expect, mock, test as baseTest } from "bun:test"
 import { render } from "@testing-library/react"
 import type { Book } from "@/models/calibre/BookModel"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 const reactNativeMock = {
-  ...((global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock ?? {}),
+  StyleSheet: {
+    create: <T extends Record<string, unknown>>(value: T) => value,
+    hairlineWidth: 1,
+  },
   Text: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
 }
 
-;(global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock = reactNativeMock
+function normalizeStyle(style: unknown): React.CSSProperties | undefined {
+  if (Array.isArray(style)) {
+    return style.reduce<React.CSSProperties>(
+      (acc, value) => (value && typeof value === "object" ? { ...acc, ...value } : acc),
+      {},
+    )
+  }
+
+  return style && typeof style === "object" ? (style as React.CSSProperties) : undefined
+}
 
 mock.module("react-native", () => reactNativeMock)
 mock.module("/home/amka78/private/open-bookshelf/node_modules/react-native/index.js", () => reactNativeMock)
@@ -24,6 +36,7 @@ mock.module("@/theme", () => ({
     surfaceMuted: "#e0e0e0",
     borderSubtle: "#ddd",
     borderStrong: "#aaa",
+    accent: "#222",
   }),
 }))
 
@@ -45,12 +58,41 @@ mock.module("@/theme/typography", () => ({
   },
 }))
 
+const bookDetailMenuProps: Array<Record<string, unknown>> = []
+
 const componentsMock = {
-  ...((global as { __componentsMock?: Record<string, unknown> }).__componentsMock ?? {}),
-  BookDetailMenu: () => <div data-testid="book-detail-menu" />,
-  Box: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  BookDetailMenu: (props: Record<string, unknown>) => {
+    bookDetailMenuProps.push(props)
+    return <div data-testid="book-detail-menu" />
+  },
+  Box: ({
+    children,
+    style,
+    testID,
+  }: {
+    children?: ReactNode
+    style?: unknown
+    testID?: string
+  }) => (
+    <div data-testid={testID} style={normalizeStyle(style)}>
+      {children}
+    </div>
+  ),
   HStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  VStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  ScrollView: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  VStack: ({
+    children,
+    style,
+    testID,
+  }: {
+    children?: ReactNode
+    style?: unknown
+    testID?: string
+  }) => (
+    <div data-testid={testID} style={normalizeStyle(style)}>
+      {children}
+    </div>
+  ),
   Text: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
   Image: () => <img alt="cover" />,
   MaterialCommunityIcon: () => <span data-testid="mock-icon" />,
@@ -67,13 +109,10 @@ const componentsMock = {
   ),
 }
 
-;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
-
 mock.module("@/components", () => componentsMock)
 mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
 mock.module("@gluestack-ui/themed", () => ({
-  ...(global as { __gluestackMock?: Record<string, unknown> }).__gluestackMock,
   Pressable: ({
     children,
     onPress,
@@ -131,6 +170,10 @@ function makeBook(
 }
 
 describe("BookListItem", () => {
+  beforeEach(() => {
+    bookDetailMenuProps.length = 0
+  })
+
   test("renders book title", () => {
     const { container } = render(
       <BookListItem book={makeBook({ title: "My Book" })} source={undefined} />,
@@ -169,9 +212,17 @@ describe("BookListItem", () => {
 
   test("renders without crashing when isSelected is true", () => {
     const { container } = render(
-      <BookListItem book={makeBook()} source={undefined} isSelected={true} />,
+      <BookListItem book={makeBook()} source={undefined} isSelected={true} onPress={() => {}} />,
     )
     expect(container.textContent).toContain("Test Book")
+  })
+
+  test("renders a visible selection outline when selected", () => {
+    const { container } = render(
+      <BookListItem book={makeBook()} source={undefined} isSelected={true} onPress={() => {}} />,
+    )
+
+    expect(container.querySelector('[data-testid="book-list-item-selected-outline"]')).not.toBeNull()
   })
 
   test("renders cover image when source is provided", () => {
@@ -182,41 +233,57 @@ describe("BookListItem", () => {
     expect(img).not.toBeNull()
   })
 
-  test("renders checkbox when onSelectToggle is provided", () => {
-    const onSelectToggle = () => {}
+  test("renders a pressable row when onPress is provided", () => {
     const { container } = render(
       <BookListItem
         book={makeBook()}
         source={undefined}
-        onSelectToggle={onSelectToggle}
+        onPress={() => {}}
         isSelected={false}
       />,
     )
-    // The checkbox container should be present
     expect(container.querySelectorAll('[role="button"]').length).toBeGreaterThan(0)
   })
 
-  test("calls onSelectToggle when checkbox is clicked", () => {
-    const onSelectToggle = mock(() => {})
+  test("calls onPress when row is clicked", () => {
     const onPress = mock(() => {})
     const { container } = render(
       <BookListItem
         book={makeBook()}
         source={undefined}
-        onSelectToggle={onSelectToggle}
         onPress={onPress}
         isSelected={false}
       />,
     )
-    // Find all buttons - there should be 2 (checkbox + outer pressable)
     const buttons = container.querySelectorAll('[role="button"]')
-    expect(buttons.length).toBe(2)
-    // First button is the checkbox (appears first in DOM), second is the row content
-    const checkbox = buttons[0]
-    expect(checkbox).not.toBeNull()
-    checkbox?.click()
-    // Due to React event bubbling, both handlers may be called in test environment
-    // In real app, stopPropagation prevents outer handler from firing
-    expect(onSelectToggle).toHaveBeenCalledTimes(1)
+    expect(buttons.length).toBe(1)
+    buttons[0]?.click()
+    expect(onPress).toHaveBeenCalledTimes(1)
+  })
+
+  test("renders single-selection action menu when requested", () => {
+    const { container } = render(
+      <BookListItem
+        book={makeBook()}
+        source={undefined}
+        isSelected={true}
+        onPress={() => {}}
+        showSelectionActions={true}
+        detailMenuProps={{
+          onOpenBook: async () => {},
+          onDownloadBook: () => {},
+          onConvertBook: () => {},
+          onEditBook: () => {},
+          onDeleteBook: () => {},
+          onOpenBookDetail: () => {},
+        }}
+      />,
+    )
+
+    expect(container.querySelector('[data-testid="book-detail-menu"]')).not.toBeNull()
+    expect(bookDetailMenuProps[0]).toMatchObject({
+      iconOpacity: 0.9,
+    })
+    expect((bookDetailMenuProps[0] as { wrap?: boolean } | undefined)?.wrap).toBeUndefined()
   })
 })
