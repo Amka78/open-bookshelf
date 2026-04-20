@@ -63,17 +63,27 @@ export const JobQueueModal = observer((props: JobQueueModalProps) => {
       const trackedJobs = calibreRootStore.getConversionJobsForLibrary(selectedLibrary.id)
       const runningTrackedJobs = trackedJobs.filter((job) => job.status === "running")
 
-      const [serverJobsResult, trackedStatuses] = await Promise.all([
-        api.getJobs(selectedLibrary.id),
-        Promise.all(
-          runningTrackedJobs.map(async (job) => ({
-            job,
-            result: await api.getConversionStatus(selectedLibrary.id, job.jobId),
-          })),
-        ),
-      ])
+      const trackedStatuses = await Promise.all(
+        runningTrackedJobs.map(async (job) => ({
+          job,
+          result: await api.getConversionStatus(selectedLibrary.id, job.jobId),
+        })),
+      )
 
       for (const { job, result } of trackedStatuses) {
+        // 404 = job already finished and removed from server, or expired
+        if (result.kind === "not-found") {
+          calibreRootStore.updateConversionJobFinished({
+            libraryId: selectedLibrary.id,
+            jobId: job.jobId,
+            ok: false,
+            wasAborted: false,
+            traceback: null,
+            log: null,
+          })
+          continue
+        }
+
         if (result.kind !== "ok") {
           continue
         }
@@ -99,30 +109,8 @@ export const JobQueueModal = observer((props: JobQueueModalProps) => {
         }
       }
 
-      const mergedJobs = new Map<string, JobQueueItem>()
       const currentTrackedJobs = calibreRootStore.getConversionJobsForLibrary(selectedLibrary.id)
-
-      for (const trackedJob of currentTrackedJobs) {
-        mergedJobs.set(trackedJob.id, buildTrackedJobItem(trackedJob))
-      }
-
-      if (serverJobsResult.kind === "ok") {
-        for (const job of serverJobsResult.data) {
-          const key = `server:${job.id}`
-          if (!mergedJobs.has(`${selectedLibrary.id}:${job.id}`)) {
-            mergedJobs.set(key, {
-              id: key,
-              name: job.name,
-              percent: job.percent ?? 0,
-              running: job.running,
-              done: job.done,
-              failed: job.failed,
-            })
-          }
-        }
-      }
-
-      setJobs(Array.from(mergedJobs.values()))
+      setJobs(currentTrackedJobs.map(buildTrackedJobItem))
     } finally {
       setLoading(false)
     }
