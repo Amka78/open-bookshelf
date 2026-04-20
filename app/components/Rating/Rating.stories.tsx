@@ -1,5 +1,7 @@
 import { Rating } from "@/components"
 import type { Meta, StoryObj } from "@storybook/react"
+import { fn, within, expect } from "@storybook/test"
+import { playFiveStarRendersStars, playSelectableRatingPressesHandler } from "./ratingStoryPlay"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
@@ -24,6 +26,7 @@ export const FiveStar: StoryProps = {
   args: {
     rating: 10,
   },
+  play: playFiveStarRendersStars,
 }
 export const FourStar: StoryProps = {
   args: {
@@ -51,7 +54,9 @@ export const SelectableRating: StoryProps = {
   args: {
     variant: "selectable",
     rating: 10,
+    onPress: fn(),
   },
+  play: playSelectableRatingPressesHandler,
 }
 
 export const SelectableNoRating: StoryProps = {

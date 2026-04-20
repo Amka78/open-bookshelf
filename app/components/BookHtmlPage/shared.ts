@@ -41,6 +41,8 @@ type SerializedHtmlDocument = {
   ns_map: string[]
 }
 
+export type PreparedCalibreHtmlDocument = SerializedHtmlDocument
+
 type BookResourceDescriptor = {
   fragment?: string
   name: string
@@ -52,6 +54,14 @@ type UseCalibreHtmlDocumentResult = {
   error: string | null
   html: string | null
   loading: boolean
+}
+
+type UsePreparedCalibreHtmlDocumentResult = {
+  autoHeight: boolean
+  documentKey: string
+  error: string | null
+  loading: boolean
+  preparedDocument: PreparedCalibreHtmlDocument | null
 }
 
 const DUMMY_ORIGIN = "https://open-bookshelf.local/"
@@ -745,7 +755,7 @@ const prepareSerializedHtmlDocument = async (props: BookHtmlPageProps) => {
   return prepared
 }
 
-const buildPreparedHtmlDocument = (
+export const buildPreparedHtmlDocument = (
   documentData: SerializedHtmlDocument,
   documentKey: string,
   scrollMode: "content" | "viewport",
@@ -1518,7 +1528,9 @@ const loadPreparedPage = (props: BookHtmlPageProps) => {
   return request
 }
 
-export const useCalibreHtmlDocument = (props: BookHtmlPageProps): UseCalibreHtmlDocumentResult => {
+export const usePreparedCalibreHtmlDocument = (
+  props: BookHtmlPageProps,
+): UsePreparedCalibreHtmlDocumentResult => {
   const [preparedDocument, setPreparedDocument] = useState<SerializedHtmlDocument | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -1574,6 +1586,19 @@ export const useCalibreHtmlDocument = (props: BookHtmlPageProps): UseCalibreHtml
       cancelled = true
     }
   }, [bookId, format, hash, libraryId, pagePath, size, headersKey])
+
+  return {
+    autoHeight,
+    documentKey,
+    error,
+    loading,
+    preparedDocument,
+  }
+}
+
+export const useCalibreHtmlDocument = (props: BookHtmlPageProps): UseCalibreHtmlDocumentResult => {
+  const { autoHeight, documentKey, error, loading, preparedDocument } =
+    usePreparedCalibreHtmlDocument(props)
 
   const html = !preparedDocument
     ? null

@@ -1,4 +1,7 @@
-import { Box, HStack, MaterialCommunityIcon, Text } from "@/components"
+import { Box } from "../Box/Box"
+import { HStack } from "../HStack/HStack"
+import { MaterialCommunityIcon } from "../MaterialCommunityIcon/MaterialCommunityIcon"
+import { Text } from "../Text/Text"
 import { Pressable, styled } from "@gluestack-ui/themed"
 import type { ComponentProps } from "react"
 export type RatingProps = {

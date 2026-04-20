@@ -1,4 +1,4 @@
-import { BookPage, BookViewer, LabeledSpinner, type RenderPageProps } from "@/components"
+import { BookPage, BookViewer, LabeledSpinner, TextBookViewer, type RenderPageProps } from "@/components"
 import { BookHtmlPage } from "@/components/BookHtmlPage"
 import { useStores } from "@/models"
 import type { ApppNavigationProp } from "@/navigators/types"
@@ -43,6 +43,10 @@ const ViewerScreenContent: FC = observer(() => {
     [selectedBook, isHtmlViewerFormat, cachedPathList],
   )
   const totalPages = sourcePathList.length
+  const usesTextBookViewer = useMemo(
+    () => sourcePathList.some((path) => isCalibreSerializedHtmlPath(path)),
+    [sourcePathList],
+  )
 
   useLayoutEffect(() => {
     if (!selectedBook) {
@@ -118,6 +122,10 @@ const ViewerScreenContent: FC = observer(() => {
 
   if (!viewerReady) {
     return null
+  }
+
+  if (usesTextBookViewer) {
+    return <TextBookViewer viewerHook={viewerHook} getAuthHeader={authenticationStore.getHeader} />
   }
 
   return (

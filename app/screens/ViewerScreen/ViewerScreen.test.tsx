@@ -82,6 +82,7 @@ const componentsMock = {
   LabeledSpinner: ({ labelTx }: { labelTx?: string }) => (
     <div data-testid="viewer-screen-loading" data-label-tx={labelTx} />
   ),
+  TextBookViewer: () => <div data-testid="viewer-screen-text-book-viewer" />,
 }
 
 ;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
@@ -163,7 +164,7 @@ describe("ViewerScreen", () => {
     expect(screen.getByTestId("viewer-screen-book-page")).toBeTruthy()
   })
 
-  test("renders serialized html pages with BookHtmlPage", () => {
+  test("renders serialized html pages with TextBookViewer", () => {
     useViewerMock.mockReturnValue({
       selectedLibrary: {
         id: "library-1",
@@ -187,7 +188,7 @@ describe("ViewerScreen", () => {
 
     render(<ViewerScreen />)
 
-    expect(screen.getByTestId("viewer-screen-html-page")).toBeTruthy()
+    expect(screen.getByTestId("viewer-screen-text-book-viewer")).toBeTruthy()
   })
 
   test("navigates back to Library when no selected book is available", () => {
