@@ -322,6 +322,7 @@ export const LibraryScreen: FC = observer(() => {
         headers: api.getAuthHeaders(thumbnailUri),
       }
       const imageUrl = imageSource.uri
+      const ocrImageUrl = encodeURI(api.getBookThumbnailUrl(item.id, selectedLibrary.id, "1200x1600"))
       const handleBookMetadataSearch = async (query: string) => {
         libraryHook.setHeaderSearchText(query)
         await libraryHook.onSearch(query)
@@ -346,6 +347,11 @@ export const LibraryScreen: FC = observer(() => {
             imageUrl: imageUrl,
             onLinkPress: (query) => {
               libraryHook.onSearch(query)
+            },
+            onNavigateToBookOcr: ({ imageUrl: nextImageUrl }) => {
+              navigation.navigate("BookOcrReview", {
+                imageUrl: nextImageUrl,
+              })
             },
           })
         }
@@ -383,6 +389,20 @@ export const LibraryScreen: FC = observer(() => {
         }
       }
 
+      const onRunCoverOcr = () => {
+        selectedLibrary.setBook(item.id)
+        if (convergenceHook.isLarge) {
+          modal.openModal("BookOcrReviewModal", {
+            imageUrl: ocrImageUrl,
+          })
+          return
+        }
+
+        navigation.navigate("BookOcrReview", {
+          imageUrl: ocrImageUrl,
+        })
+      }
+
       const onOpenBookDetail = () => {
         selectedLibrary.setBook(item.id)
         if (convergenceHook.isLarge) {
@@ -397,6 +417,18 @@ export const LibraryScreen: FC = observer(() => {
             imageUrl: imageUrl,
             onLinkPress: (query) => {
               libraryHook.onSearch(query)
+            },
+            onNavigateToBookOcr: ({ imageUrl: nextImageUrl }) => {
+              if (convergenceHook.isLarge) {
+                modal.openModal("BookOcrReviewModal", {
+                  imageUrl: nextImageUrl,
+                })
+                return
+              }
+
+              navigation.navigate("BookOcrReview", {
+                imageUrl: nextImageUrl,
+              })
             },
           })
         }
@@ -502,6 +534,7 @@ export const LibraryScreen: FC = observer(() => {
                     onOpenBookDetail: onOpenBookDetail,
                     onConvertBook: onConvertBook,
                     onEditBook: onEditBook,
+                    onRunCoverOcr: onRunCoverOcr,
                     onDeleteBook: onDeleteBook,
                     readStatus: readStatus ?? null,
                     onSetStatus: handleSetStatus,

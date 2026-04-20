@@ -198,9 +198,10 @@ describe("useBookEdit", () => {
       expect.objectContaining({
         title: "Test Book",
         authors: ["Author 1"],
-        languages: ["English", "Japanese"],
+        languages: ["en", "ja"],
       }),
-      expect.any(Array),
+      expect.arrayContaining(["title", "authors", "languages", "formats"]),
+      undefined,
     )
   })
 
@@ -326,9 +327,12 @@ describe("useBookEdit", () => {
     expect(mockUpdate).toHaveBeenCalledWith(
       "lib1",
       expect.objectContaining({
-        languages: ["English", "Japanese"],
+        languages: ["en", "ja"],
       }),
-      expect.any(Array),
+      expect.arrayContaining(["title", "authors", "languages"]),
+      expect.objectContaining({
+        removed_formats: ["EPUB", "PDF"],
+      }),
     )
   })
 })

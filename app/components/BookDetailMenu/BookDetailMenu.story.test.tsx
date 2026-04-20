@@ -10,7 +10,10 @@ import {
 import { render } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
-import { playBookDetailMenuEditDoesNotBubble } from "./bookDetailMenuStoryPlay"
+import {
+  playBookDetailMenuEditDoesNotBubble,
+  playBookDetailMenuOcrDoesNotBubble,
+} from "./bookDetailMenuStoryPlay"
 
 const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
@@ -54,6 +57,7 @@ beforeAll(async () => {
 describe("BookDetailMenu story play", () => {
   const onOpenBook = jest.fn(async () => {})
   const onEditBook = jest.fn()
+  const onRunCoverOcr = jest.fn()
   const onParentClick = jest.fn()
 
   beforeEach(() => {
@@ -69,6 +73,7 @@ describe("BookDetailMenu story play", () => {
           onOpenBookDetail={() => {}}
           onConvertBook={() => {}}
           onEditBook={onEditBook}
+          onRunCoverOcr={onRunCoverOcr}
           onDeleteBook={() => {}}
         />
       </div>,
@@ -77,6 +82,27 @@ describe("BookDetailMenu story play", () => {
     await playBookDetailMenuEditDoesNotBubble({ canvasElement: container })
 
     expect(onEditBook).toHaveBeenCalled()
+    expect(onParentClick).not.toHaveBeenCalled()
+  })
+
+  test("ocr button triggers only OCR and does not bubble to the parent", async () => {
+    const { container } = render(
+      <div onClick={onParentClick}>
+        <BookDetailMenu
+          onOpenBook={onOpenBook}
+          onDownloadBook={() => {}}
+          onOpenBookDetail={() => {}}
+          onConvertBook={() => {}}
+          onEditBook={() => {}}
+          onRunCoverOcr={onRunCoverOcr}
+          onDeleteBook={() => {}}
+        />
+      </div>,
+    )
+
+    await playBookDetailMenuOcrDoesNotBubble({ canvasElement: container })
+
+    expect(onRunCoverOcr).toHaveBeenCalled()
     expect(onParentClick).not.toHaveBeenCalled()
   })
 })

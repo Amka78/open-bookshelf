@@ -27,6 +27,7 @@ export function useBookDetail() {
 
   const selectedLibrary = calibreRootStore.selectedLibrary
   const selectedBook = selectedLibrary.selectedBook
+  const ocrImageUrl = encodeURI(api.getBookThumbnailUrl(selectedBook.id, selectedLibrary.id, "1200x1600"))
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -81,6 +82,26 @@ export function useBookDetail() {
 
     navigation.navigate("BookEdit", {
       imageUrl: route.params.imageUrl,
+    })
+  }
+
+  const handleRunCoverOcr = () => {
+    if (convergenceHook.isLarge) {
+      modal.openModal("BookOcrReviewModal", {
+        imageUrl: ocrImageUrl,
+      })
+      return
+    }
+
+    if (route.params.onNavigateToBookOcr) {
+      route.params.onNavigateToBookOcr({
+        imageUrl: ocrImageUrl,
+      })
+      return
+    }
+
+    navigation.navigate("BookOcrReview", {
+      imageUrl: ocrImageUrl,
     })
   }
 
@@ -259,6 +280,7 @@ export function useBookDetail() {
     handleDownloadBook,
     handleConvertBook,
     handleEditBook,
+    handleRunCoverOcr,
     handleDeleteBook,
     handleShareLink,
     handleSendByEmail,

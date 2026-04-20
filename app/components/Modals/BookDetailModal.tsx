@@ -11,6 +11,7 @@ import { useDeleteBook } from "@/hooks/useDeleteBook"
 import { useDownloadBook } from "@/hooks/useDownloadBook"
 import { useOpenViewer } from "@/hooks/useOpenViewer"
 import { useStores } from "@/models"
+import { api } from "@/services/api"
 import { logger } from "@/utils/logger"
 import { observer } from "mobx-react-lite"
 import { Body } from "./Body"
@@ -46,6 +47,12 @@ export const BookDetailModal = observer((props: BookDetailModalProps) => {
     })
   }
 
+  const onRunCoverOcr = () => {
+    props.modal.openModal("BookOcrReviewModal", {
+      imageUrl: encodeURI(api.getBookThumbnailUrl(selectedBook.id, selectedLibrary.id, "1200x1600")),
+    })
+  }
+
   const onDeleteBook = async () => {
     await deleteBookHook.execute(props.modal)
   }
@@ -62,6 +69,7 @@ export const BookDetailModal = observer((props: BookDetailModalProps) => {
           onDownloadBook,
           onDeleteBook,
           onEditBook,
+          onRunCoverOcr,
         },
       }}
     />
@@ -98,6 +106,7 @@ export function BookDetailModalTemplate(props: BookDetailModalTemplateProps) {
               onOpenBookDetail={() => {}}
               onConvertBook={props.modal.params.onConvertBook}
               onEditBook={props.modal.params.onEditBook}
+              onRunCoverOcr={props.modal.params.onRunCoverOcr}
               onDeleteBook={props.modal.params.onDeleteBook}
             />
             <BookDetailFieldList

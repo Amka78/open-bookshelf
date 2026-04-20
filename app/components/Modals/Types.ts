@@ -46,6 +46,7 @@ export type ModalStackParams = {
     onDownloadBook?: () => Promise<void>
     onConvertBook?: () => void
     onEditBook?: () => void
+    onRunCoverOcr?: () => void
     onDeleteBook?: () => void
   }
   BookEditModal: {
@@ -54,6 +55,9 @@ export type ModalStackParams = {
     fieldMetadataList?: FieldMetadataMap
     tagBrowser?: Category[]
     onOKPress?: (value: MetadataSnapshotIn, editFields: string[]) => void
+  }
+  BookOcrReviewModal: {
+    imageUrl: string
   }
   ViewerAutoPageTurnSettingModal: {
     intervalMs: number

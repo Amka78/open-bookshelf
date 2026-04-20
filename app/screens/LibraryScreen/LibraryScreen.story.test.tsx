@@ -7,6 +7,7 @@ import {
   playLibraryChangesSort,
   playLibraryOpensBook,
   playLibraryRestoresScrollPosition,
+  playLibraryRunsCoverOcr,
   playLibrarySearchesByQuery,
   playLibraryShowsSearchInput,
   playLibraryTogglesSelectAllVisible,
@@ -20,6 +21,7 @@ describe("LibraryScreen story play", () => {
   const onChangeListStyle = jest.fn()
   const onSort = jest.fn()
   const onOpenBook = jest.fn()
+  const onRunCoverOcr = jest.fn()
 
   const renderStoryDom = () =>
     render(
@@ -52,6 +54,9 @@ describe("LibraryScreen story play", () => {
 
         <button onClick={() => onOpenBook("Book Alpha")} type="button">
           Book Alpha
+        </button>
+        <button data-testid="library-run-cover-ocr" onClick={onRunCoverOcr} type="button">
+          Run Cover OCR
         </button>
       </div>,
     )
@@ -162,6 +167,16 @@ describe("LibraryScreen story play", () => {
     })
 
     expect(onOpenBook).toHaveBeenCalledWith("Book Alpha")
+  })
+
+  test("pressing the cover OCR action triggers OCR navigation in the library story play", async () => {
+    const { container } = renderStoryDom()
+
+    await playLibraryRunsCoverOcr({
+      canvasElement: container,
+    })
+
+    expect(onRunCoverOcr).toHaveBeenCalledTimes(1)
   })
 
   test("pressing the selection bar toggle switches from select-all to clear-visible in the library story play", async () => {

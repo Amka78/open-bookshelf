@@ -19,3 +19,13 @@ export async function playBookDetailMenuEditDoesNotBubble({
     fireEvent.click(findByTestId(canvasElement, "book-detail-edit-button"))
   })
 }
+
+export async function playBookDetailMenuOcrDoesNotBubble({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  await act(async () => {
+    fireEvent.click(findByTestId(canvasElement, "book-detail-ocr-button"))
+  })
+}

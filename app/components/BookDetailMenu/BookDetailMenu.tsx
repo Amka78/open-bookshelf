@@ -21,6 +21,7 @@ export type BookDetailMenuProps = {
   onDownloadBook: () => void
   onConvertBook: () => void
   onEditBook: () => void
+  onRunCoverOcr?: () => void
   onDeleteBook: () => void
   onOpenBookDetail: () => void
   onShareLink?: () => void
@@ -65,7 +66,7 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
     ? STATUS_ICON_MAP[props.readStatus]
     : "bookmark-plus-outline"
 
-  const iconSize = props.wrap ? "sm" : "md-"
+  const iconSize = props.wrap ? "md" : "md-"
   const wrapMenuAction = (action: () => void | Promise<void>) => {
     return async (event?: { stopPropagation?: () => void; preventDefault?: () => void }) => {
       event?.stopPropagation?.()
@@ -152,6 +153,16 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
         testID="book-detail-edit-button"
         tooltipTx="bookDetailMenu.editTooltip"
       />
+      {props.onRunCoverOcr ? (
+        <TooltipIconButton
+          {...sharedIconButtonProps}
+          name={"text-box-search-outline"}
+          iconSize={iconSize}
+          onPress={wrapMenuAction(props.onRunCoverOcr)}
+          testID="book-detail-ocr-button"
+          tooltipTx="bookDetailMenu.ocrTooltip"
+        />
+      ) : null}
       <TooltipIconButton
         {...sharedIconButtonProps}
         name={"trash-can"}

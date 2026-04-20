@@ -55,6 +55,15 @@ export async function playLibraryOpensBook({
   fireEvent.click(item)
 }
 
+export async function playLibraryRunsCoverOcr({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  const button = await findByTestId(canvasElement, "library-run-cover-ocr")
+  fireEvent.click(button)
+}
+
 export async function playLibraryShowsDescriptionItem({
   canvasElement,
 }: {

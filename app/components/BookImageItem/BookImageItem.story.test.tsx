@@ -10,14 +10,18 @@ import {
 import { render } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
-import { playBookImageItemHoverSearchPressesAuthorLink } from "./bookImageItemStoryPlay"
+import {
+  playBookImageItemHoverSearchPressesAuthorLink,
+  playBookImageItemShowsDetailMenuOnHover,
+} from "./bookImageItemStoryPlay"
 
 const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
+const bookDetailMenuMock = jest.fn(() => <div data-testid="book-image-detail-menu" />)
 
 const componentsMock = {
   ...((global as { __componentsMock?: Record<string, unknown> }).__componentsMock ?? {}),
-  BookDetailMenu: () => <div data-testid="book-image-detail-menu" />,
+  BookDetailMenu: bookDetailMenuMock,
   Box: ({
     children,
     testID,
@@ -175,5 +179,40 @@ describe("BookImageItem story play", () => {
 
     expect(onHoverSearchPress).toHaveBeenCalledWith("authors:=Ursula K. Le Guin")
     expect(onPress).not.toHaveBeenCalled()
+  })
+
+  test("hover shows the detail menu using the image width for larger wrapped icons", async () => {
+    const { container } = render(
+      <BookImageItem
+        source={{ uri: "https://example.com/cover.jpg" }}
+        detailMenuProps={{
+          onOpenBook: async () => {},
+          onDownloadBook: () => {},
+          onConvertBook: () => {},
+          onEditBook: () => {},
+          onDeleteBook: () => {},
+          onOpenBookDetail: () => {},
+        }}
+      />,
+    )
+
+    await playBookImageItemShowsDetailMenuOnHover({ canvasElement: container })
+
+    const overlay = container.querySelector(
+      '[data-testid="book-image-detail-menu-overlay"]',
+    ) as HTMLElement | null
+
+    expect(overlay).toBeTruthy()
+    expect(overlay?.style.left).toBe("6px")
+    expect(overlay?.style.right).toBe("6px")
+    expect(bookDetailMenuMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        wrap: true,
+        containerProps: expect.objectContaining({
+          width: "100%",
+        }),
+      }),
+      undefined,
+    )
   })
 })

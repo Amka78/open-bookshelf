@@ -6,6 +6,7 @@ import {
   playBookDetailDeleteAction,
   playBookDetailDownloadAction,
   playBookDetailEditNavigation,
+  playBookDetailOcrNavigation,
   playBookDetailOpenAction,
 } from "./bookDetailScreenStoryPlay"
 
@@ -18,6 +19,7 @@ describe("BookDetailScreen story play", () => {
   const mockDownloadBookAction = jest.fn()
   const mockConvertNavigationAction = jest.fn()
   const mockEditNavigationAction = jest.fn()
+  const mockOcrNavigationAction = jest.fn()
   const mockDeleteBookAction = jest.fn()
 
   const renderStoryDom = () =>
@@ -46,6 +48,13 @@ describe("BookDetailScreen story play", () => {
           type="button"
         >
           Edit
+        </button>
+        <button
+          data-testid="book-detail-ocr-button"
+          onClick={() => mockOcrNavigationAction({ imageUrl: "https://example.com/image.jpg" })}
+          type="button"
+        >
+          OCR
         </button>
         <button
           data-testid="book-detail-delete-button"
@@ -121,5 +130,20 @@ describe("BookDetailScreen story play", () => {
     })
 
     expect(mockDeleteBookAction).toHaveBeenCalledTimes(1)
+  })
+
+  test("pressing OCR in the story play triggers OCR navigation action", async () => {
+    const { container } = renderStoryDom()
+
+    expect(mockOcrNavigationAction).not.toHaveBeenCalled()
+
+    await playBookDetailOcrNavigation({
+      canvasElement: container,
+    })
+
+    expect(mockOcrNavigationAction).toHaveBeenCalledTimes(1)
+    expect(mockOcrNavigationAction).toHaveBeenCalledWith({
+      imageUrl: "https://example.com/image.jpg",
+    })
   })
 })

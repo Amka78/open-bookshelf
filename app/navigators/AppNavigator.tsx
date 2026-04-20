@@ -21,6 +21,7 @@ import {
   BookConvertScreen,
   BookDetailScreen,
   BookEditScreen,
+  BookOcrReviewScreen,
   CalibreRootScreen,
   ConnectScreen,
   DetailSearchScreen,
@@ -64,6 +65,7 @@ const getLinking = (): LinkingOptions<AppStackParamList> => {
         PDFViewer: "pdf-viewer",
         BookDetail: "book-detail",
         BookEdit: "book-edit",
+        BookOcrReview: "book-ocr-review",
         BookConvert: "book-convert",
         DetailSearch: "detail-search",
       },
@@ -127,6 +129,7 @@ const AppStack = observer(function AppStack() {
       />
       <Stack.Screen name="BookDetail" component={BookDetailScreen} />
       <Stack.Screen name="BookEdit" component={BookEditScreen} />
+      <Stack.Screen name="BookOcrReview" component={BookOcrReviewScreen} />
       <Stack.Screen name="BookConvert" component={BookConvertScreen} />
       <Stack.Screen name="DetailSearch" component={DetailSearchScreen} />
     </Stack.Navigator>

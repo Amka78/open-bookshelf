@@ -65,6 +65,10 @@ type BoxWithHoverProps = React.ComponentPropsWithRef<typeof Box> & {
   onMouseLeave?: () => void
 }
 const BoxWithHover = Box as React.ComponentType<BoxWithHoverProps>
+const IMAGE_ITEM_WIDTH = 240
+const IMAGE_ITEM_HEIGHT = 300
+const DETAIL_MENU_OVERLAY_INSET = 6
+const DETAIL_MENU_BUTTON_SIZE = 42
 
 function uniqNonEmpty(values: Array<string | null | undefined>): string[] {
   return Array.from(
@@ -236,13 +240,17 @@ export const BookImageItem = memo(function BookImageItem({
         </Box>
       ) : null}
       {showDetailMenu ? (
-        <Box style={styles.detailMenuOverlay}>
+        <Box style={styles.detailMenuOverlay} testID="book-image-detail-menu-overlay">
           <BookDetailMenu
             {...props.detailMenuProps}
             onOpenBookDetail={props.onOpenBookDetail ?? (() => {})}
             wrap
             iconOpacity={0.85}
-            containerProps={{ alignItems: "center", justifyContent: "center" }}
+            containerProps={{
+              alignItems: "center",
+              justifyContent: "center",
+              width: "100%",
+            }}
             iconButtonProps={{ style: styles.detailMenuIcon }}
           />
         </Box>
@@ -297,12 +305,12 @@ export const BookImageItem = memo(function BookImageItem({
 
 const styles = StyleSheet.create({
   imageSize: {
-    height: 300,
-    width: 240,
+    height: IMAGE_ITEM_HEIGHT,
+    width: IMAGE_ITEM_WIDTH,
   },
   imageContainer: {
-    height: 300,
-    width: 240,
+    height: IMAGE_ITEM_HEIGHT,
+    width: IMAGE_ITEM_WIDTH,
     position: "relative",
     overflow: "hidden",
   },
@@ -340,13 +348,13 @@ const styles = StyleSheet.create({
   },
   detailMenuOverlay: {
     position: "absolute",
-    left: 0,
-    right: 0,
+    left: DETAIL_MENU_OVERLAY_INSET,
+    right: DETAIL_MENU_OVERLAY_INSET,
     bottom: 0,
-    alignItems: "center",
+    alignItems: "stretch",
     justifyContent: "center",
-    paddingBottom: 6,
-    paddingTop: 6,
+    paddingBottom: 8,
+    paddingTop: 8,
   },
   hoverSearchOverlay: {
     position: "absolute",
@@ -384,9 +392,13 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255, 255, 255, 0.25)",
     borderRadius: 999,
     borderWidth: 1,
-    marginHorizontal: 1,
-    marginVertical: 1,
-    padding: 1,
+    marginHorizontal: 2,
+    marginVertical: 2,
+    padding: 2,
+    width: DETAIL_MENU_BUTTON_SIZE,
+    height: DETAIL_MENU_BUTTON_SIZE,
+    alignItems: "center",
+    justifyContent: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.35,

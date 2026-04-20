@@ -1,7 +1,10 @@
 import { BookImageItem } from "@/components"
 import type { Meta, StoryObj } from "@storybook/react"
 import React from "react"
-import { playBookImageItemHoverSearchPressesAuthorLink } from "./bookImageItemStoryPlay"
+import {
+  playBookImageItemHoverSearchPressesAuthorLink,
+  playBookImageItemShowsDetailMenuOnHover,
+} from "./bookImageItemStoryPlay"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
@@ -49,4 +52,18 @@ export const HoverSearchLinks: BookImageItemStory = {
     },
   },
   play: playBookImageItemHoverSearchPressesAuthorLink,
+}
+
+export const HoverDetailMenu: BookImageItemStory = {
+  args: {
+    detailMenuProps: {
+      onOpenBook: async () => {},
+      onDownloadBook: () => {},
+      onConvertBook: () => {},
+      onEditBook: () => {},
+      onDeleteBook: () => {},
+      onOpenBookDetail: () => {},
+    },
+  },
+  play: playBookImageItemShowsDetailMenuOnHover,
 }

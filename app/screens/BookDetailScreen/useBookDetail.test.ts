@@ -25,6 +25,7 @@ const mockUseElectrobunModal = jest.fn()
 const mockShareShare = jest.fn()
 const mockEditBook = jest.fn()
 const mockGetBookDownloadUrl = jest.fn()
+const mockGetBookThumbnailUrl = jest.fn()
 const mockSendBookByEmail = jest.fn()
 const reactNativeMockFactory = () => ({
   ...((global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock ?? {}),
@@ -40,6 +41,7 @@ mock.module(
 mock.module("@/services/api", () => ({
   api: {
     getBookDownloadUrl: mockGetBookDownloadUrl,
+    getBookThumbnailUrl: mockGetBookThumbnailUrl,
     editBook: mockEditBook,
     sendBookByEmail: mockSendBookByEmail,
   },
@@ -156,6 +158,7 @@ describe("useBookDetail", () => {
       execute: mockDownloadBookExecute,
     })
     mockGetBookDownloadUrl.mockReturnValue("https://example.com/download/EPUB/1")
+    mockGetBookThumbnailUrl.mockReturnValue("https://example.com/ocr-image.jpg")
     mockEditBook.mockResolvedValue({ kind: "ok", data: {} })
     mockSendBookByEmail.mockResolvedValue({ kind: "ok" })
     mockShareShare.mockResolvedValue(undefined)
@@ -174,6 +177,7 @@ describe("useBookDetail", () => {
     expect(result.current.handleDownloadBook).toBeDefined()
     expect(result.current.handleDeleteBook).toBeDefined()
     expect(result.current.handleEditBook).toBeDefined()
+    expect(result.current.handleRunCoverOcr).toBeDefined()
     expect(result.current.handleConvertBook).toBeDefined()
     expect(result.current.handleShareLink).toBeDefined()
   })
@@ -296,6 +300,49 @@ describe("useBookDetail", () => {
 
     expect(customEditNavigation).toHaveBeenCalledWith({
       imageUrl: "https://example.com/image.jpg",
+    })
+    expect(mockNavigate).not.toHaveBeenCalled()
+  })
+
+  test("navigates to the OCR review screen when no custom OCR action is provided", () => {
+    const { result } = renderHook(() => useBookDetail())
+
+    result.current.handleRunCoverOcr()
+
+    expect(mockGetBookThumbnailUrl).toHaveBeenCalledWith(1, "lib1", "1200x1600")
+    expect(mockNavigate).toHaveBeenCalledWith("BookOcrReview", {
+      imageUrl: "https://example.com/ocr-image.jpg",
+    })
+  })
+
+  test("opens the OCR review modal on large screens", () => {
+    mockUseConvergence.mockReturnValue({ isLarge: true })
+
+    const { result } = renderHook(() => useBookDetail())
+
+    result.current.handleRunCoverOcr()
+
+    expect(mockOpenModal).toHaveBeenCalledWith("BookOcrReviewModal", {
+      imageUrl: "https://example.com/ocr-image.jpg",
+    })
+    expect(mockNavigate).not.toHaveBeenCalled()
+  })
+
+  test("uses the custom OCR navigation callback when provided", () => {
+    const customOcrNavigation = jest.fn()
+    ;(useRoute as jest.Mock).mockReturnValue({
+      params: {
+        ...mockRoute.params,
+        onNavigateToBookOcr: customOcrNavigation,
+      },
+    })
+
+    const { result } = renderHook(() => useBookDetail())
+
+    result.current.handleRunCoverOcr()
+
+    expect(customOcrNavigation).toHaveBeenCalledWith({
+      imageUrl: "https://example.com/ocr-image.jpg",
     })
     expect(mockNavigate).not.toHaveBeenCalled()
   })

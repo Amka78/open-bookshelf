@@ -5,6 +5,7 @@ import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenConta
 import {
   playLibraryChangesListStyle,
   playLibraryRestoresScrollPosition,
+  playLibraryRunsCoverOcr,
   playLibraryShowsSearchInput,
   playLibraryTogglesSelectAllVisible,
 } from "./libraryScreenStoryPlay"
@@ -47,5 +48,11 @@ export const ToggleSelectAllVisible: LibraryStory = {
 export const RestoresScrollPosition: LibraryStory = {
   play: async ({ canvasElement }) => {
     await playLibraryRestoresScrollPosition({ canvasElement, scrollTop: 240 }).catch(() => {})
+  },
+}
+
+export const RunsCoverOcr: LibraryStory = {
+  play: async ({ canvasElement }) => {
+    await playLibraryRunsCoverOcr({ canvasElement }).catch(() => {})
   },
 }

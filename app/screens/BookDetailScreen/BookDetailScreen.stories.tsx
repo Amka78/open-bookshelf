@@ -11,6 +11,7 @@ import {
   playBookDetailDeleteAction,
   playBookDetailDownloadAction,
   playBookDetailEditNavigation,
+  playBookDetailOcrNavigation,
   playBookDetailOpenAction,
 } from "./bookDetailScreenStoryPlay"
 
@@ -58,6 +59,7 @@ export default {
     onDownloadBookAction: action("action:bookDetail.download"),
     onNavigateToBookConvert: action("navigate:BookConvert"),
     onNavigateToBookEdit: action("navigate:BookEdit"),
+    onNavigateToBookOcr: action("navigate:BookOcrReview"),
     onDeleteBookAction: action("action:bookDetail.delete"),
   },
   argTypes: {
@@ -65,6 +67,7 @@ export default {
     onDownloadBookAction: { action: "action:bookDetail.download" },
     onNavigateToBookConvert: { action: "navigate:BookConvert" },
     onNavigateToBookEdit: { action: "navigate:BookEdit" },
+    onNavigateToBookOcr: { action: "navigate:BookOcrReview" },
     onDeleteBookAction: { action: "action:bookDetail.delete" },
   },
   decorators: [
@@ -75,6 +78,7 @@ export default {
         onDownloadBookAction?: () => void | Promise<void>
         onNavigateToBookConvert?: (params: { imageUrl: string }) => void
         onNavigateToBookEdit?: (params: { imageUrl: string }) => void
+        onNavigateToBookOcr?: (params: { imageUrl: string }) => void
         onDeleteBookAction?: () => void | Promise<void>
       }
       const imageUrl = args.imageUrl ?? defaultImageUrl
@@ -82,6 +86,7 @@ export default {
       const onDownloadBookAction = args.onDownloadBookAction ?? action("action:bookDetail.download")
       const onNavigateToBookConvert = args.onNavigateToBookConvert ?? action("navigate:BookConvert")
       const onNavigateToBookEdit = args.onNavigateToBookEdit ?? action("navigate:BookEdit")
+      const onNavigateToBookOcr = args.onNavigateToBookOcr ?? action("navigate:BookOcrReview")
       const onDeleteBookAction = args.onDeleteBookAction ?? action("action:bookDetail.delete")
 
       return (
@@ -93,10 +98,11 @@ export default {
               imageUrl,
               onLinkPress: () => {},
               onOpenBookAction,
-              onDownloadBookAction,
-              onNavigateToBookConvert,
-              onNavigateToBookEdit,
-              onDeleteBookAction,
+                onDownloadBookAction,
+                onNavigateToBookConvert,
+                onNavigateToBookEdit,
+                onNavigateToBookOcr,
+                onDeleteBookAction,
             },
             options: {
               headerShown: true,
@@ -161,6 +167,15 @@ export const DeleteRunsActionOnSmallScreen: Story = {
     },
   },
   play: playBookDetailDeleteAction,
+}
+
+export const OcrRunsActionOnSmallScreen: Story = {
+  parameters: {
+    viewport: {
+      defaultViewport: "mobile1",
+    },
+  },
+  play: playBookDetailOcrNavigation,
 }
 
 export const LargeMobile: Story = {

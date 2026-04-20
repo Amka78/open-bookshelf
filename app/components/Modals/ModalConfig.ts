@@ -3,6 +3,7 @@ import { AnnotationModal } from "./AnnotationModal"
 import { BookConvertModal } from "./BookConvertModal"
 import { BookDetailModal } from "./BookDetailModal"
 import { BookEditModal } from "./BookEditModal"
+import { BookOcrReviewModal } from "./BookOcrReviewModal"
 import { BulkEditModal } from "./BulkEditModal"
 import { ConfirmModal } from "./ConfirmModal"
 import { ErrorModal } from "./ErrorModal"
@@ -21,6 +22,7 @@ export const modalConfig: ModalStackConfig = {
   BookConvertModal,
   BookDetailModal,
   BookEditModal,
+  BookOcrReviewModal,
   BulkEditModal,
   ConfirmModal,
   ErrorModal,

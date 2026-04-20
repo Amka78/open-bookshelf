@@ -30,8 +30,12 @@ export type AppStackParamList = {
     onDeleteBookAction?: () => void | Promise<void>
     onNavigateToBookConvert?: (params: { imageUrl: string }) => void
     onNavigateToBookEdit?: (params: { imageUrl: string }) => void
+    onNavigateToBookOcr?: (params: { imageUrl: string }) => void
   }
   BookEdit: {
+    imageUrl: string
+  }
+  BookOcrReview: {
     imageUrl: string
   }
   BookConvert: {

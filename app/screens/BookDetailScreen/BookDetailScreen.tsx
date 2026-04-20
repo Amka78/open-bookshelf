@@ -20,6 +20,7 @@ export const BookDetailScreen: FC = observer(() => {
     handleDownloadBook,
     handleConvertBook,
     handleEditBook,
+    handleRunCoverOcr,
     handleDeleteBook,
     handleShareLink,
     handleSendByEmail,
@@ -43,6 +44,7 @@ export const BookDetailScreen: FC = observer(() => {
         onOpenBookDetail={() => {}}
         onConvertBook={handleConvertBook}
         onEditBook={handleEditBook}
+        onRunCoverOcr={handleRunCoverOcr}
         onDeleteBook={handleDeleteBook}
         onShareLink={handleShareLink}
         onSendByEmail={handleSendByEmail}

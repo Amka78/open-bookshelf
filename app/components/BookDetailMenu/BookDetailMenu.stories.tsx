@@ -1,6 +1,9 @@
 import { BookDetailMenu } from "@/components"
 import type { Meta, StoryObj } from "@storybook/react"
-import { playBookDetailMenuEditDoesNotBubble } from "./bookDetailMenuStoryPlay"
+import {
+  playBookDetailMenuEditDoesNotBubble,
+  playBookDetailMenuOcrDoesNotBubble,
+} from "./bookDetailMenuStoryPlay"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
@@ -20,6 +23,7 @@ export default {
     onDownloadBook: { action: "download book." },
     onOpenBook: { action: "open book." },
     onEditBook: { action: "show eidt" },
+    onRunCoverOcr: { action: "run cover ocr" },
   },
   parameters: {
     notes: `
@@ -34,4 +38,8 @@ export const Basic: StoryProps = {}
 
 export const EditDoesNotBubble: StoryProps = {
   play: playBookDetailMenuEditDoesNotBubble,
+}
+
+export const OcrDoesNotBubble: StoryProps = {
+  play: playBookDetailMenuOcrDoesNotBubble,
 }

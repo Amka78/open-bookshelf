@@ -38,6 +38,14 @@ export async function playBookDetailEditNavigation({
   await clickByTestId(canvasElement, "book-detail-edit-button")
 }
 
+export async function playBookDetailOcrNavigation({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  await clickByTestId(canvasElement, "book-detail-ocr-button")
+}
+
 export async function playBookDetailDeleteAction({
   canvasElement,
 }: {

@@ -49,3 +49,17 @@ export async function playBookImageItemEditButtonDoesNotTriggerParentPress({
     fireEvent.click(findElementByTestId(canvasElement, "book-detail-edit-button"))
   })
 }
+
+export async function playBookImageItemShowsDetailMenuOnHover({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  const hoverSurface = findElementByTestId(canvasElement, "book-image-hover-surface")
+
+  await act(async () => {
+    fireEvent.mouseEnter(hoverSurface)
+  })
+
+  findElementByTestId(canvasElement, "book-image-detail-menu-overlay")
+}
