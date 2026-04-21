@@ -47,6 +47,7 @@
     "release:tag": "./bin/release-tag.sh"
   },
   "overrides": {
+    "canvas": "3.2.0",
     "react-error-overlay": "6.0.9",
     "jsonfile": "6.1.0"
   },
