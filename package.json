@@ -17,7 +17,7 @@
     "patch": "bunx patch-package",
     "test": "bun run test:unit && bun run test:detox",
     "test:watch": "bun test --watch app test",
-    "test:unit": "bun test app test",
+    "test:unit": "find app test \\( -name '*.test.ts' -o -name '*.test.tsx' \\) | sort | xargs -P 4 -n 1 bun test",
     "test:unit:watch": "bun test --watch app test",
     "adb": "adb reverse tcp:9090 tcp:9090 && adb reverse tcp:3000 tcp:3000 && adb reverse tcp:9001 tcp:9001 && adb reverse tcp:8081 tcp:8081",
     "postinstall": "node ./bin/postInstall",
