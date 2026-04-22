@@ -32,8 +32,6 @@ const componentsMock = {
   VStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }
 
-;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
-
 mock.module("@/components", () => componentsMock)
 mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
@@ -41,8 +39,6 @@ const reactNativeMock = {
   ...((global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock ?? {}),
   useWindowDimensions: () => ({ width: 375, height: 812 }),
 }
-
-;(global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock = reactNativeMock
 
 mock.module("react-native", () => reactNativeMock)
 mock.module("/home/amka78/private/open-bookshelf/node_modules/react-native/index.js", () => reactNativeMock)
@@ -101,8 +97,6 @@ describe("BookPage", () => {
       VStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
     }
 
-    ;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock =
-      rerenderComponentsMock
     mock.module("@/components", () => rerenderComponentsMock)
     mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => rerenderComponentsMock)
 
@@ -159,8 +153,6 @@ describe("BookPage", () => {
       VStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
     }
 
-    ;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock =
-      rerenderComponentsMock
     mock.module("@/components", () => rerenderComponentsMock)
     mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => rerenderComponentsMock)
 

@@ -26,8 +26,6 @@ const reactNativeMock = {
   ),
 }
 
-;(global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock = reactNativeMock
-
 const componentsMock = {
   ...((global as { __componentsMock?: Record<string, unknown> }).__componentsMock ?? {}),
   BookDetailMenu: () => <div data-testid="book-detail-menu" />,
@@ -68,8 +66,6 @@ const componentsMock = {
   MaterialCommunityIcon: () => <span data-testid="material-community-icon" />,
   VStack: ({ children }: Record<string, unknown> & { children?: ReactNode }) => <div>{children}</div>,
 }
-
-;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
 
 mock.module("@/components", () => componentsMock)
 mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)

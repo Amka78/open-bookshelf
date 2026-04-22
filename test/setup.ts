@@ -173,7 +173,14 @@ const reactNativeMockFactory = () => ({
     addEventListener: jest.fn(),
     removeEventListener: jest.fn(),
   },
+  DeviceEventEmitter: {
+    addListener: jest.fn(() => ({ remove: jest.fn() })),
+    emit: jest.fn(),
+    removeAllListeners: jest.fn(),
+    removeSubscription: jest.fn(),
+  },
   useWindowDimensions: jest.fn(() => ({ width: 375, height: 667, scale: 1, fontScale: 1 })),
+  useColorScheme: jest.fn(() => "light"),
   Easing: {
     linear: (t: number) => t,
     ease: (t: number) => t,
@@ -282,13 +289,18 @@ const reactNativeMockFactory = () => ({
   },
 })
 mock.module("react-native", reactNativeMockFactory)
-;(global as { __reactNativeMock?: ReturnType<typeof reactNativeMockFactory> }).__reactNativeMock =
-  reactNativeMockFactory()
+mock.module("/home/amka78/private/open-bookshelf/node_modules/react-native/index.js", reactNativeMockFactory)
+Object.defineProperty(global, "__reactNativeMock", {
+  configurable: true,
+  get: () => reactNativeMockFactory(),
+  set: () => {},
+})
 
 // Base mock for @/components — covers all exports used across test files.
 // Test files that need custom behaviour should spread this via global.__componentsMock.
 const componentsMockFactory = () => ({
   Box: "div",
+  BookDetailMenu: "div",
   BookPage: "div",
   BookViewer: "div",
   Button: "button",
@@ -306,6 +318,7 @@ const componentsMockFactory = () => ({
   IconButton: "button",
   Image: "img",
   Input: "div",
+  LabeledSpinner: "div",
   ListItem: ({
     LeftComponent,
     children,
@@ -320,8 +333,12 @@ const componentsMockFactory = () => ({
   VStack: "div",
 })
 mock.module("@/components", componentsMockFactory)
-;(global as { __componentsMock?: ReturnType<typeof componentsMockFactory> }).__componentsMock =
-  componentsMockFactory()
+mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", componentsMockFactory)
+Object.defineProperty(global, "__componentsMock", {
+  configurable: true,
+  get: () => componentsMockFactory(),
+  set: () => {},
+})
 
 // Base mock for @react-navigation/native — covers all hooks used across test files.
 const navMockFactory = () => ({

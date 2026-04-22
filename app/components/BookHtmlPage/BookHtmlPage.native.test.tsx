@@ -10,8 +10,6 @@ const componentsMock = {
   Text: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
 }
 
-;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
-
 mock.module("@/components", () => componentsMock)
 mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
@@ -29,8 +27,6 @@ const reactNativeMock = {
   View: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
   useColorScheme: () => "dark",
 }
-
-;(global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock = reactNativeMock
 
 mock.module("react-native", () => reactNativeMock)
 mock.module("/home/amka78/private/open-bookshelf/node_modules/react-native/index.js", () => reactNativeMock)

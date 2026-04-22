@@ -235,7 +235,7 @@ Add or modify translations in `app/i18n/`:
 ### Unit Tests
 
 ```bash
-bun test
+bun run test:unit
 bun run test:watch
 ```
 

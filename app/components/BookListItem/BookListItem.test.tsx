@@ -5,6 +5,7 @@ import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 const reactNativeMock = {
+  ...((global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock ?? {}),
   StyleSheet: {
     create: <T extends Record<string, unknown>>(value: T) => value,
     hairlineWidth: 1,
@@ -61,6 +62,7 @@ mock.module("@/theme/typography", () => ({
 const bookDetailMenuProps: Array<Record<string, unknown>> = []
 
 const componentsMock = {
+  ...((global as { __componentsMock?: Record<string, unknown> }).__componentsMock ?? {}),
   BookDetailMenu: (props: Record<string, unknown>) => {
     bookDetailMenuProps.push(props)
     return <div data-testid="book-detail-menu" />

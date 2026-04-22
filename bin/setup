@@ -95,7 +95,7 @@ echo "----------------------------------------------------------"
 echo "Running tests to verify setup is complete"
 echo "----------------------------------------------------------"
 
-bun test || { exit 1; }
+bun run test:unit || { exit 1; }
 
 echo "----------------------------------------------------------"
 echo "Setup complete!"

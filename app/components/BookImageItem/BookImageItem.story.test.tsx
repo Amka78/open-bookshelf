@@ -19,131 +19,119 @@ const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 const bookDetailMenuMock = jest.fn(() => <div data-testid="book-image-detail-menu" />)
 
-const componentsMock = {
-  ...((global as { __componentsMock?: Record<string, unknown> }).__componentsMock ?? {}),
-  BookDetailMenu: bookDetailMenuMock,
-  Box: ({
-    children,
-    testID,
-    style,
-  }: {
-    children?: ReactNode
-    testID?: string
-    style?: unknown
-  }) => (
-    <div
-      data-testid={testID}
-      style={style as React.CSSProperties | undefined}
-    >
-      {children}
-    </div>
-  ),
-  Button: ({
-    children,
-    onPress,
-    testID,
-    style,
-  }: {
-    children?: ReactNode
-    onPress?: (event?: { stopPropagation?: () => void; preventDefault?: () => void }) => void
-    testID?: string
-    style?: unknown
-  }) => (
-    <button
-      data-testid={testID}
-      type="button"
-      style={style as React.CSSProperties | undefined}
-      onClick={(event) => onPress?.(event)}
-    >
-      {children}
-    </button>
-  ),
-  HStack: ({ children, style }: { children?: ReactNode; style?: unknown }) => (
-    <div style={style as React.CSSProperties | undefined}>{children}</div>
-  ),
-  Image: ({
-    source,
-    style,
-  }: {
-    source?: { uri?: string } | number
-    style?: unknown
-  }) => (
-    <img
-      alt=""
-      src={typeof source === "object" && source && "uri" in source ? source.uri : undefined}
-      style={style as React.CSSProperties | undefined}
-    />
-  ),
-  IconButton: ({
-    children,
-    onPress,
-  }: {
-    children?: ReactNode
-    onPress?: () => void
-  }) => (
-    <button type="button" onClick={onPress}>
-      {children}
-    </button>
-  ),
-  LabeledSpinner: () => <div data-testid="book-image-loading" />,
-  MaterialCommunityIcon: () => <span data-testid="book-image-icon" />,
-  Text: ({
-    children,
-    tx,
-    testID,
-    style,
-  }: {
-    children?: ReactNode
-    tx?: string
-    testID?: string
-    style?: unknown
-  }) => (
-    <span data-testid={testID} style={style as React.CSSProperties | undefined}>
-      {tx ?? children}
-    </span>
-  ),
-  VStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+const BookImageBox = ({
+  children,
+  testID,
+  style,
+}: {
+  children?: ReactNode
+  testID?: string
+  style?: unknown
+}) => (
+  <div data-testid={testID} style={style as React.CSSProperties | undefined}>
+    {children}
+  </div>
+)
+
+const BookImageHStack = ({ children, style }: { children?: ReactNode; style?: unknown }) => (
+  <div style={style as React.CSSProperties | undefined}>{children}</div>
+)
+
+const BookImageImage = ({
+  source,
+  style,
+}: {
+  source?: { uri?: string } | number
+  style?: unknown
+}) => (
+  <img
+    alt=""
+    src={typeof source === "object" && source && "uri" in source ? source.uri : undefined}
+    style={style as React.CSSProperties | undefined}
+  />
+)
+
+const BookImageText = ({
+  children,
+  tx,
+  testID,
+  style,
+}: {
+  children?: ReactNode
+  tx?: string
+  testID?: string
+  style?: unknown
+}) => (
+  <span data-testid={testID} style={style as React.CSSProperties | undefined}>
+    {tx ?? children}
+  </span>
+)
+
+const BookImageVStack = ({ children }: { children?: ReactNode }) => <div>{children}</div>
+
+function applyBookImageMocks() {
+  mock.module("@/components/BookDetailMenu/BookDetailMenu", () => ({
+    BookDetailMenu: bookDetailMenuMock,
+  }))
+  mock.module("@/components/Box/Box", () => ({
+    Box: BookImageBox,
+  }))
+  mock.module("@/components/HStack/HStack", () => ({
+    HStack: BookImageHStack,
+  }))
+  mock.module("@/components/Image/Image", () => ({
+    Image: BookImageImage,
+  }))
+  mock.module("@/components/LabeledSpinner/LabeledSpinner", () => ({
+    LabeledSpinner: () => <div data-testid="book-image-loading" />,
+  }))
+  mock.module("@/components/MaterialCommunityIcon/MaterialCommunityIcon", () => ({
+    MaterialCommunityIcon: () => <span data-testid="book-image-icon" />,
+  }))
+  mock.module("@/components/Text/Text", () => ({
+    Text: BookImageText,
+  }))
+  mock.module("@/components/VStack/VStack", () => ({
+    VStack: BookImageVStack,
+  }))
+  mock.module("@gluestack-ui/themed", () => ({
+    Pressable: ({
+      children,
+      onPress,
+      onLongPress,
+      testID,
+      style,
+    }: {
+      children?: ReactNode
+      onPress?: () => void
+      onLongPress?: () => void
+      testID?: string
+      style?: unknown
+    }) => (
+      <div
+        data-testid={testID}
+        role="button"
+        tabIndex={0}
+        style={style as React.CSSProperties | undefined}
+        onClick={onPress}
+        onContextMenu={(event) => {
+          event.preventDefault()
+          onLongPress?.()
+        }}
+      >
+        {children}
+      </div>
+    ),
+  }))
 }
 
-;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
-
-mock.module("@/components", () => componentsMock)
-mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
-
-mock.module("@gluestack-ui/themed", () => ({
-  Pressable: ({
-    children,
-    onPress,
-    onLongPress,
-    testID,
-    style,
-  }: {
-    children?: ReactNode
-    onPress?: () => void
-    onLongPress?: () => void
-    testID?: string
-    style?: unknown
-  }) => (
-    <div
-      data-testid={testID}
-      role="button"
-      tabIndex={0}
-      style={style as React.CSSProperties | undefined}
-      onClick={onPress}
-      onContextMenu={(event) => {
-        event.preventDefault()
-        onLongPress?.()
-      }}
-    >
-      {children}
-    </div>
-  ),
-}))
+applyBookImageMocks()
 
 let BookImageItem: typeof import("./BookImageItem").BookImageItem
 
 beforeAll(async () => {
-  ;({ BookImageItem } = await import("./BookImageItem"))
+  applyBookImageMocks()
+  ;({ BookImageItem } = await import("./BookImageItem.tsx?story-test"))
 })
 
 describe("BookImageItem story play", () => {
@@ -151,6 +139,7 @@ describe("BookImageItem story play", () => {
   const onPress = jest.fn(async () => {})
 
   beforeEach(() => {
+    applyBookImageMocks()
     jest.clearAllMocks()
   })
 

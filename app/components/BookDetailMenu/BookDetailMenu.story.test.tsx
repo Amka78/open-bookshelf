@@ -18,40 +18,45 @@ import {
 const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 
-mock.module("/home/amka78/private/open-bookshelf/app/components/HStack/HStack.tsx", () => ({
-  HStack: ({
-    children,
-    bgColor: _bgColor,
-    flexWrap: _flexWrap,
-    maxWidth: _maxWidth,
-    justifyContent: _justifyContent,
-    ...props
-  }: Record<string, unknown> & { children?: ReactNode }) => (
-    <div {...(props as object)}>{children}</div>
-  ),
-}))
-
-mock.module(
-  "/home/amka78/private/open-bookshelf/app/components/TooltipIconButton/TooltipIconButton.tsx",
-  () => ({
-    TooltipIconButton: ({
-      onPress,
-      testID,
-    }: {
-      onPress?: (event?: { stopPropagation?: () => void; preventDefault?: () => void }) => void
-      testID?: string
-    }) => (
-      <button data-testid={testID} type="button" onClick={(event) => onPress?.(event)}>
-        icon
-      </button>
+function applyBookDetailMenuMocks() {
+  mock.module("/home/amka78/private/open-bookshelf/app/components/HStack/HStack.tsx", () => ({
+    HStack: ({
+      children,
+      bgColor: _bgColor,
+      flexWrap: _flexWrap,
+      maxWidth: _maxWidth,
+      justifyContent: _justifyContent,
+      ...props
+    }: Record<string, unknown> & { children?: ReactNode }) => (
+      <div {...(props as object)}>{children}</div>
     ),
-  }),
-)
+  }))
+
+  mock.module(
+    "/home/amka78/private/open-bookshelf/app/components/TooltipIconButton/TooltipIconButton.tsx",
+    () => ({
+      TooltipIconButton: ({
+        onPress,
+        testID,
+      }: {
+        onPress?: (event?: { stopPropagation?: () => void; preventDefault?: () => void }) => void
+        testID?: string
+      }) => (
+        <button data-testid={testID} type="button" onClick={(event) => onPress?.(event)}>
+          icon
+        </button>
+      ),
+    }),
+  )
+}
+
+applyBookDetailMenuMocks()
 
 let BookDetailMenu: typeof import("./BookDetailMenu").BookDetailMenu
 
 beforeAll(async () => {
-  ;({ BookDetailMenu } = await import("./BookDetailMenu"))
+  applyBookDetailMenuMocks()
+  ;({ BookDetailMenu } = await import("./BookDetailMenu.tsx?story-test"))
 })
 
 describe("BookDetailMenu story play", () => {
@@ -61,6 +66,7 @@ describe("BookDetailMenu story play", () => {
   const onParentClick = jest.fn()
 
   beforeEach(() => {
+    applyBookDetailMenuMocks()
     jest.clearAllMocks()
   })
 

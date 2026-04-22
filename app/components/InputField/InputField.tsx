@@ -1,8 +1,8 @@
 import { type MessageKey, translate } from "@/i18n"
-import { InputField as Template } from "@gluestack-ui/themed"
 import type { ComponentProps, Ref } from "react"
 import { useCallback, useRef } from "react"
 import { Platform } from "react-native"
+import { InputField as Template } from "./template"
 
 export type InputFieldProps = ComponentProps<typeof Template> & {
   placeholderTx?: MessageKey

@@ -1,4 +1,4 @@
-import { BookDetailMenu } from "@/components"
+import { BookDetailMenu } from "./BookDetailMenu"
 import type { Meta, StoryObj } from "@storybook/react"
 import {
   playBookDetailMenuEditDoesNotBubble,
