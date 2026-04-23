@@ -7,8 +7,8 @@ import {
   mock,
   test as baseTest,
 } from "bun:test"
-import { fireEvent, render } from "@testing-library/react"
-import type { ComponentType, ReactNode } from "react"
+import { fireEvent, render, waitFor } from "@testing-library/react"
+import { forwardRef, type ComponentType, type ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 let platformOS: "android" | "web" = "web"
@@ -36,15 +36,14 @@ mock.module("@/theme", () => ({
 }))
 
 mock.module("@/components/Box/Box", () => ({
-  Box: ({
-    children,
-    testID,
-    ...props
-  }: Record<string, unknown> & { children?: ReactNode; testID?: string }) => (
-    <div data-testid={testID} {...(props as object)}>
+  Box: forwardRef<
+    HTMLDivElement,
+    Record<string, unknown> & { children?: ReactNode; testID?: string }
+  >(({ children, testID, ...props }, ref) => (
+    <div ref={ref} data-testid={testID} {...(props as object)}>
       {children}
     </div>
-  ),
+  )),
 }))
 
 mock.module("@/components/Text/Text", () => ({
@@ -142,6 +141,7 @@ beforeAll(async () => {
 beforeEach(() => {
   jest.clearAllMocks()
   platformOS = "web"
+  document.body.innerHTML = ""
   useKeyboardVisibilityMock.mockReturnValue({
     isKeyboardVisible: false,
     keyboardHeight: 0,
@@ -182,6 +182,54 @@ describe("FormSuggestionPopover", () => {
       "true",
     )
     fireEvent.mouseDown(getByTestId("form-suggestion-test-suggestion-Alpha"))
+
+    expect(onSelect).toHaveBeenCalledWith("Alpha")
+  })
+
+  test("renders web suggestions in a portal attached to document.body", async () => {
+    const onSelect = jest.fn()
+
+    const { container } = render(
+      <FormSuggestionPopover
+        trigger={() => <div data-testid="form-suggestion-trigger" />}
+        isOpen={true}
+        onClose={() => {}}
+        candidates={["Alpha"]}
+        onSelect={onSelect}
+        testIdPrefix="form-suggestion-test"
+      />,
+    )
+
+    const trigger = container.querySelector('[data-testid="form-suggestion-trigger"]')
+    const triggerContainer = trigger?.parentElement
+
+    Object.defineProperty(triggerContainer, "getBoundingClientRect", {
+      configurable: true,
+      value: () => ({
+        bottom: 120,
+        height: 30,
+        left: 40,
+        right: 220,
+        top: 90,
+        width: 180,
+        x: 40,
+        y: 90,
+        toJSON: () => ({}),
+      }),
+    })
+
+    fireEvent.scroll(window)
+
+    await waitFor(() => {
+      expect(container.querySelector('[data-testid="form-suggestion-test-suggestions"]')).toBeNull()
+      expect(
+        document.body.querySelector('[data-testid="form-suggestion-test-suggestions"]'),
+      ).not.toBeNull()
+    })
+
+    fireEvent.click(
+      document.body.querySelector('[data-testid="form-suggestion-test-suggestion-Alpha"]')!,
+    )
 
     expect(onSelect).toHaveBeenCalledWith("Alpha")
   })

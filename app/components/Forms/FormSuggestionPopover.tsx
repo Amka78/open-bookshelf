@@ -4,8 +4,9 @@ import { Pressable } from "@/components/Pressable/Pressable"
 import { Text } from "@/components/Text/Text"
 import { useKeyboardVisibility } from "@/hooks/useKeyboardVisibility"
 import { usePalette } from "@/theme"
+import { createPortal } from "react-dom"
+import { type ReactNode, useEffect, useRef, useState } from "react"
 import { Platform } from "react-native"
-import type { ReactNode } from "react"
 import type { DimensionValue } from "react-native"
 import { resolveSuggestionPopoverPlacement } from "./formSuggestionPlacement"
 
@@ -23,6 +24,10 @@ type FormSuggestionPopoverProps = {
   optionPaddingHorizontal?: string
   optionPaddingVertical?: string
   optionMarginBottom?: string
+}
+
+type WebAnchorElement = {
+  getBoundingClientRect: () => DOMRect
 }
 
 export function FormSuggestionPopover(props: FormSuggestionPopoverProps) {
@@ -43,57 +48,100 @@ export function FormSuggestionPopover(props: FormSuggestionPopoverProps) {
   } = props
   const palette = usePalette()
   const { isKeyboardVisible } = useKeyboardVisibility()
+  const webTriggerRef = useRef<WebAnchorElement | null>(null)
+  const [webAnchorRect, setWebAnchorRect] = useState<DOMRect | null>(null)
 
   const popoverPlacement = resolveSuggestionPopoverPlacement(isKeyboardVisible)
 
+  useEffect(() => {
+    if (Platform.OS !== "web" || !isOpen) {
+      if (webAnchorRect !== null) {
+        setWebAnchorRect(null)
+      }
+      return undefined
+    }
+
+    const updateAnchorRect = () => {
+      const rect = webTriggerRef.current?.getBoundingClientRect()
+      setWebAnchorRect(rect ?? null)
+    }
+
+    updateAnchorRect()
+
+    if (typeof window === "undefined") {
+      return undefined
+    }
+
+    window.addEventListener("resize", updateAnchorRect)
+    window.addEventListener("scroll", updateAnchorRect, true)
+
+    return () => {
+      window.removeEventListener("resize", updateAnchorRect)
+      window.removeEventListener("scroll", updateAnchorRect, true)
+    }
+  }, [isOpen])
+
   // On web, render a simple dropdown to avoid Popover focus trapping issues
   if (Platform.OS === "web") {
-    return (
-      <Box position="relative" flex={1}>
-        {trigger({})}
-        {isOpen && (
-          <Box
-            position="absolute"
-            top="100%"
-            left={0}
-            right={0}
-            zIndex={9999}
-            backgroundColor={palette.surface}
-            borderWidth="$1"
-            borderColor={palette.borderStrong}
-            borderRadius="$sm"
-            padding="$1"
-            shadowColor={palette.accent}
-            shadowOffset={{ width: 0, height: 2 }}
-            shadowOpacity={0.15}
-            shadowRadius={4}
-          >
-            {candidates.map((candidate) => (
-              <Pressable
-                key={`${testIdPrefix}-${candidate}`}
-                testID={`${
-                  candidateTestIDPrefix ?? `${testIdPrefix}-suggestion`
-                }-${encodeURIComponent(candidate)}`}
-                onPressIn={() => {
-                  onSelect(candidate)
-                }}
-              >
-                <Box
-                  borderWidth="$1"
-                  borderRadius="$sm"
-                  paddingHorizontal={optionPaddingHorizontal as DimensionValue}
-                  paddingVertical={optionPaddingVertical as DimensionValue}
-                  marginBottom={optionMarginBottom as DimensionValue}
+    const suggestions =
+      isOpen && webAnchorRect && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              data-testid={suggestionsTestID ?? `${testIdPrefix}-suggestions`}
+              style={{
+                position: "fixed",
+                top: webAnchorRect.bottom + 4,
+                left: webAnchorRect.left,
+                width: webAnchorRect.width,
+                zIndex: 9999,
+                backgroundColor: palette.surface,
+                border: `1px solid ${palette.borderStrong}`,
+                borderRadius: 4,
+                padding: 4,
+                boxShadow: `0 2px 8px ${palette.accent}`,
+              }}
+            >
+              {candidates.map((candidate) => (
+                <Pressable
+                  key={`${testIdPrefix}-${candidate}`}
+                  testID={`${
+                    candidateTestIDPrefix ?? `${testIdPrefix}-suggestion`
+                  }-${encodeURIComponent(candidate)}`}
+                  onPress={() => {
+                    onSelect(candidate)
+                  }}
                 >
-                  <Text fontSize="$sm" isTruncated={true}>
-                    {candidate}
-                  </Text>
-                </Box>
-              </Pressable>
-            ))}
-          </Box>
-        )}
-      </Box>
+                  <div
+                    style={{
+                      border: `1px solid ${palette.borderStrong}`,
+                      borderRadius: 4,
+                      marginBottom: 4,
+                      padding: 6,
+                    }}
+                  >
+                    <Text fontSize="$sm" isTruncated={true}>
+                      {candidate}
+                    </Text>
+                  </div>
+                </Pressable>
+              ))}
+            </div>,
+            document.body,
+          )
+        : null
+
+    return (
+      <>
+        <div
+          ref={(element) => {
+            webTriggerRef.current = element
+          }}
+          style={{ position: "relative", flex: 1 }}
+        >
+          {trigger({})}
+        </div>
+        {suggestions}
+      </>
     )
   }
 
