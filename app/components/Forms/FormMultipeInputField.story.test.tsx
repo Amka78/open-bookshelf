@@ -1,5 +1,5 @@
 import { describe as baseDescribe, test as baseTest, beforeAll, jest, mock } from "bun:test"
-import { render } from "@testing-library/react"
+import { act, render } from "@testing-library/react"
 import type { ComponentType, ReactNode } from "react"
 import { useForm } from "react-hook-form"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"

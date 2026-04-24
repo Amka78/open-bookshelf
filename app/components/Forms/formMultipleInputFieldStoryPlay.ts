@@ -1,10 +1,14 @@
+import { act } from "@testing-library/react"
+
 async function findByTestId(canvasElement: HTMLElement, testId: string): Promise<HTMLElement> {
   for (let retry = 0; retry < 15; retry += 1) {
     const found = canvasElement.querySelector(`[data-testid="${testId}"]`) as HTMLElement | null
     if (found) {
       return found
     }
-    await new Promise((resolve) => setTimeout(resolve, 20))
+    await new Promise((resolve) => {
+      setTimeout(resolve, 20)
+    })
   }
 
   throw new Error(`Element with data-testid='${testId}' was not found.`)
@@ -28,7 +32,9 @@ async function waitForAbsence(canvasElement: HTMLElement, testId: string): Promi
     if (!found) {
       return
     }
-    await new Promise((resolve) => setTimeout(resolve, 20))
+    await new Promise((resolve) => {
+      setTimeout(resolve, 20)
+    })
   }
 
   throw new Error(`Element with data-testid='${testId}' was expected to disappear.`)
@@ -38,7 +44,9 @@ export async function playMultipleFocusShowsSuggestions({
   canvasElement,
 }: { canvasElement: HTMLElement }) {
   const input = await findByTestId(canvasElement, "form-multiple-input-story-row-0")
-  input.focus()
+  await act(async () => {
+    input.focus()
+  })
 
   await findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha")
 }
@@ -49,10 +57,14 @@ export async function playMultipleSuggestionsStayVisibleAfterFocus({
   canvasElement: HTMLElement
 }) {
   const input = await findByTestId(canvasElement, "form-multiple-input-story-row-0")
-  input.focus()
+  await act(async () => {
+    input.focus()
+  })
 
   await findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha")
-  await new Promise((resolve) => setTimeout(resolve, 350))
+  await new Promise((resolve) => {
+    setTimeout(resolve, 350)
+  })
   await findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha")
 }
 
@@ -60,8 +72,12 @@ export async function playMultipleTypingFiltersSuggestions({
   canvasElement,
 }: { canvasElement: HTMLElement }) {
   const input = await findByTestId(canvasElement, "form-multiple-input-story-row-0")
-  input.focus()
-  typeInput(input, "ga")
+  await act(async () => {
+    input.focus()
+  })
+  await act(async () => {
+    typeInput(input, "ga")
+  })
 
   await findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Gamma")
   await waitForAbsence(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha")
@@ -73,11 +89,17 @@ export async function playMultipleTypingKeepsSuggestionsVisible({
   canvasElement: HTMLElement
 }) {
   const input = await findByTestId(canvasElement, "form-multiple-input-story-row-0")
-  input.focus()
-  typeInput(input, "ga")
+  await act(async () => {
+    input.focus()
+  })
+  await act(async () => {
+    typeInput(input, "ga")
+  })
 
   await findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Gamma")
-  await new Promise((resolve) => setTimeout(resolve, 300))
+  await new Promise((resolve) => {
+    setTimeout(resolve, 300)
+  })
   await findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Gamma")
 }
 
@@ -88,16 +110,22 @@ export async function playMultipleSelectSuggestionUpdatesInput({
     canvasElement,
     "form-multiple-input-story-row-0",
   )) as HTMLInputElement
-  input.focus()
+  await act(async () => {
+    input.focus()
+  })
 
   const candidate = await findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Beta")
-  candidate.click()
+  await act(async () => {
+    candidate.click()
+  })
 
   for (let retry = 0; retry < 15; retry += 1) {
     if (input.value === "Beta") {
       return
     }
-    await new Promise((resolve) => setTimeout(resolve, 20))
+    await new Promise((resolve) => {
+      setTimeout(resolve, 20)
+    })
   }
 
   throw new Error(`Expected input value to be 'Beta', but got '${input.value}'.`)
@@ -112,17 +140,23 @@ export async function playMultipleSelectSuggestionClosesSuggestionsAndUpdatesInp
     canvasElement,
     "form-multiple-input-story-row-0",
   )) as HTMLInputElement
-  input.focus()
+  await act(async () => {
+    input.focus()
+  })
 
   const candidateTestId = "form-multiple-input-tags-0-suggestion-Beta"
   const candidate = await findByTestId(canvasElement, candidateTestId)
-  candidate.click()
+  await act(async () => {
+    candidate.click()
+  })
 
   for (let retry = 0; retry < 15; retry += 1) {
     if (input.value === "Beta") {
       break
     }
-    await new Promise((resolve) => setTimeout(resolve, 20))
+    await new Promise((resolve) => {
+      setTimeout(resolve, 20)
+    })
   }
 
   if (input.value !== "Beta") {
@@ -139,7 +173,9 @@ export async function playMultipleOutsideClickClosesSuggestions({
     canvasElement,
     "form-multiple-input-story-row-0",
   )) as HTMLInputElement
-  input.focus()
+  await act(async () => {
+    input.focus()
+  })
   await findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha")
 
   const outside = await findByTestId(canvasElement, "form-multiple-input-story-outside")
@@ -148,9 +184,15 @@ export async function playMultipleOutsideClickClosesSuggestions({
     throw new Error("MouseEvent constructor is unavailable.")
   }
 
-  outside.dispatchEvent(new mouseEventConstructor("mousedown", { bubbles: true }))
-  input.blur()
-  outside.click()
+  await act(async () => {
+    outside.dispatchEvent(new mouseEventConstructor("mousedown", { bubbles: true }))
+    input.blur()
+    outside.click()
+    // Wait for the scheduled close timer to complete within act
+    await new Promise((resolve) => {
+      setTimeout(resolve, 150)
+    })
+  })
 
   await waitForAbsence(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha")
 }
@@ -161,12 +203,20 @@ export async function playMultipleBackdropPressClosesSuggestions({
   canvasElement: HTMLElement
 }) {
   const input = await findByTestId(canvasElement, "form-multiple-input-story-row-0")
-  input.focus()
+  await act(async () => {
+    input.focus()
+  })
 
   await findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha")
 
   const backdrop = await findByTestId(canvasElement, "form-multiple-input-tags-0-backdrop")
-  backdrop.click()
+  await act(async () => {
+    backdrop.click()
+    // Wait for any scheduled state updates to settle
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50)
+    })
+  })
 
   await waitForAbsence(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha")
 }
