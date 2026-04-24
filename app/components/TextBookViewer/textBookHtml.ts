@@ -564,6 +564,14 @@ export const buildTextBookHtmlDocument = ({
         }
 
         const getBlockExtent = () => {
+          const { isVerticalWriting } = getLayoutDirectionState()
+          if (isVerticalWriting) {
+            return Math.max(
+              document.documentElement?.scrollWidth || 0,
+              document.body?.scrollWidth || 0,
+            )
+          }
+
           return Math.max(
             document.documentElement?.scrollHeight || 0,
             document.body?.scrollHeight || 0,
@@ -657,6 +665,10 @@ export const buildTextBookHtmlDocument = ({
             1,
             isVerticalWriting ? viewportHeight : viewportWidth,
           )
+          const blockViewportSize = Math.max(
+            1,
+            isVerticalWriting ? viewportWidth : viewportHeight,
+          )
           const pageInlineSize = Math.max(1, Math.floor(inlineViewportSize / spreadPageCount))
 
           clearLayoutOverrides()
@@ -684,8 +696,15 @@ export const buildTextBookHtmlDocument = ({
           if (isPaginated) {
             applyImportantStyle(document.body, "-webkit-column-gap", "0px")
             applyImportantStyle(document.body, "column-gap", "0px")
-            applyImportantStyle(document.body, "-webkit-column-width", pageInlineSize + "px")
-            applyImportantStyle(document.body, "column-width", pageInlineSize + "px")
+
+            if (isVerticalWriting) {
+              applyImportantStyle(document.body, "-webkit-column-height", blockViewportSize + "px")
+              applyImportantStyle(document.body, "column-height", blockViewportSize + "px")
+            } else {
+              applyImportantStyle(document.body, "-webkit-column-width", pageInlineSize + "px")
+              applyImportantStyle(document.body, "column-width", pageInlineSize + "px")
+            }
+
             applyImportantStyle(document.body, "column-fill", "auto")
             applyImportantStyle(document.body, "column-rule", "0px inset transparent")
 

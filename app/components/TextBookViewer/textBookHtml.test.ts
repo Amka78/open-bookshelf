@@ -35,4 +35,33 @@ describe("textBookHtml", () => {
     expect(html).toContain('bodyChildren.length === 1')
     expect(html).toContain('style.setProperty("height", "auto", "important")')
   })
+
+  test("includes blockViewportSize definition for paginated reading style", () => {
+    const html = buildTextBookHtmlDocument({
+      documentData: {
+        tree: { n: "html", c: [{ n: "body", c: [{ n: "p", c: ["hello world"] }] }] },
+        ns_map: [],
+      },
+      documentKey: "doc-key-paginated",
+      annotations: [],
+      appearance: {
+        themeMode: "light",
+        textColor: "#111318",
+        linkColor: "#111318",
+        fallbackBackgroundColor: "#ffffff",
+        viewerFontSizePt: 16,
+        viewerTheme: "default",
+      },
+      readingStyle: "doublePage",
+      pageDirection: "left",
+      initialPage: 0,
+      leadingBlankPage: false,
+    })
+
+    // Verify blockViewportSize is defined and used in applyLayout()
+    expect(html).toContain("const blockViewportSize = Math.max(")
+    expect(html).toContain("-webkit-column-height")
+    expect(html).toContain("column-height")
+  })
 })
+

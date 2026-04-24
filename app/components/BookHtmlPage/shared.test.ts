@@ -135,3 +135,4 @@ describe("useCalibreHtmlDocument", () => {
     expect(fetchWithAuthMock.mock.calls[1]?.[0]).toContain("OPS/pages/image029.jpg")
   })
 })
+

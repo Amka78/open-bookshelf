@@ -639,10 +639,9 @@ const loadStylesheetDataUrl = async (
     logger.debug("Loading stylesheet", { path })
     const response = await fetchBookFileResponse(props, path)
     logger.debug("Loaded stylesheet", { path, status: response.status })
-    const mimeType = getMimeTypeFromResponse(response, "text/css")
     const text = await response.text()
     const rewritten = await rewriteCssUrls(text, path, props, new Set([...parentStack, path]))
-    return textToDataUrl(rewritten, mimeType)
+    return textToDataUrl(rewritten, "text/css")
   })()
 
   stylesheetDataUrlCache.set(cacheKey, request)
