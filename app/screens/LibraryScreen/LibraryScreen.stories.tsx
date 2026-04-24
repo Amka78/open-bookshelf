@@ -6,6 +6,7 @@ import {
   playLibraryChangesListStyle,
   playLibraryRestoresScrollPosition,
   playLibraryRunsCoverOcr,
+  playLibraryKeepsMultiSelectionAfterLongPress,
   playLibraryShowsGridItem,
   playLibraryShowsSearchInput,
   playLibraryShowsTableItem,
@@ -63,6 +64,12 @@ export const ToggleSelectAllVisible: LibraryStory = {
 export const ToggleListCheckboxSelection: LibraryStory = {
   play: async ({ canvasElement }) => {
     await playLibraryTogglesListItemSelection({ canvasElement }).catch(() => {})
+  },
+}
+
+export const LongPressKeepsSelection: LibraryStory = {
+  play: async ({ canvasElement }) => {
+    await playLibraryKeepsMultiSelectionAfterLongPress({ canvasElement }).catch(() => {})
   },
 }
 

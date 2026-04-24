@@ -1,4 +1,12 @@
-import { beforeAll, beforeEach, describe as baseDescribe, expect, jest, mock, test as baseTest } from "bun:test"
+import {
+  beforeAll,
+  beforeEach,
+  describe as baseDescribe,
+  expect,
+  jest,
+  mock,
+  test as baseTest,
+} from "bun:test"
 import { act, render, screen } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
@@ -275,6 +283,19 @@ function buildSelectedLibrary() {
           },
         },
       ],
+      [
+        "2",
+        {
+          id: 2,
+          metaData: {
+            authors: [],
+            formats: [],
+            series: null,
+            tags: [],
+            title: "Neuromancer",
+          },
+        },
+      ],
     ]),
     ftsEnabled: false,
     id: "test-library",
@@ -343,7 +364,7 @@ beforeEach(() => {
 })
 
 describe("LibraryScreen", () => {
-  test("list items toggle selection when pressed", async () => {
+  test("list items use single selection when pressed", async () => {
     renderLibraryScreen({
       viewMode: "list",
     })
@@ -353,7 +374,73 @@ describe("LibraryScreen", () => {
     expect(firstItem.onPress).toBeInstanceOf(Function)
 
     await act(async () => {
-      await (firstItem.onPress as () => Promise<void>)()
+      await (firstItem.onPress as () => void)()
+    })
+
+    expect(screen.queryByTestId("selection-action-bar")).toBeNull()
+
+    const latestItems = bookListItemProps.slice(-2)
+    expect(latestItems.find((item) => (item.book as { id: number }).id === 1)?.isSelected).toBe(
+      true,
+    )
+    expect(latestItems.find((item) => (item.book as { id: number }).id === 2)?.isSelected).toBe(
+      false,
+    )
+  })
+
+  test("list items keep previous selections after long press enters multi selection", async () => {
+    renderLibraryScreen({
+      viewMode: "list",
+    })
+
+    const [firstItem, secondItem] = bookListItemProps
+    expect(firstItem?.onLongPress).toBeInstanceOf(Function)
+    expect(secondItem?.onPress).toBeInstanceOf(Function)
+
+    act(() => {
+      ;(firstItem.onLongPress as () => void)()
+    })
+
+    expect(screen.getByTestId("selection-action-bar")).toBeTruthy()
+
+    await act(async () => {
+      await (secondItem.onPress as () => void)()
+    })
+
+    const latestItems = bookListItemProps.slice(-2)
+    expect(latestItems.find((item) => (item.book as { id: number }).id === 1)?.isSelected).toBe(
+      true,
+    )
+    expect(latestItems.find((item) => (item.book as { id: number }).id === 2)?.isSelected).toBe(
+      true,
+    )
+  })
+
+  test("grid items enter multi selection on long press", () => {
+    renderLibraryScreen({
+      viewMode: "grid",
+    })
+
+    const firstItem = bookImageItemProps[0]
+    expect(firstItem?.onLongPress).toBeInstanceOf(Function)
+
+    act(() => {
+      ;(firstItem.onLongPress as () => void)()
+    })
+
+    expect(screen.getByTestId("selection-action-bar")).toBeTruthy()
+  })
+
+  test("table items enter multi selection on long press", () => {
+    renderLibraryScreen({
+      viewMode: "table",
+    })
+
+    const firstItem = libraryTableItemProps[0]
+    expect(firstItem?.onLongPress).toBeInstanceOf(Function)
+
+    act(() => {
+      ;(firstItem.onLongPress as () => void)()
     })
 
     expect(screen.getByTestId("selection-action-bar")).toBeTruthy()
@@ -365,7 +452,7 @@ describe("LibraryScreen", () => {
     })
 
     expect(screen.getByTestId("library-flat-list").getAttribute("data-num-columns")).toBe("1")
-    expect(screen.getByTestId("library-grid-item")).toBeTruthy()
+    expect(screen.getAllByTestId("library-grid-item").length).toBeGreaterThan(0)
     expect(bookImageItemProps.length).toBeGreaterThan(0)
   })
 
@@ -375,7 +462,7 @@ describe("LibraryScreen", () => {
     })
 
     expect(screen.getByTestId("library-table-header")).toBeTruthy()
-    expect(screen.getByTestId("library-table-item")).toBeTruthy()
+    expect(screen.getAllByTestId("library-table-item").length).toBeGreaterThan(0)
     expect(libraryTableItemProps.length).toBeGreaterThan(0)
   })
 })

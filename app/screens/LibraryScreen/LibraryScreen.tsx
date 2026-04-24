@@ -35,7 +35,11 @@ import { useIsFocused, useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import type React from "react"
 import { type FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
-import { type NativeScrollEvent, type NativeSyntheticEvent, useWindowDimensions } from "react-native"
+import {
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+  useWindowDimensions,
+} from "react-native"
 import { buildThumbnailSourceCache } from "./buildThumbnailSourceCache"
 import {
   buildQueryFromParts,
@@ -157,8 +161,7 @@ export const LibraryScreen: FC = observer(() => {
 
   const viewMode = settingStore.getLibraryViewMode(convergenceHook.isLarge)
   const handleToggleViewMode = () => {
-    const nextViewMode =
-      viewMode === "grid" ? "list" : viewMode === "list" ? "table" : "grid"
+    const nextViewMode = viewMode === "grid" ? "list" : viewMode === "list" ? "table" : "grid"
     settingStore.setLibraryViewMode(nextViewMode, convergenceHook.isLarge)
   }
 
@@ -189,7 +192,9 @@ export const LibraryScreen: FC = observer(() => {
   const bookList = selectedLibrary?.books ? Array.from(selectedLibrary.books.values()) : []
   const tableFieldLabels = useMemo(
     () =>
-      selectedLibrary ? createLibraryTableFieldLabels(selectedLibrary.fieldMetadataList) : undefined,
+      selectedLibrary
+        ? createLibraryTableFieldLabels(selectedLibrary.fieldMetadataList)
+        : undefined,
     [selectedLibrary],
   )
   const visibleBookIds = useMemo(() => bookList.map((book) => book.id), [bookList])
@@ -334,7 +339,9 @@ export const LibraryScreen: FC = observer(() => {
         headers: api.getAuthHeaders(thumbnailUri),
       }
       const imageUrl = imageSource.uri
-      const ocrImageUrl = encodeURI(api.getBookThumbnailUrl(item.id, selectedLibrary.id, "1200x1600"))
+      const ocrImageUrl = encodeURI(
+        api.getBookThumbnailUrl(item.id, selectedLibrary.id, "1200x1600"),
+      )
       const handleBookMetadataSearch = async (query: string) => {
         libraryHook.setHeaderSearchText(query)
         await libraryHook.onSearch(query)
@@ -468,8 +475,8 @@ export const LibraryScreen: FC = observer(() => {
             readingProgress={readingProgress ?? undefined}
             isCached={hasReadingHistory}
             isSelected={isSelected}
-            onPress={async () => libraryHook.toggleBookSelection(item.id)}
-            onLongPress={onOpenBook}
+            onPress={() => libraryHook.handleBookPress(item.id)}
+            onLongPress={() => libraryHook.enterMultiSelection(item.id)}
             onAuthorPress={
               libraryHook.isSelectionMode
                 ? undefined
@@ -489,8 +496,10 @@ export const LibraryScreen: FC = observer(() => {
             onCachedIconPress={onClearBookCache}
             readingProgress={readingProgress}
             readStatus={readStatus}
-            onPress={async () => libraryHook.toggleBookSelection(item.id)}
-            onLongPress={onOpenBook}
+            onPress={async () => {
+              libraryHook.handleBookPress(item.id)
+            }}
+            onLongPress={() => libraryHook.enterMultiSelection(item.id)}
             onOpenBookDetail={onOpenBookDetail}
             hoverSearchMetadata={{
               authors: [...item.metaData.authors],
@@ -515,9 +524,9 @@ export const LibraryScreen: FC = observer(() => {
             isSelected={isSelected}
             showSelectionActions={showSingleSelectionDetails}
             detailMenuProps={detailMenuProps}
-            onPress={() => libraryHook.toggleBookSelection(item.id)}
+            onPress={() => libraryHook.handleBookPress(item.id)}
             onLongPress={() => {
-              void onOpenBook()
+              libraryHook.enterMultiSelection(item.id)
             }}
           />
         )

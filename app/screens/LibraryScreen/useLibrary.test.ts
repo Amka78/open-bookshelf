@@ -280,6 +280,49 @@ describe("useLibrary", () => {
     expect(result.current.currentListStyle).toBe("gridView")
   })
 
+  test("pressing a book selects only that book in single selection mode", async () => {
+    const { result } = await renderUseLibrary()
+
+    act(() => {
+      result.current.handleBookPress(1)
+    })
+
+    expect(result.current.selectionMode).toBe("single")
+    expect(result.current.isSelectionMode).toBe(false)
+    expect(result.current.isBookSelected(1)).toBe(true)
+    expect(result.current.selectedBookIds.size).toBe(1)
+
+    act(() => {
+      result.current.handleBookPress(2)
+    })
+
+    expect(result.current.selectionMode).toBe("single")
+    expect(result.current.isBookSelected(1)).toBe(false)
+    expect(result.current.isBookSelected(2)).toBe(true)
+    expect(result.current.selectedBookIds.size).toBe(1)
+  })
+
+  test("entering multi selection keeps previous selections when another book is pressed", async () => {
+    const { result } = await renderUseLibrary()
+
+    act(() => {
+      result.current.enterMultiSelection(1)
+    })
+
+    expect(result.current.selectionMode).toBe("multi")
+    expect(result.current.isSelectionMode).toBe(true)
+    expect(result.current.isBookSelected(1)).toBe(true)
+
+    act(() => {
+      result.current.handleBookPress(2)
+    })
+
+    expect(result.current.selectionMode).toBe("multi")
+    expect(result.current.isBookSelected(1)).toBe(true)
+    expect(result.current.isBookSelected(2)).toBe(true)
+    expect(result.current.selectedBookIds.size).toBe(2)
+  })
+
   test("toggleBooksSelection selects all visible books when some are not yet selected", async () => {
     const { result } = await renderUseLibrary()
 

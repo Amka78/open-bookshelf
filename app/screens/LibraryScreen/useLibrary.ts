@@ -6,12 +6,20 @@ import { logger } from "@/utils/logger"
 import type { DocumentPickerAsset } from "expo-document-picker"
 import { useEffect, useState } from "react"
 export type LibraryViewStyle = "gridView" | "viewList"
+export type LibrarySelectionMode = "none" | "single" | "multi"
+
 export function useLibrary() {
   const { calibreRootStore, settingStore } = useStores()
   const selectedLibrary = calibreRootStore.selectedLibrary
 
   const [searching, setSearching] = useState(false)
-  const [selectedBookIds, setSelectedBookIds] = useState<Set<number>>(new Set())
+  const [selectionState, setSelectionState] = useState<{
+    mode: LibrarySelectionMode
+    selectedBookIds: Set<number>
+  }>({
+    mode: "none",
+    selectedBookIds: new Set(),
+  })
   const [mobileViewStyle, setMovileViewStyle] = useState<LibraryViewStyle>("viewList")
   const [desktopViewStyle, setDesktopViewStyle] = useState<LibraryViewStyle>("gridView")
   const [headerSearchText, setHeaderSearchText] = useState(
@@ -19,18 +27,59 @@ export function useLibrary() {
   )
 
   const convergenceHook = useConvergence()
+  const { mode: selectionMode, selectedBookIds } = selectionState
 
-  const isSelectionMode = selectedBookIds.size > 0
+  const isSelectionMode = selectionMode === "multi"
+
+  const handleBookPress = (bookId: number) => {
+    setSelectionState((prev) => {
+      if (prev.mode === "multi") {
+        const nextIds = new Set(prev.selectedBookIds)
+        if (nextIds.has(bookId)) {
+          nextIds.delete(bookId)
+        } else {
+          nextIds.add(bookId)
+        }
+
+        return {
+          mode: nextIds.size > 0 ? "multi" : "none",
+          selectedBookIds: nextIds,
+        }
+      }
+
+      return {
+        mode: "single",
+        selectedBookIds: new Set([bookId]),
+      }
+    })
+  }
+
+  const enterMultiSelection = (bookId: number) => {
+    setSelectionState((prev) => {
+      const nextIds = new Set(prev.selectedBookIds)
+      nextIds.add(bookId)
+
+      return {
+        mode: "multi",
+        selectedBookIds: nextIds,
+      }
+    })
+  }
 
   const toggleBookSelection = (bookId: number) => {
-    setSelectedBookIds((prev) => {
-      const next = new Set(prev)
+    setSelectionState((prev) => {
+      const next = new Set(prev.selectedBookIds)
       if (next.has(bookId)) {
         next.delete(bookId)
       } else {
         next.add(bookId)
       }
-      return next
+
+      return {
+        mode:
+          next.size === 0 ? "none" : prev.mode === "single" && next.size === 1 ? "single" : "multi",
+        selectedBookIds: next,
+      }
     })
   }
 
@@ -43,8 +92,8 @@ export function useLibrary() {
       return
     }
 
-    setSelectedBookIds((prev) => {
-      const next = new Set(prev)
+    setSelectionState((prev) => {
+      const next = new Set(prev.selectedBookIds)
       const allSelected = bookIds.every((bookId) => next.has(bookId))
 
       for (const bookId of bookIds) {
@@ -55,12 +104,18 @@ export function useLibrary() {
         }
       }
 
-      return next
+      return {
+        mode: next.size === 0 ? "none" : "multi",
+        selectedBookIds: next,
+      }
     })
   }
 
   const clearSelection = () => {
-    setSelectedBookIds(new Set())
+    setSelectionState({
+      mode: "none",
+      selectedBookIds: new Set(),
+    })
   }
 
   const isBookSelected = (bookId: number) => selectedBookIds.has(bookId)
@@ -248,8 +303,11 @@ export function useLibrary() {
     completeSearchParameter,
     completeOperator,
     getSearchSuggestions,
+    selectionMode,
     selectedBookIds,
     isSelectionMode,
+    handleBookPress,
+    enterMultiSelection,
     toggleBookSelection,
     toggleBooksSelection,
     areAllBooksSelected,

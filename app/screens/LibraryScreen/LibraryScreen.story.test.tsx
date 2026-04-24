@@ -5,6 +5,7 @@ import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 import {
   playLibraryChangesListStyle,
   playLibraryChangesSort,
+  playLibraryKeepsMultiSelectionAfterLongPress,
   playLibraryOpensBook,
   playLibraryRestoresScrollPosition,
   playLibraryRunsCoverOcr,
@@ -58,7 +59,11 @@ describe("LibraryScreen story play", () => {
         <button onClick={() => onOpenBook("Book Alpha")} type="button">
           Book Alpha
         </button>
-        <button data-testid="library-list-item" onClick={() => onOpenBook("list-item")} type="button">
+        <button
+          data-testid="library-list-item"
+          onClick={() => onOpenBook("list-item")}
+          type="button"
+        >
           Select item
         </button>
         <div data-testid="library-grid-item">Grid Item</div>
@@ -87,6 +92,42 @@ describe("LibraryScreen story play", () => {
     }
 
     return render(<SelectionToggleProbe />)
+  }
+
+  const renderMultiSelectionDom = () => {
+    function MultiSelectionProbe() {
+      const [selectedIds, setSelectedIds] = React.useState<number[]>([])
+      const [selectionMode, setSelectionMode] = React.useState<"none" | "single" | "multi">("none")
+
+      return (
+        <div>
+          <button
+            data-testid="library-list-item-long-press"
+            onClick={() => {
+              setSelectionMode("multi")
+              setSelectedIds([1])
+            }}
+            type="button"
+          >
+            Long press first item
+          </button>
+          <button
+            data-testid="library-list-item-second"
+            onClick={() => {
+              setSelectedIds((prev) =>
+                selectionMode === "multi" ? Array.from(new Set([...prev, 2])) : [2],
+              )
+            }}
+            type="button"
+          >
+            Press second item
+          </button>
+          <div data-testid="library-selected-count">{selectedIds.length}</div>
+        </div>
+      )
+    }
+
+    return render(<MultiSelectionProbe />)
   }
 
   const renderScrollRestoreDom = () => {
@@ -211,6 +252,16 @@ describe("LibraryScreen story play", () => {
     })
 
     expect(onOpenBook).toHaveBeenCalledWith("list-item")
+  })
+
+  test("long-press selection keeps earlier selections in the library story play", async () => {
+    const { container, getByTestId } = renderMultiSelectionDom()
+
+    await playLibraryKeepsMultiSelectionAfterLongPress({
+      canvasElement: container,
+    })
+
+    expect(getByTestId("library-selected-count").textContent).toBe("2")
   })
 
   test("pressing the selection bar toggle switches from select-all to clear-visible in the library story play", async () => {

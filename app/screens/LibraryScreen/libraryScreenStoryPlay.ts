@@ -89,6 +89,18 @@ export async function playLibraryTogglesListItemSelection({
   fireEvent.click(button)
 }
 
+export async function playLibraryKeepsMultiSelectionAfterLongPress({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  const longPressButton = await findByTestId(canvasElement, "library-list-item-long-press")
+  const secondButton = await findByTestId(canvasElement, "library-list-item-second")
+
+  fireEvent.click(longPressButton)
+  fireEvent.click(secondButton)
+}
+
 export async function playLibraryShowsTableItem({
   canvasElement,
 }: {
