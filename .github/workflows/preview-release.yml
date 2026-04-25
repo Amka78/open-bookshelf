@@ -42,6 +42,14 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
+      - name: Configure Gradle memory (ユーザーホーム設定はプロジェクト設定より優先される)
+        run: |
+          mkdir -p ~/.gradle
+          cat > ~/.gradle/gradle.properties << 'EOF'
+          org.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8
+          org.gradle.daemon=false
+          EOF
+
       - name: Set output filename
         id: set-filename
         run: echo "filename=open-bookshelf-${{ github.ref_name }}-preview.apk" >> $GITHUB_OUTPUT

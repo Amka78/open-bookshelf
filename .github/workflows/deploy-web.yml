@@ -33,7 +33,7 @@ jobs:
         run: bun install
 
       - name: Build Storybook
-        run: bunx build-storybook --config-dir .storybook/web --output-dir storybook-static
+        run: bunx storybook build --config-dir .storybook/web --output-dir storybook-static
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4

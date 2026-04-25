@@ -40,7 +40,7 @@
     "storybook-watch": "sb-rn-watcher",
     "storybook-native": "sb-rn-get-stories --config-path .storybook/native && EXPO_PUBLIC_STORYBOOK_ENABLED=true bunx expo start --dev-client",
     "storybook:web": "sb dev --config-dir .storybook/web -p 6006",
-    "build-storybook": "build-storybook",
+    "build-storybook": "storybook build --config-dir .storybook/web --output-dir storybook-static",
     "build:web": "bunx expo export --platform web --output-dir dist",
     "deploy:pages": "gh-pages -d dist -b gh-pages",
     "bundle-pdfjs": "bun run scripts/bundle-pdfjs.ts",
