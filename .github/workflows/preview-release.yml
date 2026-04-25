@@ -1,0 +1,137 @@
+name: Preview Release (Local Build)
+
+on:
+  push:
+    # バージョンタグ（v1.2.3 形式）で自動トリガー
+    tags:
+      - "v*"
+
+permissions:
+  contents: write  # GitHub Release の作成に必要
+
+jobs:
+  # ─────────────────────────────────────────────
+  # Android: EAS ローカルビルド（ubuntu で実行）
+  # ─────────────────────────────────────────────
+  android:
+    name: Android Preview Build (Local)
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-name: ${{ steps.set-filename.outputs.filename }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Setup Java (Android ビルドに必要)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Set output filename
+        id: set-filename
+        run: echo "filename=open-bookshelf-${{ github.ref_name }}-preview.apk" >> $GITHUB_OUTPUT
+
+      - name: Build Android Preview (Local)
+        run: |
+          eas build \
+            --platform android \
+            --profile preview \
+            --local \
+            --non-interactive \
+            --output "${{ steps.set-filename.outputs.filename }}"
+
+      - name: Upload to workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-preview
+          path: ${{ steps.set-filename.outputs.filename }}
+          retention-days: 7
+
+  # ─────────────────────────────────────────────
+  # iOS: EAS ローカルビルド（macOS で実行・Xcode 必須）
+  # 一時停止中（有効化するには `if: false` を削除）
+  # ─────────────────────────────────────────────
+  ios:
+    name: iOS Preview Build (Local)
+    if: false
+    runs-on: macos-latest
+    outputs:
+      artifact-name: ${{ steps.set-filename.outputs.filename }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Set output filename
+        id: set-filename
+        run: echo "filename=open-bookshelf-${{ github.ref_name }}-preview.ipa" >> $GITHUB_OUTPUT
+
+      - name: Build iOS Preview (Local)
+        run: |
+          eas build \
+            --platform ios \
+            --profile preview \
+            --local \
+            --non-interactive \
+            --output "${{ steps.set-filename.outputs.filename }}"
+
+      - name: Upload to workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-preview
+          path: ${{ steps.set-filename.outputs.filename }}
+          retention-days: 7
+
+  # ─────────────────────────────────────────────
+  # GitHub Pre-Release: 両プラットフォームの完成後に作成
+  # ─────────────────────────────────────────────
+  create-release:
+    name: Create Preview GitHub Release
+    needs: [android]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Android artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: android-preview
+
+      - name: Create GitHub Pre-Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --title "OpenBookShelf ${{ github.ref_name }} Preview" \
+            --generate-notes \
+            --prerelease \
+            "open-bookshelf-${{ github.ref_name }}-preview.apk"
