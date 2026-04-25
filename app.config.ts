@@ -29,7 +29,7 @@ export default {
   expo: {
     name: `OpenBookShelf${appNameSuffix}`,
     slug: "OpenBookShelf",
-    version: "1.0.0",
+    version: "0.0.1",
     orientation: "default",
     icon: "./assets/images/app-icon.png",
     experiments: {
