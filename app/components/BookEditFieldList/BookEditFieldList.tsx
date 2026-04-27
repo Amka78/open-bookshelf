@@ -1,5 +1,14 @@
 import { Box, FormInputField, HStack, Input, ScrollView, Text, VStack } from "@/components"
 import type { Book, Category, FieldMetadataMap, MetadataSnapshotIn } from "@/models/calibre"
+import { translate } from "@/i18n"
+import {
+  Tabs,
+  TabsTab,
+  TabsTabList,
+  TabsTabPanel,
+  TabsTabPanels,
+  TabsTabTitle,
+} from "@gluestack-ui/themed"
 import type { ComponentProps } from "react"
 import { useRef } from "react"
 import type { Control, Path } from "react-hook-form"
@@ -152,6 +161,7 @@ export function BookEditFieldList(props: BookEditFieldListProps) {
         book={props.book}
         control={props.control}
         fieldMetadata={f}
+        formPath={`customColumns.${f.label}` as Path<MetadataSnapshotIn>}
         suggestions={suggestionMap.get(f.label)}
         onTextInputFocus={props.onTextInputFocus}
         onRegisterFocusChain={registerFocusChain}
@@ -161,18 +171,34 @@ export function BookEditFieldList(props: BookEditFieldListProps) {
 
   return (
     <Box {...boxProps}>
-      <ScrollView {...scrollViewProps}>
-        {fields}
-        {/* Custom columns section */}
-        {customFields.length > 0 && (
-          <VStack space="sm" mt="$4">
-            <Text fontWeight="$bold" fontSize="$sm" color="$textLight500">
-              Custom Fields
-            </Text>
-            {customFields}
-          </VStack>
-        )}
-      </ScrollView>
+      <Tabs value="standard" testID="book-edit-tabs">
+        <TabsTabList testID="book-edit-tab-list">
+          <TabsTab value="standard" testID="book-edit-tab-standard">
+            <TabsTabTitle>{translate("bookEditScreen.standardFieldsTab")}</TabsTabTitle>
+          </TabsTab>
+          {customFields.length > 0 && (
+            <TabsTab value="custom" testID="book-edit-tab-custom">
+              <TabsTabTitle>{translate("bookEditScreen.customFieldsTab")}</TabsTabTitle>
+            </TabsTab>
+          )}
+        </TabsTabList>
+        <TabsTabPanels>
+          <TabsTabPanel value="standard">
+            <ScrollView {...scrollViewProps}>{fields}</ScrollView>
+          </TabsTabPanel>
+          <TabsTabPanel value="custom">
+            <ScrollView {...scrollViewProps}>
+              {customFields.length > 0 ? (
+                customFields
+              ) : (
+                <Text color="$textLight500" fontSize="$sm">
+                  {translate("bookEditScreen.noCustomFields")}
+                </Text>
+              )}
+            </ScrollView>
+          </TabsTabPanel>
+        </TabsTabPanels>
+      </Tabs>
     </Box>
   )
 }

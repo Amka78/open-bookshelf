@@ -2,7 +2,11 @@ import { BookEditFieldList } from "@/components"
 import type { Meta, StoryObj } from "@storybook/react"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
-import { bookDetailFieldListStoryArgs } from "../../../.storybook/stories/data/bookDetailFieldListStoryData"
+import {
+  bookDetailFieldListStoryArgs,
+  bookDetailFieldListWithCustomFieldsStoryArgs,
+} from "../../../.storybook/stories/data/bookDetailFieldListStoryData"
+import { playCustomFieldsTab } from "./bookEditFieldListStoryPlay"
 import { FormBookEditFieldList } from "./FormBookEditFieldList"
 
 export default {
@@ -30,3 +34,11 @@ export default {
 type StoryProps = StoryObj<typeof FormBookEditFieldList>
 
 export const Base: StoryProps = {}
+
+export const WithCustomFields: StoryProps = {
+  args: {
+    fieldMetadataList: bookDetailFieldListWithCustomFieldsStoryArgs.fieldMetadataList,
+    book: bookDetailFieldListWithCustomFieldsStoryArgs.book,
+  },
+  play: playCustomFieldsTab,
+}

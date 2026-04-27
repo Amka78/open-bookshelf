@@ -95,3 +95,73 @@ export const bookDetailFieldListStoryArgs = {
   borderColor: "$white",
   borderWidth: "$4" as const,
 }
+
+// --- Custom fields story data ---
+
+const customCommonField = {
+  isCategory: false,
+  isCustom: true,
+  isEditable: true,
+  isCsp: false,
+  kind: "field",
+}
+
+const bookWithCustomColumns = BookModel.create({
+  id: 12346,
+  metaData: {
+    lastModified: "2023-12-18T18:25:04+00:00",
+    formats: ["EPUB"],
+    rating: 0,
+    title: "Book With Custom Fields",
+    size: 50000,
+    authorSort: null,
+    authors: ["Test Author"],
+    customColumns: {
+      "#myGenre": "Science Fiction",
+      "#isRead": true,
+    },
+  },
+})
+
+// Create fresh instances (MST nodes can only belong to one tree)
+const fieldMetadataListWithCustom = types.map(FieldMetadataModel).create({
+  lastModified: FieldMetadataModel.create({
+    name: "Last ModifiedXXXXX",
+    datatype: "datetime",
+    display: { dateFormat: "yyyy MM dd" },
+    ...{ isCategory: false, isCustom: false, isEditable: true, isCsp: false, kind: "test" },
+    label: "lastModified",
+  }),
+  title: FieldMetadataModel.create({
+    name: "Title",
+    datatype: "text",
+    ...{ isCategory: false, isCustom: false, isEditable: true, isCsp: false, kind: "test" },
+    label: "title",
+  }),
+  authors: FieldMetadataModel.create({
+    name: "Author",
+    datatype: "text",
+    isMultiple: { listToUi: "&", cacheToList: "&", uiToList: "&" },
+    ...{ isCategory: false, isCustom: false, isEditable: true, isCsp: false, kind: "test" },
+    label: "authors",
+  }),
+  "#myGenre": FieldMetadataModel.create({
+    name: "My Genre",
+    datatype: "text",
+    label: "#myGenre",
+    ...customCommonField,
+  }),
+  "#isRead": FieldMetadataModel.create({
+    name: "Is Read",
+    datatype: "bool",
+    label: "#isRead",
+    ...customCommonField,
+  }),
+})
+
+export const bookDetailFieldListWithCustomFieldsStoryArgs = {
+  fieldMetadataList: fieldMetadataListWithCustom,
+  book: bookWithCustomColumns,
+  borderColor: "$white",
+  borderWidth: "$4" as const,
+}

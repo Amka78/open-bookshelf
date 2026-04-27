@@ -13,6 +13,7 @@ import {
 import { FormIdentifierField } from "@/components/Forms/FormIdentifierField"
 import { useRomajiText } from "@/hooks/useRomajiText"
 import type { Book, FieldMetadata, MetadataSnapshotIn } from "@/models/calibre"
+import { Switch, Textarea, TextareaInput } from "@gluestack-ui/themed"
 import type { ComponentProps } from "react"
 import { useRef } from "react"
 import { type Control, type Path, useController } from "react-hook-form"
@@ -27,6 +28,8 @@ export type BookEditFieldProps = {
     success: boolean
     format?: string
   }>
+  /** Override the default form field path (used for custom columns: "customColumns.#field") */
+  formPath?: Path<MetadataSnapshotIn>
   /** フォーカス時にコンテナのnodeHandleを渡すコールバック */
   onTextInputFocus?: (getContainerHandle: () => number | null) => void
   /** キーボード「次へ」ナビゲーション用チェーン登録 */
@@ -36,10 +39,48 @@ export type BookEditFieldProps = {
   containerProps?: ComponentProps<typeof VStack>
 }
 
+function BookEditBoolField({
+  control,
+  name,
+}: {
+  control: Control<MetadataSnapshotIn, unknown>
+  name: Path<MetadataSnapshotIn>
+}) {
+  const { field } = useController({ control, name })
+  return (
+    <Switch
+      value={field.value === true}
+      onToggle={() => field.onChange(field.value === true ? null : true)}
+    />
+  )
+}
+
+function BookEditCommentsField({
+  control,
+  name,
+  onInputFocus,
+}: {
+  control: Control<MetadataSnapshotIn, unknown>
+  name: Path<MetadataSnapshotIn>
+  onInputFocus?: () => void
+}) {
+  const { field } = useController({ control, name })
+  return (
+    <Textarea width="$full">
+      <TextareaInput
+        value={String(field.value ?? "")}
+        onChangeText={field.onChange}
+        onFocus={onInputFocus}
+        testID={`book-edit-comments-${String(name)}`}
+      />
+    </Textarea>
+  )
+}
+
 export function BookEditField(props: BookEditFieldProps) {
   let field: React.ReactNode
-  const { toSortValue, toAuthorSortValue } = useRomajiText()
   const containerRef = useRef<View | null>(null)
+  const { toAuthorSortValue, toSortValue } = useRomajiText()
 
   const getContainerHandle = () => findNodeHandle(containerRef.current)
 
@@ -68,7 +109,7 @@ export function BookEditField(props: BookEditFieldProps) {
     }
   }
 
-  const label = props.fieldMetadata.label as Path<MetadataSnapshotIn>
+  const label = (props.formPath ?? props.fieldMetadata.label) as Path<MetadataSnapshotIn>
   const authorsController = useController({
     control: props.control,
     name: "authors" as Path<MetadataSnapshotIn>,
@@ -170,6 +211,18 @@ export function BookEditField(props: BookEditFieldProps) {
             </Input>
           )
         }
+        break
+      case "bool":
+        field = <BookEditBoolField control={props.control} name={label} />
+        break
+      case "comments":
+        field = (
+          <BookEditCommentsField
+            control={props.control}
+            name={label}
+            onInputFocus={handleInputFocus}
+          />
+        )
         break
       default:
         break

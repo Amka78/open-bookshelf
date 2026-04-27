@@ -27,6 +27,9 @@ const ja: Translations = {
     fetchCoverUrlPlaceholder: "画像URLを入力...",
     fetchingCover: "取得中...",
     fetchCoverError: "表紙の取得に失敗しました",
+    standardFieldsTab: "標準",
+    customFieldsTab: "カスタム",
+    noCustomFields: "このライブラリにはカスタムフィールドが定義されていません。",
   },
   bookOcrReviewScreen: {
     title: "表紙OCR",

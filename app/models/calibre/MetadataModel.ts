@@ -28,6 +28,11 @@ export const MetadataModel = types
     comments: types.maybeNull(types.string),
     /** Calibre identifiers stored as {type: value} e.g. {isbn: "9781234567890"} */
     identifiers: types.map(types.string),
+    /**
+     * Custom column values keyed by camelCased label (e.g. "#myCustomField").
+     * Populated from #-prefixed keys in the Calibre search-result metadata.
+     */
+    customColumns: types.optional(types.map(types.frozen<unknown>()), {}),
   })
   .actions(withSetPropAction)
 

@@ -27,6 +27,8 @@ export type TextBookSpineProps = {
   onNavigate?: (payload: { x: number; y: number; width: number; height: number }) => void
   onLongPress?: () => void
   onTextSelect?: (text: string) => void
+  /** Pre-built HTML string. When provided, bypasses the Calibre API fetch (for stories/tests). */
+  sourceHtml?: string
 }
 
 export const buildTextBookSpineCommandPayload = ({
@@ -59,15 +61,19 @@ export const useTextBookSpineDocument = (props: TextBookSpineProps) => {
   const computedThemeMode =
     viewerTheme === "dark" ? "dark" : colorScheme === "dark" ? "dark" : "light"
 
-  const { documentKey, error, loading, preparedDocument } = usePreparedCalibreHtmlDocument({
-    libraryId: props.libraryId,
-    bookId: props.bookId,
-    format: props.format,
-    size: props.size,
-    hash: props.hash,
-    pagePath: props.pagePath,
-    headers: props.headers,
-  })
+  const { documentKey, error, loading, preparedDocument } = usePreparedCalibreHtmlDocument(
+    props.sourceHtml
+      ? { libraryId: "", bookId: 0, format: "", size: 0, hash: 0, pagePath: props.pagePath }
+      : {
+          libraryId: props.libraryId,
+          bookId: props.bookId,
+          format: props.format,
+          size: props.size,
+          hash: props.hash,
+          pagePath: props.pagePath,
+          headers: props.headers,
+        },
+  )
 
   const initialViewerStateRef = useRef<{
     currentPage: number
@@ -88,6 +94,10 @@ export const useTextBookSpineDocument = (props: TextBookSpineProps) => {
   }
 
   const html = useMemo(() => {
+    if (props.sourceHtml) {
+      return props.sourceHtml
+    }
+
     if (!preparedDocument || !initialViewerStateRef.current) {
       return null
     }
@@ -121,15 +131,16 @@ export const useTextBookSpineDocument = (props: TextBookSpineProps) => {
     palette.textPrimary,
     preparedDocument,
     props.annotations,
+    props.sourceHtml,
     settingStore.viewerFontSizePt,
     viewerTheme,
   ])
 
   return {
-    documentKey,
-    error,
+    documentKey: props.sourceHtml ? props.pagePath : documentKey,
+    error: props.sourceHtml ? null : error,
     html,
-    loading,
+    loading: props.sourceHtml ? false : loading,
     viewerFontSizePt: settingStore.viewerFontSizePt,
     viewerTheme,
   }

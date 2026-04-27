@@ -25,6 +25,9 @@ const en = {
     fetchCoverUrlPlaceholder: "Enter image URL...",
     fetchingCover: "Fetching...",
     fetchCoverError: "Failed to fetch cover",
+    standardFieldsTab: "Standard",
+    customFieldsTab: "Custom",
+    noCustomFields: "No custom fields defined in this library.",
   },
   bookOcrReviewScreen: {
     title: "Cover OCR",

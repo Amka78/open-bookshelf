@@ -5,12 +5,14 @@ mock.module("@/utils/delay", () => ({ delay: jest.fn().mockResolvedValue(undefin
 
 const mockCheckBookConverting = jest.fn()
 const mockGetLibraryInformation = jest.fn()
+const mockEditBook = jest.fn()
 
 mock.module("@/services/api", () => ({
   api: {
     CheckBookConverting: mockCheckBookConverting,
     getLibraryInformation: mockGetLibraryInformation,
     getConversionStatus: jest.fn(),
+    editBook: mockEditBook,
   },
 }))
 
@@ -404,5 +406,82 @@ describe("BookModel.convert", () => {
     await book.convert("TXT", "lib1", async () => {})
 
     expect(book.path.slice()).toEqual(["index.html"])
+  })
+})
+
+describe("BookModel.update", () => {
+  beforeEach(() => {
+    mockEditBook.mockReset()
+  })
+
+  test("custom columns are serialized to #snake_case API keys", async () => {
+    mockEditBook.mockResolvedValue({ kind: "ok", data: {} })
+    const book = BookModel.create({
+      id: 42,
+      metaData: {
+        title: "Custom Test",
+        authors: [],
+        formats: ["EPUB"],
+        tags: [],
+        rating: 0,
+        size: 100,
+        lastModified: "",
+        customColumns: {
+          "#myGenre": "Science Fiction",
+        },
+      },
+    })
+
+    await book.update("lib1", { customColumns: { "#myGenre": "Fantasy" } }, ["customColumns"])
+
+    expect(mockEditBook).toHaveBeenCalledTimes(1)
+    const [libraryId, bookId, bookData] = mockEditBook.mock.calls[0]
+    expect(libraryId).toBe("lib1")
+    expect(bookId).toBe(42)
+    expect(bookData.changes).toMatchObject({ "#my_genre": "Fantasy" })
+  })
+
+  test("custom column update is reflected in the local model after save", async () => {
+    mockEditBook.mockResolvedValue({ kind: "ok", data: {} })
+    const book = BookModel.create({
+      id: 43,
+      metaData: {
+        title: "Local Update Test",
+        authors: [],
+        formats: [],
+        tags: [],
+        rating: 0,
+        size: 0,
+        lastModified: "",
+        customColumns: { "#myGenre": "Initial" },
+      },
+    })
+
+    await book.update("lib1", { customColumns: { "#myGenre": "Updated" } }, ["customColumns"])
+
+    expect(book.metaData!.customColumns.get("#myGenre")).toBe("Updated")
+  })
+
+  test("regular fields are not included when only customColumns is updated", async () => {
+    mockEditBook.mockResolvedValue({ kind: "ok", data: {} })
+    const book = BookModel.create({
+      id: 44,
+      metaData: {
+        title: "Separate Fields",
+        authors: [],
+        formats: [],
+        tags: [],
+        rating: 0,
+        size: 0,
+        lastModified: "",
+        customColumns: { "#myGenre": "Horror" },
+      },
+    })
+
+    await book.update("lib1", { customColumns: { "#myGenre": "Thriller" } }, ["customColumns"])
+
+    const changes = mockEditBook.mock.calls[0][2].changes
+    // Only the custom column key should be present; no standard fields
+    expect(Object.keys(changes)).toEqual(["#my_genre"])
   })
 })

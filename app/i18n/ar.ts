@@ -27,6 +27,9 @@ const ar: Translations = {
     fetchCoverUrlPlaceholder: "أدخل رابط الصورة...",
     fetchingCover: "جارٍ الجلب...",
     fetchCoverError: "فشل جلب الغلاف",
+    standardFieldsTab: "قياسي",
+    customFieldsTab: "مخصص",
+    noCustomFields: "لا توجد حقول مخصصة في هذه المكتبة.",
   },
   identifierField: {
     typeLabel: "النوع",

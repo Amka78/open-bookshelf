@@ -360,6 +360,11 @@ function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap)
       pubdate: metadata.pubdate ?? null,
       comments: metadata.comments ?? null,
       identifiers: metadata.identifiers ?? {},
+      customColumns: Object.fromEntries(
+        Object.keys(metadata)
+          .filter((key) => key.startsWith("#") && key !== "#fixed")
+          .map((key) => [lowerCaseToCamelCase(key), metadata[key]]),
+      ),
     })
 
     selectedLibrary.books.set(bookId.toString(), {

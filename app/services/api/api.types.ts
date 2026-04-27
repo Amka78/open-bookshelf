@@ -115,7 +115,11 @@ export type MetadataType = {
   pubdate?: string
   comments?: string
   identifiers?: Record<string, string>
+  [key: string]: unknown
 }
+
+/** Calibre field key: standard field name or a custom field prefixed with `#` */
+export type MetadataFieldKey = CommonFieldName | `#${string}`
 
 /**
  * A single last-read position entry as returned by Calibre's book manifest.
@@ -425,7 +429,7 @@ export type AddedFormatEntry = {
 }
 
 export type SetBookMetadata = {
-  changes: Record<CommonFieldName, unknown> & {
+  changes: Partial<Record<MetadataFieldKey, unknown>> & {
     removed_formats?: string[]
     added_formats?: AddedFormatEntry[]
   }

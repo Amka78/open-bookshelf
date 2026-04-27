@@ -7,13 +7,12 @@ import { convertOptionsToParams } from "@/utils/convertOptionsToParams"
 import { delay } from "@/utils/delay"
 import {
   type ApiBookManifestResultType,
-  type CommonFieldName,
   type HtmlFileType,
   type ImageFileType,
   type LastReadPosition,
   api,
 } from "../../services/api"
-import type { AddedFormatEntry, AnnotationsMap } from "../../services/api/api.types"
+import type { AddedFormatEntry, AnnotationsMap, MetadataFieldKey } from "../../services/api/api.types"
 import { handleCommonApiError } from "../errors/errors"
 import { withSetPropAction } from "../helpers/withSetPropAction"
 import { type Annotation, AnnotationModel } from "./AnnotationModel"
@@ -372,10 +371,10 @@ export const BookModel = types
         added_formats?: AddedFormatEntry[]
       },
     ) {
-      const changes: Partial<Record<CommonFieldName, unknown>> = {}
+      const changes: Partial<Record<MetadataFieldKey, unknown>> = {}
 
-      // Skip "formats" from regular field changes — handled via removed_formats/added_formats
-      const regularFields = updateField.filter((f) => f !== "formats")
+      // Skip "formats" and "customColumns" from regular field changes
+      const regularFields = updateField.filter((f) => f !== "formats" && f !== "customColumns")
 
       regularFields.map((field: string) => {
         const fieldValue = normalizeUpdateFieldValue(
@@ -383,7 +382,7 @@ export const BookModel = types
           updateInfo[field as keyof SnapshotIn<typeof MetadataModel>],
         )
         ;(root.metaData as unknown as Record<string, unknown>)[field] = fieldValue
-        const apiField = camelCaseToLowerCase(field) as CommonFieldName
+        const apiField = camelCaseToLowerCase(field) as MetadataFieldKey
         changes[apiField] = Array.isArray(fieldValue)
           ? fieldValue
               .map((entry) => `${entry}`.trim())
@@ -391,6 +390,20 @@ export const BookModel = types
               .join("\n")
           : fieldValue
       })
+
+      // Serialize custom column updates: each key is camelCase label → convert to #snake_case
+      if (updateField.includes("customColumns") && updateInfo.customColumns) {
+        const customColumnsData = updateInfo.customColumns as Record<string, unknown>
+        for (const [camelKey, value] of Object.entries(customColumnsData)) {
+          const apiKey = camelCaseToLowerCase(camelKey) as MetadataFieldKey
+          changes[apiKey] = Array.isArray(value)
+            ? value
+                .map((entry) => `${entry}`.trim())
+                .filter(Boolean)
+                .join("\n")
+            : value
+        }
+      }
 
       if (formatChanges?.removed_formats?.length) {
         ;(changes as Record<string, unknown>).removed_formats = formatChanges.removed_formats
@@ -400,7 +413,7 @@ export const BookModel = types
       }
 
       const response = yield api.editBook(libraryId, root.id, {
-        changes: changes as Record<CommonFieldName, unknown>,
+        changes: changes as Partial<Record<MetadataFieldKey, unknown>>,
         loaded_book_ids: [root.id],
       })
       if (response.kind === "ok") {
@@ -411,6 +424,13 @@ export const BookModel = types
             updateInfo[field as keyof SnapshotIn<typeof MetadataModel>],
           )
         })
+        // Update custom columns locally
+        if (updateField.includes("customColumns") && updateInfo.customColumns && root.metaData) {
+          const customColumnsData = updateInfo.customColumns as Record<string, unknown>
+          for (const [camelKey, value] of Object.entries(customColumnsData)) {
+            root.metaData.customColumns.set(camelKey, value)
+          }
+        }
         // Update local formats list if format changes were made
         if (formatChanges?.removed_formats?.length || formatChanges?.added_formats?.length) {
           const currentFormats = [...(root.metaData?.formats ?? [])]

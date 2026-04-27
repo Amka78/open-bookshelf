@@ -27,6 +27,9 @@ const ko: Translations = {
     fetchCoverUrlPlaceholder: "이미지 URL 입력...",
     fetchingCover: "가져오는 중...",
     fetchCoverError: "표지 가져오기 실패",
+    standardFieldsTab: "기본",
+    customFieldsTab: "커스텀",
+    noCustomFields: "이 라이브러리에 커스텀 필드가 없습니다.",
   },
   identifierField: {
     typeLabel: "유형",

@@ -551,8 +551,8 @@ export const buildTextBookHtmlDocument = ({
           return layoutState.isVerticalWriting ? window.scrollY || 0 : window.scrollX || 0
         }
 
-        const getInlineExtent = () => {
-          return layoutState.isVerticalWriting
+        const getInlineExtent = (isVertical) => {
+          return isVertical
             ? Math.max(
                 document.documentElement?.scrollHeight || 0,
                 document.body?.scrollHeight || 0,
@@ -564,14 +564,6 @@ export const buildTextBookHtmlDocument = ({
         }
 
         const getBlockExtent = () => {
-          const { isVerticalWriting } = getLayoutDirectionState()
-          if (isVerticalWriting) {
-            return Math.max(
-              document.documentElement?.scrollWidth || 0,
-              document.body?.scrollWidth || 0,
-            )
-          }
-
           return Math.max(
             document.documentElement?.scrollHeight || 0,
             document.body?.scrollHeight || 0,
@@ -604,7 +596,7 @@ export const buildTextBookHtmlDocument = ({
           }
 
           const pageInlineSize = Math.max(1, inlineViewportSize / spreadPageCount)
-          const internalPageCount = Math.max(1, Math.ceil(getInlineExtent() / pageInlineSize))
+          const internalPageCount = Math.max(1, Math.ceil(getInlineExtent(isVerticalWriting) / pageInlineSize))
           const physicalPageCount = Math.max(
             1,
             internalPageCount - (viewerState.leadingBlankPage ? 1 : 0),
@@ -655,7 +647,7 @@ export const buildTextBookHtmlDocument = ({
           })
         }
 
-        const applyLayout = () => {
+        const doLayout = () => {
           const spreadPageCount = getSpreadPageCount()
           const isPaginated = viewerState.readingStyle !== "verticalScroll"
           const { isVerticalWriting, rtl } = getLayoutDirectionState()
@@ -664,10 +656,6 @@ export const buildTextBookHtmlDocument = ({
           const inlineViewportSize = Math.max(
             1,
             isVerticalWriting ? viewportHeight : viewportWidth,
-          )
-          const blockViewportSize = Math.max(
-            1,
-            isVerticalWriting ? viewportWidth : viewportHeight,
           )
           const pageInlineSize = Math.max(1, Math.floor(inlineViewportSize / spreadPageCount))
 
@@ -696,15 +684,8 @@ export const buildTextBookHtmlDocument = ({
           if (isPaginated) {
             applyImportantStyle(document.body, "-webkit-column-gap", "0px")
             applyImportantStyle(document.body, "column-gap", "0px")
-
-            if (isVerticalWriting) {
-              applyImportantStyle(document.body, "-webkit-column-height", blockViewportSize + "px")
-              applyImportantStyle(document.body, "column-height", blockViewportSize + "px")
-            } else {
-              applyImportantStyle(document.body, "-webkit-column-width", pageInlineSize + "px")
-              applyImportantStyle(document.body, "column-width", pageInlineSize + "px")
-            }
-
+            applyImportantStyle(document.body, "-webkit-column-width", pageInlineSize + "px")
+            applyImportantStyle(document.body, "column-width", pageInlineSize + "px")
             applyImportantStyle(document.body, "column-fill", "auto")
             applyImportantStyle(document.body, "column-rule", "0px inset transparent")
 
@@ -722,6 +703,16 @@ export const buildTextBookHtmlDocument = ({
 
           normalizeFirstColumnElements()
           applyThemeOverrides()
+        }
+
+        const applyLayout = () => {
+          // Save the logical page before doLayout() clears column-width.
+          // Removing column-width collapses horizontal overflow, causing the browser
+          // to reset window.scrollX to 0. We restore position via scrollToPhysicalPage
+          // so that notifyPagination() reads the correct page after every relayout.
+          const savedPage = viewerState.currentPage
+          doLayout()
+          scrollToPhysicalPage(savedPage)
           notifyPagination()
         }
 
@@ -788,7 +779,7 @@ export const buildTextBookHtmlDocument = ({
               : viewerState.leadingBlankPage
           currentAnchor = typeof payload.anchor === "string" ? payload.anchor : null
 
-          applyLayout()
+          doLayout()
 
           if (currentAnchor && scrollToAnchor(currentAnchor)) {
             return
