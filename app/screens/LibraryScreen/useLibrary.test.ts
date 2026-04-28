@@ -302,6 +302,26 @@ describe("useLibrary", () => {
     expect(result.current.selectedBookIds.size).toBe(1)
   })
 
+  test("pressing the same book again in single selection mode deselects it", async () => {
+    const { result } = await renderUseLibrary()
+
+    act(() => {
+      result.current.handleBookPress(1)
+    })
+
+    expect(result.current.selectionMode).toBe("single")
+    expect(result.current.isBookSelected(1)).toBe(true)
+    expect(result.current.selectedBookIds.size).toBe(1)
+
+    act(() => {
+      result.current.handleBookPress(1)
+    })
+
+    expect(result.current.selectionMode).toBe("none")
+    expect(result.current.isBookSelected(1)).toBe(false)
+    expect(result.current.selectedBookIds.size).toBe(0)
+  })
+
   test("entering multi selection keeps previous selections when another book is pressed", async () => {
     const { result } = await renderUseLibrary()
 

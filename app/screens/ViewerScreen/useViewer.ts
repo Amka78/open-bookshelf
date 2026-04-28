@@ -140,7 +140,11 @@ export function useViewer() {
       : ""
 
   // Compute the best resume page: prefer local currentPage, fall back to server pos_frac.
+  // NOTE: For HTML viewer formats (TextBook), we skip pre-calculated resume page because
+  // the actual page count is unknown until spinePageCounts are loaded asynchronously.
+  // TextBookViewer will handle resume after page counts are available.
   const serverEstimatedPage =
+    !isHtmlViewerFormat &&
     history &&
     history.currentPage <= 0 &&
     typeof history.serverPosFrac === "number" &&
@@ -269,7 +273,7 @@ export function useViewer() {
     }
   }
 
-  const onPageChange = async (page: number) => {
+  const onPageChange = async (page: number, totalPagesForFraction?: number) => {
     if (!selectedBook || !selectedLibraryId || !history) {
       return
     }
@@ -283,7 +287,8 @@ export function useViewer() {
     history.setCurrentPage(page)
 
     // Compute position fraction and schedule server sync
-    const totalPages = selectedBook.path.length || 1
+    // For TextBook, use totalPagesForFraction if provided; otherwise fall back to path.length
+    const totalPages = (totalPagesForFraction ?? selectedBook.path.length) || 1
     const posFrac = totalPages > 1 ? page / (totalPages - 1) : 0
     const epoch = Math.floor(Date.now() / 1000)
     history.setServerPosition(posFrac, epoch)
@@ -319,6 +324,13 @@ export function useViewer() {
       return
     }
 
+    // Skip initial sync for HTML viewer formats (TextBook) because the actual page count
+    // is unknown until spinePageCounts are loaded. The onPageChange callback will sync
+    // the position once page counts are available.
+    if (isHtmlViewerFormat) {
+      return
+    }
+
     const currentPage = history.currentPage ?? initialPage ?? 0
     const totalPages = selectedBook.path.length || 1
     const posFrac = totalPages > 1 ? currentPage / (totalPages - 1) : 0
@@ -331,7 +343,7 @@ export function useViewer() {
     api
       .syncReadingPositionFull(selectedLibraryId, selectedBook.id, history.format, posFrac, cfi)
       .catch((err) => logger.warn("Failed to sync initial reading position (standard)", err))
-  }, [viewerReady, selectedBook, selectedLibraryId, history, initialPage])
+  }, [viewerReady, selectedBook, selectedLibraryId, history, initialPage, isHtmlViewerFormat])
 
   const onLastPage = () => {
     if (!selectedBook || !selectedLibrary) {

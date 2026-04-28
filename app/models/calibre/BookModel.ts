@@ -103,6 +103,13 @@ export const BookModel = types
     manifestServerPosFrac: types.maybeNull(types.number),
     manifestServerEpoch: types.maybeNull(types.number),
     manifestToc: types.maybeNull(types.frozen<TocItem>()),
+    /**
+     * Calibre manifest total_length: sum of spine file content lengths in bytes.
+     * For HTML spine files (TextBook), this represents the total readable content size,
+     * NOT the page count (which varies by rendering). Used to calculate proper page counts
+     * for resume reading.
+     */
+    totalLength: types.maybeNull(types.number),
   })
   .actions(withSetPropAction)
   .actions((self) => ({
@@ -326,6 +333,7 @@ export const BookModel = types
 
       root.setProp("path", pathList)
       root.setProp("hash", result.book_hash.mtime)
+      root.setProp("totalLength", result.total_length ?? null)
 
       if (result.page_progression_direction) {
         root.setProp("pageProgressionDirection", result.page_progression_direction)

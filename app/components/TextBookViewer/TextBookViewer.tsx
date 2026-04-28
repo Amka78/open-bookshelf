@@ -102,8 +102,8 @@ export function TextBookViewer({ getAuthHeader, viewerHook }: TextBookViewerProp
       return
     }
 
-    void viewerHook.onPageChange(currentSpineIndex)
-  }, [currentSpineIndex, selectedBook, totalSpines, viewerHook])
+    void viewerHook.onPageChange(normalizedDisplayPage, totalPages)
+  }, [normalizedDisplayPage, selectedBook, totalSpines, totalPages, viewerHook])
 
   useEffect(() => {
     if (normalizedDisplayPage >= Math.max(totalPages - 1, 0)) {

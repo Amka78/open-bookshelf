@@ -47,6 +47,14 @@ export function useLibrary() {
         }
       }
 
+      // If single selection mode and same book is already selected, deselect it
+      if (prev.selectedBookIds.has(bookId) && prev.selectedBookIds.size === 1) {
+        return {
+          mode: "none",
+          selectedBookIds: new Set(),
+        }
+      }
+
       return {
         mode: "single",
         selectedBookIds: new Set([bookId]),
@@ -219,6 +227,16 @@ export function useLibrary() {
   useEffect(() => {
     setHeaderSearchText(selectedLibrary?.searchSetting?.query ?? "")
   }, [selectedLibrary?.searchSetting?.query])
+
+  // Clear selection when search conditions change (query, virtual library, or sort)
+  useEffect(() => {
+    clearSelection()
+  }, [
+    selectedLibrary?.searchSetting?.query,
+    selectedLibrary?.searchSetting?.vl,
+    selectedLibrary?.searchSetting?.sort,
+    selectedLibrary?.searchSetting?.sortOrder,
+  ])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: MST observable (settingStore.booksPerPage) is tracked via observer(); adding it to deps would cause unnecessary re-fetches
   useEffect(() => {
