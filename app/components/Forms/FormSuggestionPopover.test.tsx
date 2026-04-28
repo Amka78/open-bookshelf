@@ -205,7 +205,9 @@ describe("FormSuggestionPopover", () => {
   })
 
   test("renders web suggestions in a portal attached to document.body", async () => {
+    platformOS = "web"
     const onSelect = jest.fn()
+    const FormSuggestionPopover = await loadFormSuggestionPopover()
 
     const { container } = render(
       <FormSuggestionPopover

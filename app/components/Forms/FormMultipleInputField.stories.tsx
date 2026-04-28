@@ -2,7 +2,7 @@ import { Box } from "@/components/Box/Box"
 import { Pressable } from "@/components/Pressable/Pressable"
 import type { Meta, StoryObj } from "@storybook/react"
 import { useForm } from "react-hook-form"
-import { FormMultipleInputField } from "./FormMultipeInputField"
+import { FormMultipleInputField } from "./FormMultipleInputField"
 import {
   playMultipleBackdropPressClosesSuggestions,
   playMultipleFocusShowsSuggestions,

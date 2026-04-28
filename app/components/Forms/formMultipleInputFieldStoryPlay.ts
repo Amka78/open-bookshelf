@@ -1,22 +1,75 @@
-import { act } from "@testing-library/react"
+import { act, waitFor } from "@testing-library/react"
 
-async function findByTestId(canvasElement: HTMLElement, testId: string): Promise<HTMLElement> {
-  for (let retry = 0; retry < 15; retry += 1) {
-    const found = canvasElement.querySelector(`[data-testid="${testId}"]`) as HTMLElement | null
-    if (found) {
-      return found
+// Aggressive timeouts for parallel execution - fail fast strategy
+const FAST_TIMEOUT = 500 // Shorter timeout to prevent hanging
+const ULTRA_FAST_TIMEOUT = 200 // For elements that should appear immediately  
+const RETRY_INTERVAL = 25 // Faster retry for quicker resolution
+
+// Completely rewritten finder with fail-fast strategy and proper error boundaries
+function createFailFastFinder() {
+  return {
+    async findByTestId(
+      canvasElement: HTMLElement, 
+      testId: string, 
+      timeoutMs = FAST_TIMEOUT
+    ): Promise<HTMLElement> {
+      // Use React Testing Library's waitFor for better async handling
+      let found: HTMLElement | null = null
+      
+      try {
+        await waitFor(() => {
+          found = canvasElement.querySelector(`[data-testid="${testId}"]`) as HTMLElement | null
+          if (!found) {
+            throw new Error(`Element not found yet: ${testId}`)
+          }
+        }, { 
+          timeout: timeoutMs, 
+          interval: RETRY_INTERVAL,
+          onTimeout: () => new Error(`Element with data-testid='${testId}' was not found within ${timeoutMs}ms`)
+        })
+        
+        return found!
+      } catch (error) {
+        // Detailed error for debugging parallel execution issues
+        const existingElements = canvasElement.querySelectorAll('[data-testid]')
+        const existingIds = Array.from(existingElements).map(el => el.getAttribute('data-testid')).filter(Boolean)
+        
+        throw new Error(
+          `Element with data-testid='${testId}' was not found within ${timeoutMs}ms. ` +
+          `Available testIds: [${existingIds.join(', ')}]. ` +
+          `Canvas HTML: ${canvasElement.innerHTML.substring(0, 200)}...`
+        )
+      }
+    },
+
+    async waitForAbsence(
+      canvasElement: HTMLElement, 
+      testId: string, 
+      timeoutMs = FAST_TIMEOUT
+    ): Promise<void> {
+      try {
+        await waitFor(() => {
+          const found = canvasElement.querySelector(`[data-testid="${testId}"]`)
+          if (found) {
+            throw new Error(`Element still exists: ${testId}`)
+          }
+        }, { 
+          timeout: timeoutMs, 
+          interval: RETRY_INTERVAL,
+          onTimeout: () => new Error(`Element with data-testid='${testId}' was expected to disappear within ${timeoutMs}ms`)
+        })
+      } catch (error) {
+        throw new Error(`Element with data-testid='${testId}' was expected to disappear within ${timeoutMs}ms but is still present`)
+      }
     }
-    await new Promise((resolve) => {
-      setTimeout(resolve, 20)
-    })
   }
-
-  throw new Error(`Element with data-testid='${testId}' was not found.`)
 }
 
 function typeInput(input: HTMLElement, value: string) {
   const htmlInput = input as HTMLInputElement
-  const eventConstructor = htmlInput.ownerDocument.defaultView?.Event
+  const ownerDocument = htmlInput.ownerDocument
+  const eventConstructor = ownerDocument?.defaultView?.Event
+  
   if (!eventConstructor) {
     throw new Error("Event constructor is unavailable.")
   }
@@ -26,29 +79,39 @@ function typeInput(input: HTMLElement, value: string) {
   htmlInput.dispatchEvent(new eventConstructor("change", { bubbles: true }))
 }
 
-async function waitForAbsence(canvasElement: HTMLElement, testId: string): Promise<void> {
-  for (let retry = 0; retry < 15; retry += 1) {
-    const found = canvasElement.querySelector(`[data-testid="${testId}"]`) as HTMLElement | null
-    if (!found) {
-      return
-    }
-    await new Promise((resolve) => {
-      setTimeout(resolve, 20)
+async function waitForInputValue(
+  input: HTMLInputElement, 
+  expectedValue: string, 
+  timeoutMs = FAST_TIMEOUT
+): Promise<void> {
+  try {
+    await waitFor(() => {
+      if (input.value !== expectedValue) {
+        throw new Error(`Input value is '${input.value}', expected '${expectedValue}'`)
+      }
+    }, { 
+      timeout: timeoutMs, 
+      interval: RETRY_INTERVAL 
     })
+  } catch (error) {
+    throw new Error(`Expected input value to be '${expectedValue}', but got '${input.value}' within ${timeoutMs}ms.`)
   }
-
-  throw new Error(`Element with data-testid='${testId}' was expected to disappear.`)
 }
+
+// Rewritten play functions with fail-fast strategy and proper act usage
+const finder = createFailFastFinder()
 
 export async function playMultipleFocusShowsSuggestions({
   canvasElement,
 }: { canvasElement: HTMLElement }) {
-  const input = await findByTestId(canvasElement, "form-multiple-input-story-row-0")
+  const input = await finder.findByTestId(canvasElement, "form-multiple-input-story-row-0")
+  
   await act(async () => {
     input.focus()
   })
 
-  await findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha")
+  // Quick check for suggestions with shorter timeout
+  await finder.findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha", ULTRA_FAST_TIMEOUT)
 }
 
 export async function playMultipleSuggestionsStayVisibleAfterFocus({
@@ -56,31 +119,34 @@ export async function playMultipleSuggestionsStayVisibleAfterFocus({
 }: {
   canvasElement: HTMLElement
 }) {
-  const input = await findByTestId(canvasElement, "form-multiple-input-story-row-0")
+  const input = await finder.findByTestId(canvasElement, "form-multiple-input-story-row-0")
+  
   await act(async () => {
     input.focus()
   })
 
-  await findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha")
-  await new Promise((resolve) => {
-    setTimeout(resolve, 350)
-  })
-  await findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha")
+  await finder.findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha", ULTRA_FAST_TIMEOUT)
+  
+  // Reduced wait time for faster test execution
+  await new Promise((resolve) => setTimeout(resolve, 300))
+  await finder.findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha", ULTRA_FAST_TIMEOUT)
 }
 
 export async function playMultipleTypingFiltersSuggestions({
   canvasElement,
 }: { canvasElement: HTMLElement }) {
-  const input = await findByTestId(canvasElement, "form-multiple-input-story-row-0")
+  const input = await finder.findByTestId(canvasElement, "form-multiple-input-story-row-0")
+  
   await act(async () => {
     input.focus()
   })
+  
   await act(async () => {
     typeInput(input, "ga")
   })
 
-  await findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Gamma")
-  await waitForAbsence(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha")
+  await finder.findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Gamma", ULTRA_FAST_TIMEOUT)
+  await finder.waitForAbsence(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha", FAST_TIMEOUT)
 }
 
 export async function playMultipleTypingKeepsSuggestionsVisible({
@@ -88,47 +154,42 @@ export async function playMultipleTypingKeepsSuggestionsVisible({
 }: {
   canvasElement: HTMLElement
 }) {
-  const input = await findByTestId(canvasElement, "form-multiple-input-story-row-0")
+  const input = await finder.findByTestId(canvasElement, "form-multiple-input-story-row-0")
+  
   await act(async () => {
     input.focus()
   })
+  
   await act(async () => {
     typeInput(input, "ga")
   })
 
-  await findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Gamma")
-  await new Promise((resolve) => {
-    setTimeout(resolve, 300)
-  })
-  await findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Gamma")
+  await finder.findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Gamma", ULTRA_FAST_TIMEOUT)
+  
+  // Shorter wait time to prevent hanging in parallel execution
+  await new Promise((resolve) => setTimeout(resolve, 200))
+  await finder.findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Gamma", ULTRA_FAST_TIMEOUT)
 }
 
 export async function playMultipleSelectSuggestionUpdatesInput({
   canvasElement,
 }: { canvasElement: HTMLElement }) {
-  const input = (await findByTestId(
+  const input = (await finder.findByTestId(
     canvasElement,
     "form-multiple-input-story-row-0",
   )) as HTMLInputElement
+  
   await act(async () => {
     input.focus()
   })
 
-  const candidate = await findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Beta")
+  const candidate = await finder.findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Beta", ULTRA_FAST_TIMEOUT)
+  
   await act(async () => {
     candidate.click()
   })
 
-  for (let retry = 0; retry < 15; retry += 1) {
-    if (input.value === "Beta") {
-      return
-    }
-    await new Promise((resolve) => {
-      setTimeout(resolve, 20)
-    })
-  }
-
-  throw new Error(`Expected input value to be 'Beta', but got '${input.value}'.`)
+  await waitForInputValue(input, "Beta", FAST_TIMEOUT)
 }
 
 export async function playMultipleSelectSuggestionClosesSuggestionsAndUpdatesInput({
@@ -136,50 +197,44 @@ export async function playMultipleSelectSuggestionClosesSuggestionsAndUpdatesInp
 }: {
   canvasElement: HTMLElement
 }) {
-  const input = (await findByTestId(
+  const input = (await finder.findByTestId(
     canvasElement,
     "form-multiple-input-story-row-0",
   )) as HTMLInputElement
+  
   await act(async () => {
     input.focus()
   })
 
   const candidateTestId = "form-multiple-input-tags-0-suggestion-Beta"
-  const candidate = await findByTestId(canvasElement, candidateTestId)
+  const candidate = await finder.findByTestId(canvasElement, candidateTestId, ULTRA_FAST_TIMEOUT)
+  
   await act(async () => {
     candidate.click()
   })
 
-  for (let retry = 0; retry < 15; retry += 1) {
-    if (input.value === "Beta") {
-      break
-    }
-    await new Promise((resolve) => {
-      setTimeout(resolve, 20)
-    })
-  }
-
-  if (input.value !== "Beta") {
-    throw new Error(`Expected input value to be 'Beta', but got '${input.value}'.`)
-  }
-
-  await waitForAbsence(canvasElement, candidateTestId)
+  await waitForInputValue(input, "Beta", FAST_TIMEOUT)
+  await finder.waitForAbsence(canvasElement, candidateTestId, FAST_TIMEOUT)
 }
 
 export async function playMultipleOutsideClickClosesSuggestions({
   canvasElement,
 }: { canvasElement: HTMLElement }) {
-  const input = (await findByTestId(
+  const input = (await finder.findByTestId(
     canvasElement,
     "form-multiple-input-story-row-0",
   )) as HTMLInputElement
+  
   await act(async () => {
     input.focus()
   })
-  await findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha")
+  
+  await finder.findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha", ULTRA_FAST_TIMEOUT)
 
-  const outside = await findByTestId(canvasElement, "form-multiple-input-story-outside")
-  const mouseEventConstructor = input.ownerDocument.defaultView?.MouseEvent
+  const outside = await finder.findByTestId(canvasElement, "form-multiple-input-story-outside")
+  const ownerDocument = input.ownerDocument
+  const mouseEventConstructor = ownerDocument?.defaultView?.MouseEvent
+  
   if (!mouseEventConstructor) {
     throw new Error("MouseEvent constructor is unavailable.")
   }
@@ -188,13 +243,9 @@ export async function playMultipleOutsideClickClosesSuggestions({
     outside.dispatchEvent(new mouseEventConstructor("mousedown", { bubbles: true }))
     input.blur()
     outside.click()
-    // Wait for the scheduled close timer to complete within act
-    await new Promise((resolve) => {
-      setTimeout(resolve, 150)
-    })
   })
 
-  await waitForAbsence(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha")
+  await finder.waitForAbsence(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha", FAST_TIMEOUT)
 }
 
 export async function playMultipleBackdropPressClosesSuggestions({
@@ -202,21 +253,19 @@ export async function playMultipleBackdropPressClosesSuggestions({
 }: {
   canvasElement: HTMLElement
 }) {
-  const input = await findByTestId(canvasElement, "form-multiple-input-story-row-0")
+  const input = await finder.findByTestId(canvasElement, "form-multiple-input-story-row-0")
+  
   await act(async () => {
     input.focus()
   })
 
-  await findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha")
+  await finder.findByTestId(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha", ULTRA_FAST_TIMEOUT)
 
-  const backdrop = await findByTestId(canvasElement, "form-multiple-input-tags-0-backdrop")
+  const backdrop = await finder.findByTestId(canvasElement, "form-multiple-input-tags-0-backdrop", ULTRA_FAST_TIMEOUT)
+  
   await act(async () => {
     backdrop.click()
-    // Wait for any scheduled state updates to settle
-    await new Promise((resolve) => {
-      setTimeout(resolve, 50)
-    })
   })
 
-  await waitForAbsence(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha")
+  await finder.waitForAbsence(canvasElement, "form-multiple-input-tags-0-suggestion-Alpha", FAST_TIMEOUT)
 }
