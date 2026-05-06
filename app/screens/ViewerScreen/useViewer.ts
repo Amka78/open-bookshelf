@@ -77,7 +77,6 @@ export function useViewer() {
   const [showMenu, setShowMenu] = useState(false)
   const [initialPage, setInitialPage] = useState(0)
   const [viewerReady, setViewerReady] = useState(false)
-  const resolvedPromptKeyRef = useRef<string | undefined>(undefined)
   const pendingPromptKeyRef = useRef<string | undefined>(undefined)
   const handledRatingPromptKeyRef = useRef<string | undefined>(undefined)
   const syncTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
@@ -157,19 +156,20 @@ export function useViewer() {
   useEffect(() => {
     let cleanup = () => {}
 
+    if (viewerReady) {
+      return
+    }
+
     const hasLocalProgress = !!(history && history.currentPage > 0)
     const hasServerProgress = serverEstimatedPage >= 0
 
     if (!hasLocalProgress && !hasServerProgress) {
-      resolvedPromptKeyRef.current = promptKey
       pendingPromptKeyRef.current = undefined
       setInitialPage(0)
       setViewerReady(true)
       logger.debug("No reading history or at first page, starting from the beginning", {
         promptKey,
       })
-    } else if (resolvedPromptKeyRef.current === promptKey) {
-      setViewerReady(true)
     } else if (pendingPromptKeyRef.current === promptKey) {
       setViewerReady(false)
     } else {
@@ -177,9 +177,19 @@ export function useViewer() {
       setViewerReady(false)
 
       const maxPage = Math.max(availablePathLength - 1, 0)
+
       const resumePage = hasLocalProgress
         ? Math.max(0, Math.min(history?.currentPage ?? 0, maxPage))
         : Math.max(0, Math.min(serverEstimatedPage, maxPage))
+
+      logger.debug("Prompting user to resume reading", {
+        promptKey,
+        hasLocalProgress,
+        hasServerProgress,
+        resumePage,
+        serverEstimatedPage,
+        localCurrentPage: history?.currentPage,
+      })
 
       // Store in ref so callbacks always use the latest value
       resumePageRef.current = resumePage
@@ -197,14 +207,13 @@ export function useViewer() {
             okTx: "common.yes",
             cancelTx: "common.no",
             onOKPress: () => {
+              logger.debug("User chose to resume reading", { promptKey, resumePage })
               pendingPromptKeyRef.current = undefined
-              resolvedPromptKeyRef.current = promptKey
               setInitialPage(resumePageRef.current)
               setViewerReady(true)
             },
             onCancelPress: () => {
               pendingPromptKeyRef.current = undefined
-              resolvedPromptKeyRef.current = promptKey
               setInitialPage(0)
               setViewerReady(true)
             },
