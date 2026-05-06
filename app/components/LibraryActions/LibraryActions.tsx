@@ -1,9 +1,4 @@
-import {
-  AddFileButton,
-  AuthButton,
-  IconButton,
-  LibraryViewModeButton,
-} from "@/components"
+import { AddFileButton, AuthButton, IconButton, LibraryViewModeButton } from "@/components"
 import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import { translate } from "@/i18n"
 import { useStores } from "@/models"
@@ -30,6 +25,26 @@ export function LibraryActions({
 
   return (
     <>
+      <AuthButton
+        mode={authenticationStore.isAuthenticated ? "logout" : "login"}
+        onLoginPress={() => {
+          modal.openModal("LoginModal", {
+            onLoginPress: () => {
+              navigation.navigate("Connect")
+            },
+          })
+        }}
+        onLogoutPress={() => {
+          authenticationStore.logout()
+          navigation.navigate("Connect")
+        }}
+      />
+      <AddFileButton
+        onDocumentSelect={async (documents) => {
+          await onUploadFile(documents)
+        }}
+      />
+      <LibraryViewModeButton mode={viewMode} onToggle={onToggleViewMode} />
       <Menu
         placement="bottom"
         closeOnSelect={true}
@@ -52,9 +67,9 @@ export function LibraryActions({
           onPress={() => {
             modal.openModal("JobQueueModal", {})
           }}
-      >
-        <MenuItemLabel>{translate("jobQueue.title")}</MenuItemLabel>
-      </MenuItem>
+        >
+          <MenuItemLabel>{translate("jobQueue.title")}</MenuItemLabel>
+        </MenuItem>
         <MenuItem
           key="reading-stats"
           textValue="reading-stats"
@@ -65,26 +80,6 @@ export function LibraryActions({
           <MenuItemLabel>{translate("readingStats.title")}</MenuItemLabel>
         </MenuItem>
       </Menu>
-      <AuthButton
-        mode={authenticationStore.isAuthenticated ? "logout" : "login"}
-        onLoginPress={() => {
-          modal.openModal("LoginModal", {
-            onLoginPress: () => {
-              navigation.navigate("Connect")
-            },
-          })
-        }}
-        onLogoutPress={() => {
-          authenticationStore.logout()
-          navigation.navigate("Connect")
-        }}
-      />
-      <AddFileButton
-        onDocumentSelect={async (documents) => {
-          await onUploadFile(documents)
-        }}
-      />
-      <LibraryViewModeButton mode={viewMode} onToggle={onToggleViewMode} />
     </>
   )
 }
