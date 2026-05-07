@@ -1,4 +1,5 @@
 import { HStack, IconButton, Text } from "@/components"
+import { useConvergence } from "@/hooks/useConvergence"
 import { translate } from "@/i18n"
 import { usePalette } from "@/theme"
 
@@ -24,6 +25,11 @@ export function SelectionActionBar({
   toggleVisibleSelectionDisabled = false,
 }: SelectionActionBarProps) {
   const palette = usePalette()
+  const convergence = useConvergence()
+
+  const toggeleText = allVisibleSelected
+    ? "multiSelectBar.clearVisibleSelection"
+    : "multiSelectBar.selectAllVisible"
 
   return (
     <HStack
@@ -39,11 +45,7 @@ export function SelectionActionBar({
         <IconButton
           name={allVisibleSelected ? "checkbox-multiple-blank-outline" : "checkbox-multiple-marked"}
           iconSize="md-"
-          labelTx={
-            allVisibleSelected
-              ? "multiSelectBar.clearVisibleSelection"
-              : "multiSelectBar.selectAllVisible"
-          }
+          labelTx={convergence.isLarge ? toggeleText : undefined}
           onPress={onToggleVisibleSelection}
           disabled={toggleVisibleSelectionDisabled}
           testID="selection-action-bar-toggle-visible"
@@ -51,14 +53,14 @@ export function SelectionActionBar({
         <IconButton
           name="book-edit"
           iconSize="md-"
-          labelTx="multiSelectBar.bulkEdit"
+          labelTx={convergence.isLarge ? "multiSelectBar.bulkEdit" : undefined}
           onPress={onBulkEdit}
           testID="selection-action-bar-bulk-edit"
         />
         <IconButton
           name="download"
           iconSize="md-"
-          labelTx="multiSelectBar.bulkDownload"
+          labelTx={convergence.isLarge ? "multiSelectBar.bulkDownload" : undefined}
           onPress={onBulkDownload}
           testID="selection-action-bar-bulk-download"
         />
@@ -66,7 +68,7 @@ export function SelectionActionBar({
           <IconButton
             name="trash-can"
             iconSize="md-"
-            labelTx="multiSelectBar.bulkDelete"
+            labelTx={convergence.isLarge ? "multiSelectBar.bulkDelete" : undefined}
             onPress={onBulkDelete}
             testID="selection-action-bar-bulk-delete"
           />
@@ -74,7 +76,7 @@ export function SelectionActionBar({
         <IconButton
           name="close"
           iconSize="md-"
-          labelTx="multiSelectBar.clearSelection"
+          labelTx={convergence.isLarge ? "multiSelectBar.clearSelection" : undefined}
           onPress={onClearSelection}
           testID="selection-action-bar-clear"
         />
