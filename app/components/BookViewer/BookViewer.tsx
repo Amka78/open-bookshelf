@@ -17,7 +17,7 @@ import { goToNextPage, goToPreviousPage } from "@/utils/pageTurnning"
 import { useNavigation } from "@react-navigation/native"
 import { FlashList, type FlashListRef, type ListRenderItem } from "@shopify/flash-list"
 import React from "react"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   type FlexAlignType,
   type NativeScrollEvent,
@@ -29,9 +29,10 @@ import {
   useWindowDimensions,
 } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { mapBookViewerIndex, resolveBookViewerInversionStrategy } from "./bookViewerInversion"
 import { resolveVisibleCoverTargets } from "./coverSelection"
 import { SINGLE_PAGE_TAP_MOVE_THRESHOLD, resolveSinglePageGesture } from "./pdfSinglePageGestures"
-import { type FacingPageType, useBookViewerState } from "./useBookViewerState"
+import { type FacingPageType, type FlashListHandle, useBookViewerState } from "./useBookViewerState"
 
 const runOnNextFrame = (callback: () => void) => {
   if (typeof requestAnimationFrame === "function") {
@@ -128,8 +129,6 @@ export function BookViewer(props: BookViewerProps) {
   const [showAnnotationPanel, setShowAnnotationPanel] = useState(false)
   const [jumpRequest, setJumpRequest] = useState<{ page: number; id: number } | null>(null)
 
-  const flashListRef = useRef<FlashListRef<number | FacingPageType>>(null)
-
   const dimension = useWindowDimensions()
   const insets = useSafeAreaInsets()
   const listViewportWidth = Math.max(1, dimension.width - insets.left - insets.right)
@@ -146,8 +145,29 @@ export function BookViewer(props: BookViewerProps) {
   const flashListAxisKey = isHorizontalReading ? "horizontal" : "vertical"
   const isInverted =
     viewerHook.pageDirection === "left" && viewerHook.readingStyle !== "verticalScroll"
-  // Android: FlashList の inverted が動作しないため scaleX: -1 で代替する
-  const useTransformInvert = isInverted && Platform.OS === "android"
+  const { useReversedData, useTransformInvert } = resolveBookViewerInversionStrategy({
+    isInverted,
+    isSinglePagePdfMode,
+    platformOS: Platform.OS,
+  })
+  const flashListInstanceRef = useRef<FlashListRef<number | FacingPageType>>(null)
+  const flashListDisplayStateRef = useRef({ itemCount: 0, useReversedData: false })
+  const flashListRef = useRef<FlashListHandle>({
+    scrollToIndex: (params) => {
+      const mappedIndex = mapBookViewerIndex(
+        params.index,
+        flashListDisplayStateRef.current.itemCount,
+        flashListDisplayStateRef.current.useReversedData,
+      )
+
+      return (
+        flashListInstanceRef.current?.scrollToIndex({
+          ...params,
+          index: mappedIndex,
+        }) ?? Promise.resolve()
+      )
+    },
+  })
   const {
     pages,
     data,
@@ -171,6 +191,14 @@ export function BookViewer(props: BookViewerProps) {
     initialAutoPageTurnIntervalMs: settingStore.autoPageTurnIntervalMs,
     flashListRef,
   })
+  const displayData: typeof data = useMemo(() => {
+    if (!useReversedData) {
+      return data
+    }
+
+    return [...data].reverse() as typeof data
+  }, [data, useReversedData])
+  flashListDisplayStateRef.current = { itemCount: displayData.length, useReversedData }
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: jumpRequest.id is the only meaningful change trigger; full object would cause infinite loops
   useEffect(() => {
@@ -367,9 +395,9 @@ export function BookViewer(props: BookViewerProps) {
 
   const renderItem: ListRenderItem<number | FacingPageType> = useCallback(
     ({ item, index }) => {
-      return renderItemContent(item, index)
+      return renderItemContent(item, mapBookViewerIndex(index, displayData.length, useReversedData))
     },
-    [renderItemContent],
+    [displayData.length, renderItemContent, useReversedData],
   )
 
   const estimatedItemSize =
@@ -386,7 +414,7 @@ export function BookViewer(props: BookViewerProps) {
     : undefined
   const listContainerStyle = useTransformInvert ? styles.listInverted : styles.list
   const invertedProps = {
-    inverted: isInverted && !useTransformInvert,
+    inverted: isInverted && !useTransformInvert && !useReversedData,
   } as unknown as Record<string, boolean>
   const latestHorizontalIndexRef = useRef(scrollIndex)
   const currentRenderedIndex = Math.max(0, Math.min(scrollIndex, Math.max(data.length - 1, 0)))
@@ -628,13 +656,13 @@ export function BookViewer(props: BookViewerProps) {
             <Box style={listContainerStyle}>
               <FlashListCompat
                 key={flashListAxisKey}
-                data={data}
+                data={displayData}
                 extraData={flashListLayoutKey}
                 renderItem={renderItem}
                 horizontal={isHorizontalReading}
                 pagingEnabled={isHorizontalReading}
                 {...invertedProps}
-                ref={flashListRef}
+                ref={flashListInstanceRef}
                 keyExtractor={(_, index) => `${index}`}
                 onViewableItemsChanged={isHorizontalReading ? undefined : onViewableItemsChanged}
                 onMomentumScrollEnd={isHorizontalReading ? onListScrollSettled : undefined}
