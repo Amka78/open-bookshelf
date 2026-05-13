@@ -3,7 +3,7 @@ import { translate } from "@/i18n"
 import { useStores } from "@/models"
 import type { MetadataSnapshotIn } from "@/models/calibre"
 import type { AppStackParamList, ApppNavigationProp } from "@/navigators/types"
-import { type OcrFieldEntry, recognizeCover } from "@/services/ocr"
+import { ExpoGoOcrUnavailableError, type OcrFieldEntry, recognizeCover } from "@/services/ocr"
 import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { getSnapshot } from "mobx-state-tree"
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
@@ -117,7 +117,9 @@ export function useBookOcrReviewController({
         if (!hasInitializedOcrValues.current) {
           const mergedValue = mergeDetectedMetadata(bookMetaDataSnapshot, result.mappedMetadata)
           const normalizedMergedValue =
-            mergedValue && hasLangNames ? toLanguageNamesForDisplay(mergedValue, langNames) : mergedValue
+            mergedValue && hasLangNames
+              ? toLanguageNamesForDisplay(mergedValue, langNames)
+              : mergedValue
           if (normalizedMergedValue) {
             form.reset(normalizedMergedValue)
           }
@@ -131,7 +133,11 @@ export function useBookOcrReviewController({
         setOcrState({
           status: "error",
           errorMessage:
-            error instanceof Error ? error.message : translate("bookOcrReviewScreen.ocrFailed"),
+            error instanceof ExpoGoOcrUnavailableError
+              ? translate("bookOcrReviewScreen.ocrUnavailableInExpoGo")
+              : error instanceof Error
+                ? error.message
+                : translate("bookOcrReviewScreen.ocrFailed"),
         })
       }
     }
@@ -164,7 +170,9 @@ export function useBookOcrReviewController({
     }
 
     if (entry.field === "languages") {
-      const displayLanguages = (entry.value as string[]).map((language) => langNames[language] ?? language)
+      const displayLanguages = (entry.value as string[]).map(
+        (language) => langNames[language] ?? language,
+      )
       form.setValue("languages", displayLanguages as MetadataFormValues["languages"], {
         shouldDirty: true,
       })

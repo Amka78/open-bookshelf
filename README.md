@@ -128,10 +128,11 @@ bun run storybook-native
 ## Available Scripts
 
 ```
-"start": "bunx expo start --dev-client"           // Start development client
+"start": "USE_EXPO_GO=true bunx expo start"       // Start Expo Go
+"start:dev-client": "bunx expo start --dev-client" // Start Expo dev client
 "expo:web": "bunx expo start --web"               // Start web development
-"expo:ios": "bunx expo start --ios"               // Start iOS simulator
-"expo:android": "bunx expo start --android"       // Start Android emulator
+"expo:ios": "USE_EXPO_GO=true bunx expo start --ios" // Start iOS simulator in Expo Go
+"expo:android": "USE_EXPO_GO=true bunx expo start --android" // Start Android emulator in Expo Go
 "build:web": "bunx expo export --platform web --output-dir dist"  // Build web for production
 "test": "jest"                                   // Run unit tests
 "test:watch": "jest --watch"                     // Run tests in watch mode
@@ -265,7 +266,7 @@ bun run storybook:web
 ### Console Debugging
 
 ```bash
-# Start with debugging enabled
+# Start Expo Go with debugging enabled
 bun run start -- --verbose
 ```
 
@@ -310,7 +311,7 @@ bun install
 ### Metro Cache Issues
 
 ```bash
-# Clear Metro cache
+# Clear Metro cache for Expo Go
 bun run start -- --reset-cache
 ```
 

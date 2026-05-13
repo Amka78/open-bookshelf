@@ -40,6 +40,8 @@ const ja: Translations = {
     reviewAndEdit: "内容を確認して編集",
     applyDetectedValue: "この値を適用",
     ocrFailed: "表紙画像からテキストを読み取れませんでした。",
+    ocrUnavailableInExpoGo:
+      "表紙OCRは Expo Go では利用できません。OCR を使う場合は development build を使用してください。",
   },
   identifierField: {
     typeLabel: "種別",

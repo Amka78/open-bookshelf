@@ -3,6 +3,7 @@ import { prepareOcrImage } from "./prepareOcrImage"
 import { runOcrOnPreparedImage } from "./runOcrOnPreparedImage"
 import { inferOcrLanguages } from "./inferOcrLanguages"
 
+export { ExpoGoOcrUnavailableError } from "./errors"
 export type { OcrFieldEntry, OcrMappedField, OcrMappedMetadata, OcrResult } from "./ocr.types"
 
 export async function recognizeCover(params: { imageUrl: string; languages: string[] }) {

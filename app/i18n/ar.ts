@@ -231,6 +231,8 @@ const ar: Translations = {
     reviewAndEdit: "راجع البيانات وعدّلها",
     applyDetectedValue: "تطبيق القيمة المكتشفة",
     ocrFailed: "تعذر قراءة النص من صورة الغلاف.",
+    ocrUnavailableInExpoGo:
+      "ميزة OCR للغلاف غير متاحة في Expo Go. استخدم development build إذا كنت بحاجة إلى OCR.",
   },
   userPreferences: {
     title: "تفضيلات المستخدم",

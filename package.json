@@ -3,8 +3,10 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "bunx expo start --dev-client",
-    "start:debug": "EXPO_PUBLIC_LOG_LEVEL=debug bunx expo start --dev-client",
+    "start": "USE_EXPO_GO=true bunx expo start",
+    "start:debug": "EXPO_PUBLIC_LOG_LEVEL=debug USE_EXPO_GO=true bunx expo start",
+    "start:dev-client": "bunx expo start --dev-client",
+    "start:debug:dev-client": "EXPO_PUBLIC_LOG_LEVEL=debug bunx expo start --dev-client",
     "ios": "bunx react-native run-ios",
     "android": "bunx react-native run-android --active-arch-only",
     "test:detox": "detox test -c ios.sim.debug",

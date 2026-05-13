@@ -294,6 +294,8 @@ const ko: Translations = {
     reviewAndEdit: "검토 후 편집",
     applyDetectedValue: "감지된 값 적용",
     ocrFailed: "표지 이미지에서 텍스트를 읽지 못했습니다.",
+    ocrUnavailableInExpoGo:
+      "표지 OCR은 Expo Go에서 사용할 수 없습니다. OCR이 필요하면 development build를 사용하세요.",
   },
   userPreferences: {
     title: "사용자 환경설정",

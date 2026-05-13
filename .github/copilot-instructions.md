@@ -7,7 +7,8 @@ Open BookShelf is a cross-platform digital book library manager built with React
 ## Commands
 
 ```bash
-bun run start              # Start Expo dev client
+bun run start              # Start Expo Go
+bun run start:dev-client   # Start Expo dev client
 bun run expo:ios           # iOS simulator
 bun run expo:android       # Android emulator
 bun run expo:web           # Web dev server

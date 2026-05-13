@@ -19,6 +19,7 @@ const useStoresMock = jest.fn()
 const useNavigationMock = jest.fn()
 const useConvergenceMock = jest.fn()
 const recognizeCoverMock = jest.fn()
+class MockExpoGoOcrUnavailableError extends Error {}
 const mockUpdate = jest.fn().mockResolvedValue(true)
 const rootPropsSpy = jest.fn()
 const bodyPropsSpy = jest.fn()
@@ -38,6 +39,7 @@ mock.module("@/hooks/useConvergence", () => ({
 }))
 
 mock.module("@/services/ocr", () => ({
+  ExpoGoOcrUnavailableError: MockExpoGoOcrUnavailableError,
   recognizeCover: recognizeCoverMock,
 }))
 

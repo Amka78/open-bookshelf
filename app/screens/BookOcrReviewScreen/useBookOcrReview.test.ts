@@ -19,6 +19,7 @@ const useNavigationMock = jest.fn()
 const useRouteMock = jest.fn()
 const useConvergenceMock = jest.fn()
 const recognizeCoverMock = jest.fn()
+class MockExpoGoOcrUnavailableError extends Error {}
 
 mock.module("@/models", () => ({
   useStores: useStoresMock,
@@ -35,6 +36,7 @@ mock.module("@/hooks/useConvergence", () => ({
 }))
 
 mock.module("@/services/ocr", () => ({
+  ExpoGoOcrUnavailableError: MockExpoGoOcrUnavailableError,
   recognizeCover: recognizeCoverMock,
 }))
 
@@ -179,5 +181,21 @@ describe("useBookOcrReview", () => {
       expect.any(Array),
     )
     expect(mockGoBack).toHaveBeenCalledTimes(1)
+  })
+
+  test("Expo Go では未対応 OCR エラーをローカライズして表示する", async () => {
+    recognizeCoverMock.mockRejectedValue(new MockExpoGoOcrUnavailableError())
+
+    const { result } = renderHook(() => useBookOcrReview())
+
+    await waitFor(() => {
+      expect(result.current.ocrState).toEqual({
+        status: "error",
+        errorMessage: "bookOcrReviewScreen.ocrUnavailableInExpoGo",
+      })
+    })
+
+    expect(result.current.recognizedText).toBe("")
+    expect(result.current.fieldSummaries).toEqual([])
   })
 })
