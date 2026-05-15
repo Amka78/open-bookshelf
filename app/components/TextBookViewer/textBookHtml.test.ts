@@ -63,6 +63,78 @@ describe("textBookHtml", () => {
     expect(html).toContain("column-width")
   })
 
+  test("does not block paginated spine wrappers from splitting across columns", () => {
+    const html = buildTextBookHtmlDocument({
+      documentData: {
+        tree: {
+          n: "html",
+          c: [
+            {
+              n: "body",
+              c: [{ n: "div", c: [{ n: "p", c: ["chapter wrapper"] }] }],
+            },
+          ],
+        },
+        ns_map: [],
+      },
+      documentKey: "doc-key-wrapper",
+      annotations: [],
+      appearance: {
+        themeMode: "light",
+        textColor: "#111318",
+        linkColor: "#111318",
+        fallbackBackgroundColor: "#ffffff",
+        viewerFontSizePt: 16,
+        viewerTheme: "default",
+      },
+      readingStyle: "singlePage",
+      pageDirection: "left",
+      initialPage: 0,
+      leadingBlankPage: false,
+    })
+
+    expect(html).not.toContain("body.obs-paginated > *")
+    expect(html).toContain("body.obs-paginated img,")
+    expect(html).toContain("body.obs-paginated table,")
+    expect(html).toContain("body.obs-paginated pre {")
+  })
+
+  test("derives root writing-mode from wrapper elements before paginated layout", () => {
+    const html = buildTextBookHtmlDocument({
+      documentData: {
+        tree: {
+          n: "html",
+          c: [
+            {
+              n: "body",
+              c: [{ n: "div", a: [["class", "chapter"]], c: [{ n: "p", c: ["縦書き"] }] }],
+            },
+          ],
+        },
+        ns_map: [],
+      },
+      documentKey: "doc-key-writing-mode",
+      annotations: [],
+      appearance: {
+        themeMode: "light",
+        textColor: "#111318",
+        linkColor: "#111318",
+        fallbackBackgroundColor: "#ffffff",
+        viewerFontSizePt: 16,
+        viewerTheme: "default",
+      },
+      readingStyle: "singlePage",
+      pageDirection: "left",
+      initialPage: 0,
+      leadingBlankPage: false,
+    })
+
+    expect(html).toContain("const applyDerivedRootWritingMode = () => {")
+    expect(html).toContain('document.body.style.setProperty("writing-mode", candidateState.writingMode, "important")')
+    expect(html).toContain('document.body.style.setProperty("direction", candidateStyle.direction, "important")')
+    expect(html).toContain("applyDerivedRootWritingMode()")
+  })
+
   test("handleCommand calls doLayout instead of applyLayout to avoid stale pagination notification", () => {
     const html = buildTextBookHtmlDocument({
       documentData: {
@@ -165,4 +237,3 @@ describe("textBookHtml", () => {
     expect(html).toContain("getInlineExtent(isVerticalWriting)")
   })
 })
-

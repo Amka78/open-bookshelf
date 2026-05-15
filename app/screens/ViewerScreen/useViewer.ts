@@ -157,7 +157,7 @@ export function useViewer() {
     let cleanup = () => {}
 
     if (viewerReady) {
-      return
+      return cleanup
     }
 
     const hasLocalProgress = !!(history && history.currentPage > 0)

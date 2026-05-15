@@ -9,6 +9,30 @@ const path = require("path")
 const USE_EXPO_GO = process.env.USE_EXPO_GO === "true"
 
 const axiosBrowserEntry = path.resolve(__dirname, "node_modules/axios/dist/browser/axios.cjs")
+const EXPO_VARIANT_SOURCE_EXTS = new Set([".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"])
+
+function isExistingFile(filePath) {
+  return fs.existsSync(filePath) && fs.lstatSync(filePath).isFile()
+}
+
+function getExpoVariantPath(resolvedPath) {
+  if (!path.isAbsolute(resolvedPath)) {
+    return null
+  }
+
+  const ext = path.extname(resolvedPath)
+  if (!EXPO_VARIANT_SOURCE_EXTS.has(ext)) {
+    return null
+  }
+
+  const base = resolvedPath.slice(0, -ext.length)
+  // 既に .expo. バリアント自身でなければ確認する（無限ループ防止）
+  if (base.endsWith(".expo")) {
+    return null
+  }
+
+  return `${base}.expo${ext}`
+}
 
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(__dirname)
@@ -65,14 +89,9 @@ if (USE_EXPO_GO) {
     // sourceFile に解決された場合のみ .expo. バリアントを探す
     if (resolved && resolved.type === "sourceFile") {
       const resolvedPath = resolved.filePath
-      const ext = path.extname(resolvedPath)
-      const base = resolvedPath.slice(0, -ext.length)
-      // 既に .expo. バリアント自身でなければ確認する（無限ループ防止）
-      if (!base.endsWith(".expo")) {
-        const expoVariant = `${base}.expo${ext}`
-        if (fs.existsSync(expoVariant)) {
-          return { type: "sourceFile", filePath: expoVariant }
-        }
+      const expoVariant = getExpoVariantPath(resolvedPath)
+      if (expoVariant && isExistingFile(expoVariant)) {
+        return { type: "sourceFile", filePath: expoVariant }
       }
     }
 
@@ -81,3 +100,4 @@ if (USE_EXPO_GO) {
 }
 
 module.exports = config
+module.exports.__internals = { getExpoVariantPath, isExistingFile }

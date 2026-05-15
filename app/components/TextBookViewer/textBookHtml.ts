@@ -93,7 +93,13 @@ export const buildTextBookHtmlDocument = ({
         height: 100vh !important;
         max-height: 100vh !important;
       }
-      body.obs-paginated > * {
+      body.obs-paginated img,
+      body.obs-paginated svg,
+      body.obs-paginated video,
+      body.obs-paginated canvas,
+      body.obs-paginated iframe,
+      body.obs-paginated table,
+      body.obs-paginated pre {
         break-inside: avoid;
       }
       body.obs-dark a,
@@ -274,30 +280,109 @@ export const buildTextBookHtmlDocument = ({
           return false
         }
 
-        const normalizeFirstColumnElements = () => {
+        const getPrimaryLayoutElements = () => {
           const bodyChildren = Array.from(document.querySelectorAll("body > *")).filter(
             (element) => !element.matches(helperSelector),
           )
+          const primary = bodyChildren[0] ?? null
+          const nestedPrimary =
+            primary && primary.tagName.toLowerCase() === "div" && !hasStartText(primary)
+              ? firstElementChild(primary)
+              : null
+          return { bodyChildren, nestedPrimary, primary }
+        }
+
+        const getWritingModeState = (writingMode, direction) => {
+          const normalizedWritingMode = String(writingMode || "").trim().toLowerCase()
+          const verticalRl =
+            normalizedWritingMode === "vertical-rl" ||
+            normalizedWritingMode === "sideways-rl" ||
+            normalizedWritingMode === "tb-rl"
+          const verticalLr =
+            normalizedWritingMode === "vertical-lr" ||
+            normalizedWritingMode === "sideways-lr" ||
+            normalizedWritingMode === "tb-lr"
+          const isVerticalWriting = verticalRl || verticalLr
+          const rtl = verticalRl || String(direction || "").trim().toLowerCase() === "rtl"
+
+          return {
+            isVerticalWriting,
+            ltr: verticalLr || !rtl,
+            rtl,
+            writingMode: normalizedWritingMode,
+          }
+        }
+
+        const applyDerivedRootWritingMode = () => {
+          const computedBodyStyle = window.getComputedStyle(document.body)
+          const computedHtmlStyle = window.getComputedStyle(document.documentElement)
+          const bodyState = getWritingModeState(
+            computedBodyStyle.getPropertyValue("writing-mode") || computedBodyStyle.writingMode,
+            computedBodyStyle.direction,
+          )
+          const htmlState = getWritingModeState(
+            computedHtmlStyle.getPropertyValue("writing-mode") || computedHtmlStyle.writingMode,
+            computedHtmlStyle.direction,
+          )
+
+          if (bodyState.isVerticalWriting || htmlState.isVerticalWriting || computedBodyStyle.direction === "rtl") {
+            return
+          }
+
+          const { nestedPrimary, primary } = getPrimaryLayoutElements()
+          const candidates = [primary, nestedPrimary].filter((value) => value instanceof Element)
+
+          for (const candidate of candidates) {
+            const candidateStyle = window.getComputedStyle(candidate)
+            const candidateState = getWritingModeState(
+              candidateStyle.getPropertyValue("writing-mode") || candidateStyle.writingMode,
+              candidateStyle.direction,
+            )
+
+            if (!candidateState.isVerticalWriting && candidateStyle.direction !== "rtl") {
+              continue
+            }
+
+            if (candidateState.writingMode) {
+              document.body.style.setProperty("writing-mode", candidateState.writingMode, "important")
+              document.body.style.setProperty(
+                "-webkit-writing-mode",
+                candidateState.writingMode,
+                "important",
+              )
+            }
+            if (candidateStyle.direction) {
+              document.body.style.setProperty("direction", candidateStyle.direction, "important")
+            }
+            return
+          }
+        }
+
+        const normalizeFirstColumnElements = () => {
+          const { bodyChildren, nestedPrimary, primary } = getPrimaryLayoutElements()
 
           if (bodyChildren.length === 1) {
             bodyChildren[0].style.setProperty("height", "auto", "important")
             bodyChildren[0].style.setProperty("min-height", "0", "important")
             bodyChildren[0].style.setProperty("max-height", "none", "important")
+            bodyChildren[0].style.setProperty("break-inside", "auto", "important")
+            bodyChildren[0].style.setProperty("overflow", "visible", "important")
           }
 
-          const first = firstElementChild(document.body)
+          const first = primary
           if (!first || first.matches(helperSelector)) {
             return
           }
 
           first.style.setProperty("break-before", "avoid", "important")
+          first.style.setProperty("break-inside", "auto", "important")
           if (first.tagName.toLowerCase() !== "div") {
             return
           }
 
-          const nestedFirst = firstElementChild(first)
-          if (nestedFirst && !hasStartText(first)) {
-            nestedFirst.style.setProperty("break-before", "avoid", "important")
+          if (nestedPrimary) {
+            nestedPrimary.style.setProperty("break-before", "avoid", "important")
+            nestedPrimary.style.setProperty("break-inside", "auto", "important")
           }
         }
 
@@ -650,6 +735,7 @@ export const buildTextBookHtmlDocument = ({
         const doLayout = () => {
           const spreadPageCount = getSpreadPageCount()
           const isPaginated = viewerState.readingStyle !== "verticalScroll"
+          applyDerivedRootWritingMode()
           const { isVerticalWriting, rtl } = getLayoutDirectionState()
           const viewportWidth = Math.max(1, window.innerWidth || 1)
           const viewportHeight = Math.max(1, window.innerHeight || 1)

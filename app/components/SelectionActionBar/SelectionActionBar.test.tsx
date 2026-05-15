@@ -41,6 +41,12 @@ mock.module("@/theme", () => ({
   }),
 }))
 
+mock.module("@/hooks/useConvergence", () => ({
+  useConvergence: () => ({
+    isLarge: true,
+  }),
+}))
+
 const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 
