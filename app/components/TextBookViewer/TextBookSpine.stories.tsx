@@ -6,6 +6,7 @@ import {
   STORY_SPINE_KEY,
   playNavigateToSecondPage,
   playPaginationReported,
+  playVerticalWritingPaginationReported,
 } from "./textBookSpineStoryPlay"
 
 const LONG_PARAGRAPH =
@@ -27,6 +28,44 @@ const sampleHtml = buildTextBookHtmlDocument({
     tree: {
       n: "html",
       c: [{ n: "body", c: makeParagraphNodes(15) }],
+    },
+    ns_map: [],
+  },
+  documentKey: STORY_SPINE_KEY,
+  annotations: [],
+  appearance: {
+    themeMode: "light",
+    textColor: "#111318",
+    linkColor: "#0066cc",
+    fallbackBackgroundColor: "#ffffff",
+    viewerFontSizePt: 16,
+    viewerTheme: "default",
+  },
+  readingStyle: "singlePage",
+  pageDirection: "left",
+  initialPage: 0,
+  leadingBlankPage: false,
+})
+
+const verticalWritingHtml = buildTextBookHtmlDocument({
+  documentData: {
+    tree: {
+      n: "html",
+      c: [
+        {
+          n: "head",
+          c: [
+            {
+              n: "style",
+              c: [".chapter { writing-mode: vertical-rl; height: 100%; }"],
+            },
+          ],
+        },
+        {
+          n: "body",
+          c: [{ n: "div", a: [["class", "chapter"]], c: makeParagraphNodes(12) }],
+        },
+      ],
     },
     ns_map: [],
   },
@@ -92,4 +131,12 @@ export const NavigateToSecondPage: StoryProps = {
     currentPage: 1,
   },
   play: playNavigateToSecondPage,
+}
+
+export const VerticalWritingSpine: StoryProps = {
+  args: {
+    ...defaultArgs,
+    sourceHtml: verticalWritingHtml,
+  },
+  play: playVerticalWritingPaginationReported,
 }

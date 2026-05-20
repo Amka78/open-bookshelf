@@ -64,3 +64,23 @@ export async function playNavigateToSecondPage({
 
   await new Promise((r) => setTimeout(r, 30))
 }
+
+export async function playVerticalWritingPaginationReported({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  await waitForIframe(canvasElement)
+
+  window.postMessage(
+    JSON.stringify({
+      type: textBookViewerPaginationMessageType,
+      key: STORY_SPINE_KEY,
+      currentPage: 0,
+      totalPages: 4,
+    }),
+    "*",
+  )
+
+  await new Promise((r) => setTimeout(r, 30))
+}

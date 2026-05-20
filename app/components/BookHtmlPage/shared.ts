@@ -441,12 +441,14 @@ const fetchBookFileResponse = async (props: BookHtmlPageProps, path: string) => 
   })
 
   if (!response.ok) {
-    logger.error("Failed to fetch book resource", {
+    const message = `Failed to fetch book resource: ${normalizedPath} (${response.status})`
+    logger.error(message, {
       path,
       normalizedPath,
       resourceUrl,
       status: response.status,
     })
+    throw new Error(message)
   }
 
   logger.debug("Fetched book resource", {
@@ -509,11 +511,21 @@ const rewriteCssReference = async (
     return undefined
   }
 
-  const loadedResource = await loadResolvedResource(resolvedCandidates, (path) => {
-    return asStylesheet || /\.css$/i.test(stripHashAndQuery(path))
-      ? loadStylesheetDataUrl(props, path, stylesheetStack)
-      : loadBinaryResourceDataUrl(props, path)
-  })
+  let loadedResource: Awaited<ReturnType<typeof loadResolvedResource>>
+  try {
+    loadedResource = await loadResolvedResource(resolvedCandidates, (path) => {
+      return asStylesheet || /\.css$/i.test(stripHashAndQuery(path))
+        ? loadStylesheetDataUrl(props, path, stylesheetStack)
+        : loadBinaryResourceDataUrl(props, path)
+    })
+  } catch (error) {
+    logger.error("Failed to inline CSS resource", {
+      currentPath,
+      path: unquotedValue,
+      error,
+    })
+    return undefined
+  }
 
   return appendFragment(loadedResource.dataUrl, loadedResource.fragment)
 }
@@ -686,7 +698,7 @@ const inlineSerializedNodeResources = async (
       continue
     }
 
-    let inlinedUrl: string
+    let inlinedUrl: string | undefined
     let inlinedFragment: string | undefined
     try {
       if (tagName === "link" && attrName === "href") {
@@ -712,7 +724,9 @@ const inlineSerializedNodeResources = async (
       logger.error("Failed to inline resource", { path: attrValue, tagName, attrName, error })
     }
 
-    attribute[1] = appendFragment(inlinedUrl, inlinedFragment)
+    if (inlinedUrl) {
+      attribute[1] = appendFragment(inlinedUrl, inlinedFragment)
+    }
   }
 
   if (tagName === "style" && typeof node.x === "string") {

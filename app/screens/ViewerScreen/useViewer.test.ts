@@ -161,6 +161,7 @@ describe("useViewer", () => {
     id: 1,
     path: ["page1.png", "page2.png", "page3.png", "page4.png", "page5.png"],
     hash: 123,
+    pageProgressionDirection: null as "rtl" | "ltr" | null,
     metaData: {
       selectedFormat: "pdf",
       size: 100,
@@ -212,6 +213,8 @@ describe("useViewer", () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockSelectedBook.pageProgressionDirection = null
+    mockSelectedLibrary.clientSetting = [mockClientSetting]
     useStoresMock.mockReturnValue({
       calibreRootStore: mockCalibreRootStore,
     })
@@ -293,6 +296,15 @@ describe("useViewer", () => {
     const { result } = renderHook(() => useViewer())
 
     expect(result.current.pageDirection).toBe("left")
+  })
+
+  test("uses manifest page progression direction when no client setting exists", () => {
+    mockSelectedBook.pageProgressionDirection = "rtl"
+    mockSelectedLibrary.clientSetting = []
+
+    const { result } = renderHook(() => useViewer())
+
+    expect(result.current.pageDirection).toBe("right")
   })
 
   test("onManageMenu function exists", () => {

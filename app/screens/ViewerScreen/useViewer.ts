@@ -70,6 +70,10 @@ const cancelScheduledFrame = (id: number) => {
   clearTimeout(id)
 }
 
+const getDefaultPageDirection = (pageProgressionDirection: "rtl" | "ltr" | null | undefined) => {
+  return pageProgressionDirection === "rtl" ? "right" : "left"
+}
+
 export function useViewer() {
   const { calibreRootStore } = useStores()
   const modal = useElectrobunModal()
@@ -247,12 +251,13 @@ export function useViewer() {
     : undefined
 
   if (selectedBook && !tempClientSetting) {
+    const defaultPageDirection = getDefaultPageDirection(selectedBook.pageProgressionDirection)
     tempClientSetting = ClientSettingModel.create({
       id: selectedBook.id,
       verticalReadingStyle: "singlePage",
-      verticalPageDirection: "left",
+      verticalPageDirection: defaultPageDirection,
       horizontalReadingStyle: "facingPageWithTitle",
-      horizontalPageDirection: "left",
+      horizontalPageDirection: defaultPageDirection,
     })
   }
 
@@ -260,7 +265,7 @@ export function useViewer() {
     ? orientation === "horizontal"
       ? tempClientSetting.horizontalPageDirection
       : tempClientSetting.verticalPageDirection
-    : "left"
+    : getDefaultPageDirection(selectedBook?.pageProgressionDirection)
 
   const readingStyle = tempClientSetting
     ? orientation === "horizontal"

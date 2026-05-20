@@ -15,6 +15,7 @@ import {
   STORY_SPINE_KEY,
   playNavigateToSecondPage,
   playPaginationReported,
+  playVerticalWritingPaginationReported,
 } from "./textBookSpineStoryPlay"
 
 const describe = localizeTestRegistrar(baseDescribe)
@@ -129,9 +130,13 @@ function setupMocks() {
   })
 }
 
-function renderSpine(
-  onPaginationChange?: (payload: { currentPage: number; totalPages: number }) => void,
-) {
+function renderSpine({
+  onPaginationChange,
+  sourceHtml = sampleHtml,
+}: {
+  onPaginationChange?: (payload: { currentPage: number; totalPages: number }) => void
+  sourceHtml?: string
+} = {}) {
   return render(
     <TextBookSpine
       libraryId=""
@@ -140,7 +145,7 @@ function renderSpine(
       size={0}
       hash={0}
       pagePath={STORY_SPINE_KEY}
-      sourceHtml={sampleHtml}
+      sourceHtml={sourceHtml}
       currentPage={0}
       readingStyle="singlePage"
       pageDirection="left"
@@ -180,7 +185,7 @@ describe("TextBookSpine story play", () => {
 
   test("calls onPaginationChange when pagination message is dispatched", async () => {
     const onPaginationChange = jest.fn()
-    const { container } = renderSpine(onPaginationChange)
+    const { container } = renderSpine({ onPaginationChange })
 
     await act(async () => {
       await playPaginationReported({ canvasElement: container })
@@ -194,7 +199,7 @@ describe("TextBookSpine story play", () => {
 
   test("calls onPaginationChange with currentPage 1 when navigating to second page", async () => {
     const onPaginationChange = jest.fn()
-    const { container } = renderSpine(onPaginationChange)
+    const { container } = renderSpine({ onPaginationChange })
 
     await act(async () => {
       await playNavigateToSecondPage({ canvasElement: container })
@@ -208,7 +213,7 @@ describe("TextBookSpine story play", () => {
 
   test("ignores pagination messages with a different key", async () => {
     const onPaginationChange = jest.fn()
-    renderSpine(onPaginationChange)
+    renderSpine({ onPaginationChange })
 
     await act(async () => {
       window.postMessage(
@@ -224,5 +229,51 @@ describe("TextBookSpine story play", () => {
     })
 
     expect(onPaginationChange).not.toHaveBeenCalled()
+  })
+
+  test("supports the vertical writing story play helper", async () => {
+    const onPaginationChange = jest.fn()
+    const verticalHtml = buildTextBookHtmlDocument({
+      documentData: {
+        tree: {
+          n: "html",
+          c: [
+            {
+              n: "head",
+              c: [{ n: "style", c: [".chapter { writing-mode: vertical-rl; height: 100%; }"] }],
+            },
+            {
+              n: "body",
+              c: [{ n: "div", a: [["class", "chapter"]], c: [{ n: "p", c: ["縦書き"] }] }],
+            },
+          ],
+        },
+        ns_map: [],
+      },
+      documentKey: STORY_SPINE_KEY,
+      annotations: [],
+      appearance: {
+        themeMode: "light",
+        textColor: "#111318",
+        linkColor: "#111318",
+        fallbackBackgroundColor: "#ffffff",
+        viewerFontSizePt: 16,
+        viewerTheme: "default",
+      },
+      readingStyle: "singlePage",
+      pageDirection: "left",
+      initialPage: 0,
+      leadingBlankPage: false,
+    })
+    const { container } = renderSpine({ onPaginationChange, sourceHtml: verticalHtml })
+
+    await act(async () => {
+      await playVerticalWritingPaginationReported({ canvasElement: container })
+    })
+
+    expect(onPaginationChange).toHaveBeenCalledWith({
+      currentPage: 0,
+      totalPages: 4,
+    })
   })
 })

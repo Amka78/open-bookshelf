@@ -84,7 +84,7 @@ export const buildTextBookHtmlDocument = ({
         color: var(--obs-text-color);
       }
       body {
-        overflow: auto;
+        overflow: visible;
         overscroll-behavior: contain;
         word-break: normal;
         overflow-wrap: break-word;
@@ -611,29 +611,81 @@ export const buildTextBookHtmlDocument = ({
 
         const getLayoutDirectionState = () => {
           const computedBodyStyle = window.getComputedStyle(document.body)
-          const computedHtmlStyle = window.getComputedStyle(document.documentElement)
-          const writingMode = (
+          const bodyState = getWritingModeState(
             computedBodyStyle.getPropertyValue("writing-mode") ||
-            computedBodyStyle.writingMode ||
-            computedHtmlStyle.getPropertyValue("writing-mode") ||
-            computedHtmlStyle.writingMode ||
-            ""
-          ).trim().toLowerCase()
-          const verticalRl = writingMode === "vertical-rl"
-          const verticalLr = writingMode === "vertical-lr"
-          const vertical = verticalRl || verticalLr
-          const rtl = verticalRl || computedBodyStyle.direction === "rtl"
-
-          return {
-            isVerticalWriting: vertical,
-            ltr: verticalLr || !rtl,
-            rtl,
-            writingMode,
+            computedBodyStyle.writingMode,
+            computedBodyStyle.direction,
+          )
+          if (bodyState.isVerticalWriting || bodyState.rtl) {
+            return bodyState
           }
+
+          const computedHtmlStyle = window.getComputedStyle(document.documentElement)
+          const htmlState = getWritingModeState(
+            computedHtmlStyle.getPropertyValue("writing-mode") || computedHtmlStyle.writingMode,
+            computedHtmlStyle.direction,
+          )
+          return htmlState.isVerticalWriting || htmlState.rtl ? htmlState : bodyState
+        }
+
+        const getInlineScrollAxis = (isVerticalWriting) => {
+          return isVerticalWriting ? "y" : "x"
+        }
+
+        const getBlockScrollAxis = (isVerticalWriting) => {
+          return isVerticalWriting ? "x" : "y"
+        }
+
+        const getScrollContainer = (axis) => {
+          const computedBodyStyle = window.getComputedStyle(document.body)
+          const overflowValue = axis === "x" ? computedBodyStyle.overflowX : computedBodyStyle.overflowY
+          const bodyIsScrollContainer =
+            (overflowValue === "auto" || overflowValue === "scroll") &&
+            (axis === "x"
+              ? document.body.scrollWidth > document.body.clientWidth + 1
+              : document.body.scrollHeight > document.body.clientHeight + 1)
+
+          if (bodyIsScrollContainer) {
+            return document.body
+          }
+
+          const scrollingElement = document.scrollingElement
+          return scrollingElement instanceof HTMLElement ? scrollingElement : null
+        }
+
+        const getAxisScrollOffset = (axis) => {
+          const scrollContainer = getScrollContainer(axis)
+          if (scrollContainer) {
+            return axis === "x" ? scrollContainer.scrollLeft || 0 : scrollContainer.scrollTop || 0
+          }
+
+          return axis === "x" ? window.scrollX || 0 : window.scrollY || 0
+        }
+
+        const scrollToAxisOffset = (axis, offset) => {
+          const safeOffset = Math.max(0, offset)
+          const scrollContainer = getScrollContainer(axis)
+          const targetLeft = axis === "x" ? safeOffset : 0
+          const targetTop = axis === "y" ? safeOffset : 0
+
+          if (scrollContainer && typeof scrollContainer.scrollTo === "function") {
+            scrollContainer.scrollTo({
+              left: targetLeft,
+              top: targetTop,
+              behavior: "auto",
+            })
+            return
+          }
+
+          window.scrollTo({
+            left: targetLeft,
+            top: targetTop,
+            behavior: "auto",
+          })
         }
 
         const getScrollInlineOffset = () => {
-          return layoutState.isVerticalWriting ? window.scrollY || 0 : window.scrollX || 0
+          return getAxisScrollOffset(getInlineScrollAxis(layoutState.isVerticalWriting))
         }
 
         const getInlineExtent = (isVertical) => {
@@ -648,11 +700,16 @@ export const buildTextBookHtmlDocument = ({
               )
         }
 
-        const getBlockExtent = () => {
-          return Math.max(
-            document.documentElement?.scrollHeight || 0,
-            document.body?.scrollHeight || 0,
-          )
+        const getBlockExtent = (isVertical) => {
+          return isVertical
+            ? Math.max(
+                document.documentElement?.scrollWidth || 0,
+                document.body?.scrollWidth || 0,
+              )
+            : Math.max(
+                document.documentElement?.scrollHeight || 0,
+                document.body?.scrollHeight || 0,
+              )
         }
 
         const computePageMetrics = () => {
@@ -669,7 +726,7 @@ export const buildTextBookHtmlDocument = ({
           )
 
           if (!isPaginated) {
-            const totalPages = Math.max(1, Math.ceil(getBlockExtent() / blockViewportSize))
+            const totalPages = Math.max(1, Math.ceil(getBlockExtent(isVerticalWriting) / blockViewportSize))
             return {
               blockPageSize: blockViewportSize,
               inlinePageSize: inlineViewportSize,
@@ -712,7 +769,10 @@ export const buildTextBookHtmlDocument = ({
 
           return Math.max(
             0,
-            Math.round((window.scrollY || 0) / layoutState.blockPageSize),
+            Math.round(
+              getAxisScrollOffset(getBlockScrollAxis(layoutState.isVerticalWriting)) /
+                layoutState.blockPageSize,
+            ),
           )
         }
 
@@ -822,14 +882,10 @@ export const buildTextBookHtmlDocument = ({
             const internalPage =
               viewerState.leadingBlankPage && safePage > 0 ? safePage + 1 : safePage
             const offset = internalPage * layoutState.inlinePageSize
-            if (layoutState.isVerticalWriting) {
-              window.scrollTo({ top: offset, left: 0, behavior: "auto" })
-            } else {
-              window.scrollTo({ left: offset, top: 0, behavior: "auto" })
-            }
+            scrollToAxisOffset(getInlineScrollAxis(layoutState.isVerticalWriting), offset)
           } else {
             const offset = safePage * layoutState.blockPageSize
-            window.scrollTo({ top: offset, left: 0, behavior: "auto" })
+            scrollToAxisOffset(getBlockScrollAxis(layoutState.isVerticalWriting), offset)
           }
 
           window.setTimeout(notifyPagination, 0)
@@ -1183,6 +1239,7 @@ export const buildTextBookHtmlDocument = ({
           }
 
           window.addEventListener("scroll", schedulePaginationUpdate, { passive: true })
+          document.addEventListener("scroll", schedulePaginationUpdate, true)
           window.addEventListener("resize", schedulePaginationUpdate)
 
           if (window.ResizeObserver) {

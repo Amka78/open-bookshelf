@@ -236,4 +236,62 @@ describe("textBookHtml", () => {
     // computePageMetrics passes fresh isVerticalWriting to getInlineExtent
     expect(html).toContain("getInlineExtent(isVerticalWriting)")
   })
+
+  test("uses the active scroll container when computing and changing paginated position", () => {
+    const html = buildTextBookHtmlDocument({
+      documentData: {
+        tree: { n: "html", c: [{ n: "body", c: [{ n: "p", c: ["hello"] }] }] },
+        ns_map: [],
+      },
+      documentKey: "doc-key-scroll-container",
+      annotations: [],
+      appearance: {
+        themeMode: "light",
+        textColor: "#111318",
+        linkColor: "#111318",
+        fallbackBackgroundColor: "#ffffff",
+        viewerFontSizePt: 16,
+        viewerTheme: "default",
+      },
+      readingStyle: "singlePage",
+      pageDirection: "left",
+      initialPage: 0,
+      leadingBlankPage: false,
+    })
+
+    expect(html).toContain("const getScrollContainer = (axis) => {")
+    expect(html).toContain("const getAxisScrollOffset = (axis) => {")
+    expect(html).toContain("const scrollToAxisOffset = (axis, offset) => {")
+    expect(html).toContain("return getAxisScrollOffset(getInlineScrollAxis(layoutState.isVerticalWriting))")
+    expect(html).toContain('document.addEventListener("scroll", schedulePaginationUpdate, true)')
+  })
+
+  test("reuses getWritingModeState aliases when deriving layout direction and vertical block extent", () => {
+    const html = buildTextBookHtmlDocument({
+      documentData: {
+        tree: { n: "html", c: [{ n: "body", c: [{ n: "p", c: ["縦書き"] }] }] },
+        ns_map: [],
+      },
+      documentKey: "doc-key-layout-direction",
+      annotations: [],
+      appearance: {
+        themeMode: "light",
+        textColor: "#111318",
+        linkColor: "#111318",
+        fallbackBackgroundColor: "#ffffff",
+        viewerFontSizePt: 16,
+        viewerTheme: "default",
+      },
+      readingStyle: "verticalScroll",
+      pageDirection: "left",
+      initialPage: 0,
+      leadingBlankPage: false,
+    })
+
+    expect(html).toContain("const bodyState = getWritingModeState(")
+    expect(html).toContain("return htmlState.isVerticalWriting || htmlState.rtl ? htmlState : bodyState")
+    expect(html).toContain("const getBlockExtent = (isVertical) => {")
+    expect(html).toContain("getBlockExtent(isVerticalWriting)")
+    expect(html).toContain("scrollToAxisOffset(getBlockScrollAxis(layoutState.isVerticalWriting), offset)")
+  })
 })

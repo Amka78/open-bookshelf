@@ -61,6 +61,31 @@ const createResponse = ({
   } as Response
 }
 
+const createBookHtmlProps = (
+  overrides: Partial<{
+    libraryId: string
+    bookId: number
+    format: string
+    size: number
+    hash: number
+    pagePath: string
+    headers: Record<string, string>
+  }> = {},
+) => ({
+  libraryId: "config",
+  bookId: 8315,
+  format: "EPUB",
+  size: 49184264,
+  hash: 17749658580,
+  pagePath: "Text/chapter.xhtml",
+  headers: { Authorization: "Digest page-only" },
+  ...overrides,
+})
+
+const encodeVirtualizedPath = (path: string) => {
+  return Buffer.from(path, "utf8").toString("base64")
+}
+
 beforeAll(async () => {
   ;({ useCalibreHtmlDocument } = await import("./shared"))
 })
@@ -134,5 +159,232 @@ describe("useCalibreHtmlDocument", () => {
     expect(fetchWithAuthMock.mock.calls[0]?.[0]).toContain("Text/chapter.xhtml")
     expect(fetchWithAuthMock.mock.calls[1]?.[0]).toContain("OPS/pages/image029.jpg")
   })
-})
 
+  test("retries stylesheet candidates when the first resource response is not ok", async () => {
+    const encodedStylesheetPath = encodeVirtualizedPath("Styles/book.css")
+
+    fetchWithAuthMock.mockImplementation((url: string) => {
+      if (url.includes("Text/chapter-styles.xhtml")) {
+        return Promise.resolve(
+          createResponse({
+            body: JSON.stringify({
+              ns_map: [],
+              tree: {
+                n: "html",
+                c: [
+                  {
+                    n: "head",
+                    c: [
+                      {
+                        n: "link",
+                        a: [
+                          ["rel", "stylesheet"],
+                          ["href", `../fallback|${encodedStylesheetPath}|`],
+                        ],
+                      },
+                    ],
+                  },
+                  {
+                    n: "body",
+                    c: [{ n: "p", c: ["hello"] }],
+                  },
+                ],
+              },
+            }),
+            contentType: "application/json",
+          }),
+        )
+      }
+
+      if (url.includes("/../Styles/book.css?")) {
+        return Promise.resolve(
+          createResponse({
+            body: "body { writing-mode: vertical-rl; }",
+            contentType: "text/css",
+          }),
+        )
+      }
+
+      if (url.includes("/Styles/book.css?")) {
+        return Promise.resolve(
+          createResponse({
+            body: "missing",
+            contentType: "text/plain",
+            status: 404,
+          }),
+        )
+      }
+
+      throw new Error(`Unexpected URL: ${url}`)
+    })
+
+    const { result } = renderHook(() =>
+      useCalibreHtmlDocument(
+        createBookHtmlProps({ pagePath: "Text/chapter-styles.xhtml", hash: 17749658581 }),
+      ),
+    )
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.error).toBeNull()
+    expect(result.current.html).toContain("data:text/css;charset=utf-8,")
+    expect(result.current.html).toContain("writing-mode%3A%20vertical-rl")
+    expect(fetchWithAuthMock).toHaveBeenCalledTimes(3)
+    expect(fetchWithAuthMock.mock.calls[1]?.[0]).toContain("/Styles/book.css?")
+    expect(fetchWithAuthMock.mock.calls[2]?.[0]).toContain("/../Styles/book.css?")
+  })
+
+  test("keeps an inlined stylesheet when a nested css resource cannot be loaded", async () => {
+    const encodedStylesheetPath = encodeVirtualizedPath("Styles/book-with-font.css")
+
+    fetchWithAuthMock.mockImplementation((url: string) => {
+      if (url.includes("Text/chapter-fonts.xhtml")) {
+        return Promise.resolve(
+          createResponse({
+            body: JSON.stringify({
+              ns_map: [],
+              tree: {
+                n: "html",
+                c: [
+                  {
+                    n: "head",
+                    c: [
+                      {
+                        n: "link",
+                        a: [
+                          ["rel", "stylesheet"],
+                          ["href", `fallback|${encodedStylesheetPath}|`],
+                        ],
+                      },
+                    ],
+                  },
+                  {
+                    n: "body",
+                    c: [{ n: "p", c: ["hello"] }],
+                  },
+                ],
+              },
+            }),
+            contentType: "application/json",
+          }),
+        )
+      }
+
+      if (url.includes("/Styles/book-with-font.css?")) {
+        return Promise.resolve(
+          createResponse({
+            body: '@font-face { font-family: "Missing"; src: url("../Fonts/missing.ttf"); } body { writing-mode: vertical-rl; }',
+            contentType: "text/css",
+          }),
+        )
+      }
+
+      if (url.includes("/Fonts/missing.ttf?")) {
+        return Promise.resolve(
+          createResponse({
+            body: "missing",
+            contentType: "text/plain",
+            status: 404,
+          }),
+        )
+      }
+
+      throw new Error(`Unexpected URL: ${url}`)
+    })
+
+    const { result } = renderHook(() =>
+      useCalibreHtmlDocument(
+        createBookHtmlProps({ pagePath: "Text/chapter-fonts.xhtml", hash: 17749658583 }),
+      ),
+    )
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.error).toBeNull()
+    expect(result.current.html).toContain("data:text/css;charset=utf-8,")
+    expect(result.current.html).toContain("writing-mode%3A%20vertical-rl")
+    expect(result.current.html).toContain("..%2FFonts%2Fmissing.ttf")
+    expect(fetchWithAuthMock).toHaveBeenCalledTimes(3)
+  })
+
+  test("preserves the original resource attribute when inlining fails", async () => {
+    fetchWithAuthMock.mockImplementation((url: string) => {
+      if (url.includes("Text/chapter-missing-image.xhtml")) {
+        return Promise.resolve(
+          createResponse({
+            body: JSON.stringify({
+              ns_map: [],
+              tree: {
+                n: "html",
+                c: [
+                  {
+                    n: "body",
+                    c: [
+                      {
+                        n: "img",
+                        a: [["src", "../Images/missing.jpg"]],
+                      },
+                    ],
+                  },
+                ],
+              },
+            }),
+            contentType: "application/json",
+          }),
+        )
+      }
+
+      if (url.includes("/Images/missing.jpg?")) {
+        return Promise.resolve(
+          createResponse({
+            body: "missing",
+            contentType: "text/plain",
+            status: 404,
+          }),
+        )
+      }
+
+      throw new Error(`Unexpected URL: ${url}`)
+    })
+
+    const { result } = renderHook(() =>
+      useCalibreHtmlDocument(
+        createBookHtmlProps({ pagePath: "Text/chapter-missing-image.xhtml", hash: 17749658584 }),
+      ),
+    )
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.error).toBeNull()
+    expect(result.current.html).toContain("../Images/missing.jpg")
+    expect(result.current.html).not.toContain('["src",null]')
+    expect(fetchWithAuthMock).toHaveBeenCalledTimes(2)
+  })
+
+  test("surfaces a fetch error when the serialized page response is not ok", async () => {
+    fetchWithAuthMock.mockResolvedValue(
+      createResponse({
+        body: "missing",
+        contentType: "text/plain",
+        status: 404,
+      }),
+    )
+
+    const { result } = renderHook(() =>
+      useCalibreHtmlDocument(createBookHtmlProps({ pagePath: "Text/missing.xhtml", hash: 17749658582 })),
+    )
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.html).toBeNull()
+    expect(result.current.error).toContain("Failed to fetch book resource: Text/missing.xhtml (404)")
+  })
+})
