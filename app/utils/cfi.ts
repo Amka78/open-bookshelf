@@ -20,3 +20,24 @@ export function generateCfiForPage(page: number, spatialX = 50, spatialY = 49.87
   const spineIndex = pageNumber * 2
   return `epubcfi(/2/2/4/${spineIndex}[page_${pageNumber}]@${spatialX}:${spatialY.toFixed(2)})`
 }
+
+/**
+ * Generate a synthetic CFI anchored to a specific spine item.
+ *
+ * The leading spine component (`/${N}`) is what Calibre uses to resolve the
+ * chapter/spine item, where `N = (spineIndex + 1) * 2`.
+ */
+export function generateCfiForSpineLocation(
+  spineIndex: number,
+  progressInSpine: number,
+  spatialX = 50,
+  spatialY = 49.87,
+): string {
+  const oneBasedSpine = Math.max(1, Math.floor(spineIndex) + 1)
+  const calibreSpineComponent = oneBasedSpine * 2
+  const clampedProgressInSpine = Math.max(0, Math.min(progressInSpine, 1))
+  const localPageNumber = Math.max(1, Math.round(clampedProgressInSpine * 100) + 1)
+  const localComponent = localPageNumber * 2
+
+  return `epubcfi(/${calibreSpineComponent}/2/4/${localComponent}[page_${localPageNumber}]@${spatialX}:${spatialY.toFixed(2)})`
+}

@@ -21,6 +21,7 @@ export type TextBookSpineProps = {
   readingStyle: BookReadingStyleType
   pageDirection: "left" | "right"
   leadingBlankPage: boolean
+  preferredWritingMode?: string | null
   anchor?: string | null
   annotations?: Array<{ uuid: string; highlightedText: string | null; styleWhich: string | null }>
   onPaginationChange?: (payload: { currentPage: number; totalPages: number }) => void
@@ -123,6 +124,7 @@ export const useTextBookSpineDocument = (props: TextBookSpineProps) => {
       pageDirection: initialViewerStateRef.current.pageDirection,
       initialPage: initialViewerStateRef.current.currentPage,
       leadingBlankPage: initialViewerStateRef.current.leadingBlankPage,
+      preferredWritingMode: props.preferredWritingMode ?? null,
     })
   }, [
     computedThemeMode,
@@ -132,6 +134,7 @@ export const useTextBookSpineDocument = (props: TextBookSpineProps) => {
     preparedDocument,
     props.annotations,
     props.sourceHtml,
+    props.preferredWritingMode,
     settingStore.viewerFontSizePt,
     viewerTheme,
   ])

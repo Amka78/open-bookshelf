@@ -127,6 +127,30 @@ describe("useAnnotations", () => {
     expect(annotations[0].spine_index).toBe(1)
   })
 
+  test("addBookmark uses display-page progress for text viewer locations", async () => {
+    const store = makeStore([])
+    mockUseStores.mockReturnValue(store)
+    const { result } = renderHook(() => useAnnotations())
+
+    await act(async () => {
+      await result.current.addBookmark(
+        {
+          spineIndex: 1,
+          displayPage: 4,
+          totalPages: 10,
+          spineName: "chapter-2.xhtml",
+        },
+        "Chapter bookmark",
+      )
+    })
+
+    const [, , , annotations] = mockSaveAnnotations.mock.calls[0]
+    expect(annotations[0].spine_index).toBe(1)
+    expect(annotations[0].spine_name).toBe("chapter-2.xhtml")
+    expect(annotations[0].pos_frac).toBe(4 / 9)
+    expect(annotations[0].title).toBe("Chapter bookmark")
+  })
+
   test("deleteAnnotation sends removed: true", async () => {
     const existing = makeAnnotation({ uuid: "uuid-1" })
     const store = makeStore([existing])

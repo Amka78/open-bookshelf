@@ -24,6 +24,7 @@ type BuildTextBookHtmlDocumentInput = {
   pageDirection: "left" | "right"
   initialPage: number
   leadingBlankPage: boolean
+  preferredWritingMode?: string | null
 }
 
 const serializeForScriptTag = (value: unknown) => {
@@ -43,6 +44,7 @@ export const buildTextBookHtmlDocument = ({
   initialPage,
   leadingBlankPage,
   pageDirection,
+  preferredWritingMode,
   readingStyle,
 }: BuildTextBookHtmlDocumentInput) => {
   const serializedData = serializeForScriptTag(documentData)
@@ -56,6 +58,7 @@ export const buildTextBookHtmlDocument = ({
   const escapedPageDirection = serializeForScriptTag(pageDirection)
   const escapedInitialPage = serializeForScriptTag(initialPage)
   const escapedLeadingBlankPage = serializeForScriptTag(leadingBlankPage)
+  const escapedPreferredWritingMode = serializeForScriptTag(preferredWritingMode ?? null)
   const fontSizePt = appearance.viewerFontSizePt ?? 16
   const fontSizeCss = `body, p, div, span, li, td, th { font-size: ${fontSizePt}pt !important; }`
   const sepiaCss =
@@ -93,6 +96,12 @@ export const buildTextBookHtmlDocument = ({
         height: 100vh !important;
         max-height: 100vh !important;
       }
+      /* Force all elements to allow column breaks, overriding any Calibre CSS
+         that may set break-inside: avoid on chapter/section wrappers. */
+      body.obs-paginated * {
+        break-inside: auto !important;
+        -webkit-column-break-inside: auto !important;
+      }
       body.obs-paginated img,
       body.obs-paginated svg,
       body.obs-paginated video,
@@ -119,7 +128,7 @@ export const buildTextBookHtmlDocument = ({
     <script id="obs-serialized-data" data-obs-helper="1" type="application/json">${serializedData}</script>
     <script data-obs-helper="1">
       const pageAnnotations = ${escapedAnnotations}
-      ;(() => {
+      ;(async () => {
         const serializedData = JSON.parse(document.getElementById("obs-serialized-data")?.textContent || "{}")
         const documentKey = ${escapedDocumentKey}
         const nsMap = Array.isArray(serializedData.ns_map) ? serializedData.ns_map : []
@@ -135,6 +144,7 @@ export const buildTextBookHtmlDocument = ({
         const themeTextColor = ${escapedTextColor}
         const themeLinkColor = ${escapedLinkColor}
         const initialThemeFallbackBackgroundColor = ${escapedFallbackBackgroundColor}
+        const preferredWritingMode = ${escapedPreferredWritingMode}
         const longPressDelayMs = 450
         const longPressMoveThresholdPx = 10
         const defaultViewerState = {
@@ -154,6 +164,8 @@ export const buildTextBookHtmlDocument = ({
         }
         let currentAnchor = null
         let scheduledLayoutFrame = 0
+        let initialLayoutDone = false
+        let pendingCommandPayload = null
 
         const postPayload = (payload) => {
           const message = JSON.stringify(payload)
@@ -356,6 +368,74 @@ export const buildTextBookHtmlDocument = ({
             }
             return
           }
+
+          // Fallback: scan down the FIRST child chain (up to 6 levels deep).
+          // Calibre often nests content 3-4+ levels (body > div > div > p[writing-mode]),
+          // which the shallow 2-level scan above misses. We follow only the first child
+          // of each element, not all descendants — O(depth) not O(total elements).
+          const scanFirstChildChain = (element, depth) => {
+            if (depth > 6 || !(element instanceof Element)) {
+              return null
+            }
+
+            const style = window.getComputedStyle(element)
+            const wm = style.getPropertyValue("writing-mode") || style.writingMode
+            const dir = style.direction
+
+            if (wm && !wm.includes("horizontal") && !wm.includes("initial")) {
+              return { writingMode: wm, direction: dir }
+            }
+            if (dir === "rtl") {
+              return { writingMode: null, direction: dir }
+            }
+
+            // Follow only the FIRST child element (chain, not breadth)
+            const child = element.firstElementChild
+            if (child) {
+              return scanFirstChildChain(child, depth + 1)
+            }
+
+            return null
+          }
+
+          const bodyRoot = document.body
+          if (bodyRoot) {
+            const found = scanFirstChildChain(bodyRoot, 0)
+            if (found && found.writingMode) {
+              document.body.style.setProperty("writing-mode", found.writingMode, "important")
+              document.body.style.setProperty(
+                "-webkit-writing-mode",
+                found.writingMode,
+                "important",
+              )
+            }
+            if (found && found.direction) {
+              document.body.style.setProperty("direction", found.direction, "important")
+            }
+          }
+        }
+
+        const applyPreferredWritingMode = () => {
+          if (typeof preferredWritingMode !== "string" || preferredWritingMode.length === 0) {
+            return
+          }
+
+          if (preferredWritingMode === "horizontal-tb") {
+            return
+          }
+
+          document.documentElement.style.setProperty("writing-mode", preferredWritingMode, "important")
+          document.documentElement.style.setProperty(
+            "-webkit-writing-mode",
+            preferredWritingMode,
+            "important",
+          )
+          document.body.style.setProperty("writing-mode", preferredWritingMode, "important")
+          document.body.style.setProperty(
+            "-webkit-writing-mode",
+            preferredWritingMode,
+            "important",
+          )
         }
 
         const normalizeFirstColumnElements = () => {
@@ -383,6 +463,27 @@ export const buildTextBookHtmlDocument = ({
           if (nestedPrimary) {
             nestedPrimary.style.setProperty("break-before", "avoid", "important")
             nestedPrimary.style.setProperty("break-inside", "auto", "important")
+          }
+        }
+
+        const normalizePaginatedRootContainers = () => {
+          if (viewerState.readingStyle === "verticalScroll") {
+            return
+          }
+
+          const rootChildren = Array.from(document.body.children).filter(
+            (element) => !element.matches(helperSelector),
+          )
+
+          for (const child of rootChildren) {
+            child.style.setProperty("height", "auto", "important")
+            child.style.setProperty("min-height", "0", "important")
+            child.style.setProperty("max-height", "none", "important")
+            child.style.setProperty("min-width", "0", "important")
+            child.style.setProperty("max-width", "none", "important")
+            child.style.setProperty("overflow", "visible", "important")
+            child.style.setProperty("break-inside", "auto", "important")
+            child.style.setProperty("column-span", "none", "important")
           }
         }
 
@@ -609,6 +710,10 @@ export const buildTextBookHtmlDocument = ({
             : 1
         }
 
+        const getPageInlineSize = (inlineViewportSize, spreadPageCount) => {
+          return Math.max(1, Math.floor(inlineViewportSize / Math.max(1, spreadPageCount)))
+        }
+
         const getLayoutDirectionState = () => {
           const computedBodyStyle = window.getComputedStyle(document.body)
           const bodyState = getWritingModeState(
@@ -647,6 +752,15 @@ export const buildTextBookHtmlDocument = ({
 
           if (bodyIsScrollContainer) {
             return document.body
+          }
+
+          // In paginated mode, body may be its own scroll container (e.g. vertical writing
+          // with height: 100vh + overflow-y: auto). The check above handles that.
+          // When body is not a scroll container in paginated mode, return null so callers
+          // fall back to window.* scroll methods (which works for horizontal text where
+          // body's overflow is delegated to the viewport).
+          if (layoutState.isPaginated) {
+            return null
           }
 
           const scrollingElement = document.scrollingElement
@@ -689,6 +803,14 @@ export const buildTextBookHtmlDocument = ({
         }
 
         const getInlineExtent = (isVertical) => {
+          const axis = getInlineScrollAxis(isVertical)
+          const scrollContainer = getScrollContainer(axis)
+          if (scrollContainer) {
+            return axis === "x"
+              ? Math.max(scrollContainer.scrollWidth || 0, scrollContainer.clientWidth || 0)
+              : Math.max(scrollContainer.scrollHeight || 0, scrollContainer.clientHeight || 0)
+          }
+
           return isVertical
             ? Math.max(
                 document.documentElement?.scrollHeight || 0,
@@ -701,6 +823,14 @@ export const buildTextBookHtmlDocument = ({
         }
 
         const getBlockExtent = (isVertical) => {
+          const axis = getBlockScrollAxis(isVertical)
+          const scrollContainer = getScrollContainer(axis)
+          if (scrollContainer) {
+            return axis === "x"
+              ? Math.max(scrollContainer.scrollWidth || 0, scrollContainer.clientWidth || 0)
+              : Math.max(scrollContainer.scrollHeight || 0, scrollContainer.clientHeight || 0)
+          }
+
           return isVertical
             ? Math.max(
                 document.documentElement?.scrollWidth || 0,
@@ -737,8 +867,28 @@ export const buildTextBookHtmlDocument = ({
             }
           }
 
-          const pageInlineSize = Math.max(1, inlineViewportSize / spreadPageCount)
-          const internalPageCount = Math.max(1, Math.ceil(getInlineExtent(isVerticalWriting) / pageInlineSize))
+          const pageInlineSize = getPageInlineSize(inlineViewportSize, spreadPageCount)
+
+          // For vertical writing, scrollHeight may not reflect CSS column overflow
+          // in some browsers. We force a scroll extent recalculation by temporarily
+          // reading scrollHeight after a forced reflow (changing overflow triggers it).
+          let effectiveExtent = getInlineExtent(isVerticalWriting)
+
+          // If scrollHeight didn't detect multi-column overflow, force a
+          // recalculation by toggling overflow to 'scroll' (with !important to
+          // override the style set by doLayout) and back.
+          if (effectiveExtent <= pageInlineSize * 1.5) {
+            document.body.style.setProperty('overflow-y', 'scroll', 'important')
+            // Force reflow via getComputedStyle
+            window.getComputedStyle(document.body).overflowY
+            effectiveExtent = getInlineExtent(isVerticalWriting)
+            // Restore the original overflow from the current inline style.
+            // We can't easily restore the previous !important value, but
+            // doLayout re-applies all styles on next scheduleLayout call.
+            document.body.style.setProperty('overflow-y', isVerticalWriting ? 'auto' : 'hidden', 'important')
+          }
+
+          const internalPageCount = Math.max(1, Math.ceil(effectiveExtent / pageInlineSize))
           const physicalPageCount = Math.max(
             1,
             internalPageCount - (viewerState.leadingBlankPage ? 1 : 0),
@@ -795,17 +945,30 @@ export const buildTextBookHtmlDocument = ({
         const doLayout = () => {
           const spreadPageCount = getSpreadPageCount()
           const isPaginated = viewerState.readingStyle !== "verticalScroll"
+          clearLayoutOverrides()
+          applyPreferredWritingMode()
           applyDerivedRootWritingMode()
-          const { isVerticalWriting, rtl } = getLayoutDirectionState()
+          let { isVerticalWriting, rtl } = getLayoutDirectionState()
+
+          // Fallback: if no vertical writing was detected but pageDirection is "right",
+          // the book is likely vertical-rl (common for Japanese books whose external CSS
+          // is blocked by X-Content-Type-Options: nosniff or not loaded).
+          if (!isVerticalWriting && viewerState.pageDirection === "right") {
+            isVerticalWriting = true
+            rtl = true
+            document.body.style.setProperty("writing-mode", "vertical-rl", "important")
+            document.body.style.setProperty("-webkit-writing-mode", "vertical-rl", "important")
+            document.body.style.setProperty("direction", "rtl", "important")
+          }
+
           const viewportWidth = Math.max(1, window.innerWidth || 1)
           const viewportHeight = Math.max(1, window.innerHeight || 1)
           const inlineViewportSize = Math.max(
             1,
             isVerticalWriting ? viewportHeight : viewportWidth,
           )
-          const pageInlineSize = Math.max(1, Math.floor(inlineViewportSize / spreadPageCount))
+          const pageInlineSize = getPageInlineSize(inlineViewportSize, spreadPageCount)
 
-          clearLayoutOverrides()
           document.documentElement.style.height = "100%"
           document.documentElement.style.width = "100%"
           if (rtl) {
@@ -834,19 +997,28 @@ export const buildTextBookHtmlDocument = ({
             applyImportantStyle(document.body, "column-width", pageInlineSize + "px")
             applyImportantStyle(document.body, "column-fill", "auto")
             applyImportantStyle(document.body, "column-rule", "0px inset transparent")
-
-            if (isVerticalWriting) {
-              applyImportantStyle(document.body, "overflow-x", "hidden")
-              applyImportantStyle(document.body, "overflow-y", "auto")
-            } else {
-              applyImportantStyle(document.body, "overflow-x", "auto")
-              applyImportantStyle(document.body, "overflow-y", "hidden")
-            }
+            applyImportantStyle(document.body, "overflow", "visible")
+            applyImportantStyle(document.body, "overflow-x", isVerticalWriting ? "hidden" : "auto")
+            applyImportantStyle(document.body, "overflow-y", isVerticalWriting ? "auto" : "hidden")
           } else {
             applyImportantStyle(document.body, "overflow-x", "hidden")
             applyImportantStyle(document.body, "overflow-y", "auto")
           }
 
+          if (isPaginated) {
+            const mediaElements = document.querySelectorAll("img, svg, video, canvas, iframe")
+            for (const element of mediaElements) {
+              if (isVerticalWriting) {
+                applyImportantStyle(element, "max-height", pageInlineSize + "px")
+                applyImportantStyle(element, "max-width", viewportWidth + "px")
+              } else {
+                applyImportantStyle(element, "max-width", pageInlineSize + "px")
+                applyImportantStyle(element, "max-height", viewportHeight + "px")
+              }
+            }
+          }
+
+          normalizePaginatedRootContainers()
           normalizeFirstColumnElements()
           applyThemeOverrides()
         }
@@ -912,7 +1084,7 @@ export const buildTextBookHtmlDocument = ({
           return true
         }
 
-        const handleCommand = (payload) => {
+        const applyCommandPayload = (payload) => {
           viewerState.readingStyle = payload.readingStyle ?? viewerState.readingStyle
           viewerState.pageDirection = payload.pageDirection ?? viewerState.pageDirection
           viewerState.leadingBlankPage =
@@ -932,6 +1104,15 @@ export const buildTextBookHtmlDocument = ({
           }
         }
 
+        const handleCommand = (payload) => {
+          if (!initialLayoutDone) {
+            pendingCommandPayload = payload
+            return
+          }
+
+          applyCommandPayload(payload)
+        }
+
         const installCommandHandler = () => {
           window.addEventListener("message", (event) => {
             try {
@@ -947,6 +1128,62 @@ export const buildTextBookHtmlDocument = ({
               // Ignore unrelated messages.
             }
           })
+        }
+
+        const waitForInitialResources = async () => {
+          const pendingResources = []
+          const waitForLoadOrError = (target) => {
+            return new Promise((resolve) => {
+              let settled = false
+              const finish = () => {
+                if (settled) {
+                  return
+                }
+                settled = true
+                target.removeEventListener("load", finish, true)
+                target.removeEventListener("error", finish, true)
+                resolve(undefined)
+              }
+
+              target.addEventListener("load", finish, true)
+              target.addEventListener("error", finish, true)
+            })
+          }
+
+          const stylesheetLinks = Array.from(document.querySelectorAll('link[rel~="stylesheet"]'))
+          for (const link of stylesheetLinks) {
+            pendingResources.push(waitForLoadOrError(link))
+          }
+
+          const mediaResources = Array.from(document.querySelectorAll("img, image, video, iframe"))
+          for (const resource of mediaResources) {
+            if (resource instanceof HTMLImageElement && resource.complete) {
+              continue
+            }
+            if (resource instanceof HTMLVideoElement && resource.readyState >= 1) {
+              continue
+            }
+            if (
+              resource instanceof HTMLIFrameElement &&
+              resource.contentDocument?.readyState === "complete"
+            ) {
+              continue
+            }
+            pendingResources.push(waitForLoadOrError(resource))
+          }
+
+          if (document.fonts?.ready) {
+            pendingResources.push(document.fonts.ready.catch(() => undefined))
+          }
+
+          if (!pendingResources.length) {
+            return
+          }
+
+          const timeout = new Promise((resolve) => {
+            window.setTimeout(resolve, 5000)
+          })
+          await Promise.race([Promise.allSettled(pendingResources), timeout])
         }
 
         const installStylesheetAndFontObservers = () => {
@@ -1253,14 +1490,22 @@ export const buildTextBookHtmlDocument = ({
         }
 
         render()
-        applyLayout()
         applyHighlights()
         installStylesheetAndFontObservers()
         installCommandHandler()
         installLongPressHandler()
         installSelectionHandler()
         installPaginationObserver()
-        scrollToPhysicalPage(viewerState.currentPage)
+        await waitForInitialResources()
+        applyLayout()
+        initialLayoutDone = true
+        if (pendingCommandPayload) {
+          const payload = pendingCommandPayload
+          pendingCommandPayload = null
+          applyCommandPayload(payload)
+        } else {
+          scrollToPhysicalPage(viewerState.currentPage)
+        }
         window.setTimeout(scheduleLayout, 50)
         window.setTimeout(scheduleLayout, 250)
         window.setTimeout(scheduleLayout, 1000)

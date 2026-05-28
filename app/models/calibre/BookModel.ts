@@ -12,7 +12,11 @@ import {
   type LastReadPosition,
   api,
 } from "../../services/api"
-import type { AddedFormatEntry, AnnotationsMap, MetadataFieldKey } from "../../services/api/api.types"
+import type {
+  AddedFormatEntry,
+  AnnotationsMap,
+  MetadataFieldKey,
+} from "../../services/api/api.types"
 import { handleCommonApiError } from "../errors/errors"
 import { withSetPropAction } from "../helpers/withSetPropAction"
 import { type Annotation, AnnotationModel } from "./AnnotationModel"
@@ -42,6 +46,23 @@ function shouldUseHtmlViewer(requestedFormat: string, manifest: ApiBookManifestR
   return (
     isCalibreHtmlViewerFormat(requestedFormat) || isCalibreHtmlViewerFormat(manifest.book_format)
   )
+}
+
+function extractPrimaryWritingMode(metadata: Record<string, unknown> | undefined) {
+  const rawWritingMode =
+    metadata?.primary_writing_mode ??
+    metadata?.["primary-writing-mode"] ??
+    metadata?.primaryWritingMode
+
+  return typeof rawWritingMode === "string" && rawWritingMode.trim().length > 0
+    ? rawWritingMode.trim()
+    : null
+}
+
+const HTML_SPINE_EXTENSION_PATTERN = /\.(x?html?)$/i
+
+function isLikelyHtmlSpinePath(path: string) {
+  return HTML_SPINE_EXTENSION_PATTERN.test(path)
 }
 
 function isConvertManifestResponse(
@@ -95,6 +116,7 @@ export const BookModel = types
     pageProgressionDirection: types.maybeNull(
       types.union(types.literal("rtl"), types.literal("ltr")),
     ),
+    primaryWritingMode: types.maybeNull(types.string),
     annotations: types.array(AnnotationModel),
     /**
      * Most recent server-side reading position (0–1) extracted from
@@ -103,11 +125,11 @@ export const BookModel = types
     manifestServerPosFrac: types.maybeNull(types.number),
     manifestServerEpoch: types.maybeNull(types.number),
     manifestToc: types.maybeNull(types.frozen<TocItem>()),
+    spineLength: types.maybeNull(types.number),
+    spineItemLengths: types.optional(types.array(types.number), []),
     /**
-     * Calibre manifest total_length: sum of spine file content lengths in bytes.
-     * For HTML spine files (TextBook), this represents the total readable content size,
-     * NOT the page count (which varies by rendering). Used to calculate proper page counts
-     * for resume reading.
+     * Calibre manifest total_length: sum of rendered HTML file content lengths in bytes.
+     * This is not a page count and can include non-spine HTML resources.
      */
     totalLength: types.maybeNull(types.number),
   })
@@ -277,13 +299,20 @@ export const BookModel = types
         yield delay(6000)
       }
 
-      const pathList = []
-
       const result: ApiBookManifestResultType = response.data
+      const htmlSpinePaths = result.spine.filter((path) => {
+        const file = result.files[path]
+        if (file?.is_html) {
+          return true
+        }
+        return isLikelyHtmlSpinePath(path)
+      })
+      const effectiveSpinePaths = htmlSpinePaths.length > 0 ? htmlSpinePaths : result.spine
+      const pathList = []
 
       if (shouldUseHtmlViewer(format, result)) {
         // AZW3 / KF8 / KF8:joint → HTML spine files rendered by BookHtmlPage
-        pathList.push(...result.spine)
+        pathList.push(...effectiveSpinePaths)
       } else if (result.book_format === "EPUB") {
         // EPUB → pre-rendered JPEG images from files metadata
         // This is faster than the old approach because:
@@ -328,12 +357,21 @@ export const BookModel = types
       } else {
         // All other text-based formats (MOBI old, FB2, RTF, DOCX, TXT, HTML, …)
         // Calibre renders these as XHTML spine files; use HTML viewer path.
-        pathList.push(...result.spine)
+        pathList.push(...effectiveSpinePaths)
       }
 
       root.setProp("path", pathList)
       root.setProp("hash", result.book_hash.mtime)
       root.setProp("totalLength", result.total_length ?? null)
+      root.setProp("spineLength", result.spine_length ?? null)
+      root.setProp(
+        "spineItemLengths",
+        effectiveSpinePaths.map((path) => {
+          const file = result.files[path]
+          return file?.is_html ? file.length : 0
+        }),
+      )
+      root.setProp("primaryWritingMode", extractPrimaryWritingMode(result.metadata))
 
       if (result.page_progression_direction) {
         root.setProp("pageProgressionDirection", result.page_progression_direction)

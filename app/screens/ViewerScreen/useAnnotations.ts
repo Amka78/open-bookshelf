@@ -33,28 +33,63 @@ function annotationToApi(ann: Annotation): CalibreAnnotation {
   }
 }
 
+type AnnotationPageLocation =
+  | number
+  | {
+      spineIndex: number
+      displayPage: number
+      totalPages: number
+      spineName?: string
+    }
+
+function resolveAnnotationPosition(
+  location: AnnotationPageLocation,
+  spinePaths: string[],
+) {
+  if (typeof location === "number") {
+    const totalPages = spinePaths.length || 1
+    return {
+      displayPage: location,
+      posFrac: totalPages > 1 ? location / (totalPages - 1) : 0,
+      spineIndex: location,
+      spineName: spinePaths[location] ?? "",
+      title: `Page ${location + 1}`,
+    }
+  }
+
+  const totalPages = Math.max(1, Math.floor(location.totalPages))
+  return {
+    displayPage: location.displayPage,
+    posFrac: totalPages > 1 ? location.displayPage / (totalPages - 1) : 0,
+    spineIndex: location.spineIndex,
+    spineName: location.spineName ?? spinePaths[location.spineIndex] ?? "",
+    title: `Page ${location.displayPage + 1}`,
+  }
+}
+
 export function useAnnotations() {
   const { calibreRootStore } = useStores()
   const selectedLibrary = calibreRootStore.selectedLibrary
   const selectedBook = selectedLibrary?.selectedBook
 
   const addBookmark = useCallback(
-    async (page: number, title?: string): Promise<boolean> => {
+    async (location: AnnotationPageLocation, title?: string): Promise<boolean> => {
       if (!selectedBook || !selectedLibrary) return false
       const selectedFormat = selectedBook.metaData?.selectedFormat ?? ""
-      const totalPages = selectedBook.path.length || 1
-      const posFrac = totalPages > 1 ? page / (totalPages - 1) : 0
-      const spineName = selectedBook.path[page] ?? ""
+      const { posFrac, spineIndex, spineName, title: defaultTitle } = resolveAnnotationPosition(
+        location,
+        selectedBook.path.slice(),
+      )
       const uuid = generateUuid()
       const timestamp = new Date().toISOString()
 
       const newAnnotation: CalibreAnnotation = {
         type: "bookmark",
         uuid,
-        spine_index: page,
+        spine_index: spineIndex,
         spine_name: spineName,
         timestamp,
-        title: title ?? `Page ${page + 1}`,
+        title: title ?? defaultTitle,
         pos_frac: posFrac,
       }
 
@@ -80,23 +115,24 @@ export function useAnnotations() {
 
   const addHighlight = useCallback(
     async (
-      page: number,
+      location: AnnotationPageLocation,
       text: string,
       notes?: string,
       styleWhich = "yellow",
     ): Promise<boolean> => {
       if (!selectedBook || !selectedLibrary) return false
       const selectedFormat = selectedBook.metaData?.selectedFormat ?? ""
-      const totalPages = selectedBook.path.length || 1
-      const posFrac = totalPages > 1 ? page / (totalPages - 1) : 0
-      const spineName = selectedBook.path[page] ?? ""
+      const { posFrac, spineIndex, spineName } = resolveAnnotationPosition(
+        location,
+        selectedBook.path.slice(),
+      )
       const uuid = generateUuid()
       const timestamp = new Date().toISOString()
 
       const newAnnotation: CalibreAnnotation = {
         type: "highlight",
         uuid,
-        spine_index: page,
+        spine_index: spineIndex,
         spine_name: spineName,
         highlighted_text: text,
         notes,

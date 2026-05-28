@@ -140,6 +140,103 @@ describe("BookModel.convert", () => {
     expect(book.path.slice()).toEqual(["xhtml/main.xhtml"])
   })
 
+  test("stores manifest writing mode and per-spine lengths for text books", async () => {
+    mockCheckBookConverting.mockResolvedValue(
+      createManifest({
+        book_format: "AZW3",
+        spine: ["xhtml/part0000.xhtml", "xhtml/part0001.xhtml"],
+        spine_length: 300,
+        files: {
+          "xhtml/part0000.xhtml": {
+            is_virtualized: false,
+            size: 1000,
+            mimetype: "application/xhtml+xml",
+            is_html: true,
+            length: 100,
+            has_maths: false,
+            anchor_map: [],
+          },
+          "xhtml/part0001.xhtml": {
+            is_virtualized: false,
+            size: 2000,
+            mimetype: "application/xhtml+xml",
+            is_html: true,
+            length: 200,
+            has_maths: false,
+            anchor_map: [],
+          },
+        },
+        metadata: {
+          primary_writing_mode: "vertical-rl",
+        } as never,
+      }),
+    )
+    const book = createBook()
+
+    await book.convert("AZW3", "lib1", async () => {})
+
+    expect(book.primaryWritingMode).toBe("vertical-rl")
+    expect(book.spineLength).toBe(300)
+    expect(book.spineItemLengths.slice()).toEqual([100, 200])
+  })
+
+  test("ignores non-html spine entries for html viewer formats", async () => {
+    mockCheckBookConverting.mockResolvedValue(
+      createManifest({
+        book_format: "AZW3",
+        spine: ["xhtml/part0000.xhtml", "images/cover.svg", "xhtml/part0001.xhtml"],
+        files: {
+          "xhtml/part0000.xhtml": {
+            is_virtualized: false,
+            size: 1000,
+            mimetype: "application/xhtml+xml",
+            is_html: true,
+            length: 100,
+            has_maths: false,
+            anchor_map: [],
+          },
+          "images/cover.svg": {
+            is_virtualized: false,
+            size: 4000,
+            mimetype: "image/svg+xml",
+            is_html: false,
+          },
+          "xhtml/part0001.xhtml": {
+            is_virtualized: false,
+            size: 2000,
+            mimetype: "application/xhtml+xml",
+            is_html: true,
+            length: 200,
+            has_maths: false,
+            anchor_map: [],
+          },
+        },
+      }),
+    )
+    const book = createBook()
+
+    await book.convert("AZW3", "lib1", async () => {})
+
+    expect(book.path.slice()).toEqual(["xhtml/part0000.xhtml", "xhtml/part0001.xhtml"])
+    expect(book.spineItemLengths.slice()).toEqual([100, 200])
+  })
+
+  test("filters non-html spine entries by extension when files metadata is missing", async () => {
+    mockCheckBookConverting.mockResolvedValue(
+      createManifest({
+        book_format: "AZW3",
+        spine: ["text/chapter-1.xhtml", "images/cover.svg", "text/chapter-2.html"],
+        files: {},
+      }),
+    )
+    const book = createBook()
+
+    await book.convert("AZW3", "lib1", async () => {})
+
+    expect(book.path.slice()).toEqual(["text/chapter-1.xhtml", "text/chapter-2.html"])
+    expect(book.spineItemLengths.slice()).toEqual([0, 0])
+  })
+
   test("is_comic=true (CBZ/CBR/CB7) extracts images using files metadata", async () => {
     mockCheckBookConverting.mockResolvedValue(
       createManifest({

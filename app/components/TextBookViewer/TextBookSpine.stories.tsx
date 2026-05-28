@@ -137,6 +137,7 @@ export const VerticalWritingSpine: StoryProps = {
   args: {
     ...defaultArgs,
     sourceHtml: verticalWritingHtml,
+    preferredWritingMode: "vertical-rl",
   },
   play: playVerticalWritingPaginationReported,
 }

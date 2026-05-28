@@ -7,8 +7,18 @@ import type { MetadataSnapshotIn } from "@/models/calibre"
 import { api } from "@/services/api"
 import type { BookReadingStyleType } from "@/type/types"
 import { isCalibreHtmlViewerFormat, isCalibreSerializedHtmlPath } from "@/utils/calibreHtmlViewer"
-import { generateCfiForPage } from "@/utils/cfi"
+import { generateCfiForPage, generateCfiForSpineLocation } from "@/utils/cfi"
 import { logger } from "@/utils/logger"
+import {
+  buildSpinePageOffsets,
+  estimateSpinePageCounts,
+  mapDisplayPageToSpineLocation,
+  mapProgressFractionToDisplayPage,
+  mapProgressFractionToSpineLocation,
+  mapSpineLocationToProgressFraction,
+  getEffectiveSpinePageCount,
+  normalizeStoredSpinePageCounts,
+} from "@/utils/textBookPagination"
 import { File as ExpoFile } from "expo-file-system"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useConvergence } from "../../hooks/useConvergence"
@@ -129,12 +139,28 @@ export function useViewer() {
   // The book spine/path list is the authoritative page source for the viewer.
   // Cached paths are only optional render replacements for image-based formats.
   const cachedPathList = history?.cachedPath?.length ? history.cachedPath : undefined
-  const availablePathLength =
+  const htmlSpineCount = selectedBook?.path.length ?? 0
+  const htmlSpineLengths =
+    isHtmlViewerFormat && selectedBook ? selectedBook.spineItemLengths.slice() : []
+  const storedTextSpinePageCounts = normalizeStoredSpinePageCounts(
+    htmlSpineCount,
+    isHtmlViewerFormat && history?.textSpinePageCounts ? history.textSpinePageCounts.slice() : [],
+  )
+  const estimatedHtmlPageCounts = estimateSpinePageCounts(
+    htmlSpineCount,
+    storedTextSpinePageCounts,
+    htmlSpineLengths,
+  )
+  const estimatedHtmlTotalPages = buildSpinePageOffsets(
+    htmlSpineCount,
+    estimatedHtmlPageCounts,
+  ).totalPages
+  const availablePageCount =
     selectedBook?.path.length && selectedBook.path.length > 0
-      ? selectedBook.path.length
-      : isHtmlViewerFormat
-        ? 0
-        : cachedPathList?.length ?? 0
+      ? isHtmlViewerFormat
+        ? estimatedHtmlTotalPages
+        : selectedBook.path.length
+      : cachedPathList?.length ?? 0
 
   // Create prompt key for resume reading logic
   const promptKey =
@@ -143,17 +169,29 @@ export function useViewer() {
       : ""
 
   // Compute the best resume page: prefer local currentPage, fall back to server pos_frac.
-  // NOTE: For HTML viewer formats (TextBook), we skip pre-calculated resume page because
-  // the actual page count is unknown until spinePageCounts are loaded asynchronously.
-  // TextBookViewer will handle resume after page counts are available.
-  const serverEstimatedPage =
-    !isHtmlViewerFormat &&
+  // Text books use manifest spine lengths plus persisted per-spine page counts so that
+  // books with multi-page spine items restore to a stable estimated location.
+  const htmlResumeLocation =
+    isHtmlViewerFormat &&
     history &&
     history.currentPage <= 0 &&
     typeof history.serverPosFrac === "number" &&
-    history.serverPosFrac > 0 &&
-    availablePathLength > 1
-      ? Math.round(history.serverPosFrac * (availablePathLength - 1))
+    history.serverPosFrac > 0
+      ? mapProgressFractionToSpineLocation(history.serverPosFrac, htmlSpineCount, htmlSpineLengths)
+      : null
+  const serverEstimatedPage =
+    history &&
+    history.currentPage <= 0 &&
+    typeof history.serverPosFrac === "number" &&
+    history.serverPosFrac > 0
+      ? isHtmlViewerFormat
+        ? mapProgressFractionToDisplayPage(
+            history.serverPosFrac,
+            htmlSpineCount,
+            storedTextSpinePageCounts,
+            htmlSpineLengths,
+          )
+        : Math.round(history.serverPosFrac * (availablePageCount - 1))
       : -1
 
   // Handle resume reading prompt
@@ -165,7 +203,7 @@ export function useViewer() {
     }
 
     const hasLocalProgress = !!(history && history.currentPage > 0)
-    const hasServerProgress = serverEstimatedPage >= 0
+    const hasServerProgress = isHtmlViewerFormat ? htmlResumeLocation !== null : serverEstimatedPage >= 0
 
     if (!hasLocalProgress && !hasServerProgress) {
       pendingPromptKeyRef.current = undefined
@@ -180,7 +218,7 @@ export function useViewer() {
       pendingPromptKeyRef.current = promptKey
       setViewerReady(false)
 
-      const maxPage = Math.max(availablePathLength - 1, 0)
+      const maxPage = Math.max(availablePageCount - 1, 0)
 
       const resumePage = hasLocalProgress
         ? Math.max(0, Math.min(history?.currentPage ?? 0, maxPage))
@@ -234,8 +272,9 @@ export function useViewer() {
 
     return cleanup
   }, [
-    availablePathLength,
+    availablePageCount,
     promptKey,
+    htmlResumeLocation,
     serverEstimatedPage,
     history?.currentPage,
     history?.serverPosFrac,
@@ -287,9 +326,33 @@ export function useViewer() {
     }
   }
 
-  const onPageChange = async (page: number, totalPagesForFraction?: number) => {
+  const onPageChange = async (
+    page: number,
+    totalPagesForFraction?: number,
+    textSpinePageCounts?: number[],
+    textSpineLocation?: {
+      spineIndex: number
+      pageInSpine: number
+      estimatedSpinePageCounts: number[]
+    },
+  ) => {
     if (!selectedBook || !selectedLibraryId || !history) {
       return
+    }
+
+    if (isHtmlViewerFormat && textSpinePageCounts) {
+      const normalizedPageCounts = normalizeStoredSpinePageCounts(
+        selectedBook.path.length,
+        textSpinePageCounts,
+      )
+      const currentStoredCounts = history.textSpinePageCounts.slice()
+      const pageCountsChanged =
+        currentStoredCounts.length !== normalizedPageCounts.length ||
+        currentStoredCounts.some((pageCount, index) => pageCount !== normalizedPageCounts[index])
+
+      if (pageCountsChanged) {
+        history.setTextSpinePageCounts(normalizedPageCounts)
+      }
     }
 
     // Skip if page hasn't changed (avoid redundant API calls)
@@ -301,14 +364,47 @@ export function useViewer() {
     history.setCurrentPage(page)
 
     // Compute position fraction and schedule server sync
-    // For TextBook, use totalPagesForFraction if provided; otherwise fall back to path.length
-    const totalPages = (totalPagesForFraction ?? selectedBook.path.length) || 1
-    const posFrac = totalPages > 1 ? page / (totalPages - 1) : 0
+    // For TextBook formats, use spine-length-aware fraction and spine-anchored CFI.
+    const totalPages = (totalPagesForFraction ?? availablePageCount ?? selectedBook.path.length) || 1
+    let posFrac = totalPages > 1 ? page / (totalPages - 1) : 0
+    let cfi = generateCfiForPage(page)
+
+    if (isHtmlViewerFormat && selectedBook.path.length > 0) {
+      const normalizedCounts = normalizeStoredSpinePageCounts(
+        selectedBook.path.length,
+        textSpineLocation?.estimatedSpinePageCounts ?? textSpinePageCounts ?? [],
+      )
+      const fallbackLocation = mapDisplayPageToSpineLocation(
+        page,
+        selectedBook.path.length,
+        normalizedCounts,
+      )
+      const resolvedLocation = textSpineLocation ?? {
+        ...fallbackLocation,
+        estimatedSpinePageCounts: normalizedCounts,
+      }
+      const spinePageCount = getEffectiveSpinePageCount(
+        normalizedCounts,
+        resolvedLocation.spineIndex,
+      )
+      const progressInSpine =
+        spinePageCount <= 1
+          ? 0
+          : Math.max(0, Math.min(resolvedLocation.pageInSpine / (spinePageCount - 1), 1))
+
+      posFrac = mapSpineLocationToProgressFraction(
+        {
+          spineIndex: resolvedLocation.spineIndex,
+          progressInSpine,
+        },
+        selectedBook.path.length,
+        selectedBook.spineItemLengths.slice(),
+      )
+      cfi = generateCfiForSpineLocation(resolvedLocation.spineIndex, progressInSpine)
+    }
+
     const epoch = Math.floor(Date.now() / 1000)
     history.setServerPosition(posFrac, epoch)
-
-    // Generate proper CFI for the current page
-    const cfi = generateCfiForPage(page)
 
     // Debounce server sync to avoid excessive API calls during rapid page turns
     clearTimeout(syncTimerRef.current)
@@ -594,6 +690,8 @@ export function useViewer() {
     pageDirection,
     showMenu,
     initialPage,
+    resumeSpineLocation: htmlResumeLocation,
+    textSpinePageCounts: storedTextSpinePageCounts,
     viewerReady,
     cachedPathList,
     selectedBook,

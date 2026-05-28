@@ -8,6 +8,8 @@ export const ReadingHistoryModel = types
     format: types.string,
     currentPage: types.number,
     cachedPath: types.array(types.string),
+    /** Measured per-spine page counts for text-based books. */
+    textSpinePageCounts: types.optional(types.array(types.number), []),
     /**
      * Server-side reading position as a fraction (0–1) from Calibre.
      * Populated from `recently_read_by_user` or `last_read_positions` in the
@@ -39,6 +41,13 @@ export const ReadingHistoryModel = types
     },
     setCurrentPage: (page: number) => {
       root.currentPage = page
+    },
+    setTextSpinePageCounts: (pageCounts: number[]) => {
+      root.textSpinePageCounts.replace(
+        pageCounts.map((pageCount) => {
+          return Number.isFinite(pageCount) && pageCount > 0 ? Math.floor(pageCount) : 0
+        }),
+      )
     },
     setServerPosition: (posFrac: number, epoch: number) => {
       root.serverPosFrac = posFrac

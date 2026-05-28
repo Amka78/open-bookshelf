@@ -160,6 +160,8 @@ describe("useViewer", () => {
   const mockSelectedBook = {
     id: 1,
     path: ["page1.png", "page2.png", "page3.png", "page4.png", "page5.png"],
+    spineItemLengths: [100, 100, 100, 100, 100],
+    primaryWritingMode: null,
     hash: 123,
     pageProgressionDirection: null as "rtl" | "ltr" | null,
     metaData: {
@@ -182,7 +184,9 @@ describe("useViewer", () => {
     format: "pdf",
     currentPage: 2,
     cachedPath: ["cached1.png", "cached2.png", "cached3.png"],
+    textSpinePageCounts: [],
     setCurrentPage: mockSetCurrentPage,
+    setTextSpinePageCounts: jest.fn(),
     setServerPosition: mockSetServerPosition,
   }
 
@@ -372,6 +376,44 @@ describe("useViewer", () => {
     jest.useRealTimers()
   })
 
+  test("onPageChange stores text spine page counts even when the page is unchanged", async () => {
+    jest.useFakeTimers()
+    useStoresMock.mockReturnValue({
+      calibreRootStore: {
+        selectedLibrary: {
+          ...mockSelectedLibrary,
+          selectedBook: {
+            ...mockSelectedBook,
+            path: ["text/chapter-1.xhtml", "text/chapter-2.xhtml"],
+            spineItemLengths: [100, 100],
+            metaData: {
+              ...mockSelectedBook.metaData,
+              selectedFormat: "AZW3",
+            },
+          },
+        },
+        readingHistories: [
+          {
+            ...mockHistory,
+            format: "AZW3",
+            currentPage: 0,
+            textSpinePageCounts: [],
+          },
+        ],
+      },
+    })
+
+    const { result } = renderHook(() => useViewer())
+
+    await act(async () => {
+      await result.current.onPageChange(0, 5, [3, 2])
+    })
+
+    expect(mockHistory.setTextSpinePageCounts).toHaveBeenCalledWith([3, 2])
+    expect(mockSetCurrentPage).not.toHaveBeenCalled()
+    jest.useRealTimers()
+  })
+
   test("onPageChange calls syncReadingPositionFull after debounce", async () => {
     jest.useFakeTimers()
     const { result } = renderHook(() => useViewer())
@@ -417,6 +459,56 @@ describe("useViewer", () => {
       "pdf",
       1,
       "epubcfi(/2/2/4/10[page_5]@50:49.87)",
+    )
+    jest.useRealTimers()
+  })
+
+  test("onPageChange syncs html formats using spine-based position and CFI", async () => {
+    jest.useFakeTimers()
+    useStoresMock.mockReturnValue({
+      calibreRootStore: {
+        selectedLibrary: {
+          ...mockSelectedLibrary,
+          selectedBook: {
+            ...mockSelectedBook,
+            path: ["text/chapter-1.xhtml", "text/chapter-2.xhtml"],
+            spineItemLengths: [100, 300],
+            metaData: {
+              ...mockSelectedBook.metaData,
+              selectedFormat: "AZW3",
+            },
+          },
+        },
+        readingHistories: [
+          {
+            ...mockHistory,
+            format: "AZW3",
+            currentPage: 0,
+            textSpinePageCounts: [2, 3],
+          },
+        ],
+      },
+    })
+    const { result } = renderHook(() => useViewer())
+
+    await act(async () => {
+      await result.current.onPageChange(2, 5, [2, 3], {
+        spineIndex: 1,
+        pageInSpine: 1,
+        estimatedSpinePageCounts: [2, 3],
+      })
+    })
+
+    await act(async () => {
+      jest.advanceTimersByTime(1000)
+    })
+
+    expect(mockSyncReadingPositionFull).toHaveBeenCalledWith(
+      "lib-1",
+      1,
+      "AZW3",
+      0.625,
+      "epubcfi(/4/2/4/102[page_51]@50:49.87)",
     )
     jest.useRealTimers()
   })
@@ -652,6 +744,82 @@ describe("useViewer", () => {
 
     expect(result.current.initialPage).toBe(2)
     expect(result.current.viewerReady).toBe(true)
+  })
+
+  test("uses persisted text spine page counts when resuming an html book", async () => {
+    const frames = createFrameScheduler()
+    globalThis.requestAnimationFrame = frames.requestAnimationFrame
+    globalThis.cancelAnimationFrame = frames.cancelAnimationFrame
+    useStoresMock.mockReturnValue({
+      calibreRootStore: {
+        selectedLibrary: {
+          ...mockSelectedLibrary,
+          selectedBook: {
+            ...mockSelectedBook,
+            path: ["text/chapter-1.xhtml", "text/chapter-2.xhtml"],
+            spineItemLengths: [100, 100],
+            metaData: {
+              ...mockSelectedBook.metaData,
+              selectedFormat: "AZW3",
+            },
+          },
+        },
+        readingHistories: [
+          {
+            ...mockHistory,
+            format: "AZW3",
+            currentPage: 4,
+            textSpinePageCounts: [3, 2],
+          },
+        ],
+      },
+    })
+
+    const { result } = renderHook(() => useViewer())
+
+    await playResumeReadingPromptAccepts({
+      flushFrame: frames.flushFrame,
+      onAccept: () => getLastModalArgs<{ onOKPress: () => void }>("ConfirmModal")?.onOKPress(),
+    })
+
+    expect(result.current.initialPage).toBe(4)
+    expect(result.current.textSpinePageCounts).toEqual([3, 2])
+    expect(result.current.viewerReady).toBe(true)
+  })
+
+  test("derives a spine-local server resume location for html books", () => {
+    useStoresMock.mockReturnValue({
+      calibreRootStore: {
+        selectedLibrary: {
+          ...mockSelectedLibrary,
+          selectedBook: {
+            ...mockSelectedBook,
+            path: ["text/chapter-1.xhtml"],
+            spineItemLengths: [400],
+            metaData: {
+              ...mockSelectedBook.metaData,
+              selectedFormat: "AZW3",
+            },
+          },
+        },
+        readingHistories: [
+          {
+            ...mockHistory,
+            format: "AZW3",
+            currentPage: 0,
+            serverPosFrac: 0.8,
+            textSpinePageCounts: [],
+          },
+        ],
+      },
+    })
+
+    const { result } = renderHook(() => useViewer())
+
+    expect(result.current.resumeSpineLocation).toEqual({
+      spineIndex: 0,
+      progressInSpine: 0.8,
+    })
   })
 
   test("declining the resume reading confirm modal starts from the first page", async () => {

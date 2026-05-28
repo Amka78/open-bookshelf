@@ -280,6 +280,9 @@ const resolveRelativeDescriptor = (basePath: string, rawValue: string) => {
 const resolveBookRelativePathCandidates = (basePath: string, rawValue: string) => {
   const candidates: BookResourceDescriptor[] = []
   const seen = new Set<string>()
+  const decodedBasePath = decodeTextResourcePath(basePath)
+  const basePathCandidates =
+    decodedBasePath === basePath ? [basePath] : [basePath, decodedBasePath]
 
   const addCandidate = (candidate: BookResourceDescriptor | undefined) => {
     if (!candidate?.name) {
@@ -301,10 +304,14 @@ const resolveBookRelativePathCandidates = (basePath: string, rawValue: string) =
 
   if (replacedVirtualizedValue) {
     addCandidate(createDescriptorFromValue(replacedVirtualizedValue))
-    addCandidate(resolveRelativeDescriptor(basePath, replacedVirtualizedValue))
+    basePathCandidates.forEach((candidateBasePath) => {
+      addCandidate(resolveRelativeDescriptor(candidateBasePath, replacedVirtualizedValue))
+    })
   }
 
-  addCandidate(resolveRelativeDescriptor(basePath, rawValue))
+  basePathCandidates.forEach((candidateBasePath) => {
+    addCandidate(resolveRelativeDescriptor(candidateBasePath, rawValue))
+  })
 
   return candidates
 }
@@ -425,39 +432,78 @@ const decodeTextResourcePath = (path: string) => {
   return hash ? `${withQuery}#${hash}` : withQuery
 }
 
-const fetchBookFileResponse = async (props: BookHtmlPageProps, path: string) => {
-  const normalizedPath = decodeTextResourcePath(path)
-  const resourceUrl = buildRemoteBookFileUrl(props, normalizedPath)
-  logger.debug("Fetching book resource", {
-    path,
-    normalizedPath,
-    resourceUrl,
-    bookId: props.bookId,
-    libraryId: props.libraryId,
-    format: props.format,
-  })
-  const response = await api.fetchWithAuth(resourceUrl, {
-    headers: props.headers,
-  })
+type FetchBookFileResponseResult = {
+  response: Response
+  resolvedPath: string
+}
 
-  if (!response.ok) {
-    const message = `Failed to fetch book resource: ${normalizedPath} (${response.status})`
-    logger.error(message, {
+const fetchBookFileResponseWithResolvedPath = async (
+  props: BookHtmlPageProps,
+  path: string,
+  options?: { skipTextPathDecode?: boolean },
+): Promise<FetchBookFileResponseResult> => {
+  const normalizedPath = options?.skipTextPathDecode ? path : decodeTextResourcePath(path)
+  const candidatePaths = Array.from(new Set([normalizedPath, path].filter(Boolean)))
+  let lastFailure: { path: string; status: number; resourceUrl: string } | null = null
+
+  for (const candidatePath of candidatePaths) {
+    const resourceUrl = buildRemoteBookFileUrl(props, candidatePath)
+    logger.debug("Fetching book resource", {
       path,
       normalizedPath,
+      candidatePath,
+      resourceUrl,
+      bookId: props.bookId,
+      libraryId: props.libraryId,
+      format: props.format,
+    })
+
+    const response = await api.fetchWithAuth(resourceUrl, {
+      headers: props.headers,
+    })
+
+    if (response.ok) {
+      logger.debug("Fetched book resource", {
+        path,
+        normalizedPath,
+        candidatePath,
+        resourceUrl,
+        status: response.status,
+      })
+      return { response, resolvedPath: candidatePath }
+    }
+
+    lastFailure = { path: candidatePath, status: response.status, resourceUrl }
+    logger.debug("Book resource candidate failed", {
+      path,
+      normalizedPath,
+      candidatePath,
       resourceUrl,
       status: response.status,
     })
-    throw new Error(message)
   }
 
-  logger.debug("Fetched book resource", {
+  const failure = lastFailure ?? {
+    path: normalizedPath,
+    status: 0,
+    resourceUrl: buildRemoteBookFileUrl(props, normalizedPath),
+  }
+  const message = `Failed to fetch book resource: ${failure.path} (${failure.status})`
+  logger.error(message, {
     path,
     normalizedPath,
-    resourceUrl,
-    status: response.status,
+    resourceUrl: failure.resourceUrl,
+    status: failure.status,
   })
+  throw new Error(message)
+}
 
+const fetchBookFileResponse = async (
+  props: BookHtmlPageProps,
+  path: string,
+  options?: { skipTextPathDecode?: boolean },
+) => {
+  const { response } = await fetchBookFileResponseWithResolvedPath(props, path, options)
   return response
 }
 
@@ -742,28 +788,57 @@ const inlineSerializedNodeResources = async (
 
 const prepareSerializedHtmlDocument = async (props: BookHtmlPageProps) => {
   logger.debug("Preparing book page", { pagePath: props.pagePath })
-  const response = await fetchBookFileResponse(props, props.pagePath)
-
-  logger.debug("Loaded page resource", { path: props.pagePath, status: response.status })
-  const rawText = await response.text()
-
-  let parsed: SerializedHtmlDocument
-  try {
-    parsed = JSON.parse(rawText) as SerializedHtmlDocument
-  } catch (error) {
-    logger.error("Failed to parse serialized html payload", {
-      pagePath: props.pagePath,
+  const loadSerializedPayload = async (skipTextPathDecode = false) => {
+    const { response, resolvedPath } = await fetchBookFileResponseWithResolvedPath(
+      props,
+      props.pagePath,
+      {
+        skipTextPathDecode,
+      },
+    )
+    logger.debug("Loaded page resource", {
+      path: props.pagePath,
+      resolvedPath,
       status: response.status,
-      preview: rawText.slice(0, 120),
-      error,
+      skipTextPathDecode,
     })
-    throw new Error("Invalid serialized page payload")
+    const rawText = await response.text()
+
+    try {
+      return {
+        parsed: JSON.parse(rawText) as SerializedHtmlDocument,
+        resolvedPath,
+      }
+    } catch (error) {
+      logger.error("Failed to parse serialized html payload", {
+        pagePath: props.pagePath,
+        resolvedPath,
+        status: response.status,
+        preview: rawText.slice(0, 120),
+        skipTextPathDecode,
+        error,
+      })
+      throw new Error("Invalid serialized page payload")
+    }
   }
 
-  const prepared = JSON.parse(JSON.stringify(parsed)) as SerializedHtmlDocument
-  logger.debug("Fetched page content", { rawText: rawText, parsed: parsed, prepared: prepared })
+  let loadedPayload: { parsed: SerializedHtmlDocument; resolvedPath: string }
+  try {
+    loadedPayload = await loadSerializedPayload(false)
+  } catch (error) {
+    const decodedPagePath = decodeTextResourcePath(props.pagePath)
+    const canRetryWithOriginalPath = decodedPagePath !== props.pagePath
+    if (!canRetryWithOriginalPath) {
+      throw error
+    }
+    loadedPayload = await loadSerializedPayload(true)
+  }
 
-  await inlineSerializedNodeResources(prepared.tree, props.pagePath, props)
+  const { parsed, resolvedPath } = loadedPayload
+  const prepared = JSON.parse(JSON.stringify(parsed)) as SerializedHtmlDocument
+  logger.debug("Fetched page content", { parsed: parsed, prepared: prepared })
+
+  await inlineSerializedNodeResources(prepared.tree, resolvedPath, props)
 
   return prepared
 }

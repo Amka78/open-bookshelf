@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { generateCfiForPage } from "./cfi"
+import { generateCfiForPage, generateCfiForSpineLocation } from "./cfi"
 
 describe("generateCfiForPage", () => {
   test("generates correct CFI for page 0 (first page)", () => {
@@ -36,5 +36,17 @@ describe("generateCfiForPage", () => {
     // EPUB page 16: epubcfi(/2/2/4/32[page_16]@50:49.87)
     expect(generateCfiForPage(0)).toBe("epubcfi(/2/2/4/2[page_1]@50:49.87)")
     expect(generateCfiForPage(15)).toBe("epubcfi(/2/2/4/32[page_16]@50:49.87)")
+  })
+})
+
+describe("generateCfiForSpineLocation", () => {
+  test("anchors CFI to the given spine index", () => {
+    expect(generateCfiForSpineLocation(0, 0)).toBe("epubcfi(/2/2/4/2[page_1]@50:49.87)")
+    expect(generateCfiForSpineLocation(1, 0.25)).toBe("epubcfi(/4/2/4/52[page_26]@50:49.87)")
+  })
+
+  test("clamps progress and formats spatial position", () => {
+    expect(generateCfiForSpineLocation(3, 2, 25, 10)).toBe("epubcfi(/8/2/4/202[page_101]@25:10.00)")
+    expect(generateCfiForSpineLocation(3, -1, 25, 0)).toBe("epubcfi(/8/2/4/2[page_1]@25:0.00)")
   })
 })

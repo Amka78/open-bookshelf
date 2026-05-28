@@ -387,4 +387,251 @@ describe("useCalibreHtmlDocument", () => {
     expect(result.current.html).toBeNull()
     expect(result.current.error).toContain("Failed to fetch book resource: Text/missing.xhtml (404)")
   })
+
+  test("falls back to the original encoded text spine path when decoded path fails", async () => {
+    fetchWithAuthMock.mockImplementation((url: string) => {
+      if (url.includes("text/chapter/part1.xhtml")) {
+        return Promise.resolve(
+          createResponse({
+            body: "missing",
+            contentType: "text/plain",
+            status: 404,
+          }),
+        )
+      }
+
+      if (url.includes("text/chapter%2Fpart1.xhtml")) {
+        return Promise.resolve(
+          createResponse({
+            body: JSON.stringify({
+              ns_map: [],
+              tree: {
+                n: "html",
+                c: [{ n: "body", c: [{ n: "p", c: ["fallback works"] }] }],
+              },
+            }),
+            contentType: "application/json",
+          }),
+        )
+      }
+
+      throw new Error(`Unexpected URL: ${url}`)
+    })
+
+    const { result } = renderHook(() =>
+      useCalibreHtmlDocument(
+        createBookHtmlProps({
+          pagePath: "text/chapter%2Fpart1.xhtml",
+          hash: 17749658583,
+        }),
+      ),
+    )
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.error).toBeNull()
+    expect(result.current.html).toContain("fallback works")
+    expect(fetchWithAuthMock).toHaveBeenCalledTimes(2)
+    expect(fetchWithAuthMock.mock.calls[0]?.[0]).toContain("text/chapter/part1.xhtml")
+    expect(fetchWithAuthMock.mock.calls[1]?.[0]).toContain("text/chapter%2Fpart1.xhtml")
+  })
+
+  test("falls back to the original encoded path when decoded page payload is not serialized json", async () => {
+    fetchWithAuthMock.mockImplementation((url: string) => {
+      if (url.includes("text/chapter/part2.xhtml")) {
+        return Promise.resolve(
+          createResponse({
+            body: "<html><body>raw html</body></html>",
+            contentType: "application/xhtml+xml",
+          }),
+        )
+      }
+
+      if (url.includes("text/chapter%2Fpart2.xhtml")) {
+        return Promise.resolve(
+          createResponse({
+            body: JSON.stringify({
+              ns_map: [],
+              tree: {
+                n: "html",
+                c: [{ n: "body", c: [{ n: "p", c: ["encoded payload works"] }] }],
+              },
+            }),
+            contentType: "application/json",
+          }),
+        )
+      }
+
+      throw new Error(`Unexpected URL: ${url}`)
+    })
+
+    const { result } = renderHook(() =>
+      useCalibreHtmlDocument(
+        createBookHtmlProps({
+          pagePath: "text/chapter%2Fpart2.xhtml",
+          hash: 17749658585,
+        }),
+      ),
+    )
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.error).toBeNull()
+    expect(result.current.html).toContain("encoded payload works")
+    expect(fetchWithAuthMock).toHaveBeenCalledTimes(2)
+    expect(fetchWithAuthMock.mock.calls[0]?.[0]).toContain("text/chapter/part2.xhtml")
+    expect(fetchWithAuthMock.mock.calls[1]?.[0]).toContain("text/chapter%2Fpart2.xhtml")
+  })
+
+  test("uses the resolved encoded page path as base for relative resource inlining after fallback", async () => {
+    fetchWithAuthMock.mockImplementation((url: string) => {
+      if (url.includes("text/chapter/part3.xhtml")) {
+        return Promise.resolve(
+          createResponse({
+            body: "<html><body>raw html</body></html>",
+            contentType: "application/xhtml+xml",
+          }),
+        )
+      }
+
+      if (url.includes("text/chapter%2Fpart3.xhtml")) {
+        return Promise.resolve(
+          createResponse({
+            body: JSON.stringify({
+              ns_map: [],
+              tree: {
+                n: "html",
+                c: [
+                  {
+                    n: "body",
+                    c: [{ n: "img", a: [["src", "images/p1.jpg"]] }],
+                  },
+                ],
+              },
+            }),
+            contentType: "application/json",
+          }),
+        )
+      }
+
+      if (url.includes("text/images/p1.jpg")) {
+        return Promise.resolve(
+          createResponse({
+            body: new Uint8Array([255, 216, 255, 217]),
+            contentType: "image/jpeg",
+          }),
+        )
+      }
+
+      throw new Error(`Unexpected URL: ${url}`)
+    })
+
+    const { result } = renderHook(() =>
+      useCalibreHtmlDocument(
+        createBookHtmlProps({
+          pagePath: "text/chapter%2Fpart3.xhtml",
+          hash: 17749658586,
+        }),
+      ),
+    )
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.error).toBeNull()
+    expect(fetchWithAuthMock).toHaveBeenCalledTimes(3)
+    expect(fetchWithAuthMock.mock.calls[0]?.[0]).toContain("text/chapter/part3.xhtml")
+    expect(fetchWithAuthMock.mock.calls[1]?.[0]).toContain("text/chapter%2Fpart3.xhtml")
+    expect(fetchWithAuthMock.mock.calls[2]?.[0]).toContain("text/images/p1.jpg")
+  })
+
+  test("tries both encoded and decoded base paths for relative stylesheet resolution", async () => {
+    fetchWithAuthMock.mockImplementation((url: string) => {
+      if (url.includes("text/chapter/part4.xhtml")) {
+        return Promise.resolve(
+          createResponse({
+            body: "<html><body>raw html</body></html>",
+            contentType: "application/xhtml+xml",
+          }),
+        )
+      }
+
+      if (url.includes("text/chapter%2Fpart4.xhtml")) {
+        return Promise.resolve(
+          createResponse({
+            body: JSON.stringify({
+              ns_map: [],
+              tree: {
+                n: "html",
+                c: [
+                  {
+                    n: "head",
+                    c: [
+                      {
+                        n: "link",
+                        a: [
+                          ["rel", "stylesheet"],
+                          ["href", "styles/book.css"],
+                        ],
+                      },
+                    ],
+                  },
+                  {
+                    n: "body",
+                    c: [{ n: "p", c: ["dual base resolve"] }],
+                  },
+                ],
+              },
+            }),
+            contentType: "application/json",
+          }),
+        )
+      }
+
+      if (url.includes("text/chapter/styles/book.css")) {
+        return Promise.resolve(
+          createResponse({
+            body: "body { writing-mode: vertical-rl; }",
+            contentType: "text/css",
+          }),
+        )
+      }
+
+      if (url.includes("text/styles/book.css")) {
+        return Promise.resolve(
+          createResponse({
+            body: "missing",
+            contentType: "text/plain",
+            status: 404,
+          }),
+        )
+      }
+
+      throw new Error(`Unexpected URL: ${url}`)
+    })
+
+    const { result } = renderHook(() =>
+      useCalibreHtmlDocument(
+        createBookHtmlProps({
+          pagePath: "text/chapter%2Fpart4.xhtml",
+          hash: 17749658587,
+        }),
+      ),
+    )
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.error).toBeNull()
+    expect(fetchWithAuthMock.mock.calls.some((call) => call[0].includes("text/chapter/styles/book.css"))).toBe(
+      true,
+    )
+    expect(fetchWithAuthMock.mock.calls.some((call) => call[0].includes("text/styles/book.css"))).toBe(true)
+  })
 })

@@ -133,9 +133,11 @@ function setupMocks() {
 function renderSpine({
   onPaginationChange,
   sourceHtml = sampleHtml,
+  preferredWritingMode,
 }: {
   onPaginationChange?: (payload: { currentPage: number; totalPages: number }) => void
   sourceHtml?: string
+  preferredWritingMode?: string | null
 } = {}) {
   return render(
     <TextBookSpine
@@ -150,6 +152,7 @@ function renderSpine({
       readingStyle="singlePage"
       pageDirection="left"
       leadingBlankPage={false}
+      preferredWritingMode={preferredWritingMode}
       annotations={[]}
       onPaginationChange={onPaginationChange}
     />,
@@ -265,7 +268,11 @@ describe("TextBookSpine story play", () => {
       initialPage: 0,
       leadingBlankPage: false,
     })
-    const { container } = renderSpine({ onPaginationChange, sourceHtml: verticalHtml })
+    const { container } = renderSpine({
+      onPaginationChange,
+      sourceHtml: verticalHtml,
+      preferredWritingMode: "vertical-rl",
+    })
 
     await act(async () => {
       await playVerticalWritingPaginationReported({ canvasElement: container })
