@@ -21,7 +21,7 @@ function normalizeLevel(level: string | undefined): LogLevel | undefined {
 
 const envLevelRaw = typeof process !== "undefined" ? process.env.EXPO_PUBLIC_LOG_LEVEL : undefined
 const envLevel = normalizeLevel(envLevelRaw)
-const defaultLevel: LogLevel = __DEV__ ? "info" : "warn"
+const defaultLevel: LogLevel = __DEV__ ? "debug" : "warn"
 const currentLevel = envLevel ?? defaultLevel
 
 function shouldLog(level: LogLevel) {

@@ -16,7 +16,7 @@ export function AddFileButton(props: AddFileButtonProps) {
         })
 
         if (props.onDocumentSelect && !docRes.canceled) {
-          props.onDocumentSelect(docRes.assets)
+          await props.onDocumentSelect(docRes.assets)
         }
       }}
       variant="staggerChild"
