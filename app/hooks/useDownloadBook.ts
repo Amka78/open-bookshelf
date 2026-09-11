@@ -18,9 +18,10 @@ const getRequiredDirectoryUri = (directory: string | null, label: string) => {
 export function useDownloadBook() {
   const { calibreRootStore } = useStores()
 
-  const selectedLibrary = calibreRootStore.selectedLibrary
-  const selectedBook = selectedLibrary.selectedBook
   const execute = async (modal: UsableModalProp<ModalStackParams>) => {
+    const selectedLibrary = calibreRootStore.selectedLibrary
+    const selectedBook = selectedLibrary?.selectedBook
+    if (!selectedLibrary || !selectedBook) return
     try {
       if (selectedBook.metaData.formats.length > 1) {
         modal.openModal("FormatSelectModal", {

@@ -254,6 +254,8 @@ export const LibraryScreen: FC = observer(() => {
     return map
   }, [calibreRootStore.readingHistories, selectedLibrary?.id])
 
+  if (!selectedLibrary) return null
+
   const thumbnailSourceById = buildThumbnailSourceCache({
     authStateVersion,
     bookList,

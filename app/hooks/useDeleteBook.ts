@@ -6,9 +6,10 @@ import type { UsableModalProp } from "react-native-modalfy"
 export function useDeleteBook() {
   const { calibreRootStore } = useStores()
 
-  const selectedLibrary = calibreRootStore.selectedLibrary
-  const selectedBook = selectedLibrary.selectedBook
   const execute = (modal: UsableModalProp<ModalStackParams>) => {
+    const selectedLibrary = calibreRootStore.selectedLibrary
+    const selectedBook = selectedLibrary?.selectedBook
+    if (!selectedLibrary || !selectedBook) return
     modal.openModal("ConfirmModal", {
       titleTx: "modal.deleteConfirmModal.title",
       message: translate({
