@@ -172,6 +172,8 @@ mock.module("@/components/ScrollView/ScrollView", () => ({
   ScrollView: componentsMock.ScrollView,
 }))
 mock.module("./LibraryTableItem", () => ({
+  clampColumnWidth: (width: number) => width,
+  computeLibraryTableMinWidth: () => 700,
   createLibraryTableFieldLabels: () => ({
     actions: "Actions",
     authors: "Authors",
@@ -181,6 +183,13 @@ mock.module("./LibraryTableItem", () => ({
     tags: "Tags",
     title: "Title",
   }),
+  DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS: {
+    authors: 180,
+    publisher: 150,
+    series: 150,
+    tags: 180,
+    title: 180,
+  },
   LibraryTableHeader: () => <div data-testid="library-table-header" />,
   LibraryTableItem: (props: Record<string, unknown>) => {
     libraryTableItemProps.push(props)
@@ -346,9 +355,11 @@ function renderLibraryScreen({
     settingStore: {
       addRecentSearch: jest.fn(),
       booksPerPage: 20,
+      getLibraryTableColumnWidths: () => ({}),
       getLibraryViewMode: () => viewMode,
       getReadStatus: () => undefined,
       recentSearches: [],
+      setLibraryTableColumnWidth: jest.fn(),
       setLibraryViewMode: jest.fn(),
     },
   })

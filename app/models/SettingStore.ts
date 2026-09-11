@@ -1,4 +1,4 @@
-import { type Instance, type SnapshotOut, types } from "mobx-state-tree"
+import { getSnapshot, type Instance, type SnapshotOut, types } from "mobx-state-tree"
 import { api } from "../services/api"
 
 const ApiModel = types.model("ApiModel").props({
@@ -34,6 +34,7 @@ export const SettingStoreModel = types
       types.union(types.literal("grid"), types.literal("list"), types.literal("table")),
       "list",
     ),
+    libraryTableColumnWidths: types.optional(types.map(types.number), {}),
   })
   .views((store) => ({
     getReadStatus(libraryId: string, bookId: number): string | undefined {
@@ -41,6 +42,9 @@ export const SettingStoreModel = types
     },
     getLibraryViewMode(isLargeScreen: boolean): "grid" | "list" | "table" {
       return isLargeScreen ? store.libraryViewModeDesktop : store.libraryViewModeMobile
+    },
+    getLibraryTableColumnWidths(): Record<string, number> {
+      return getSnapshot(store.libraryTableColumnWidths)
     },
   }))
   .actions((store) => ({
@@ -98,6 +102,10 @@ export const SettingStoreModel = types
       } else {
         store.libraryViewModeMobile = mode
       }
+    },
+    setLibraryTableColumnWidth(column: string, width: number) {
+      if (!Number.isFinite(width)) return
+      store.libraryTableColumnWidths.set(column, Math.round(width))
     },
   }))
 

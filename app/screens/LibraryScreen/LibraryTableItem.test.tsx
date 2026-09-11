@@ -130,16 +130,42 @@ mock.module("mobx-react-lite", () => ({
 }))
 
 mock.module("react-native", () => ({
+  PanResponder: {
+    create: () => ({ panHandlers: {} }),
+  },
+  Platform: { OS: "web" },
   StyleSheet: {
     create: <T extends Record<string, unknown>>(value: T) => value,
     hairlineWidth: 1,
   },
+  View: ({
+    children,
+    style,
+    testID,
+  }: {
+    children?: ReactNode
+    style?: unknown
+    testID?: string
+  }) => (
+    <div data-testid={testID} style={normalizeStyle(style)}>
+      {children}
+    </div>
+  ),
 }))
 
 let LibraryTableItem: typeof import("./LibraryTableItem").LibraryTableItem
+let LibraryTableHeader: typeof import("./LibraryTableItem").LibraryTableHeader
+let clampColumnWidth: typeof import("./LibraryTableItem").clampColumnWidth
+let computeLibraryTableMinWidth: typeof import("./LibraryTableItem").computeLibraryTableMinWidth
+let DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS: typeof import("./LibraryTableItem").DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS
 
 beforeAll(async () => {
-  ;({ LibraryTableItem } = await import("./LibraryTableItem"))
+  const libraryTableItemModule = await import("./LibraryTableItem")
+  LibraryTableItem = libraryTableItemModule.LibraryTableItem
+  LibraryTableHeader = libraryTableItemModule.LibraryTableHeader
+  clampColumnWidth = libraryTableItemModule.clampColumnWidth
+  computeLibraryTableMinWidth = libraryTableItemModule.computeLibraryTableMinWidth
+  DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS = libraryTableItemModule.DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS
 })
 
 describe("LibraryTableItem", () => {
@@ -257,5 +283,58 @@ describe("LibraryTableItem", () => {
     expect(screen.getByTestId("library-table-selected-outline-1")).toBeTruthy()
     expect(screen.getByTestId("library-table-book-detail-menu")).toBeTruthy()
     expect((bookDetailMenuProps[0] as { wrap?: boolean } | undefined)?.wrap).toBeUndefined()
+  })
+
+  test("renders a resize handle for each metadata column when resizing is enabled", () => {
+    render(
+      <LibraryTableHeader
+        labels={{
+          actions: "Actions",
+          authors: "Authors",
+          book: "Book",
+          publisher: "Publisher",
+          series: "Series",
+          tags: "Tags",
+          title: "Title",
+        }}
+        onColumnResize={() => {}}
+      />,
+    )
+
+    for (const column of ["title", "authors", "series", "tags", "publisher"]) {
+      expect(screen.getByTestId(`library-table-resize-${column}`)).toBeTruthy()
+    }
+  })
+
+  test("omits resize handles when no resize handler is provided", () => {
+    render(
+      <LibraryTableHeader
+        labels={{
+          actions: "Actions",
+          authors: "Authors",
+          book: "Book",
+          publisher: "Publisher",
+          series: "Series",
+          tags: "Tags",
+          title: "Title",
+        }}
+      />,
+    )
+
+    expect(screen.queryByTestId("library-table-resize-title")).toBeNull()
+  })
+
+  test("clampColumnWidth keeps widths within the allowed bounds", () => {
+    expect(clampColumnWidth(10)).toBe(60)
+    expect(clampColumnWidth(1000)).toBe(600)
+    expect(clampColumnWidth(200.4)).toBe(200)
+    expect(clampColumnWidth(Number.NaN)).toBe(60)
+  })
+
+  test("computeLibraryTableMinWidth sums fixed and dynamic column widths", () => {
+    expect(computeLibraryTableMinWidth()).toBe(1080)
+    expect(
+      computeLibraryTableMinWidth({ ...DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS, title: 100 }),
+    ).toBe(1000)
   })
 })

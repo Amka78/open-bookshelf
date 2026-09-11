@@ -48,10 +48,14 @@ import {
   parseQueryParts,
 } from "./librarySearchState"
 import {
+  clampColumnWidth,
+  computeLibraryTableMinWidth,
   createLibraryTableFieldLabels,
+  DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS,
+  type LibraryTableColumnKey,
+  type LibraryTableColumnWidths,
   LibraryTableHeader,
   LibraryTableItem,
-  LIBRARY_TABLE_MIN_WIDTH,
 } from "./LibraryTableItem"
 import { useLibrary } from "./useLibrary"
 import { useLibraryScrollPosition } from "./useLibraryScrollPosition"
@@ -196,6 +200,28 @@ export const LibraryScreen: FC = observer(() => {
         ? createLibraryTableFieldLabels(selectedLibrary.fieldMetadataList)
         : undefined,
     [selectedLibrary],
+  )
+  const storedTableColumnWidths = settingStore.getLibraryTableColumnWidths()
+  const tableColumnWidths: LibraryTableColumnWidths = {
+    title: clampColumnWidth(
+      storedTableColumnWidths.title ?? DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS.title,
+    ),
+    authors: clampColumnWidth(
+      storedTableColumnWidths.authors ?? DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS.authors,
+    ),
+    series: clampColumnWidth(
+      storedTableColumnWidths.series ?? DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS.series,
+    ),
+    tags: clampColumnWidth(storedTableColumnWidths.tags ?? DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS.tags),
+    publisher: clampColumnWidth(
+      storedTableColumnWidths.publisher ?? DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS.publisher,
+    ),
+  }
+  const handleColumnResize = useCallback(
+    (column: LibraryTableColumnKey, width: number) => {
+      settingStore.setLibraryTableColumnWidth(column, width)
+    },
+    [settingStore],
   )
   const visibleBookIds = useMemo(() => bookList.map((book) => book.id), [bookList])
   const allVisibleBooksSelected = libraryHook.areAllBooksSelected(visibleBookIds)
@@ -524,6 +550,7 @@ export const LibraryScreen: FC = observer(() => {
             source={imageSource}
             libraryId={selectedLibrary.id}
             isSelected={isSelected}
+            columnWidths={tableColumnWidths}
             showSelectionActions={showSingleSelectionDetails}
             detailMenuProps={detailMenuProps}
             onPress={() => libraryHook.handleBookPress(item.id)}
@@ -550,6 +577,7 @@ export const LibraryScreen: FC = observer(() => {
       viewMode,
       settingStore,
       calibreRootStore,
+      tableColumnWidths,
     ],
   )
 
@@ -609,7 +637,7 @@ export const LibraryScreen: FC = observer(() => {
       {selectedLibrary ? (
         viewMode === "table" ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={true}>
-            <Box width={Math.max(window.width, LIBRARY_TABLE_MIN_WIDTH)}>
+            <Box width={Math.max(window.width, computeLibraryTableMinWidth(tableColumnWidths))}>
               <FlatList<Book>
                 ref={listRef}
                 key={viewMode}
@@ -618,7 +646,13 @@ export const LibraryScreen: FC = observer(() => {
                 keyExtractor={(item) => `${item.id}`}
                 numColumns={1}
                 ListHeaderComponent={
-                  tableFieldLabels ? <LibraryTableHeader labels={tableFieldLabels} /> : undefined
+                  tableFieldLabels ? (
+                    <LibraryTableHeader
+                      labels={tableFieldLabels}
+                      columnWidths={tableColumnWidths}
+                      onColumnResize={handleColumnResize}
+                    />
+                  ) : undefined
                 }
                 onContentSizeChange={() => {
                   restoreScrollOffset()

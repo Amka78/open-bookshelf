@@ -3,8 +3,8 @@ import type { BookDetailMenuProps, ImageProps } from "@/components"
 import { InputField } from "@/components/InputField/InputField"
 import type { Book, FieldMetadataMap, MetadataSnapshotIn } from "@/models/calibre"
 import { observer } from "mobx-react-lite"
-import { useEffect, useMemo, useState } from "react"
-import { StyleSheet } from "react-native"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { PanResponder, Platform, StyleSheet, View, type ViewStyle } from "react-native"
 import { Pressable } from "@gluestack-ui/themed"
 
 const BOOK_COLUMN_WIDTH = 150
@@ -17,14 +17,48 @@ const ACTIONS_COLUMN_WIDTH = 90
 const SELECTED_OUTLINE_COLOR = "#3B82F6"
 const SELECTED_OVERLAY_COLOR = "rgba(59, 130, 246, 0.08)"
 
-export const LIBRARY_TABLE_MIN_WIDTH =
-  BOOK_COLUMN_WIDTH +
-  TITLE_COLUMN_WIDTH +
-  AUTHORS_COLUMN_WIDTH +
-  SERIES_COLUMN_WIDTH +
-  TAGS_COLUMN_WIDTH +
-  PUBLISHER_COLUMN_WIDTH +
-  ACTIONS_COLUMN_WIDTH
+// Metadata columns whose width the user can change by dragging the header border.
+export type LibraryTableColumnKey = "title" | "authors" | "series" | "tags" | "publisher"
+
+export type LibraryTableColumnWidths = Record<LibraryTableColumnKey, number>
+
+export const LIBRARY_TABLE_COLUMN_MIN_WIDTH = 60
+export const LIBRARY_TABLE_COLUMN_MAX_WIDTH = 600
+
+export const DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS: LibraryTableColumnWidths = {
+  title: TITLE_COLUMN_WIDTH,
+  authors: AUTHORS_COLUMN_WIDTH,
+  series: SERIES_COLUMN_WIDTH,
+  tags: TAGS_COLUMN_WIDTH,
+  publisher: PUBLISHER_COLUMN_WIDTH,
+}
+
+export function clampColumnWidth(
+  width: number,
+  min: number = LIBRARY_TABLE_COLUMN_MIN_WIDTH,
+  max: number = LIBRARY_TABLE_COLUMN_MAX_WIDTH,
+): number {
+  if (!Number.isFinite(width)) return min
+  return Math.min(max, Math.max(min, Math.round(width)))
+}
+
+export function computeLibraryTableMinWidth(
+  widths: LibraryTableColumnWidths = DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS,
+): number {
+  return (
+    BOOK_COLUMN_WIDTH +
+    widths.title +
+    widths.authors +
+    widths.series +
+    widths.tags +
+    widths.publisher +
+    ACTIONS_COLUMN_WIDTH
+  )
+}
+
+export const LIBRARY_TABLE_MIN_WIDTH = computeLibraryTableMinWidth()
+
+const resizeHandleWebStyle = { cursor: "col-resize" } as unknown as ViewStyle
 
 type LibraryTableFieldLabels = {
   book: string
@@ -38,6 +72,51 @@ type LibraryTableFieldLabels = {
 
 type LibraryTableHeaderProps = {
   labels: LibraryTableFieldLabels
+  columnWidths?: LibraryTableColumnWidths
+  onColumnResize?: (column: LibraryTableColumnKey, width: number) => void
+}
+
+type ResizeHandleProps = {
+  column: LibraryTableColumnKey
+  width: number
+  onResize: (column: LibraryTableColumnKey, width: number) => void
+}
+
+function ResizeHandle({ column, width, onResize }: ResizeHandleProps) {
+  const widthRef = useRef(width)
+  widthRef.current = width
+  const startWidthRef = useRef(width)
+  const startPageXRef = useRef(0)
+
+  const onResizeRef = useRef(onResize)
+  onResizeRef.current = onResize
+
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: () => true,
+        onPanResponderGrant: (event) => {
+          startWidthRef.current = widthRef.current
+          startPageXRef.current = event.nativeEvent.pageX
+        },
+        onPanResponderMove: (event) => {
+          const delta = event.nativeEvent.pageX - startPageXRef.current
+          onResizeRef.current(column, clampColumnWidth(startWidthRef.current + delta))
+        },
+      }),
+    [column],
+  )
+
+  return (
+    <View
+      {...panResponder.panHandlers}
+      style={[styles.resizeHandle, Platform.OS === "web" ? resizeHandleWebStyle : undefined]}
+      testID={`library-table-resize-${column}`}
+    >
+      <View style={styles.resizeHandleGrip} />
+    </View>
+  )
 }
 
 type LibraryTableItemProps = {
@@ -45,6 +124,7 @@ type LibraryTableItemProps = {
   source: ImageProps["source"]
   libraryId: string
   isSelected: boolean
+  columnWidths?: LibraryTableColumnWidths
   showSelectionActions?: boolean
   detailMenuProps?: BookDetailMenuProps
   onPress?: () => void
@@ -86,27 +166,34 @@ export function createLibraryTableFieldLabels(fieldMetadataList: FieldMetadataMa
   }
 }
 
-export function LibraryTableHeader({ labels }: LibraryTableHeaderProps) {
+export function LibraryTableHeader({
+  labels,
+  columnWidths = DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS,
+  onColumnResize,
+}: LibraryTableHeaderProps) {
+  const renderResizableHeaderCell = (
+    column: LibraryTableColumnKey,
+    label: string,
+    cellStyle: ViewStyle,
+  ) => (
+    <Box style={[styles.headerCell, cellStyle, { width: columnWidths[column] }]}>
+      <Text fontWeight="$bold">{label}</Text>
+      {onColumnResize ? (
+        <ResizeHandle column={column} width={columnWidths[column]} onResize={onColumnResize} />
+      ) : null}
+    </Box>
+  )
+
   return (
     <HStack style={styles.headerRow}>
       <Box style={[styles.headerCell, styles.bookCell]}>
         <Text fontWeight="$bold">{labels.book}</Text>
       </Box>
-      <Box style={[styles.headerCell, styles.titleCell]}>
-        <Text fontWeight="$bold">{labels.title}</Text>
-      </Box>
-      <Box style={[styles.headerCell, styles.authorsCell]}>
-        <Text fontWeight="$bold">{labels.authors}</Text>
-      </Box>
-      <Box style={[styles.headerCell, styles.seriesCell]}>
-        <Text fontWeight="$bold">{labels.series}</Text>
-      </Box>
-      <Box style={[styles.headerCell, styles.tagsCell]}>
-        <Text fontWeight="$bold">{labels.tags}</Text>
-      </Box>
-      <Box style={[styles.headerCell, styles.publisherCell]}>
-        <Text fontWeight="$bold">{labels.publisher}</Text>
-      </Box>
+      {renderResizableHeaderCell("title", labels.title, styles.titleCell)}
+      {renderResizableHeaderCell("authors", labels.authors, styles.authorsCell)}
+      {renderResizableHeaderCell("series", labels.series, styles.seriesCell)}
+      {renderResizableHeaderCell("tags", labels.tags, styles.tagsCell)}
+      {renderResizableHeaderCell("publisher", labels.publisher, styles.publisherCell)}
       <Box style={[styles.headerCell, styles.actionsCell]}>
         <Text fontWeight="$bold">{labels.actions}</Text>
       </Box>
@@ -119,6 +206,7 @@ export const LibraryTableItem = observer(function LibraryTableItem({
   source,
   libraryId,
   isSelected,
+  columnWidths = DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS,
   showSelectionActions = false,
   detailMenuProps,
   onPress,
@@ -216,7 +304,7 @@ export const LibraryTableItem = observer(function LibraryTableItem({
             {book.metaData.title ?? ""}
           </Text>
         </Pressable>
-        <Box style={styles.titleCell}>
+        <Box style={[styles.titleCell, { width: columnWidths.title }]}>
           <Input size="sm">
             <InputField
               value={title}
@@ -225,7 +313,7 @@ export const LibraryTableItem = observer(function LibraryTableItem({
             />
           </Input>
         </Box>
-        <Box style={styles.authorsCell}>
+        <Box style={[styles.authorsCell, { width: columnWidths.authors }]}>
           <Input size="sm">
             <InputField
               value={authors}
@@ -234,7 +322,7 @@ export const LibraryTableItem = observer(function LibraryTableItem({
             />
           </Input>
         </Box>
-        <Box style={styles.seriesCell}>
+        <Box style={[styles.seriesCell, { width: columnWidths.series }]}>
           <Input size="sm">
             <InputField
               value={series}
@@ -243,7 +331,7 @@ export const LibraryTableItem = observer(function LibraryTableItem({
             />
           </Input>
         </Box>
-        <Box style={styles.tagsCell}>
+        <Box style={[styles.tagsCell, { width: columnWidths.tags }]}>
           <Input size="sm">
             <InputField
               value={tags}
@@ -252,7 +340,7 @@ export const LibraryTableItem = observer(function LibraryTableItem({
             />
           </Input>
         </Box>
-        <Box style={styles.publisherCell}>
+        <Box style={[styles.publisherCell, { width: columnWidths.publisher }]}>
           <Input size="sm">
             <InputField
               value={publisher}
@@ -304,6 +392,23 @@ const styles = StyleSheet.create({
   headerCell: {
     justifyContent: "center",
     paddingHorizontal: 6,
+    position: "relative",
+  },
+  resizeHandle: {
+    alignItems: "center",
+    bottom: 0,
+    justifyContent: "center",
+    position: "absolute",
+    right: -6,
+    top: 0,
+    width: 12,
+    zIndex: 2,
+  },
+  resizeHandleGrip: {
+    backgroundColor: "rgba(0,0,0,0.25)",
+    borderRadius: 1,
+    height: 18,
+    width: 2,
   },
   rowContainer: {
     borderBottomWidth: StyleSheet.hairlineWidth,
