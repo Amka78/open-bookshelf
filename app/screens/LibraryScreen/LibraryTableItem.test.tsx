@@ -95,6 +95,56 @@ mock.module("@/components/InputField/InputField", () => ({
   ),
 }))
 
+mock.module("@/components/TagInput/TagInput", () => ({
+  TagInput: ({
+    onChange,
+    testID,
+    value,
+  }: {
+    onChange?: (values: string[]) => void
+    testID?: string
+    value?: string[]
+  }) => (
+    <div data-testid={testID}>
+      {(value ?? []).map((tag, index) => (
+        <span key={index} data-testid={`${testID}-tag-${index}`}>
+          {tag}
+          <button
+            data-testid={`${testID}-tag-${index}-remove`}
+            onClick={() => {
+              const next = [...(value ?? [])]
+              next.splice(index, 1)
+              onChange?.(next)
+            }}
+            type="button"
+          >
+            ×
+          </button>
+        </span>
+      ))}
+      <input
+        data-testid={`${testID}-input`}
+        onChange={(event) => {
+          const text = (event.target as HTMLInputElement).value
+          if (text.includes(",")) {
+            const parts = text.split(",").map((s) => s.trim()).filter(Boolean)
+            onChange?.([...(value ?? []), ...parts])
+          }
+        }}
+        onKeyDown={(event) => {
+          if ((event as unknown as { key: string }).key === "Enter") {
+            const input = event.currentTarget as HTMLInputElement
+            if (input.value.trim()) {
+              onChange?.([...(value ?? []), input.value.trim()])
+              input.value = ""
+            }
+          }
+        }}
+      />
+    </div>
+  ),
+}))
+
 mock.module("@gluestack-ui/themed", () => ({
   Pressable: ({
     children,
@@ -227,9 +277,14 @@ describe("LibraryTableItem", () => {
     )
 
     fireEvent.change(screen.getByTestId("library-table-title-1"), { target: { value: "Dune Messiah" } })
-    fireEvent.change(screen.getByTestId("library-table-authors-1"), {
-      target: { value: "Frank Herbert, Brian Herbert" },
-    })
+    
+    // Remove the first author and add two new authors
+    fireEvent.click(screen.getByTestId("library-table-authors-1-tag-0-remove"))
+    const authorsInput = screen.getByTestId("library-table-authors-1-input")
+    fireEvent.change(authorsInput, { target: { value: "Frank Herbert" } })
+    fireEvent.keyDown(authorsInput, { key: "Enter" })
+    fireEvent.change(authorsInput, { target: { value: "Brian Herbert" } })
+    fireEvent.keyDown(authorsInput, { key: "Enter" })
 
     await act(async () => {
       fireEvent.click(screen.getByTestId("library-table-save-1"))

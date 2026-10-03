@@ -1,6 +1,7 @@
 import { BookDetailMenu, Box, Button, HStack, Image, Input, ScrollView, Text, VStack } from "@/components"
 import type { BookDetailMenuProps, ImageProps } from "@/components"
 import { InputField } from "@/components/InputField/InputField"
+import { TagInput } from "@/components/TagInput/TagInput"
 import type { Book, FieldMetadataMap, MetadataSnapshotIn } from "@/models/calibre"
 import { observer } from "mobx-react-lite"
 import { useEffect, useMemo, useRef, useState } from "react"
@@ -213,17 +214,17 @@ export const LibraryTableItem = observer(function LibraryTableItem({
   onLongPress,
 }: LibraryTableItemProps) {
   const [title, setTitle] = useState(book.metaData.title ?? "")
-  const [authors, setAuthors] = useState(joinList(book.metaData.authors))
+  const [authors, setAuthors] = useState<string[]>(book.metaData.authors ?? [])
   const [series, setSeries] = useState(book.metaData.series ?? "")
-  const [tags, setTags] = useState(joinList(book.metaData.tags))
+  const [tags, setTags] = useState<string[]>(book.metaData.tags ?? [])
   const [publisher, setPublisher] = useState(book.metaData.publisher ?? "")
   const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
     setTitle(book.metaData.title ?? "")
-    setAuthors(joinList(book.metaData.authors))
+    setAuthors(book.metaData.authors ?? [])
     setSeries(book.metaData.series ?? "")
-    setTags(joinList(book.metaData.tags))
+    setTags(book.metaData.tags ?? [])
     setPublisher(book.metaData.publisher ?? "")
   }, [
     book.metaData.authors,
@@ -236,10 +237,10 @@ export const LibraryTableItem = observer(function LibraryTableItem({
   const currentValue = useMemo(
     () => ({
       title: title.trim(),
-      authors: splitList(authors),
+      authors: authors.map((entry) => String(entry ?? "").trim()).filter(Boolean),
       publisher: normalizeNullableText(publisher),
       series: normalizeNullableText(series),
-      tags: splitList(tags),
+      tags: tags.map((entry) => String(entry ?? "").trim()).filter(Boolean),
     }),
     [authors, publisher, series, tags, title],
   )
@@ -314,13 +315,12 @@ export const LibraryTableItem = observer(function LibraryTableItem({
           </Input>
         </Box>
         <Box style={[styles.authorsCell, { width: columnWidths.authors }]}>
-          <Input size="sm">
-            <InputField
-              value={authors}
-              onChangeText={setAuthors}
-              testID={`library-table-authors-${book.id}`}
-            />
-          </Input>
+          <TagInput
+            value={authors}
+            onChange={setAuthors}
+            placeholder="Add author..."
+            testID={`library-table-authors-${book.id}`}
+          />
         </Box>
         <Box style={[styles.seriesCell, { width: columnWidths.series }]}>
           <Input size="sm">
@@ -332,13 +332,12 @@ export const LibraryTableItem = observer(function LibraryTableItem({
           </Input>
         </Box>
         <Box style={[styles.tagsCell, { width: columnWidths.tags }]}>
-          <Input size="sm">
-            <InputField
-              value={tags}
-              onChangeText={setTags}
-              testID={`library-table-tags-${book.id}`}
-            />
-          </Input>
+          <TagInput
+            value={tags}
+            onChange={setTags}
+            placeholder="Add tag..."
+            testID={`library-table-tags-${book.id}`}
+          />
         </Box>
         <Box style={[styles.publisherCell, { width: columnWidths.publisher }]}>
           <Input size="sm">
