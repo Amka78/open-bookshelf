@@ -55,6 +55,26 @@ const componentsMock = {
   HStack: ({ children, style }: { children?: ReactNode; style?: unknown }) => (
     <div style={normalizeStyle(style)}>{children}</div>
   ),
+  IconButton: ({
+    name,
+    onPress,
+    testID,
+    disabled,
+  }: {
+    name?: string
+    onPress?: () => void
+    testID?: string
+    disabled?: boolean
+  }) => (
+    <button
+      data-testid={testID}
+      disabled={disabled}
+      onClick={onPress}
+      type="button"
+    >
+      {name}
+    </button>
+  ),
   Image: () => <img alt="" />,
   Input: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   ScrollView: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
@@ -208,6 +228,7 @@ let LibraryTableHeader: typeof import("./LibraryTableItem").LibraryTableHeader
 let clampColumnWidth: typeof import("./LibraryTableItem").clampColumnWidth
 let computeLibraryTableMinWidth: typeof import("./LibraryTableItem").computeLibraryTableMinWidth
 let DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS: typeof import("./LibraryTableItem").DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS
+let extractSeriesFromTitle: typeof import("./LibraryTableItem").extractSeriesFromTitle
 
 beforeAll(async () => {
   const libraryTableItemModule = await import("./LibraryTableItem")
@@ -216,6 +237,7 @@ beforeAll(async () => {
   clampColumnWidth = libraryTableItemModule.clampColumnWidth
   computeLibraryTableMinWidth = libraryTableItemModule.computeLibraryTableMinWidth
   DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS = libraryTableItemModule.DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS
+  extractSeriesFromTitle = libraryTableItemModule.extractSeriesFromTitle
 })
 
 describe("LibraryTableItem", () => {
@@ -391,5 +413,24 @@ describe("LibraryTableItem", () => {
     expect(
       computeLibraryTableMinWidth({ ...DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS, title: 100 }),
     ).toBe(1000)
+  })
+})
+
+describe("extractSeriesFromTitle", () => {
+  test("extracts series name and number from title", () => {
+    expect(extractSeriesFromTitle("Dune 1")).toEqual({ series: "Dune", number: "1" })
+    expect(extractSeriesFromTitle("Foundation Vol.2")).toEqual({ series: "Foundation", number: "Vol.2" })
+    expect(extractSeriesFromTitle("指輪物語 01")).toEqual({ series: "指輪物語", number: "01" })
+    expect(extractSeriesFromTitle("Series 第1巻")).toEqual({ series: "Series", number: "第1巻" })
+  })
+
+  test("returns null for titles without series pattern", () => {
+    expect(extractSeriesFromTitle("Dune")).toBeNull()
+    expect(extractSeriesFromTitle("The Foundation Trilogy")).toBeNull()
+    expect(extractSeriesFromTitle("1984")).toBeNull()
+  })
+
+  test("handles titles with multiple spaces", () => {
+    expect(extractSeriesFromTitle("Dune  1")).toEqual({ series: "Dune", number: "1" })
   })
 })

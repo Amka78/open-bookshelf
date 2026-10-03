@@ -199,6 +199,7 @@ const en = {
     copyTags: "Copy Tags",
     pasteAuthors: "Paste Authors",
     pasteTags: "Paste Tags",
+    extractSeries: "Extract Series",
     clearSelection: "Clear",
   },
   searchBar: {

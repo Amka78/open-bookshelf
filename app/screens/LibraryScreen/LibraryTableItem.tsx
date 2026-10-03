@@ -1,12 +1,24 @@
-import { BookDetailMenu, Box, Button, HStack, Image, Input, ScrollView, Text, VStack } from "@/components"
-import type { BookDetailMenuProps, ImageProps } from "@/components"
-import { InputField } from "@/components/InputField/InputField"
-import { TagInput } from "@/components/TagInput/TagInput"
+import {
+  BookDetailMenu,
+  type BookDetailMenuProps,
+  Box,
+  Button,
+  HStack,
+  IconButton,
+  Image,
+  type ImageProps,
+  Input,
+  InputField,
+  ScrollView,
+  TagInput,
+  Text,
+  VStack,
+} from "@/components"
 import type { Book, FieldMetadataMap, MetadataSnapshotIn } from "@/models/calibre"
+import { Pressable } from "@gluestack-ui/themed"
 import { observer } from "mobx-react-lite"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { PanResponder, Platform, StyleSheet, View, type ViewStyle } from "react-native"
-import { Pressable } from "@gluestack-ui/themed"
 
 const BOOK_COLUMN_WIDTH = 150
 const TITLE_COLUMN_WIDTH = 180
@@ -151,11 +163,26 @@ function normalizeNullableText(value: string): string | null {
   return trimmed.length > 0 ? trimmed : null
 }
 
+// Extract series name and number from title
+// Patterns: "Dune 1", "Foundation Vol.2", "指輪物語 01", "Series 第1巻"
+const SERIES_PATTERN = /^(.+?)\s+(\d+|[Vv]ol\.?\s*\d+|第\s*\d+\s*巻)$/
+
+export function extractSeriesFromTitle(title: string): { series: string; number: string } | null {
+  const match = title.trim().match(SERIES_PATTERN)
+  if (!match) return null
+  return {
+    series: match[1].trim(),
+    number: match[2].trim(),
+  }
+}
+
 function getFieldName(fieldMetadataList: FieldMetadataMap, key: string, fallback: string): string {
   return fieldMetadataList.get(key)?.name ?? fallback
 }
 
-export function createLibraryTableFieldLabels(fieldMetadataList: FieldMetadataMap): LibraryTableFieldLabels {
+export function createLibraryTableFieldLabels(
+  fieldMetadataList: FieldMetadataMap,
+): LibraryTableFieldLabels {
   return {
     book: "Book",
     title: getFieldName(fieldMetadataList, "title", "Title"),
@@ -248,12 +275,20 @@ export const LibraryTableItem = observer(function LibraryTableItem({
   const originalValue = useMemo(
     () => ({
       title: String(book.metaData.title ?? "").trim(),
-      authors: (book.metaData.authors ?? []).map((entry) => String(entry ?? "").trim()).filter(Boolean),
+      authors: (book.metaData.authors ?? [])
+        .map((entry) => String(entry ?? "").trim())
+        .filter(Boolean),
       publisher: book.metaData.publisher ? String(book.metaData.publisher).trim() : null,
       series: book.metaData.series ? String(book.metaData.series).trim() : null,
       tags: (book.metaData.tags ?? []).map((entry) => String(entry ?? "").trim()).filter(Boolean),
     }),
-    [book.metaData.authors, book.metaData.publisher, book.metaData.series, book.metaData.tags, book.metaData.title],
+    [
+      book.metaData.authors,
+      book.metaData.publisher,
+      book.metaData.series,
+      book.metaData.tags,
+      book.metaData.title,
+    ],
   )
 
   const isDirty = useMemo(() => {
@@ -283,10 +318,7 @@ export const LibraryTableItem = observer(function LibraryTableItem({
 
   return (
     <VStack
-      style={[
-        styles.rowContainer,
-        isSelected ? styles.rowSelected : undefined,
-      ]}
+      style={[styles.rowContainer, isSelected ? styles.rowSelected : undefined]}
       testID={`library-table-row-${book.id}`}
     >
       <HStack alignItems="center">
@@ -306,13 +338,30 @@ export const LibraryTableItem = observer(function LibraryTableItem({
           </Text>
         </Pressable>
         <Box style={[styles.titleCell, { width: columnWidths.title }]}>
-          <Input size="sm">
-            <InputField
-              value={title}
-              onChangeText={setTitle}
-              testID={`library-table-title-${book.id}`}
-            />
-          </Input>
+          <HStack alignItems="center" space="xs">
+            <Box flex={1}>
+              <Input size="sm">
+                <InputField
+                  value={title}
+                  onChangeText={setTitle}
+                  testID={`library-table-title-${book.id}`}
+                />
+              </Input>
+            </Box>
+            {extractSeriesFromTitle(title) && !series && (
+              <IconButton
+                name="arrow-right"
+                iconSize="sm"
+                onPress={() => {
+                  const extracted = extractSeriesFromTitle(title)
+                  if (extracted) {
+                    setSeries(`${extracted.series} #${extracted.number}`)
+                  }
+                }}
+                testID={`library-table-extract-series-${book.id}`}
+              />
+            )}
+          </HStack>
         </Box>
         <Box style={[styles.authorsCell, { width: columnWidths.authors }]}>
           <TagInput

@@ -1,5 +1,4 @@
-import { Box, HStack, IconButton, Input, Text } from "@/components"
-import { InputField } from "@/components/InputField/InputField"
+import { Box, HStack, IconButton, InputField, Input, Text } from "@/components"
 import { usePalette } from "@/theme"
 import { Pressable } from "@gluestack-ui/themed"
 import { useState } from "react"
@@ -226,24 +225,24 @@ export function TagInput({
             />
           </Input>
         </Box>
-        {showCopyPaste && !disabled && (
-          <HStack style={styles.actionButtons}>
-            <IconButton
-              name="content-copy"
-              iconSize="sm"
-              onPress={handleCopy}
-              testID={`${testID}-copy`}
-              disabled={value.length === 0}
-            />
-            <IconButton
-              name="content-paste"
-              iconSize="sm"
-              onPress={handlePaste}
-              testID={`${testID}-paste`}
-            />
-          </HStack>
-        )}
       </HStack>
+      {showCopyPaste && !disabled && (
+        <Box style={styles.actionButtonsContainer}>
+          <IconButton
+            name="content-copy"
+            iconSize="sm"
+            onPress={handleCopy}
+            testID={`${testID}-copy`}
+            disabled={value.length === 0}
+          />
+          <IconButton
+            name="content-paste"
+            iconSize="sm"
+            onPress={handlePaste}
+            testID={`${testID}-paste`}
+          />
+        </Box>
+      )}
       {showSuggestions && (
         <Box
           style={[
@@ -277,8 +276,10 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   tagContainer: {
+    alignItems: "center",
     gap: 4,
     minHeight: 32,
+    paddingRight: 60,
   },
   tag: {
     alignItems: "center",
@@ -307,10 +308,14 @@ const styles = StyleSheet.create({
   inputWrapper: {
     minWidth: 100,
   },
-  actionButtons: {
+  actionButtonsContainer: {
     alignItems: "center",
-    gap: 2,
-    marginLeft: 4,
+    justifyContent: "center",
+    position: "absolute",
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: 56,
   },
   suggestionsContainer: {
     borderRadius: 4,

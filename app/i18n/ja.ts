@@ -203,6 +203,7 @@ const ja: Translations = {
     copyTags: "タグをコピー",
     pasteAuthors: "著者を貼り付け",
     pasteTags: "タグを貼り付け",
+    extractSeries: "シリーズを抽出",
     clearSelection: "選択解除",
   },
   searchBar: {

@@ -694,6 +694,23 @@ export const LibraryScreen: FC = observer(() => {
     }
   }
 
+  const onBulkExtractSeries = async () => {
+    if (libraryHook.selectedBooks.length === 0) return
+    const SERIES_PATTERN = /^(.+?)\s+(\d+|[Vv]ol\.?\s*\d+|第\s*\d+\s*巻)$/
+
+    for (const book of libraryHook.selectedBooks) {
+      const title = book.metaData.title?.trim() ?? ""
+      const match = title.match(SERIES_PATTERN)
+      if (match) {
+        const seriesName = match[1].trim()
+        const seriesNumber = match[2].trim()
+        const seriesValue = `${seriesName} #${seriesNumber}`
+        await book.update(selectedLibrary.id, { series: seriesValue }, ["series"])
+      }
+    }
+    await libraryHook.onSearch()
+  }
+
   const LibraryCore = (
     <>
       {libraryHook.isSelectionMode && (
@@ -710,6 +727,7 @@ export const LibraryScreen: FC = observer(() => {
           onBulkCopyTags={onBulkCopyTags}
           onBulkPasteAuthors={onBulkPasteAuthors}
           onBulkPasteTags={onBulkPasteTags}
+          onBulkExtractSeries={onBulkExtractSeries}
           onClearSelection={libraryHook.clearSelection}
           toggleVisibleSelectionDisabled={visibleBookIds.length === 0}
         />

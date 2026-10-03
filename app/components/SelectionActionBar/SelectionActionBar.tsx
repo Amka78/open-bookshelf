@@ -14,6 +14,7 @@ export type SelectionActionBarProps = {
   onBulkCopyTags?: () => void
   onBulkPasteAuthors?: () => void
   onBulkPasteTags?: () => void
+  onBulkExtractSeries?: () => void
   onClearSelection: () => void
   toggleVisibleSelectionDisabled?: boolean
 }
@@ -29,6 +30,7 @@ export function SelectionActionBar({
   onBulkCopyTags,
   onBulkPasteAuthors,
   onBulkPasteTags,
+  onBulkExtractSeries,
   onClearSelection,
   toggleVisibleSelectionDisabled = false,
 }: SelectionActionBarProps) {
@@ -106,6 +108,15 @@ export function SelectionActionBar({
             labelTx={convergence.isLarge ? "multiSelectBar.pasteTags" : undefined}
             onPress={onBulkPasteTags}
             testID="selection-action-bar-paste-tags"
+          />
+        )}
+        {onBulkExtractSeries && (
+          <IconButton
+            name="format-list-bulleted"
+            iconSize="md-"
+            labelTx={convergence.isLarge ? "multiSelectBar.extractSeries" : undefined}
+            onPress={onBulkExtractSeries}
+            testID="selection-action-bar-extract-series"
           />
         )}
         {onBulkDelete && (
