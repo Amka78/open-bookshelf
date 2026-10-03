@@ -1,5 +1,5 @@
 import { HStack, IconButton, Text } from "@/components"
-import { useConvergence } from "@/hooks/useConvergence"
+import { useConvergence } from "@/hooks"
 import { translate } from "@/i18n"
 import { usePalette } from "@/theme"
 
@@ -10,6 +10,10 @@ export type SelectionActionBarProps = {
   onBulkEdit: () => void
   onBulkDownload: () => void
   onBulkDelete?: () => void
+  onBulkCopyAuthors?: () => void
+  onBulkCopyTags?: () => void
+  onBulkPasteAuthors?: () => void
+  onBulkPasteTags?: () => void
   onClearSelection: () => void
   toggleVisibleSelectionDisabled?: boolean
 }
@@ -21,6 +25,10 @@ export function SelectionActionBar({
   onBulkEdit,
   onBulkDownload,
   onBulkDelete,
+  onBulkCopyAuthors,
+  onBulkCopyTags,
+  onBulkPasteAuthors,
+  onBulkPasteTags,
   onClearSelection,
   toggleVisibleSelectionDisabled = false,
 }: SelectionActionBarProps) {
@@ -64,6 +72,42 @@ export function SelectionActionBar({
           onPress={onBulkDownload}
           testID="selection-action-bar-bulk-download"
         />
+        {onBulkCopyAuthors && (
+          <IconButton
+            name="account-multiple-check"
+            iconSize="md-"
+            labelTx={convergence.isLarge ? "multiSelectBar.copyAuthors" : undefined}
+            onPress={onBulkCopyAuthors}
+            testID="selection-action-bar-copy-authors"
+          />
+        )}
+        {onBulkCopyTags && (
+          <IconButton
+            name="tag-multiple"
+            iconSize="md-"
+            labelTx={convergence.isLarge ? "multiSelectBar.copyTags" : undefined}
+            onPress={onBulkCopyTags}
+            testID="selection-action-bar-copy-tags"
+          />
+        )}
+        {onBulkPasteAuthors && (
+          <IconButton
+            name="account-multiple-plus"
+            iconSize="md-"
+            labelTx={convergence.isLarge ? "multiSelectBar.pasteAuthors" : undefined}
+            onPress={onBulkPasteAuthors}
+            testID="selection-action-bar-paste-authors"
+          />
+        )}
+        {onBulkPasteTags && (
+          <IconButton
+            name="tag-plus"
+            iconSize="md-"
+            labelTx={convergence.isLarge ? "multiSelectBar.pasteTags" : undefined}
+            onPress={onBulkPasteTags}
+            testID="selection-action-bar-paste-tags"
+          />
+        )}
         {onBulkDelete && (
           <IconButton
             name="trash-can"

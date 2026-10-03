@@ -1,8 +1,9 @@
 import { Box, HStack, IconButton, Input, Text } from "@/components"
 import { InputField } from "@/components/InputField/InputField"
 import { usePalette } from "@/theme"
+import { Pressable } from "@gluestack-ui/themed"
 import { useState } from "react"
-import { Platform, StyleSheet, type ViewStyle } from "react-native"
+import { Platform, StyleSheet } from "react-native"
 
 export type TagInputProps = {
   value: string[]
@@ -12,6 +13,7 @@ export type TagInputProps = {
   suggestions?: string[]
   separator?: RegExp
   disabled?: boolean
+  showCopyPaste?: boolean
 }
 
 const DEFAULT_SEPARATOR = /[,;、]/
@@ -24,9 +26,12 @@ export function TagInput({
   suggestions = [],
   separator = DEFAULT_SEPARATOR,
   disabled = false,
+  showCopyPaste = false,
 }: TagInputProps) {
   const [inputValue, setInputValue] = useState("")
   const [isFocused, setIsFocused] = useState(false)
+  const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [editingValue, setEditingValue] = useState("")
   const palette = usePalette()
 
   const filteredSuggestions = suggestions.filter((suggestion) => {
@@ -51,9 +56,70 @@ export function TagInput({
     onChange(next)
   }
 
+  const startEditing = (index: number) => {
+    if (disabled) return
+    setEditingIndex(index)
+    setEditingValue(value[index])
+  }
+
+  const commitEditing = () => {
+    if (editingIndex === null) return
+    const trimmed = editingValue.trim()
+    if (trimmed && trimmed !== value[editingIndex]) {
+      const next = [...value]
+      next[editingIndex] = trimmed
+      onChange(next)
+    }
+    setEditingIndex(null)
+    setEditingValue("")
+  }
+
+  const cancelEditing = () => {
+    setEditingIndex(null)
+    setEditingValue("")
+  }
+
+  const handleEditKeyDown = (event: { key: string }) => {
+    if (event.key === "Enter") {
+      event.preventDefault()
+      commitEditing()
+    } else if (event.key === "Escape") {
+      cancelEditing()
+    }
+  }
+
+  const handleCopy = async () => {
+    if (value.length === 0) return
+    const text = value.join(", ")
+    if (Platform.OS === "web" && navigator.clipboard) {
+      await navigator.clipboard.writeText(text)
+    }
+  }
+
+  const handlePaste = async () => {
+    if (Platform.OS === "web" && navigator.clipboard) {
+      try {
+        const text = await navigator.clipboard.readText()
+        const parts = text
+          .split(separator)
+          .map((part) => part.trim())
+          .filter(Boolean)
+        const newTags = parts.filter((tag) => !value.includes(tag))
+        if (newTags.length > 0) {
+          onChange([...value, ...newTags])
+        }
+      } catch {
+        // Clipboard access denied
+      }
+    }
+  }
+
   const handleInputChange = (text: string) => {
     if (separator.test(text)) {
-      const parts = text.split(separator).map((part) => part.trim()).filter(Boolean)
+      const parts = text
+        .split(separator)
+        .map((part) => part.trim())
+        .filter(Boolean)
       if (parts.length > 0) {
         // If the text ends with a separator, all parts are tags
         // Otherwise, the last part is still being typed
@@ -107,20 +173,42 @@ export function TagInput({
             style={[
               styles.tag,
               { backgroundColor: palette.backgroundLight, borderColor: palette.border },
+              editingIndex === index ? { borderColor: palette.primary } : undefined,
             ]}
             testID={`${testID}-tag-${index}`}
           >
-            <Text style={styles.tagText} numberOfLines={1}>
-              {tag}
-            </Text>
-            {!disabled && (
-              <IconButton
-                name="close-circle"
-                iconSize="sm"
-                onPress={() => removeTag(index)}
-                testID={`${testID}-tag-${index}-remove`}
-                style={styles.removeButton}
-              />
+            {editingIndex === index ? (
+              <Input size="sm" style={styles.editInput}>
+                <InputField
+                  value={editingValue}
+                  onChangeText={setEditingValue}
+                  onBlur={commitEditing}
+                  onKeyDown={Platform.OS === "web" ? handleEditKeyDown : undefined}
+                  testID={`${testID}-tag-${index}-edit`}
+                  autoFocus
+                />
+              </Input>
+            ) : (
+              <>
+                <Pressable
+                  onPress={() => startEditing(index)}
+                  style={styles.tagTextWrapper}
+                  testID={`${testID}-tag-${index}-text`}
+                >
+                  <Text style={styles.tagText} numberOfLines={1}>
+                    {tag}
+                  </Text>
+                </Pressable>
+                {!disabled && (
+                  <IconButton
+                    name="close-circle"
+                    iconSize="sm"
+                    onPress={() => removeTag(index)}
+                    testID={`${testID}-tag-${index}-remove`}
+                    style={styles.removeButton}
+                  />
+                )}
+              </>
             )}
           </Box>
         ))}
@@ -138,6 +226,23 @@ export function TagInput({
             />
           </Input>
         </Box>
+        {showCopyPaste && !disabled && (
+          <HStack style={styles.actionButtons}>
+            <IconButton
+              name="content-copy"
+              iconSize="sm"
+              onPress={handleCopy}
+              testID={`${testID}-copy`}
+              disabled={value.length === 0}
+            />
+            <IconButton
+              name="content-paste"
+              iconSize="sm"
+              onPress={handlePaste}
+              testID={`${testID}-paste`}
+            />
+          </HStack>
+        )}
       </HStack>
       {showSuggestions && (
         <Box
@@ -183,15 +288,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
+  tagTextWrapper: {
+    cursor: Platform.OS === "web" ? "pointer" : undefined,
+  },
   tagText: {
     fontSize: 12,
     marginRight: 4,
+  },
+  editInput: {
+    borderWidth: 0,
+    minWidth: 60,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
   },
   removeButton: {
     marginLeft: 2,
   },
   inputWrapper: {
     minWidth: 100,
+  },
+  actionButtons: {
+    alignItems: "center",
+    gap: 2,
+    marginLeft: 4,
   },
   suggestionsContainer: {
     borderRadius: 4,

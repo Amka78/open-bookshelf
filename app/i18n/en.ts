@@ -195,6 +195,10 @@ const en = {
     bulkEdit: "Edit All",
     bulkDownload: "Download All",
     bulkDelete: "Delete All",
+    copyAuthors: "Copy Authors",
+    copyTags: "Copy Tags",
+    pasteAuthors: "Paste Authors",
+    pasteTags: "Paste Tags",
     clearSelection: "Clear",
   },
   searchBar: {

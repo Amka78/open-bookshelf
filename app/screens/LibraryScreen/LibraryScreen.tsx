@@ -618,6 +618,82 @@ export const LibraryScreen: FC = observer(() => {
     })
   }
 
+  const onBulkCopyAuthors = async () => {
+    if (libraryHook.selectedBooks.length === 0) return
+    const allAuthors = new Set<string>()
+    for (const book of libraryHook.selectedBooks) {
+      for (const author of book.metaData.authors ?? []) {
+        if (author.trim()) {
+          allAuthors.add(author.trim())
+        }
+      }
+    }
+    const text = Array.from(allAuthors).join(", ")
+    if (text && navigator.clipboard) {
+      await navigator.clipboard.writeText(text)
+    }
+  }
+
+  const onBulkCopyTags = async () => {
+    if (libraryHook.selectedBooks.length === 0) return
+    const allTags = new Set<string>()
+    for (const book of libraryHook.selectedBooks) {
+      for (const tag of book.metaData.tags ?? []) {
+        if (tag.trim()) {
+          allTags.add(tag.trim())
+        }
+      }
+    }
+    const text = Array.from(allTags).join(", ")
+    if (text && navigator.clipboard) {
+      await navigator.clipboard.writeText(text)
+    }
+  }
+
+  const onBulkPasteAuthors = async () => {
+    if (libraryHook.selectedBooks.length === 0) return
+    if (!navigator.clipboard) return
+    try {
+      const text = await navigator.clipboard.readText()
+      const newAuthors = text
+        .split(/[,;、]/)
+        .map((s) => s.trim())
+        .filter(Boolean)
+      if (newAuthors.length === 0) return
+
+      for (const book of libraryHook.selectedBooks) {
+        const existingAuthors = (book.metaData.authors ?? []).map((a) => a.trim()).filter(Boolean)
+        const mergedAuthors = Array.from(new Set([...existingAuthors, ...newAuthors]))
+        await book.update(selectedLibrary.id, { authors: mergedAuthors }, ["authors"])
+      }
+      await libraryHook.onSearch()
+    } catch {
+      // Clipboard access denied
+    }
+  }
+
+  const onBulkPasteTags = async () => {
+    if (libraryHook.selectedBooks.length === 0) return
+    if (!navigator.clipboard) return
+    try {
+      const text = await navigator.clipboard.readText()
+      const newTags = text
+        .split(/[,;、]/)
+        .map((s) => s.trim())
+        .filter(Boolean)
+      if (newTags.length === 0) return
+
+      for (const book of libraryHook.selectedBooks) {
+        const existingTags = (book.metaData.tags ?? []).map((t) => t.trim()).filter(Boolean)
+        const mergedTags = Array.from(new Set([...existingTags, ...newTags]))
+        await book.update(selectedLibrary.id, { tags: mergedTags }, ["tags"])
+      }
+      await libraryHook.onSearch()
+    } catch {
+      // Clipboard access denied
+    }
+  }
+
   const LibraryCore = (
     <>
       {libraryHook.isSelectionMode && (
@@ -630,6 +706,10 @@ export const LibraryScreen: FC = observer(() => {
           onBulkEdit={onBulkEdit}
           onBulkDownload={onBulkDownload}
           onBulkDelete={onBulkDelete}
+          onBulkCopyAuthors={onBulkCopyAuthors}
+          onBulkCopyTags={onBulkCopyTags}
+          onBulkPasteAuthors={onBulkPasteAuthors}
+          onBulkPasteTags={onBulkPasteTags}
           onClearSelection={libraryHook.clearSelection}
           toggleVisibleSelectionDisabled={visibleBookIds.length === 0}
         />

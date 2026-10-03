@@ -199,6 +199,10 @@ const ja: Translations = {
     bulkEdit: "一括編集",
     bulkDownload: "一括ダウンロード",
     bulkDelete: "一括削除",
+    copyAuthors: "著者をコピー",
+    copyTags: "タグをコピー",
+    pasteAuthors: "著者を貼り付け",
+    pasteTags: "タグを貼り付け",
     clearSelection: "選択解除",
   },
   searchBar: {

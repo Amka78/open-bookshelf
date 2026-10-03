@@ -105,8 +105,33 @@ mock.module("@/theme", () => ({
     background: "#ffffff",
     backgroundLight: "#f3f4f6",
     border: "#e5e7eb",
+    primary: "#3b82f6",
     text: "#000000",
   }),
+}))
+
+mock.module("@gluestack-ui/themed", () => ({
+  Pressable: ({
+    children,
+    onPress,
+    style,
+    testID,
+  }: {
+    children?: ReactNode
+    onPress?: () => void
+    style?: unknown
+    testID?: string
+  }) => (
+    <div
+      data-testid={testID}
+      onClick={onPress}
+      style={normalizeStyle(style)}
+      role="button"
+      tabIndex={0}
+    >
+      {children}
+    </div>
+  ),
 }))
 
 mock.module("react-native", () => ({
@@ -195,5 +220,67 @@ describe("TagInput", () => {
     fireEvent.keyDown(input, { key: "Enter", preventDefault: () => {} })
 
     expect(onChange).not.toHaveBeenCalled()
+  })
+
+  test("shows copy and paste buttons when showCopyPaste is true", () => {
+    const onChange = mock(() => {})
+    render(<TagInput value={["Tag1"]} onChange={onChange} testID="test" showCopyPaste />)
+
+    expect(screen.getByTestId("test-copy")).toBeTruthy()
+    expect(screen.getByTestId("test-paste")).toBeTruthy()
+  })
+
+  test("does not show copy and paste buttons when showCopyPaste is false", () => {
+    const onChange = mock(() => {})
+    render(<TagInput value={["Tag1"]} onChange={onChange} testID="test" />)
+
+    expect(screen.queryByTestId("test-copy")).toBeNull()
+    expect(screen.queryByTestId("test-paste")).toBeNull()
+  })
+
+  test("enters edit mode when tag text is clicked", () => {
+    const onChange = mock(() => {})
+    render(<TagInput value={["Tag1"]} onChange={onChange} testID="test" />)
+
+    fireEvent.click(screen.getByTestId("test-tag-0-text"))
+
+    expect(screen.getByTestId("test-tag-0-edit")).toBeTruthy()
+  })
+
+  test("commits edit on Enter key", () => {
+    const onChange = mock(() => {})
+    render(<TagInput value={["Tag1"]} onChange={onChange} testID="test" />)
+
+    fireEvent.click(screen.getByTestId("test-tag-0-text"))
+    const editInput = screen.getByTestId("test-tag-0-edit")
+    fireEvent.change(editInput, { target: { value: "EditedTag" } })
+    fireEvent.keyDown(editInput, { key: "Enter", preventDefault: () => {} })
+
+    expect(onChange).toHaveBeenCalledWith(["EditedTag"])
+  })
+
+  test("commits edit on blur", () => {
+    const onChange = mock(() => {})
+    render(<TagInput value={["Tag1"]} onChange={onChange} testID="test" />)
+
+    fireEvent.click(screen.getByTestId("test-tag-0-text"))
+    const editInput = screen.getByTestId("test-tag-0-edit")
+    fireEvent.change(editInput, { target: { value: "EditedTag" } })
+    fireEvent.blur(editInput)
+
+    expect(onChange).toHaveBeenCalledWith(["EditedTag"])
+  })
+
+  test("cancels edit on Escape key", () => {
+    const onChange = mock(() => {})
+    render(<TagInput value={["Tag1"]} onChange={onChange} testID="test" />)
+
+    fireEvent.click(screen.getByTestId("test-tag-0-text"))
+    const editInput = screen.getByTestId("test-tag-0-edit")
+    fireEvent.change(editInput, { target: { value: "EditedTag" } })
+    fireEvent.keyDown(editInput, { key: "Escape" })
+
+    expect(onChange).not.toHaveBeenCalled()
+    expect(screen.queryByTestId("test-tag-0-edit")).toBeNull()
   })
 })

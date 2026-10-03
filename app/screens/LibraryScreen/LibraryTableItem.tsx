@@ -320,6 +320,7 @@ export const LibraryTableItem = observer(function LibraryTableItem({
             onChange={setAuthors}
             placeholder="Add author..."
             testID={`library-table-authors-${book.id}`}
+            showCopyPaste
           />
         </Box>
         <Box style={[styles.seriesCell, { width: columnWidths.series }]}>
@@ -337,6 +338,7 @@ export const LibraryTableItem = observer(function LibraryTableItem({
             onChange={setTags}
             placeholder="Add tag..."
             testID={`library-table-tags-${book.id}`}
+            showCopyPaste
           />
         </Box>
         <Box style={[styles.publisherCell, { width: columnWidths.publisher }]}>
