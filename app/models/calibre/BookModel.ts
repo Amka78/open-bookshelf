@@ -416,6 +416,7 @@ export const BookModel = types
         removed_formats?: string[]
         added_formats?: AddedFormatEntry[]
       },
+      fieldMetadataList?: Map<string, { isMultiple?: { uiToList?: string | null } | null }>,
     ) {
       const changes: Partial<Record<MetadataFieldKey, unknown>> = {}
 
@@ -427,14 +428,22 @@ export const BookModel = types
           field,
           updateInfo[field as keyof SnapshotIn<typeof MetadataModel>],
         )
+        // Set to local MST model (always as array for multi-value fields)
         ;(root.metaData as unknown as Record<string, unknown>)[field] = fieldValue
+        
+        // For API, convert array to string with appropriate separator
         const apiField = camelCaseToLowerCase(field) as MetadataFieldKey
-        changes[apiField] = Array.isArray(fieldValue)
-          ? fieldValue
-              .map((entry) => `${entry}`.trim())
-              .filter(Boolean)
-              .join("\n")
-          : fieldValue
+        if (Array.isArray(fieldValue)) {
+          // Get separator from fieldMetadataList if available
+          const metadata = fieldMetadataList?.get(field)
+          const separator = metadata?.isMultiple?.uiToList ?? ","
+          changes[apiField] = fieldValue
+            .map((entry) => `${entry}`.trim())
+            .filter(Boolean)
+            .join(separator)
+        } else {
+          changes[apiField] = fieldValue
+        }
       })
 
       // Serialize custom column updates: each key is camelCase label → convert to #snake_case
@@ -442,11 +451,12 @@ export const BookModel = types
         const customColumnsData = updateInfo.customColumns as Record<string, unknown>
         for (const [camelKey, value] of Object.entries(customColumnsData)) {
           const apiKey = camelCaseToLowerCase(camelKey) as MetadataFieldKey
+          // Calibre API expects multi-value fields as comma-separated strings
           changes[apiKey] = Array.isArray(value)
             ? value
                 .map((entry) => `${entry}`.trim())
                 .filter(Boolean)
-                .join("\n")
+                .join(",")
             : value
         }
       }

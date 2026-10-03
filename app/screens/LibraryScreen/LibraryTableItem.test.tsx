@@ -77,27 +77,6 @@ const componentsMock = {
   ),
   Image: () => <img alt="" />,
   Input: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  ScrollView: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  Text: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
-  VStack: ({
-    children,
-    style,
-    testID,
-  }: {
-    children?: ReactNode
-    style?: unknown
-    testID?: string
-  }) => (
-    <div data-testid={testID} style={normalizeStyle(style)}>
-      {children}
-    </div>
-  ),
-}
-
-mock.module("@/components", () => componentsMock)
-mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
-
-mock.module("@/components/InputField/InputField", () => ({
   InputField: ({
     onChangeText,
     testID,
@@ -113,9 +92,7 @@ mock.module("@/components/InputField/InputField", () => ({
       value={value ?? ""}
     />
   ),
-}))
-
-mock.module("@/components/TagInput/TagInput", () => ({
+  ScrollView: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   TagInput: ({
     onChange,
     testID,
@@ -162,6 +139,41 @@ mock.module("@/components/TagInput/TagInput", () => ({
         }}
       />
     </div>
+  ),
+  Text: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
+  VStack: ({
+    children,
+    style,
+    testID,
+  }: {
+    children?: ReactNode
+    style?: unknown
+    testID?: string
+  }) => (
+    <div data-testid={testID} style={normalizeStyle(style)}>
+      {children}
+    </div>
+  ),
+}
+
+mock.module("@/components", () => componentsMock)
+mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
+
+mock.module("@/components/InputField/InputField", () => ({
+  InputField: ({
+    onChangeText,
+    testID,
+    value,
+  }: {
+    onChangeText?: (text: string) => void
+    testID?: string
+    value?: string
+  }) => (
+    <input
+      data-testid={testID}
+      onChange={(event) => onChangeText?.((event.target as HTMLInputElement).value)}
+      value={value ?? ""}
+    />
   ),
 }))
 
@@ -318,10 +330,13 @@ describe("LibraryTableItem", () => {
         authors: ["Frank Herbert", "Brian Herbert"],
         publisher: "Ace",
         series: "Dune",
+        seriesIndex: null,
         tags: ["Sci-Fi"],
         title: "Dune Messiah",
       },
-      ["title", "authors", "series", "tags", "publisher"],
+      ["title", "authors", "series", "seriesIndex", "tags", "publisher"],
+      undefined,
+      undefined,
     )
   })
 

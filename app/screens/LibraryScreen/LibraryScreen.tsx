@@ -553,6 +553,7 @@ export const LibraryScreen: FC = observer(() => {
             columnWidths={tableColumnWidths}
             showSelectionActions={showSingleSelectionDetails}
             detailMenuProps={detailMenuProps}
+            fieldMetadataList={selectedLibrary.fieldMetadataList}
             onPress={() => libraryHook.handleBookPress(item.id)}
             onLongPress={() => {
               libraryHook.enterMultiSelection(item.id)
@@ -704,8 +705,14 @@ export const LibraryScreen: FC = observer(() => {
       if (match) {
         const seriesName = match[1].trim()
         const seriesNumber = match[2].trim()
-        const seriesValue = `${seriesName} #${seriesNumber}`
-        await book.update(selectedLibrary.id, { series: seriesValue }, ["series"])
+        // Extract numeric value from seriesNumber (e.g., "1", "Vol.2", "第1巻")
+        const numMatch = seriesNumber.match(/(\d+)/)
+        const seriesIndex = numMatch ? Number(numMatch[1]) : null
+        await book.update(
+          selectedLibrary.id,
+          { series: seriesName, seriesIndex },
+          ["series", "seriesIndex"],
+        )
       }
     }
     await libraryHook.onSearch()

@@ -140,22 +140,9 @@ type LibraryTableItemProps = {
   columnWidths?: LibraryTableColumnWidths
   showSelectionActions?: boolean
   detailMenuProps?: BookDetailMenuProps
+  fieldMetadataList?: FieldMetadataMap
   onPress?: () => void
   onLongPress?: () => void
-}
-
-function joinList(values: Array<string | null | undefined> | undefined): string {
-  return (values ?? [])
-    .map((entry) => String(entry ?? "").trim())
-    .filter(Boolean)
-    .join(", ")
-}
-
-function splitList(value: string): string[] {
-  return value
-    .split(",")
-    .map((entry) => entry.trim())
-    .filter(Boolean)
 }
 
 function normalizeNullableText(value: string): string | null {
@@ -237,12 +224,14 @@ export const LibraryTableItem = observer(function LibraryTableItem({
   columnWidths = DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS,
   showSelectionActions = false,
   detailMenuProps,
+  fieldMetadataList,
   onPress,
   onLongPress,
 }: LibraryTableItemProps) {
   const [title, setTitle] = useState(book.metaData.title ?? "")
   const [authors, setAuthors] = useState<string[]>(book.metaData.authors ?? [])
   const [series, setSeries] = useState(book.metaData.series ?? "")
+  const [seriesIndex, setSeriesIndex] = useState<number | null>(book.metaData.seriesIndex ?? null)
   const [tags, setTags] = useState<string[]>(book.metaData.tags ?? [])
   const [publisher, setPublisher] = useState(book.metaData.publisher ?? "")
   const [isSaving, setIsSaving] = useState(false)
@@ -251,12 +240,14 @@ export const LibraryTableItem = observer(function LibraryTableItem({
     setTitle(book.metaData.title ?? "")
     setAuthors(book.metaData.authors ?? [])
     setSeries(book.metaData.series ?? "")
+    setSeriesIndex(book.metaData.seriesIndex ?? null)
     setTags(book.metaData.tags ?? [])
     setPublisher(book.metaData.publisher ?? "")
   }, [
     book.metaData.authors,
     book.metaData.publisher,
     book.metaData.series,
+    book.metaData.seriesIndex,
     book.metaData.tags,
     book.metaData.title,
   ])
@@ -267,9 +258,10 @@ export const LibraryTableItem = observer(function LibraryTableItem({
       authors: authors.map((entry) => String(entry ?? "").trim()).filter(Boolean),
       publisher: normalizeNullableText(publisher),
       series: normalizeNullableText(series),
+      seriesIndex: seriesIndex,
       tags: tags.map((entry) => String(entry ?? "").trim()).filter(Boolean),
     }),
-    [authors, publisher, series, tags, title],
+    [authors, publisher, series, seriesIndex, tags, title],
   )
 
   const originalValue = useMemo(
@@ -280,12 +272,14 @@ export const LibraryTableItem = observer(function LibraryTableItem({
         .filter(Boolean),
       publisher: book.metaData.publisher ? String(book.metaData.publisher).trim() : null,
       series: book.metaData.series ? String(book.metaData.series).trim() : null,
+      seriesIndex: book.metaData.seriesIndex ?? null,
       tags: (book.metaData.tags ?? []).map((entry) => String(entry ?? "").trim()).filter(Boolean),
     }),
     [
       book.metaData.authors,
       book.metaData.publisher,
       book.metaData.series,
+      book.metaData.seriesIndex,
       book.metaData.tags,
       book.metaData.title,
     ],
@@ -306,11 +300,28 @@ export const LibraryTableItem = observer(function LibraryTableItem({
         authors: currentValue.authors,
         publisher: currentValue.publisher,
         series: currentValue.series,
+        seriesIndex: currentValue.seriesIndex,
         tags: currentValue.tags,
         title: currentValue.title,
       }
 
-      await book.update(libraryId, updateInfo, ["title", "authors", "series", "tags", "publisher"])
+      // Convert fieldMetadataList to a plain Map for BookModel.update
+      const metadataMap = fieldMetadataList
+        ? new Map(
+            Array.from(fieldMetadataList.entries()).map(([key, value]) => [
+              key,
+              { isMultiple: value.isMultiple },
+            ]),
+          )
+        : undefined
+
+      await book.update(
+        libraryId,
+        updateInfo,
+        ["title", "authors", "series", "seriesIndex", "tags", "publisher"],
+        undefined,
+        metadataMap,
+      )
     } finally {
       setIsSaving(false)
     }
@@ -355,7 +366,12 @@ export const LibraryTableItem = observer(function LibraryTableItem({
                 onPress={() => {
                   const extracted = extractSeriesFromTitle(title)
                   if (extracted) {
-                    setSeries(`${extracted.series} #${extracted.number}`)
+                    setSeries(extracted.series)
+                    // Extract number from the extracted.number (e.g., "1", "Vol.2", "第1巻")
+                    const numMatch = extracted.number.match(/(\d+)/)
+                    if (numMatch) {
+                      setSeriesIndex(Number(numMatch[1]))
+                    }
                   }
                 }}
                 testID={`library-table-extract-series-${book.id}`}
@@ -375,8 +391,18 @@ export const LibraryTableItem = observer(function LibraryTableItem({
         <Box style={[styles.seriesCell, { width: columnWidths.series }]}>
           <Input size="sm">
             <InputField
-              value={series}
-              onChangeText={setSeries}
+              value={seriesIndex !== null ? `${series} #${seriesIndex}` : series}
+              onChangeText={(text) => {
+                // Parse "Series Name #1" format
+                const match = text.match(/^(.*)\s+#(\d+(?:\.\d+)?)$/)
+                if (match) {
+                  setSeries(match[1].trim())
+                  setSeriesIndex(Number(match[2]))
+                } else {
+                  setSeries(text)
+                  setSeriesIndex(null)
+                }
+              }}
               testID={`library-table-series-${book.id}`}
             />
           </Input>
