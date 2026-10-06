@@ -1,4 +1,4 @@
-import { Box, HStack, IconButton, InputField, Input, Text } from "@/components"
+import { Box, HStack, IconButton, Input, InputField, Text } from "@/components"
 import { usePalette } from "@/theme"
 import { Pressable } from "@gluestack-ui/themed"
 import { useState } from "react"
@@ -14,6 +14,7 @@ export type TagInputProps = {
   disabled?: boolean
   showCopyPaste?: boolean
   onBlur?: () => void
+  onCopy?: () => void
 }
 
 const DEFAULT_SEPARATOR = /[,;、]/
@@ -28,6 +29,7 @@ export function TagInput({
   disabled = false,
   showCopyPaste = false,
   onBlur,
+  onCopy,
 }: TagInputProps) {
   const [inputValue, setInputValue] = useState("")
   const [isFocused, setIsFocused] = useState(false)
@@ -94,6 +96,7 @@ export function TagInput({
     const text = value.join(", ")
     if (Platform.OS === "web" && navigator.clipboard) {
       await navigator.clipboard.writeText(text)
+      onCopy?.()
     }
   }
 

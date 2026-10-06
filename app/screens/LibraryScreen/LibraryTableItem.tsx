@@ -29,9 +29,16 @@ const TAGS_COLUMN_WIDTH = 180
 const PUBLISHER_COLUMN_WIDTH = 150
 const SELECTED_OUTLINE_COLOR = "#3B82F6"
 const SELECTED_OVERLAY_COLOR = "rgba(59, 130, 246, 0.08)"
+const COPIED_BACKGROUND_COLOR = "rgba(34, 197, 94, 0.12)"
 
 // Metadata columns whose width the user can change by dragging the header border.
-export type LibraryTableColumnKey = "title" | "authors" | "seriesName" | "seriesIndex" | "tags" | "publisher"
+export type LibraryTableColumnKey =
+  | "title"
+  | "authors"
+  | "seriesName"
+  | "seriesIndex"
+  | "tags"
+  | "publisher"
 
 export type LibraryTableColumnWidths = Record<LibraryTableColumnKey, number>
 
@@ -257,6 +264,8 @@ export const LibraryTableItem = observer(function LibraryTableItem({
   const [tags, setTags] = useState<string[]>(book.metaData.tags ?? [])
   const [publisher, setPublisher] = useState(book.metaData.publisher ?? "")
   const [isSaving, setIsSaving] = useState(false)
+  const [copiedField, setCopiedField] = useState<"authors" | "tags" | null>(null)
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     setTitle(book.metaData.title ?? "")
@@ -273,6 +282,14 @@ export const LibraryTableItem = observer(function LibraryTableItem({
     book.metaData.tags,
     book.metaData.title,
   ])
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current)
+      }
+    }
+  }, [])
 
   const currentValue = useMemo(
     () => ({
@@ -349,6 +366,17 @@ export const LibraryTableItem = observer(function LibraryTableItem({
     }
   }
 
+  const handleFieldCopy = (field: "authors" | "tags") => {
+    if (copyTimeoutRef.current) {
+      clearTimeout(copyTimeoutRef.current)
+    }
+    setCopiedField(field)
+    copyTimeoutRef.current = setTimeout(() => {
+      setCopiedField(null)
+      copyTimeoutRef.current = null
+    }, 600)
+  }
+
   return (
     <VStack
       style={[styles.rowContainer, isSelected ? styles.rowSelected : undefined]}
@@ -366,9 +394,6 @@ export const LibraryTableItem = observer(function LibraryTableItem({
           ) : (
             <Box style={styles.coverPlaceholder} />
           )}
-          <Text numberOfLines={2} style={styles.bookTitle}>
-            {book.metaData.title ?? ""}
-          </Text>
         </Pressable>
         <Box style={[styles.titleCell, { width: columnWidths.title }]}>
           <HStack alignItems="center" space="xs">
@@ -408,7 +433,13 @@ export const LibraryTableItem = observer(function LibraryTableItem({
             )}
           </HStack>
         </Box>
-        <Box style={[styles.authorsCell, { width: columnWidths.authors }]}>
+        <Box
+          style={[
+            styles.authorsCell,
+            { width: columnWidths.authors },
+            copiedField === "authors" ? { backgroundColor: COPIED_BACKGROUND_COLOR } : undefined,
+          ]}
+        >
           <TagInput
             value={authors}
             onChange={setAuthors}
@@ -416,6 +447,7 @@ export const LibraryTableItem = observer(function LibraryTableItem({
             testID={`library-table-authors-${book.id}`}
             showCopyPaste
             onBlur={handleSave}
+            onCopy={() => handleFieldCopy("authors")}
           />
         </Box>
         <Box style={[styles.seriesNameCell, { width: columnWidths.seriesName }]}>
@@ -459,7 +491,13 @@ export const LibraryTableItem = observer(function LibraryTableItem({
             />
           </Input>
         </Box>
-        <Box style={[styles.tagsCell, { width: columnWidths.tags }]}>
+        <Box
+          style={[
+            styles.tagsCell,
+            { width: columnWidths.tags },
+            copiedField === "tags" ? { backgroundColor: COPIED_BACKGROUND_COLOR } : undefined,
+          ]}
+        >
           <TagInput
             value={tags}
             onChange={setTags}
@@ -467,6 +505,7 @@ export const LibraryTableItem = observer(function LibraryTableItem({
             testID={`library-table-tags-${book.id}`}
             showCopyPaste
             onBlur={handleSave}
+            onCopy={() => handleFieldCopy("tags")}
           />
         </Box>
         <Box style={[styles.publisherCell, { width: columnWidths.publisher }]}>
@@ -547,7 +586,7 @@ const styles = StyleSheet.create({
   },
   bookCell: {
     alignItems: "center",
-    flexDirection: "row",
+    justifyContent: "center",
     paddingHorizontal: 6,
     width: BOOK_COLUMN_WIDTH,
   },
@@ -581,19 +620,13 @@ const styles = StyleSheet.create({
   cover: {
     borderRadius: 2,
     height: 48,
-    marginRight: 8,
     width: 36,
   },
   coverPlaceholder: {
     backgroundColor: "rgba(0,0,0,0.08)",
     borderRadius: 2,
     height: 48,
-    marginRight: 8,
     width: 36,
-  },
-  bookTitle: {
-    flex: 1,
-    fontSize: 12,
   },
   selectionActions: {
     marginTop: 8,
