@@ -13,6 +13,7 @@ export type TagInputProps = {
   separator?: RegExp
   disabled?: boolean
   showCopyPaste?: boolean
+  onBlur?: () => void
 }
 
 const DEFAULT_SEPARATOR = /[,;、]/
@@ -26,6 +27,7 @@ export function TagInput({
   separator = DEFAULT_SEPARATOR,
   disabled = false,
   showCopyPaste = false,
+  onBlur,
 }: TagInputProps) {
   const [inputValue, setInputValue] = useState("")
   const [isFocused, setIsFocused] = useState(false)
@@ -161,6 +163,7 @@ export function TagInput({
     if (inputValue.trim()) {
       addTag(inputValue)
     }
+    onBlur?.()
   }
 
   return (

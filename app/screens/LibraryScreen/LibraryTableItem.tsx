@@ -27,7 +27,6 @@ const SERIES_NAME_COLUMN_WIDTH = 120
 const SERIES_INDEX_COLUMN_WIDTH = 60
 const TAGS_COLUMN_WIDTH = 180
 const PUBLISHER_COLUMN_WIDTH = 150
-const ACTIONS_COLUMN_WIDTH = 90
 const SELECTED_OUTLINE_COLOR = "#3B82F6"
 const SELECTED_OVERLAY_COLOR = "rgba(59, 130, 246, 0.08)"
 
@@ -67,8 +66,7 @@ export function computeLibraryTableMinWidth(
     widths.seriesName +
     widths.seriesIndex +
     widths.tags +
-    widths.publisher +
-    ACTIONS_COLUMN_WIDTH
+    widths.publisher
   )
 }
 
@@ -84,7 +82,6 @@ type LibraryTableFieldLabels = {
   seriesIndex: string
   tags: string
   publisher: string
-  actions: string
 }
 
 type LibraryTableHeaderProps = {
@@ -187,7 +184,6 @@ export function createLibraryTableFieldLabels(
     seriesIndex: getFieldName(fieldMetadataList, "series", "Series"),
     tags: getFieldName(fieldMetadataList, "tags", "Tags"),
     publisher: getFieldName(fieldMetadataList, "publisher", "Publisher"),
-    actions: "Actions",
   }
 }
 
@@ -238,9 +234,6 @@ export function LibraryTableHeader({
       </Box>
       {renderResizableHeaderCell("tags", labels.tags, styles.tagsCell)}
       {renderResizableHeaderCell("publisher", labels.publisher, styles.publisherCell)}
-      <Box style={[styles.headerCell, styles.actionsCell]}>
-        <Text fontWeight="$bold">{labels.actions}</Text>
-      </Box>
     </HStack>
   )
 }
@@ -384,6 +377,13 @@ export const LibraryTableItem = observer(function LibraryTableItem({
                 <InputField
                   value={title}
                   onChangeText={setTitle}
+                  onBlur={handleSave}
+                  onSubmitEditing={handleSave}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSave()
+                    }
+                  }}
                   testID={`library-table-title-${book.id}`}
                 />
               </Input>
@@ -415,6 +415,7 @@ export const LibraryTableItem = observer(function LibraryTableItem({
             placeholder="Add author..."
             testID={`library-table-authors-${book.id}`}
             showCopyPaste
+            onBlur={handleSave}
           />
         </Box>
         <Box style={[styles.seriesNameCell, { width: columnWidths.seriesName }]}>
@@ -422,6 +423,13 @@ export const LibraryTableItem = observer(function LibraryTableItem({
             <InputField
               value={series}
               onChangeText={setSeries}
+              onBlur={handleSave}
+              onSubmitEditing={handleSave}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSave()
+                }
+              }}
               testID={`library-table-series-name-${book.id}`}
             />
           </Input>
@@ -440,6 +448,13 @@ export const LibraryTableItem = observer(function LibraryTableItem({
                   }
                 }
               }}
+              onBlur={handleSave}
+              onSubmitEditing={handleSave}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSave()
+                }
+              }}
               testID={`library-table-series-index-${book.id}`}
             />
           </Input>
@@ -451,6 +466,7 @@ export const LibraryTableItem = observer(function LibraryTableItem({
             placeholder="Add tag..."
             testID={`library-table-tags-${book.id}`}
             showCopyPaste
+            onBlur={handleSave}
           />
         </Box>
         <Box style={[styles.publisherCell, { width: columnWidths.publisher }]}>
@@ -458,18 +474,16 @@ export const LibraryTableItem = observer(function LibraryTableItem({
             <InputField
               value={publisher}
               onChangeText={setPublisher}
+              onBlur={handleSave}
+              onSubmitEditing={handleSave}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSave()
+                }
+              }}
               testID={`library-table-publisher-${book.id}`}
             />
           </Input>
-        </Box>
-        <Box style={styles.actionsCell}>
-          <Button
-            tx="bookEditScreen.save"
-            size="sm"
-            onPress={handleSave}
-            isDisabled={!isDirty || isSaving}
-            testID={`library-table-save-${book.id}`}
-          />
         </Box>
       </HStack>
       {showSelectionActions && detailMenuProps ? (
@@ -563,10 +577,6 @@ const styles = StyleSheet.create({
   publisherCell: {
     paddingHorizontal: 6,
     width: PUBLISHER_COLUMN_WIDTH,
-  },
-  actionsCell: {
-    paddingHorizontal: 6,
-    width: ACTIONS_COLUMN_WIDTH,
   },
   cover: {
     borderRadius: 2,
