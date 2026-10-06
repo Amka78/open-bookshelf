@@ -6,7 +6,6 @@ import {
   IconButton,
   LeftSideMenu,
   LibraryActions,
-  ScrollView,
   SelectionActionBar,
   SortMenu,
   StaggerContainer,
@@ -41,6 +40,7 @@ import {
   useWindowDimensions,
 } from "react-native"
 import { buildThumbnailSourceCache } from "./buildThumbnailSourceCache"
+import { LibraryBookList } from "./LibraryBookList"
 import {
   buildQueryFromParts,
   getLeftSideMenuSelectedNames,
@@ -349,7 +349,6 @@ export const LibraryScreen: FC = observer(() => {
 
   const renderItem = useCallback(
     ({ item }: { item: Book }) => {
-      let listItem: React.JSX.Element
       const hasReadingHistory = cachedBookIds.has(item.id)
       const readingProgress = readingProgressById.get(item.id) ?? null
       const isSelected = libraryHook.isBookSelected(item.id)
@@ -498,7 +497,7 @@ export const LibraryScreen: FC = observer(() => {
       }
 
       if (viewMode === "list") {
-        listItem = (
+        return (
           <BookListItem
             book={item}
             source={imageSource}
@@ -519,35 +518,10 @@ export const LibraryScreen: FC = observer(() => {
             showSelectionActions={showSingleSelectionDetails}
           />
         )
-      } else if (viewMode === "grid") {
-        listItem = (
-          <BookImageItem
-            source={imageSource}
-            showCachedIcon={hasReadingHistory}
-            onCachedIconPress={onClearBookCache}
-            readingProgress={readingProgress}
-            readStatus={readStatus}
-            onPress={async () => {
-              libraryHook.handleBookPress(item.id)
-            }}
-            onLongPress={() => libraryHook.enterMultiSelection(item.id)}
-            onOpenBookDetail={onOpenBookDetail}
-            hoverSearchMetadata={{
-              authors: [...item.metaData.authors],
-              series: item.metaData.series,
-              tags: [...item.metaData.tags],
-              formats: [...item.metaData.formats],
-            }}
-            onHoverSearchPress={(query) => {
-              void handleBookMetadataSearch(query)
-            }}
-            detailMenuProps={detailMenuProps}
-            selected={isSelected}
-            showSelectionDetails={showSingleSelectionDetails}
-          />
-        )
-      } else {
-        listItem = (
+      }
+
+      if (viewMode === "table") {
+        return (
           <LibraryTableItem
             book={item}
             source={imageSource}
@@ -564,7 +538,33 @@ export const LibraryScreen: FC = observer(() => {
           />
         )
       }
-      return listItem
+
+      return (
+        <BookImageItem
+          source={imageSource}
+          showCachedIcon={hasReadingHistory}
+          onCachedIconPress={onClearBookCache}
+          readingProgress={readingProgress}
+          readStatus={readStatus}
+          onPress={async () => {
+            libraryHook.handleBookPress(item.id)
+          }}
+          onLongPress={() => libraryHook.enterMultiSelection(item.id)}
+          onOpenBookDetail={onOpenBookDetail}
+          hoverSearchMetadata={{
+            authors: [...item.metaData.authors],
+            series: item.metaData.series,
+            tags: [...item.metaData.tags],
+            formats: [...item.metaData.formats],
+          }}
+          onHoverSearchPress={(query) => {
+            void handleBookMetadataSearch(query)
+          }}
+          detailMenuProps={detailMenuProps}
+          selected={isSelected}
+          showSelectionDetails={showSingleSelectionDetails}
+        />
+      )
     },
     [
       selectedLibrary,
@@ -743,82 +743,36 @@ export const LibraryScreen: FC = observer(() => {
         />
       )}
       {selectedLibrary ? (
-        viewMode === "table" ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator={true}>
-            <Box width={Math.max(window.width, computeLibraryTableMinWidth(tableColumnWidths))}>
-              <FlatList<Book>
-                ref={listRef}
-                key={viewMode}
-                data={bookList}
-                renderItem={renderItem}
-                keyExtractor={(item) => `${item.id}`}
-                numColumns={1}
-                ListHeaderComponent={
-                  tableFieldLabels ? (
-                    <LibraryTableHeader
-                      labels={tableFieldLabels}
-                      columnWidths={tableColumnWidths}
-                      onColumnResize={handleColumnResize}
-                    />
-                  ) : undefined
-                }
-                onContentSizeChange={() => {
-                  restoreScrollOffset()
-                }}
-                onRefresh={
-                  convergenceHook.isLarge
-                    ? undefined
-                    : async () => {
-                        await libraryHook.onSearch()
-                      }
-                }
-                onScroll={handleListScroll}
-                scrollEventThrottle={16}
-                onEndReached={async () => {
-                  if (!isFocused) {
-                    return
-                  }
-                  if (calibreRootStore.isFetchingMore) {
-                    return
-                  }
-                  await calibreRootStore.searchMoreLibrary()
-                }}
-                preparing={libraryHook.searching}
+        <LibraryBookList
+          bookList={bookList}
+          listRef={listRef}
+          renderItem={renderItem}
+          numColumns={viewMode === "grid" ? Math.max(1, Math.floor(window.width / 242)) : 1}
+          isFocused={isFocused}
+          handleListScroll={handleListScroll}
+          restoreScrollOffset={restoreScrollOffset}
+          onEndReached={async () => {
+            if (calibreRootStore.isFetchingMore) return
+            await calibreRootStore.searchMoreLibrary()
+          }}
+          onRefresh={async () => {
+            await libraryHook.onSearch()
+          }}
+          preparing={libraryHook.searching}
+          wrapInHorizontalScroll={viewMode === "table"}
+          horizontalContentWidth={
+            viewMode === "table" ? computeLibraryTableMinWidth(tableColumnWidths) : undefined
+          }
+          ListHeaderComponent={
+            viewMode === "table" && tableFieldLabels ? (
+              <LibraryTableHeader
+                labels={tableFieldLabels}
+                columnWidths={tableColumnWidths}
+                onColumnResize={handleColumnResize}
               />
-            </Box>
-          </ScrollView>
-        ) : (
-          <FlatList<Book>
-            ref={listRef}
-            key={viewMode} // to force re-render when the library view mode changes
-            data={bookList}
-            renderItem={renderItem}
-            keyExtractor={(item) => `${item.id}`}
-            numColumns={viewMode === "list" ? 1 : Math.max(1, Math.floor(window.width / 242))}
-            onContentSizeChange={() => {
-              restoreScrollOffset()
-            }}
-            onRefresh={
-              convergenceHook.isLarge
-                ? undefined
-                : async () => {
-                    await libraryHook.onSearch()
-                  }
-            }
-            onScroll={handleListScroll}
-            scrollEventThrottle={16}
-            onEndReached={async () => {
-              if (!isFocused) {
-                return
-              }
-              if (calibreRootStore.isFetchingMore) {
-                return
-              }
-              await calibreRootStore.searchMoreLibrary()
-            }}
-            preparing={libraryHook.searching}
-          />
-        )
+            ) : undefined
+          }
+        />
       ) : null}
       {convergenceHook.isLarge ? null : (
         <StaggerContainer
