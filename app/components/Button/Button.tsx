@@ -25,10 +25,13 @@ export function Button({ variant = "outline", ...restProps }: ButtonProps) {
       }}
       isDisabled={isPending}
     >
-      {isPending ? <ButtonSpinner color={palette.textSecondary} marginRight={"$1"} /> : undefined}
-      <ButtonText color={palette.textPrimary}>
-        {restProps.tx ? translate(restProps.tx) : (restProps.children as ReactNode)}
-      </ButtonText>
+      {isPending ? (
+        <ButtonSpinner color={palette.textSecondary} />
+      ) : (
+        <ButtonText color={palette.textPrimary}>
+          {restProps.tx ? translate(restProps.tx) : (restProps.children as ReactNode)}
+        </ButtonText>
+      )}
     </Template>
   )
 }
