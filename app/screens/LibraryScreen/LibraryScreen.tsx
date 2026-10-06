@@ -209,8 +209,11 @@ export const LibraryScreen: FC = observer(() => {
     authors: clampColumnWidth(
       storedTableColumnWidths.authors ?? DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS.authors,
     ),
-    series: clampColumnWidth(
-      storedTableColumnWidths.series ?? DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS.series,
+    seriesName: clampColumnWidth(
+      storedTableColumnWidths.seriesName ?? DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS.seriesName,
+    ),
+    seriesIndex: clampColumnWidth(
+      storedTableColumnWidths.seriesIndex ?? DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS.seriesIndex,
     ),
     tags: clampColumnWidth(storedTableColumnWidths.tags ?? DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS.tags),
     publisher: clampColumnWidth(

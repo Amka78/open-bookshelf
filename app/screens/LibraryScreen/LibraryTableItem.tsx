@@ -23,7 +23,8 @@ import { PanResponder, Platform, StyleSheet, View, type ViewStyle } from "react-
 const BOOK_COLUMN_WIDTH = 150
 const TITLE_COLUMN_WIDTH = 180
 const AUTHORS_COLUMN_WIDTH = 180
-const SERIES_COLUMN_WIDTH = 150
+const SERIES_NAME_COLUMN_WIDTH = 120
+const SERIES_INDEX_COLUMN_WIDTH = 60
 const TAGS_COLUMN_WIDTH = 180
 const PUBLISHER_COLUMN_WIDTH = 150
 const ACTIONS_COLUMN_WIDTH = 90
@@ -31,7 +32,7 @@ const SELECTED_OUTLINE_COLOR = "#3B82F6"
 const SELECTED_OVERLAY_COLOR = "rgba(59, 130, 246, 0.08)"
 
 // Metadata columns whose width the user can change by dragging the header border.
-export type LibraryTableColumnKey = "title" | "authors" | "series" | "tags" | "publisher"
+export type LibraryTableColumnKey = "title" | "authors" | "seriesName" | "seriesIndex" | "tags" | "publisher"
 
 export type LibraryTableColumnWidths = Record<LibraryTableColumnKey, number>
 
@@ -41,7 +42,8 @@ export const LIBRARY_TABLE_COLUMN_MAX_WIDTH = 600
 export const DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS: LibraryTableColumnWidths = {
   title: TITLE_COLUMN_WIDTH,
   authors: AUTHORS_COLUMN_WIDTH,
-  series: SERIES_COLUMN_WIDTH,
+  seriesName: SERIES_NAME_COLUMN_WIDTH,
+  seriesIndex: SERIES_INDEX_COLUMN_WIDTH,
   tags: TAGS_COLUMN_WIDTH,
   publisher: PUBLISHER_COLUMN_WIDTH,
 }
@@ -62,7 +64,8 @@ export function computeLibraryTableMinWidth(
     BOOK_COLUMN_WIDTH +
     widths.title +
     widths.authors +
-    widths.series +
+    widths.seriesName +
+    widths.seriesIndex +
     widths.tags +
     widths.publisher +
     ACTIONS_COLUMN_WIDTH
@@ -77,7 +80,8 @@ type LibraryTableFieldLabels = {
   book: string
   title: string
   authors: string
-  series: string
+  seriesName: string
+  seriesIndex: string
   tags: string
   publisher: string
   actions: string
@@ -93,9 +97,10 @@ type ResizeHandleProps = {
   column: LibraryTableColumnKey
   width: number
   onResize: (column: LibraryTableColumnKey, width: number) => void
+  offsetRight?: number
 }
 
-function ResizeHandle({ column, width, onResize }: ResizeHandleProps) {
+function ResizeHandle({ column, width, onResize, offsetRight = -6 }: ResizeHandleProps) {
   const widthRef = useRef(width)
   widthRef.current = width
   const startWidthRef = useRef(width)
@@ -124,7 +129,11 @@ function ResizeHandle({ column, width, onResize }: ResizeHandleProps) {
   return (
     <View
       {...panResponder.panHandlers}
-      style={[styles.resizeHandle, Platform.OS === "web" ? resizeHandleWebStyle : undefined]}
+      style={[
+        styles.resizeHandle,
+        { right: offsetRight },
+        Platform.OS === "web" ? resizeHandleWebStyle : undefined,
+      ]}
       testID={`library-table-resize-${column}`}
     >
       <View style={styles.resizeHandleGrip} />
@@ -174,7 +183,8 @@ export function createLibraryTableFieldLabels(
     book: "Book",
     title: getFieldName(fieldMetadataList, "title", "Title"),
     authors: getFieldName(fieldMetadataList, "authors", "Authors"),
-    series: getFieldName(fieldMetadataList, "series", "Series"),
+    seriesName: getFieldName(fieldMetadataList, "series", "Series"),
+    seriesIndex: getFieldName(fieldMetadataList, "series", "Series"),
     tags: getFieldName(fieldMetadataList, "tags", "Tags"),
     publisher: getFieldName(fieldMetadataList, "publisher", "Publisher"),
     actions: "Actions",
@@ -199,6 +209,8 @@ export function LibraryTableHeader({
     </Box>
   )
 
+  const seriesGroupWidth = columnWidths.seriesName + columnWidths.seriesIndex
+
   return (
     <HStack style={styles.headerRow}>
       <Box style={[styles.headerCell, styles.bookCell]}>
@@ -206,7 +218,24 @@ export function LibraryTableHeader({
       </Box>
       {renderResizableHeaderCell("title", labels.title, styles.titleCell)}
       {renderResizableHeaderCell("authors", labels.authors, styles.authorsCell)}
-      {renderResizableHeaderCell("series", labels.series, styles.seriesCell)}
+      <Box style={[styles.headerCell, styles.seriesGroupCell, { width: seriesGroupWidth }]}>
+        <Text fontWeight="$bold">{labels.seriesName}</Text>
+        {onColumnResize ? (
+          <>
+            <ResizeHandle
+              column="seriesName"
+              width={columnWidths.seriesName}
+              onResize={onColumnResize}
+              offsetRight={columnWidths.seriesIndex - 6}
+            />
+            <ResizeHandle
+              column="seriesIndex"
+              width={columnWidths.seriesIndex}
+              onResize={onColumnResize}
+            />
+          </>
+        ) : null}
+      </Box>
       {renderResizableHeaderCell("tags", labels.tags, styles.tagsCell)}
       {renderResizableHeaderCell("publisher", labels.publisher, styles.publisherCell)}
       <Box style={[styles.headerCell, styles.actionsCell]}>
@@ -388,22 +417,30 @@ export const LibraryTableItem = observer(function LibraryTableItem({
             showCopyPaste
           />
         </Box>
-        <Box style={[styles.seriesCell, { width: columnWidths.series }]}>
+        <Box style={[styles.seriesNameCell, { width: columnWidths.seriesName }]}>
           <Input size="sm">
             <InputField
-              value={seriesIndex !== null ? `${series} #${seriesIndex}` : series}
+              value={series}
+              onChangeText={setSeries}
+              testID={`library-table-series-name-${book.id}`}
+            />
+          </Input>
+        </Box>
+        <Box style={[styles.seriesIndexCell, { width: columnWidths.seriesIndex }]}>
+          <Input size="sm">
+            <InputField
+              value={seriesIndex !== null ? String(seriesIndex) : ""}
               onChangeText={(text) => {
-                // Parse "Series Name #1" format
-                const match = text.match(/^(.*)\s+#(\d+(?:\.\d+)?)$/)
-                if (match) {
-                  setSeries(match[1].trim())
-                  setSeriesIndex(Number(match[2]))
-                } else {
-                  setSeries(text)
+                if (text === "") {
                   setSeriesIndex(null)
+                } else {
+                  const num = Number(text)
+                  if (!Number.isNaN(num)) {
+                    setSeriesIndex(num)
+                  }
                 }
               }}
-              testID={`library-table-series-${book.id}`}
+              testID={`library-table-series-index-${book.id}`}
             />
           </Input>
         </Box>
@@ -508,9 +545,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     width: AUTHORS_COLUMN_WIDTH,
   },
-  seriesCell: {
+  seriesGroupCell: {
     paddingHorizontal: 6,
-    width: SERIES_COLUMN_WIDTH,
+  },
+  seriesNameCell: {
+    paddingHorizontal: 6,
+    width: SERIES_NAME_COLUMN_WIDTH,
+  },
+  seriesIndexCell: {
+    paddingHorizontal: 6,
+    width: SERIES_INDEX_COLUMN_WIDTH,
   },
   tagsCell: {
     paddingHorizontal: 6,

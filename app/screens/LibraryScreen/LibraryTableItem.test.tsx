@@ -385,7 +385,8 @@ describe("LibraryTableItem", () => {
           authors: "Authors",
           book: "Book",
           publisher: "Publisher",
-          series: "Series",
+          seriesName: "Series",
+          seriesIndex: "Series",
           tags: "Tags",
           title: "Title",
         }}
@@ -393,7 +394,7 @@ describe("LibraryTableItem", () => {
       />,
     )
 
-    for (const column of ["title", "authors", "series", "tags", "publisher"]) {
+    for (const column of ["title", "authors", "seriesName", "seriesIndex", "tags", "publisher"]) {
       expect(screen.getByTestId(`library-table-resize-${column}`)).toBeTruthy()
     }
   })
@@ -406,7 +407,8 @@ describe("LibraryTableItem", () => {
           authors: "Authors",
           book: "Book",
           publisher: "Publisher",
-          series: "Series",
+          seriesName: "Series",
+          seriesIndex: "Series",
           tags: "Tags",
           title: "Title",
         }}
@@ -424,10 +426,10 @@ describe("LibraryTableItem", () => {
   })
 
   test("computeLibraryTableMinWidth sums fixed and dynamic column widths", () => {
-    expect(computeLibraryTableMinWidth()).toBe(1080)
+    expect(computeLibraryTableMinWidth()).toBe(1110)
     expect(
       computeLibraryTableMinWidth({ ...DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS, title: 100 }),
-    ).toBe(1000)
+    ).toBe(1030)
   })
 })
 
