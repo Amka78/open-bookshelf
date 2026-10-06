@@ -247,6 +247,7 @@ const ja: Translations = {
     preferredFormatAuto: "自動",
     dateDisplayFormat: "日付フォーマット",
     booksPerPage: "1ページあたりの書籍数",
+    bulkEditAutoRefresh: "一括編集後に自動再検索",
   },
   bookConvertScreen: {
     inputFormat: "現在のフォーマット",

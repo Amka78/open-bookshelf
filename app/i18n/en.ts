@@ -243,6 +243,7 @@ const en = {
     preferredFormatAuto: "Auto",
     dateDisplayFormat: "Date Format",
     booksPerPage: "Books Per Page",
+    bulkEditAutoRefresh: "Auto-refresh after bulk edit",
   },
   bookConvertScreen: {
     inputFormat: "Current formats",

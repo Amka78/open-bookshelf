@@ -35,6 +35,7 @@ export const SettingStoreModel = types
       "list",
     ),
     libraryTableColumnWidths: types.optional(types.map(types.number), {}),
+    bulkEditAutoRefresh: types.optional(types.boolean, true),
   })
   .views((store) => ({
     getReadStatus(libraryId: string, bookId: number): string | undefined {
@@ -106,6 +107,9 @@ export const SettingStoreModel = types
     setLibraryTableColumnWidth(column: string, width: number) {
       if (!Number.isFinite(width)) return
       store.libraryTableColumnWidths.set(column, Math.round(width))
+    },
+    setBulkEditAutoRefresh(enabled: boolean) {
+      store.bulkEditAutoRefresh = enabled
     },
   }))
 

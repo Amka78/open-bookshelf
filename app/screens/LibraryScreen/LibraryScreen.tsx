@@ -670,7 +670,9 @@ export const LibraryScreen: FC = observer(() => {
         const mergedAuthors = Array.from(new Set([...existingAuthors, ...newAuthors]))
         await book.update(selectedLibrary.id, { authors: mergedAuthors }, ["authors"])
       }
-      await libraryHook.onSearch()
+      if (settingStore.bulkEditAutoRefresh) {
+        await libraryHook.onSearch()
+      }
     } catch {
       // Clipboard access denied
     }
@@ -692,7 +694,9 @@ export const LibraryScreen: FC = observer(() => {
         const mergedTags = Array.from(new Set([...existingTags, ...newTags]))
         await book.update(selectedLibrary.id, { tags: mergedTags }, ["tags"])
       }
-      await libraryHook.onSearch()
+      if (settingStore.bulkEditAutoRefresh) {
+        await libraryHook.onSearch()
+      }
     } catch {
       // Clipboard access denied
     }
@@ -718,7 +722,9 @@ export const LibraryScreen: FC = observer(() => {
         )
       }
     }
-    await libraryHook.onSearch()
+    if (settingStore.bulkEditAutoRefresh) {
+      await libraryHook.onSearch()
+    }
   }
 
   const LibraryCore = (

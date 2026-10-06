@@ -1,9 +1,7 @@
-import { Button } from "@/components/Button/Button"
-import { Heading } from "@/components/Heading/Heading"
-import { Text } from "@/components/Text/Text"
+import { Button, Heading, Text } from "@/components"
 import { useStores } from "@/models"
 import { usePalette } from "@/theme"
-import { HStack, VStack } from "@gluestack-ui/themed"
+import { HStack, Switch, VStack } from "@gluestack-ui/themed"
 import { observer } from "mobx-react-lite"
 import { Pressable } from "react-native"
 import type { ModalComponentProp } from "react-native-modalfy"
@@ -116,6 +114,14 @@ export const UserPreferencesModal = observer((props: UserPreferencesModalProps) 
               onSelect={onSelectBpp}
             />
           </VStack>
+          <HStack justifyContent="space-between" alignItems="center">
+            <Text tx="userPreferences.bulkEditAutoRefresh" />
+            <Switch
+              isChecked={settingStore.bulkEditAutoRefresh}
+              onToggle={settingStore.setBulkEditAutoRefresh}
+              size="sm"
+            />
+          </HStack>
         </VStack>
       </Body>
       <Footer>
