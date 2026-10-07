@@ -16,6 +16,7 @@ describe("bookViewerInversion", () => {
     ).toEqual({
       useReversedData: false,
       useTransformInvert: false,
+      usePagingEnabled: false,
     })
   })
 
@@ -29,6 +30,7 @@ describe("bookViewerInversion", () => {
     ).toEqual({
       useReversedData: true,
       useTransformInvert: false,
+      usePagingEnabled: false,
     })
   })
 
@@ -42,7 +44,34 @@ describe("bookViewerInversion", () => {
     ).toEqual({
       useReversedData: false,
       useTransformInvert: true,
+      usePagingEnabled: true,
     })
+  })
+
+  // react-native-web の pagingEnabled は scroll-snap-type: x mandatory で実装され、
+  // FlashList の仮想化と衝突してスクロール位置を 0 へ引き戻す（reverse 方式では最終ページ）。
+  test("web では pagingEnabled を無効化する", () => {
+    for (const isInverted of [true, false]) {
+      expect(
+        resolveBookViewerInversionStrategy({
+          isInverted,
+          isSinglePagePdfMode: false,
+          platformOS: "web",
+        }).usePagingEnabled,
+      ).toBe(false)
+    }
+  })
+
+  test("web 以外では pagingEnabled を有効にする", () => {
+    for (const platformOS of ["android", "ios", "windows"]) {
+      expect(
+        resolveBookViewerInversionStrategy({
+          isInverted: true,
+          isSinglePagePdfMode: false,
+          platformOS,
+        }).usePagingEnabled,
+      ).toBe(true)
+    }
   })
 
   test("reversed data 用に logical index と display index を相互変換できる", () => {

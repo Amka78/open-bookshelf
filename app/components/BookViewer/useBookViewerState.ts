@@ -83,6 +83,29 @@ const isFacingPageStyle = (readingStyle: BookReadingStyleType) => {
   return readingStyle === "facingPage" || readingStyle === "facingPageWithTitle"
 }
 
+/**
+ * `page` を表示するリスト index を解決する。
+ * 見開きスタイルは1アイテムに2ページを詰めるため、ページ番号と index が一致しない。
+ */
+export const getListIndexForPage = (
+  pages: PageStyles,
+  readingStyle: BookReadingStyleType,
+  page: number,
+  totalPage: number,
+): number => {
+  const clampedPage = Math.max(0, Math.min(page, Math.max(totalPage - 1, 0)))
+
+  if (!isFacingPageStyle(readingStyle)) {
+    return clampedPage
+  }
+
+  const pageList = pages[readingStyle] as FacingPageType[]
+  const foundIndex = pageList.findIndex((value) => {
+    return value.page1 === clampedPage || value.page2 === clampedPage
+  })
+  return foundIndex >= 0 ? foundIndex : 0
+}
+
 export function useBookViewerState({
   totalPage,
   initialPage,
@@ -200,16 +223,7 @@ export function useBookViewerState({
       return
     }
 
-    const clampedPage = Math.max(0, Math.min(initialPage, Math.max(totalPage - 1, 0)))
-
-    let initialIndex = clampedPage
-    if (isFacingPageStyle(readingStyle)) {
-      const pageList = pages[readingStyle] as FacingPageType[]
-      const foundIndex = pageList.findIndex((value) => {
-        return value.page1 === clampedPage || value.page2 === clampedPage
-      })
-      initialIndex = foundIndex >= 0 ? foundIndex : 0
-    }
+    const initialIndex = getListIndexForPage(pages, readingStyle, initialPage, totalPage)
 
     setScrollIndex(initialIndex)
     flashListRef.current?.scrollToIndex({ index: initialIndex, animated: false })

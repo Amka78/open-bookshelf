@@ -202,8 +202,13 @@ export function useViewer() {
       return cleanup
     }
 
-    const hasLocalProgress = !!(history && history.currentPage > 0)
-    const hasServerProgress = isHtmlViewerFormat ? htmlResumeLocation !== null : serverEstimatedPage >= 0
+    // Local progress: history exists AND currentPage > 0 (page 0 means not yet started)
+    const hasLocalProgress = history !== undefined && history.currentPage > 0
+    // Server progress: serverPosFrac > 0 when currentPage is 0 or not set
+    // Note: serverEstimatedPage > 0 (not >= 0) because page 0 means "not yet started"
+    const hasServerProgress = isHtmlViewerFormat
+      ? htmlResumeLocation !== null
+      : serverEstimatedPage > 0
 
     if (!hasLocalProgress && !hasServerProgress) {
       pendingPromptKeyRef.current = undefined
@@ -365,7 +370,8 @@ export function useViewer() {
 
     // Compute position fraction and schedule server sync
     // For TextBook formats, use spine-length-aware fraction and spine-anchored CFI.
-    const totalPages = (totalPagesForFraction ?? availablePageCount ?? selectedBook.path.length) || 1
+    const totalPages =
+      (totalPagesForFraction ?? availablePageCount ?? selectedBook.path.length) || 1
     let posFrac = totalPages > 1 ? page / (totalPages - 1) : 0
     let cfi = generateCfiForPage(page)
 

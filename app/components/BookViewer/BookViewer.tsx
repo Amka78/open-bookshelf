@@ -145,11 +145,12 @@ export function BookViewer(props: BookViewerProps) {
   const flashListAxisKey = isHorizontalReading ? "horizontal" : "vertical"
   const isInverted =
     viewerHook.pageDirection === "left" && viewerHook.readingStyle !== "verticalScroll"
-  const { useReversedData, useTransformInvert } = resolveBookViewerInversionStrategy({
-    isInverted,
-    isSinglePagePdfMode,
-    platformOS: Platform.OS,
-  })
+  const { useReversedData, useTransformInvert, usePagingEnabled } =
+    resolveBookViewerInversionStrategy({
+      isInverted,
+      isSinglePagePdfMode,
+      platformOS: Platform.OS,
+    })
   const flashListInstanceRef = useRef<FlashListRef<number | FacingPageType>>(null)
   const flashListDisplayStateRef = useRef({ itemCount: 0, useReversedData: false })
   const flashListRef = useRef<FlashListHandle>({
@@ -405,6 +406,12 @@ export function BookViewer(props: BookViewerProps) {
   const flashListLayoutKey = `${viewerHook.readingStyle}:${viewerHook.pageDirection}:${listViewportWidth}x${dimension.height}`
   const currentHorizontalLayoutKey =
     viewerHook.readingStyle === "verticalScroll" ? undefined : flashListLayoutKey
+  // 各アイテムはちょうどビューポート1枚分なので、サイズと位置を事前確定できる。
+  // web では DOM 計測に任せた場合にアイテム幅が listViewportWidth からずれる
+  // （実測: scrollWidth / itemCount ≈ 782 に対し listViewportWidth 742）ため、
+  // ページ境界の算出が壊れる。android と同様に overrideItemLayout でサイズを与える。
+  const useFixedItemSize = isHorizontalReading
+  // removeClippedSubviews の web 有効化は未検証のため、従来の範囲を維持する
   const useFixedItemLayout = isHorizontalReading && !isWeb
   const windowSize = isAndroidPdfMode ? 2 : isWebPdfMode ? 10 : isWeb ? 5 : 3
   const maxToRenderPerBatch = isAndroidPdfMode ? 1 : isWebPdfMode ? 4 : 2
@@ -484,6 +491,63 @@ export function BookViewer(props: BookViewerProps) {
       }
     }
   }, [currentHorizontalLayoutKey, pages])
+
+  // react-native-web は onMomentumScrollEnd / onScrollEndDrag を発火しない
+  // （ScrollViewBase の handleScrollEnd が呼ぶのは onScroll のみ）ため、web では
+  // scroll イベントの idle 検出でページ境界にスナップさせる。
+  // pagingEnabled を web で無効化していることの代替。無効化の理由は RN-web が
+  // pagingEnabled を scroll-snap-type: x mandatory + 各子への scroll-snap-align: start で
+  // 実装しており、FlashList の仮想化で子が mount/unmount されるたびにスナップ点が失われ、
+  // mandatory 指定によってスクロール位置が 0 へ強制的に引き戻されるため。
+  // 反転データでは offset 0 = 最終ページなので、常に最終ページが表示されていた。
+  useEffect(() => {
+    if (!isWeb || !isHorizontalReading) {
+      return undefined
+    }
+    const node = flashListInstanceRef.current?.getScrollableNode() as HTMLElement | null
+    if (!node) {
+      return undefined
+    }
+
+    // スクロールが止まってからスナップするまでの待機時間
+    const scrollIdleMs = 120
+    const pageSize = estimatedItemSize
+    let idleTimer: ReturnType<typeof setTimeout> | undefined
+
+    const snapToNearestPage = () => {
+      if (pageSize <= 0 || data.length === 0) {
+        return
+      }
+
+      const physicalIndex = Math.max(
+        0,
+        Math.min(Math.round(node.scrollLeft / pageSize), data.length - 1),
+      )
+      // overrideItemLayout により1アイテム = pageSize が保証されるので、
+      // 境界までの差が誤差程度なら何もしない（スナップの無限ループ防止）
+      if (Math.abs(node.scrollLeft - physicalIndex * pageSize) <= 2) {
+        return
+      }
+
+      scrollToIndex(mapBookViewerIndex(physicalIndex, data.length, useReversedData), true)
+    }
+
+    const onScroll = () => {
+      if (idleTimer !== undefined) {
+        clearTimeout(idleTimer)
+      }
+      idleTimer = setTimeout(snapToNearestPage, scrollIdleMs)
+    }
+
+    node.addEventListener("scroll", onScroll, { passive: true })
+
+    return () => {
+      node.removeEventListener("scroll", onScroll)
+      if (idleTimer !== undefined) {
+        clearTimeout(idleTimer)
+      }
+    }
+  }, [data.length, estimatedItemSize, isHorizontalReading, isWeb, scrollToIndex, useReversedData])
 
   const onListScrollSettled = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -660,7 +724,10 @@ export function BookViewer(props: BookViewerProps) {
                 extraData={flashListLayoutKey}
                 renderItem={renderItem}
                 horizontal={isHorizontalReading}
-                pagingEnabled={isHorizontalReading}
+                // web で pagingEnabled を有効にすると RN-web が scroll-snap-type: x mandatory を
+                // 付与し、FlashList の仮想化と衝突してスクロール位置が 0 へ引き戻される。
+                // 代わりに上記の idle 検出によるスナップでページ合わせを行う。
+                pagingEnabled={isHorizontalReading && usePagingEnabled}
                 {...invertedProps}
                 ref={flashListInstanceRef}
                 keyExtractor={(_, index) => `${index}`}
@@ -678,7 +745,7 @@ export function BookViewer(props: BookViewerProps) {
                 estimatedListSize={{ width: listViewportWidth, height: dimension.height }}
                 drawDistance={drawDistance}
                 overrideItemLayout={
-                  !useFixedItemLayout
+                  !useFixedItemSize
                     ? undefined
                     : (layout, _, index) => {
                         const mutableLayout = layout as {
