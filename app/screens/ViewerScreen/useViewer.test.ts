@@ -302,13 +302,31 @@ describe("useViewer", () => {
     expect(result.current.pageDirection).toBe("left")
   })
 
-  test("uses manifest page progression direction when no client setting exists", () => {
+  test("maps rtl page progression direction to right-to-left reading when no client setting exists", () => {
     mockSelectedBook.pageProgressionDirection = "rtl"
     mockSelectedLibrary.clientSetting = []
 
     const { result } = renderHook(() => useViewer())
 
+    expect(result.current.pageDirection).toBe("left")
+  })
+
+  test("maps ltr page progression direction to left-to-right reading when no client setting exists", () => {
+    mockSelectedBook.pageProgressionDirection = "ltr"
+    mockSelectedLibrary.clientSetting = []
+
+    const { result } = renderHook(() => useViewer())
+
     expect(result.current.pageDirection).toBe("right")
+  })
+
+  test("defaults to right-to-left reading when the manifest omits page progression direction", () => {
+    mockSelectedBook.pageProgressionDirection = null
+    mockSelectedLibrary.clientSetting = []
+
+    const { result } = renderHook(() => useViewer())
+
+    expect(result.current.pageDirection).toBe("left")
   })
 
   test("onManageMenu function exists", () => {

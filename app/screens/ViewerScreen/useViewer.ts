@@ -80,8 +80,10 @@ const cancelScheduledFrame = (id: number) => {
   clearTimeout(id)
 }
 
+// pageDirection は「次のページがどちら側にあるか」を表す。"left" = 右開き(RTL)。
+// 向きが不明（null）な場合は本アプリの主用途に合わせて右開きを既定にする。
 const getDefaultPageDirection = (pageProgressionDirection: "rtl" | "ltr" | null | undefined) => {
-  return pageProgressionDirection === "rtl" ? "right" : "left"
+  return pageProgressionDirection === "ltr" ? "right" : "left"
 }
 
 export function useViewer() {
