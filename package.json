@@ -1,6 +1,6 @@
 {
   "name": "open-book-shelf",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "private": true,
   "scripts": {
     "start": "USE_EXPO_GO=true bunx expo start",
