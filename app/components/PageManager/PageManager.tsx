@@ -67,6 +67,7 @@ function PageManagerCore({
         <IconButton
           name="fast-forward"
           rotate="180"
+          testID="page-manager-first"
           onPress={() => {
             onPageFastMoveButtonPress(props.reverse ? true : false)
           }}
@@ -75,6 +76,7 @@ function PageManagerCore({
           name="forward"
           rotate="180"
           iconSize={"md-"}
+          testID="page-manager-backward"
           onPress={() => {
             onPageMoveButtonPress(props.reverse ? true : false)
           }}
@@ -101,6 +103,7 @@ function PageManagerCore({
         <IconButton
           name="forward"
           iconSize={"md-"}
+          testID="page-manager-forward"
           onPress={() => {
             onPageMoveButtonPress(props.reverse ? false : true)
           }}
@@ -108,12 +111,13 @@ function PageManagerCore({
         />
         <IconButton
           name="fast-forward"
+          testID="page-manager-last"
           onPress={() => {
             onPageFastMoveButtonPress(props.reverse ? false : true)
           }}
         />
       </HStack>
-      <Text textAlign="center" marginBottom={"$4"}>
+      <Text textAlign="center" marginBottom={"$4"} testID="page-indicator">
         {pageIndicator}
       </Text>
     </VStack>

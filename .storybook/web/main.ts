@@ -1,50 +1,22 @@
-import type { StorybookConfig } from "@storybook/react-webpack5"
-const path = require("path")
-const webpack = require("webpack")
-const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin")
+import type { StorybookConfig } from "@storybook/react-vite"
+import { rnw } from "vite-plugin-rnw"
+import tsconfigPaths from "vite-tsconfig-paths"
 
 const config: StorybookConfig = {
-  typescript: { reactDocgen: "none" },
+  typescript: { reactDocgen: false },
   stories: [
     "../../app/components/**/*.stories.?(ts|tsx|js|jsx)",
     "../../app/screens/**/*.stories.?(ts|tsx|js|jsx)",
     "../stories/**/*.stories.?(ts|tsx|js|jsx)",
   ],
-  addons: [
-    "@storybook/addon-links",
-    "@storybook/addon-essentials",
-    "@storybook/addon-react-native-web",
-    "storybook-dark-mode",
-  ],
-  webpackFinal(config) {
-    config.resolve.modules = [...(config.resolve.modules || []), path.resolve(__dirname, "../src")]
+  addons: ["@storybook/addon-links", "@storybook/addon-essentials", "storybook-dark-mode"],
+  viteFinal(viteConfig) {
+    viteConfig.plugins = [...(viteConfig.plugins ?? []), tsconfigPaths(), ...rnw()]
 
-    config.resolve.plugins = [...(config.resolve.plugins || []), new TsconfigPathsPlugin()]
-
-    config.plugins = [
-      ...(config.plugins || []),
-      new webpack.IgnorePlugin({ resourceRegExp: /\.test(?:\.[jt]sx?)?$/ }),
-      new webpack.IgnorePlugin({ resourceRegExp: /\.spec(?:\.[jt]sx?)?$/ }),
-    ]
-
-    config.module.rules.push({
-      test: /\.[jt]sx?$/,
-      include: [
-        path.resolve(__dirname, "../../node_modules/@gluestack-ui"),
-        path.resolve(__dirname, "../../node_modules/@gluestack-style"),
-      ],
-      use: {
-        loader: require.resolve("babel-loader"),
-        options: {
-          presets: [require.resolve("babel-preset-expo")],
-        },
-      },
-    })
-
-    return config
+    return viteConfig
   },
   framework: {
-    name: "@storybook/react-webpack5",
+    name: "@storybook/react-vite",
     options: {},
   },
   docs: {

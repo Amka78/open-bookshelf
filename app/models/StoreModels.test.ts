@@ -90,4 +90,15 @@ describe("Store models", () => {
     expect(store.getLibraryViewMode(false)).toBe("table")
     expect(store.getLibraryViewMode(true)).toBe("list")
   })
+
+  test("SettingStoreModel stores library table column widths", () => {
+    const store = SettingStoreModel.create({})
+
+    expect(store.getLibraryTableColumnWidths()).toEqual({})
+
+    store.setLibraryTableColumnWidth("title", 220)
+    store.setLibraryTableColumnWidth("authors", 210.6)
+
+    expect(store.getLibraryTableColumnWidths()).toEqual({ authors: 211, title: 220 })
+  })
 })

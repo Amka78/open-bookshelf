@@ -240,7 +240,7 @@ describe("useLibrary", () => {
   })
 
   test("onUploadFile uploads file and searches", async () => {
-    const mockUploadFile = jest.spyOn(api, "uploadFile").mockResolvedValue(undefined)
+    const mockUploadFile = jest.spyOn(api, "uploadFile").mockResolvedValue({ kind: "ok" })
 
     const { result } = await renderUseLibrary()
 

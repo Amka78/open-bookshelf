@@ -1,4 +1,5 @@
 import { useConvergence } from "@/hooks/useConvergence"
+import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import { useStores } from "@/models"
 import type { Book } from "@/models/calibre"
 import { api } from "@/services/api"
@@ -11,6 +12,7 @@ export type LibrarySelectionMode = "none" | "single" | "multi"
 export function useLibrary() {
   const { calibreRootStore, settingStore } = useStores()
   const selectedLibrary = calibreRootStore.selectedLibrary
+  const modal = useElectrobunModal()
 
   const [searching, setSearching] = useState(false)
   const [selectionState, setSelectionState] = useState<{
@@ -296,7 +298,19 @@ export function useLibrary() {
     logger.debug("onUploadFile", assets)
 
     try {
-      await api.uploadFile(assets[0].name, selectedLibrary.id, assets[0].file ?? assets[0].uri)
+      const result = await api.uploadFile(
+        assets[0].name,
+        selectedLibrary.id,
+        assets[0].file ?? assets[0].uri,
+      )
+      if (result.kind !== "ok") {
+        logger.warn("onUploadFile failed", result)
+        modal.openModal("ErrorModal", {
+          title: "Upload failed",
+          message: `Failed to upload ${assets[0].name}: ${result.kind}`,
+        })
+        return
+      }
       await onSearch()
     } finally {
       setSearching(false)

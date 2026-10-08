@@ -129,6 +129,8 @@ export const buildTextBookHtmlDocument = ({
     <script data-obs-helper="1">
       const pageAnnotations = ${escapedAnnotations}
       ;(async () => {
+        try { console.log('[tb] script started') } catch {}
+        try {
         const serializedData = JSON.parse(document.getElementById("obs-serialized-data")?.textContent || "{}")
         const documentKey = ${escapedDocumentKey}
         const nsMap = Array.isArray(serializedData.ns_map) ? serializedData.ns_map : []
@@ -487,27 +489,30 @@ export const buildTextBookHtmlDocument = ({
           }
         }
 
+        const getPageWrapper = () => document.getElementById('obs-page-wrapper')
+
         const renderBodyNode = (bodyNode) => {
           clearRenderedBodyNodes()
           document.body.removeAttribute("style")
           applyAttributes(bodyNode, document.body)
 
-          const fragment = document.createDocumentFragment()
+          const wrapper = document.createElement("div")
+          wrapper.id = "obs-page-wrapper"
 
           if (bodyNode?.x) {
-            fragment.appendChild(document.createTextNode(bodyNode.x))
+            wrapper.appendChild(document.createTextNode(bodyNode.x))
           }
 
           if (Array.isArray(bodyNode?.c)) {
             for (const child of bodyNode.c) {
-              appendNode(child, fragment, false)
+              appendNode(child, wrapper, false)
             }
           }
 
           if (anchor) {
-            document.body.insertBefore(fragment, anchor)
+            document.body.insertBefore(wrapper, anchor)
           } else {
-            document.body.appendChild(fragment)
+            document.body.appendChild(wrapper)
           }
         }
 
@@ -679,6 +684,8 @@ export const buildTextBookHtmlDocument = ({
           document.documentElement.style.height = ""
           document.documentElement.style.width = ""
           document.documentElement.style.overflow = ""
+          document.documentElement.style.overflowX = ""
+          document.documentElement.style.overflowY = ""
           document.body.style.removeProperty("background-color")
           document.body.style.removeProperty("color")
           document.body.style.removeProperty("width")
@@ -701,6 +708,18 @@ export const buildTextBookHtmlDocument = ({
           document.body.style.removeProperty("-webkit-column-gap")
           document.body.style.removeProperty("-webkit-column-width")
           document.body.style.removeProperty("-webkit-margin-collapse")
+          // Clear wrapper column styles but PRESERVE transform (page position)
+          const pw = getPageWrapper()
+          if (pw) {
+            pw.style.removeProperty("column-gap")
+            pw.style.removeProperty("column-width")
+            pw.style.removeProperty("column-fill")
+            pw.style.removeProperty("column-rule")
+            pw.style.removeProperty("-webkit-column-gap")
+            pw.style.removeProperty("-webkit-column-width")
+            pw.style.removeProperty("height")
+            pw.style.removeProperty("width")
+          }
         }
 
         const getSpreadPageCount = () => {
@@ -768,34 +787,47 @@ export const buildTextBookHtmlDocument = ({
         }
 
         const getAxisScrollOffset = (axis) => {
-          const scrollContainer = getScrollContainer(axis)
-          if (scrollContainer) {
-            return axis === "x" ? scrollContainer.scrollLeft || 0 : scrollContainer.scrollTop || 0
-          }
-
-          return axis === "x" ? window.scrollX || 0 : window.scrollY || 0
+          // Try all possible scroll sources — Chrome's scroll propagation
+          // is inconsistent for CSS columns inside iframes.
+          const scrollVal = axis === "x"
+            ? Math.max(
+                document.documentElement.scrollLeft || 0,
+                document.body.scrollLeft || 0,
+                window.scrollX || 0,
+              )
+            : Math.max(
+                document.documentElement.scrollTop || 0,
+                document.body.scrollTop || 0,
+                window.scrollY || 0,
+              )
+          return scrollVal
         }
 
         const scrollToAxisOffset = (axis, offset) => {
           const safeOffset = Math.max(0, offset)
-          const scrollContainer = getScrollContainer(axis)
-          const targetLeft = axis === "x" ? safeOffset : 0
-          const targetTop = axis === "y" ? safeOffset : 0
-
-          if (scrollContainer && typeof scrollContainer.scrollTo === "function") {
-            scrollContainer.scrollTo({
-              left: targetLeft,
-              top: targetTop,
-              behavior: "auto",
-            })
-            return
+          if (axis === "y") {
+            const beforeDoc = document.documentElement.scrollTop
+            const beforeBody = document.body.scrollTop
+            const beforeWin = window.scrollY
+            document.documentElement.scrollTop = safeOffset
+            document.body.scrollTop = safeOffset
+            window.scrollTo({ top: safeOffset, left: 0, behavior: "instant" })
+            // Force reflow
+            window.getComputedStyle(document.documentElement).overflow
+            const afterDoc = document.documentElement.scrollTop
+            const afterBody = document.body.scrollTop
+            const afterWin = window.scrollY
+            debugLog(
+              'scrollTo: axis=y offset=' + safeOffset +
+              ' doc[' + beforeDoc + '→' + afterDoc + ']' +
+              ' body[' + beforeBody + '→' + afterBody + ']' +
+              ' win[' + beforeWin + '→' + afterWin + ']'
+            )
+          } else {
+            document.documentElement.scrollLeft = safeOffset
+            document.body.scrollLeft = safeOffset
+            window.scrollTo({ left: safeOffset, top: 0, behavior: "instant" })
           }
-
-          window.scrollTo({
-            left: targetLeft,
-            top: targetTop,
-            behavior: "auto",
-          })
         }
 
         const getScrollInlineOffset = () => {
@@ -869,24 +901,71 @@ export const buildTextBookHtmlDocument = ({
 
           const pageInlineSize = getPageInlineSize(inlineViewportSize, spreadPageCount)
 
-          // For vertical writing, scrollHeight may not reflect CSS column overflow
-          // in some browsers. We force a scroll extent recalculation by temporarily
-          // reading scrollHeight after a forced reflow (changing overflow triggers it).
-          let effectiveExtent = getInlineExtent(isVerticalWriting)
+          // Measure total column extent. CSS column overflow may not be
+          // reflected in the wrapper's scrollHeight/scrollWidth in all
+          // browsers. As a reliable fallback, temporarily set column-width
+          // to 'auto' to unconstrain columns and measure the natural
+          // content extent, then restore the column constraint.
+          const pw = getPageWrapper()
+          const measureAxis = isVerticalWriting ? 'scrollHeight' : 'scrollWidth'
+          let effectiveExtent = 0
 
-          // If scrollHeight didn't detect multi-column overflow, force a
-          // recalculation by toggling overflow to 'scroll' (with !important to
-          // override the style set by doLayout) and back.
-          if (effectiveExtent <= pageInlineSize * 1.5) {
-            document.body.style.setProperty('overflow-y', 'scroll', 'important')
-            // Force reflow via getComputedStyle
-            window.getComputedStyle(document.body).overflowY
-            effectiveExtent = getInlineExtent(isVerticalWriting)
-            // Restore the original overflow from the current inline style.
-            // We can't easily restore the previous !important value, but
-            // doLayout re-applies all styles on next scheduleLayout call.
-            document.body.style.setProperty('overflow-y', isVerticalWriting ? 'auto' : 'hidden', 'important')
+          if (pw) {
+            // First try direct read (works in most browsers for horizontal)
+            effectiveExtent = pw[measureAxis] || 0
+
+            // Measure without column-width AND without body overflow:hidden.
+            // body's overflow:hidden may clamp child scrollHeight in Chrome
+            // (observed: wrapper.scrollHeight = body.clientHeight always).
+            // We briefly unclamp body overflow to measure the true extent.
+            const savedColumnWidth = pw.style.columnWidth || ''
+            pw.style.removeProperty('column-width')
+            const savedBodyOverflow = document.body.style.overflow || ''
+            const savedBodyOverflowX = document.body.style.overflowX || ''
+            const savedBodyOverflowY = document.body.style.overflowY || ''
+            document.body.style.removeProperty('overflow')
+            document.body.style.removeProperty('overflow-x')
+            document.body.style.removeProperty('overflow-y')
+            // Force reflow
+            window.getComputedStyle(pw).columnWidth
+            const naturalExtent = pw[measureAxis] || 0
+            // Restore column-width and body overflow
+            if (savedColumnWidth) {
+              pw.style.columnWidth = savedColumnWidth
+            } else {
+              pw.style.setProperty('column-width', pageInlineSize + 'px', 'important')
+            }
+            if (savedBodyOverflow) {
+              document.body.style.overflow = savedBodyOverflow
+            } else {
+              document.body.style.removeProperty('overflow')
+            }
+            if (savedBodyOverflowX) {
+              document.body.style.overflowX = savedBodyOverflowX
+            } else {
+              document.body.style.removeProperty('overflow-x')
+            }
+            if (savedBodyOverflowY) {
+              document.body.style.overflowY = savedBodyOverflowY
+            } else {
+              document.body.style.removeProperty('overflow-y')
+            }
+            const columnedExtent = effectiveExtent
+            effectiveExtent = Math.max(effectiveExtent, naturalExtent)
+            debugLog(
+              'measure_fallback: axis=' + measureAxis +
+              ' columned=' + columnedExtent +
+              ' natural=' + naturalExtent +
+              ' pageInlineSize=' + pageInlineSize +
+              ' pages=' + Math.ceil(effectiveExtent / pageInlineSize)
+            )
           }
+
+          debugLog(
+            'measure: axis=' + measureAxis + ' val=' + effectiveExtent +
+            ' pageInlineSize=' + pageInlineSize +
+            ' pages=' + Math.max(1, Math.ceil(effectiveExtent / Math.max(1, pageInlineSize)))
+          )
 
           const internalPageCount = Math.max(1, Math.ceil(effectiveExtent / pageInlineSize))
           const physicalPageCount = Math.max(
@@ -904,16 +983,25 @@ export const buildTextBookHtmlDocument = ({
           }
         }
 
+        // Track current page offset in a variable instead of parsing
+        // the DOM transform string. Chrome converts translateY(-918px)
+        // to matrix(1,0,0,1,0,-918) on readback, which doesn't match
+        // a translateY regex and would always return parsed=0.
+        let currentPageOffset = 0
+
+        const setPageOffset = (offset) => {
+          currentPageOffset = offset
+        }
+
+        const getPageOffset = () => currentPageOffset
+
         const getCurrentPhysicalPage = () => {
           if (layoutState.isPaginated) {
-            const internalPage = Math.max(
-              0,
-              Math.round(getScrollInlineOffset() / layoutState.inlinePageSize),
-            )
+            const offset = getPageOffset()
+            const internalPage = Math.max(0, Math.round(offset / layoutState.inlinePageSize))
             if (viewerState.leadingBlankPage) {
               return internalPage === 0 ? 0 : Math.max(0, internalPage - 1)
             }
-
             return internalPage
           }
 
@@ -926,6 +1014,13 @@ export const buildTextBookHtmlDocument = ({
           )
         }
 
+        const debugLog = (msg) => {
+          try { console.log('[tb-debug]', msg) } catch {}
+          try {
+            postPayload({ type: 'debug', key: documentKey, message: String(msg) })
+          } catch {}
+        }
+
         const notifyPagination = () => {
           layoutState = computePageMetrics()
           const currentPage = Math.max(
@@ -933,6 +1028,18 @@ export const buildTextBookHtmlDocument = ({
             Math.min(getCurrentPhysicalPage(), layoutState.physicalPageCount - 1),
           )
           viewerState.currentPage = currentPage
+
+          debugLog(
+            'pages=' + layoutState.physicalPageCount +
+            ' current=' + currentPage +
+            ' isVert=' + layoutState.isVerticalWriting +
+            ' scrollH=' + (document.body?.scrollHeight || 0) +
+            ' scrollW=' + (document.body?.scrollWidth || 0) +
+            ' clientH=' + (document.body?.clientHeight || 0) +
+            ' clientW=' + (document.body?.clientWidth || 0) +
+            ' inlineSize=' + layoutState.inlinePageSize +
+            ' blockSize=' + layoutState.blockPageSize
+          )
 
           postPayload({
             type: paginationMessageType,
@@ -991,15 +1098,36 @@ export const buildTextBookHtmlDocument = ({
           document.body.style.setProperty("-webkit-margin-collapse", "separate")
 
           if (isPaginated) {
-            applyImportantStyle(document.body, "-webkit-column-gap", "0px")
-            applyImportantStyle(document.body, "column-gap", "0px")
-            applyImportantStyle(document.body, "-webkit-column-width", pageInlineSize + "px")
-            applyImportantStyle(document.body, "column-width", pageInlineSize + "px")
-            applyImportantStyle(document.body, "column-fill", "auto")
-            applyImportantStyle(document.body, "column-rule", "0px inset transparent")
-            applyImportantStyle(document.body, "overflow", "visible")
-            applyImportantStyle(document.body, "overflow-x", isVerticalWriting ? "hidden" : "auto")
-            applyImportantStyle(document.body, "overflow-y", isVerticalWriting ? "auto" : "hidden")
+            // CSS columns on wrapper create page-sized fragments. Body has
+            // overflow:hidden (no scroll). Page navigation via CSS transform
+            // on the wrapper shifts which column is visible in the viewport.
+            const pw = getPageWrapper()
+            if (pw) {
+              applyImportantStyle(pw, "-webkit-column-gap", "0px")
+              applyImportantStyle(pw, "column-gap", "0px")
+              applyImportantStyle(pw, "-webkit-column-width", pageInlineSize + "px")
+              applyImportantStyle(pw, "column-width", pageInlineSize + "px")
+              applyImportantStyle(pw, "column-fill", "auto")
+              applyImportantStyle(pw, "column-rule", "0px inset transparent")
+              // Wrapper is exactly one page's inline size. No overflow
+              // setting — default visible lets columns overflow naturally.
+              // Body's overflow:hidden clips the viewport boundary.
+              if (isVerticalWriting) {
+                applyImportantStyle(pw, "height", pageInlineSize + "px")
+                applyImportantStyle(pw, "width", "100%")
+              } else {
+                applyImportantStyle(pw, "width", pageInlineSize + "px")
+                applyImportantStyle(pw, "height", "100%")
+              }
+            }
+            // Body: clip at viewport boundary. Use overflow:clip instead of
+            // overflow:hidden — Chrome's overflow:hidden triggers a rendering
+            // optimization that skips painting content outside the clipped
+            // area. When translateY brings that content into view, it's
+            // blank because it was never rendered. overflow:clip clips
+            // without this optimization.
+            applyImportantStyle(document.body, "overflow", "clip")
+            document.documentElement.style.overflow = "clip"
           } else {
             applyImportantStyle(document.body, "overflow-x", "hidden")
             applyImportantStyle(document.body, "overflow-y", "auto")
@@ -1030,6 +1158,19 @@ export const buildTextBookHtmlDocument = ({
           // so that notifyPagination() reads the correct page after every relayout.
           const savedPage = viewerState.currentPage
           doLayout()
+          // Debug: check column properties on wrapper after doLayout
+          const pw_debug = getPageWrapper()
+          if (pw_debug) {
+            const cs = window.getComputedStyle(pw_debug)
+            debugLog(
+              'cols: cw=' + cs.columnWidth +
+              ' cc=' + cs.columnCount +
+              ' wm=' + cs.writingMode +
+              ' h=' + cs.height +
+              ' sh=' + (pw_debug.scrollHeight || 0) +
+              ' sw=' + (pw_debug.scrollWidth || 0)
+            )
+          }
           scrollToPhysicalPage(savedPage)
           notifyPagination()
         }
@@ -1054,7 +1195,25 @@ export const buildTextBookHtmlDocument = ({
             const internalPage =
               viewerState.leadingBlankPage && safePage > 0 ? safePage + 1 : safePage
             const offset = internalPage * layoutState.inlinePageSize
-            scrollToAxisOffset(getInlineScrollAxis(layoutState.isVerticalWriting), offset)
+            const pw = getPageWrapper()
+            if (pw) {
+              if (layoutState.isVerticalWriting) {
+                pw.style.transform = 'translateY(-' + offset + 'px)'
+              } else {
+                pw.style.transform = 'translateX(-' + offset + 'px)'
+              }
+              // Force Chrome to render off-screen CSS column content
+              // that translateY moves into the viewport. Without this,
+              // Chrome's rendering optimization sometimes skips painting
+              // column content that was previously outside overflow:clip.
+              window.getComputedStyle(pw).transform
+            }
+            setPageOffset(offset)
+            debugLog(
+              'scrollPage: page=' + safePage + ' internal=' + internalPage +
+              ' offset=' + offset +
+              ' isVert=' + layoutState.isVerticalWriting
+            )
           } else {
             const offset = safePage * layoutState.blockPageSize
             scrollToAxisOffset(getBlockScrollAxis(layoutState.isVerticalWriting), offset)
@@ -1506,10 +1665,15 @@ export const buildTextBookHtmlDocument = ({
         } else {
           scrollToPhysicalPage(viewerState.currentPage)
         }
-        window.setTimeout(scheduleLayout, 50)
-        window.setTimeout(scheduleLayout, 250)
-        window.setTimeout(scheduleLayout, 1000)
+        // Periodic scheduleLayout timeouts removed — with transform-based
+        // pagination, layout is stable after the initial applyLayout. The
+        // timeouts created a race: clearLayoutOverrides in doLayout() would
+        // remove the page transform before notifyPagination read it.
         window.addEventListener("load", scheduleLayout)
+        } catch (e) {
+          try { console.log('[tb] ERROR:', e && e.message ? e.message : String(e)) } catch {}
+          try { debugLog('FATAL: ' + (e && e.message ? e.message : String(e))) } catch {}
+        }
       })()
     </script>
   </body>
