@@ -14,10 +14,10 @@ services:
     container_name: watchtower
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      # ホストの Docker 認証情報を引き継ぐ（ghcr.io の認証に使用）
-      - ${HOME}/.docker/config.json:/config.json:ro
+      # ghcr.io のイメージは公開（認証不要）なので Docker 認証情報はマウントしない。
+      # 存在しないパスをマウントすると Docker が空ディレクトリを生成し、
+      # Watchtower が "read /config.json: is a directory" で更新に失敗し続ける。
     environment:
-      DOCKER_CONFIG: /
       # 5分ごとに新イメージを確認
       WATCHTOWER_POLL_INTERVAL: 300
       # 古いイメージを自動削除
