@@ -19,7 +19,7 @@
     "patch": "bunx patch-package",
     "test": "bun run test:unit && bun run test:detox",
     "test:watch": "bun test --watch app test",
-    "test:unit": "find app test \\( -name '*.test.ts' -o -name '*.test.tsx' \\) | sort | xargs -P 4 -n 1 bun test",
+    "test:unit": "find app test \\( -name '*.test.ts' -o -name '*.test.tsx' \\) | sort | grep -vFxf vitest/migrated.txt | xargs -r -P 4 -n 1 bun test",
     "test:unit:watch": "bun test --watch app test",
     "test:story": "vitest run --project=storybook",
     "test:vitest": "vitest run",
@@ -48,7 +48,8 @@
     "build:web": "bunx expo export --platform web --output-dir dist",
     "deploy:pages": "gh-pages -d dist -b gh-pages",
     "bundle-pdfjs": "bun run scripts/bundle-pdfjs.ts",
-    "release:tag": "./bin/release-tag.sh"
+    "release:tag": "./bin/release-tag.sh",
+    "test:unit:vitest": "vitest run --project=unit"
   },
   "overrides": {
     "canvas": "3.2.0",

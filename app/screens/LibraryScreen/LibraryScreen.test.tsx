@@ -1,12 +1,4 @@
-import {
-  beforeAll,
-  beforeEach,
-  describe as baseDescribe,
-  expect,
-  jest,
-  mock,
-  test as baseTest,
-} from "bun:test"
+import { vi, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
 import { act, render, screen } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
@@ -14,15 +6,15 @@ import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 
-const useStoresMock = jest.fn()
-const useConvergenceMock = jest.fn()
+const useStoresMock = vi.fn()
+const useConvergenceMock = vi.fn()
 const bookListItemProps: Array<Record<string, unknown>> = []
 const bookImageItemProps: Array<Record<string, unknown>> = []
 const libraryTableItemProps: Array<Record<string, unknown>> = []
 const navigationMock = {
-  goBack: jest.fn(),
-  navigate: jest.fn(),
-  setOptions: jest.fn(),
+  goBack: vi.fn(),
+  navigate: vi.fn(),
+  setOptions: vi.fn(),
 }
 const gluestackComponent = ({ children }: { children?: ReactNode }) => <div>{children}</div>
 const gluestackMock = {
@@ -115,63 +107,63 @@ const componentsMock = {
   VStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }
 
-mock.module("@/models", () => ({
+vi.doMock("@/models", () => ({
   useStores: useStoresMock,
 }))
 
-mock.module("@/components", () => componentsMock)
-mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
+vi.doMock("@/components", () => componentsMock)
+vi.doMock("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
-mock.module("@/components/BookListItem", () => ({
+vi.doMock("@/components/BookListItem", () => ({
   BookListItem: (props: Record<string, unknown>) => {
     bookListItemProps.push(props)
     return <div data-testid="library-list-item" />
   },
 }))
-mock.module("/home/amka78/private/open-bookshelf/app/components/BookListItem/index.ts", () => ({
+vi.doMock("/home/amka78/private/open-bookshelf/app/components/BookListItem/index.ts", () => ({
   BookListItem: (props: Record<string, unknown>) => {
     bookListItemProps.push(props)
     return <div data-testid="library-list-item" />
   },
 }))
 
-mock.module("@/components/SearchInputField", () => ({
+vi.doMock("@/components/SearchInputField", () => ({
   SearchInputField: () => <div data-testid="library-search-input" />,
 }))
-mock.module("/home/amka78/private/open-bookshelf/app/components/SearchInputField/index.ts", () => ({
+vi.doMock("/home/amka78/private/open-bookshelf/app/components/SearchInputField/index.ts", () => ({
   SearchInputField: () => <div data-testid="library-search-input" />,
 }))
-mock.module("@/components/Box/Box", () => ({
+vi.doMock("@/components/Box/Box", () => ({
   Box: componentsMock.Box,
 }))
-mock.module("@/components/Button/Button", () => ({
+vi.doMock("@/components/Button/Button", () => ({
   Button: componentsMock.Button,
 }))
-mock.module("@/components/HStack/HStack", () => ({
+vi.doMock("@/components/HStack/HStack", () => ({
   HStack: componentsMock.HStack,
 }))
-mock.module("@/components/IconButton/IconButton", () => ({
+vi.doMock("@/components/IconButton/IconButton", () => ({
   IconButton: componentsMock.IconButton,
 }))
-mock.module("@/components/Image/Image", () => ({
+vi.doMock("@/components/Image/Image", () => ({
   Image: componentsMock.Image,
 }))
-mock.module("@/components/MaterialCommunityIcon/MaterialCommunityIcon", () => ({
+vi.doMock("@/components/MaterialCommunityIcon/MaterialCommunityIcon", () => ({
   MaterialCommunityIcon: componentsMock.MaterialCommunityIcon,
 }))
-mock.module("@/components/Pressable/Pressable", () => ({
+vi.doMock("@/components/Pressable/Pressable", () => ({
   Pressable: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
-mock.module("@/components/Text/Text", () => ({
+vi.doMock("@/components/Text/Text", () => ({
   Text: componentsMock.Text,
 }))
-mock.module("@/components/VStack/VStack", () => ({
+vi.doMock("@/components/VStack/VStack", () => ({
   VStack: componentsMock.VStack,
 }))
-mock.module("@/components/ScrollView/ScrollView", () => ({
+vi.doMock("@/components/ScrollView/ScrollView", () => ({
   ScrollView: componentsMock.ScrollView,
 }))
-mock.module("./LibraryTableItem", () => ({
+vi.doMock("./LibraryTableItem", () => ({
   clampColumnWidth: (width: number) => width,
   computeLibraryTableMinWidth: () => 700,
   createLibraryTableFieldLabels: () => ({
@@ -198,73 +190,73 @@ mock.module("./LibraryTableItem", () => ({
   LIBRARY_TABLE_MIN_WIDTH: 700,
 }))
 
-mock.module("@/hooks/useBulkDownloadBooks", () => ({
+vi.doMock("@/hooks/useBulkDownloadBooks", () => ({
   useBulkDownloadBooks: () => ({
-    execute: jest.fn(),
+    execute: vi.fn(),
   }),
 }))
 
-mock.module("@/hooks/useConvergence", () => ({
+vi.doMock("@/hooks/useConvergence", () => ({
   useConvergence: useConvergenceMock,
 }))
 
-mock.module("@/hooks/useDeleteBook", () => ({
+vi.doMock("@/hooks/useDeleteBook", () => ({
   useDeleteBook: () => ({
-    execute: jest.fn(),
+    execute: vi.fn(),
   }),
 }))
 
-mock.module("@/hooks/useDownloadBook", () => ({
+vi.doMock("@/hooks/useDownloadBook", () => ({
   useDownloadBook: () => ({
-    execute: jest.fn(),
+    execute: vi.fn(),
   }),
 }))
 
-mock.module("@/hooks/useElectrobunModal", () => ({
+vi.doMock("@/hooks/useElectrobunModal", () => ({
   useElectrobunModal: () => ({
-    closeModal: jest.fn(),
-    openModal: jest.fn(),
+    closeModal: vi.fn(),
+    openModal: vi.fn(),
   }),
 }))
 
-mock.module("@/hooks/useOpenViewer", () => ({
+vi.doMock("@/hooks/useOpenViewer", () => ({
   useOpenViewer: () => ({
-    execute: jest.fn(),
+    execute: vi.fn(),
   }),
 }))
 
-mock.module("@/services/api", () => ({
+vi.doMock("@/services/api", () => ({
   api: {
-    deleteBooks: jest.fn(),
+    deleteBooks: vi.fn(),
     getAuthHeaders: () => undefined,
     getAuthStateVersion: () => 0,
     getBookThumbnailUrl: (bookId: number, libraryId: string, size?: string) =>
       `thumb:${libraryId}:${bookId}:${size ?? "default"}`,
     subscribeAuthState: () => () => {},
-    uploadFile: jest.fn(),
+    uploadFile: vi.fn(),
   },
 }))
 
-mock.module("@/utils/bookImageCache", () => ({
-  deleteCachedBookImages: jest.fn(),
+vi.doMock("@/utils/bookImageCache", () => ({
+  deleteCachedBookImages: vi.fn(),
 }))
 
-mock.module("@react-navigation/native", () => ({
+vi.doMock("@react-navigation/native", () => ({
   useIsFocused: () => true,
   useNavigation: () => navigationMock,
 }))
 
-mock.module("@gluestack-ui/themed", () => gluestackMock)
-mock.module(
+vi.doMock("@gluestack-ui/themed", () => gluestackMock)
+vi.doMock(
   "/home/amka78/private/open-bookshelf/node_modules/@gluestack-ui/themed/build/index.js",
   () => gluestackMock,
 )
 
-mock.module("mobx-react-lite", () => ({
+vi.doMock("mobx-react-lite", () => ({
   observer: <T extends (...args: never[]) => unknown>(component: T) => component,
 }))
 
-mock.module("react-native", () => ({
+vi.doMock("react-native", () => ({
   Platform: { OS: "ios" },
   useWindowDimensions: () => ({ fontScale: 1, height: 800, scale: 1, width: 200 }),
 }))
@@ -277,7 +269,7 @@ beforeAll(async () => {
 
 function buildSelectedLibrary() {
   return {
-    addSavedSearch: jest.fn(),
+    addSavedSearch: vi.fn(),
     books: new Map([
       [
         "1",
@@ -319,13 +311,13 @@ function buildSelectedLibrary() {
     savedSearches: [],
     searchSetting: {
       query: "",
-      setProp: jest.fn(),
+      setProp: vi.fn(),
       sort: "title",
       sortOrder: "asc",
       vl: null,
     },
     selectedBook: null,
-    setBook: jest.fn(),
+    setBook: vi.fn(),
     sortField: [],
     tagBrowser: [],
     virtualLibraries: [],
@@ -345,22 +337,22 @@ function renderLibraryScreen({
   useStoresMock.mockReturnValue({
     calibreRootStore: {
       getBookThumbnailRevision: () => 0,
-      getTagBrowser: jest.fn(),
+      getTagBrowser: vi.fn(),
       isFetchingMore: false,
       readingHistories: [],
-      searchLibrary: jest.fn().mockResolvedValue(undefined),
-      searchMoreLibrary: jest.fn(),
+      searchLibrary: vi.fn().mockResolvedValue(undefined),
+      searchMoreLibrary: vi.fn(),
       selectedLibrary,
     },
     settingStore: {
-      addRecentSearch: jest.fn(),
+      addRecentSearch: vi.fn(),
       booksPerPage: 20,
       getLibraryTableColumnWidths: () => ({}),
       getLibraryViewMode: () => viewMode,
       getReadStatus: () => undefined,
       recentSearches: [],
-      setLibraryTableColumnWidth: jest.fn(),
-      setLibraryViewMode: jest.fn(),
+      setLibraryTableColumnWidth: vi.fn(),
+      setLibraryViewMode: vi.fn(),
     },
   })
 
@@ -371,7 +363,7 @@ beforeEach(() => {
   bookImageItemProps.length = 0
   bookListItemProps.length = 0
   libraryTableItemProps.length = 0
-  jest.clearAllMocks()
+  vi.clearAllMocks()
 })
 
 describe("LibraryScreen", () => {

@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, jest, mock, test } from "bun:test"
+import { vi, afterAll, beforeAll, beforeEach, describe, expect, test } from "vitest"
 import { useStores } from "@/models"
 import { usePalette } from "@/theme"
 import { useNavigation } from "@react-navigation/native"
@@ -23,14 +23,14 @@ const componentsMock = {
 
 ;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
 
-mock.module("@/components", () => componentsMock)
-mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
+vi.doMock("@/components", () => componentsMock)
+vi.doMock("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
 let useODSRoot: typeof import("./useOPDSRoot").useODSRoot
 
 describe("useODSRoot", () => {
-  const mockLoad = jest.fn().mockResolvedValue(undefined)
-  const mockSetOptions = jest.fn()
+  const mockLoad = vi.fn().mockResolvedValue(undefined)
+  const mockSetOptions = vi.fn()
 
   const mockODSRoot = {
     icon: "/icon.png",
@@ -62,7 +62,7 @@ describe("useODSRoot", () => {
   }
 
   beforeAll(() => {
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   beforeAll(async () => {
@@ -70,12 +70,12 @@ describe("useODSRoot", () => {
   })
 
   afterAll(() => {
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
-    ;(useStores as jest.Mock).mockReturnValue({
+    vi.clearAllMocks()
+    ;(useStores as vi.Mock).mockReturnValue({
       opdsRootStore: mockOPDSRootStore,
       settingStore: mockSettingStore,
     })
@@ -85,7 +85,7 @@ describe("useODSRoot", () => {
     maybeMockedUsePalette.mockReturnValue?.({
       textPrimary: "#000000",
     })
-    ;(useNavigation as jest.Mock).mockReturnValue({
+    ;(useNavigation as vi.Mock).mockReturnValue({
       setOptions: mockSetOptions,
     })
   })
@@ -127,7 +127,7 @@ describe("useODSRoot", () => {
   })
 
   test("returns empty array when no entries", () => {
-    ;(useStores as jest.Mock).mockReturnValue({
+    ;(useStores as vi.Mock).mockReturnValue({
       opdsRootStore: {
         root: {
           ...mockODSRoot,

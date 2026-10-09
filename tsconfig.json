@@ -23,5 +23,5 @@
     "app/**/*.test.tsx",
     "test"
   ],
-  "include": ["App.tsx", "app.config.ts", "app", "plugins"]
+  "include": ["App.tsx", "app.config.ts", "app", "plugins", "vitest"]
 }

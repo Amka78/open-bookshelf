@@ -35,8 +35,8 @@ function playCalibreRootReadsLibraryIds({ result }: { result: HookResultRef }) {
 describe("useCalibreRoot", () => {
   type TestLibrary = { id: string; books: Map<string, unknown> }
 
-  const mockSetLibrary = jest.fn()
-  const mockNavigate = jest.fn()
+  const mockSetLibrary = vi.fn()
+  const mockNavigate = vi.fn()
   const mockLibraryMap = new Map([
     [
       "library1",
@@ -57,14 +57,14 @@ describe("useCalibreRoot", () => {
   ])
 
   beforeEach(() => {
-    jest.clearAllMocks()
-    ;(useStores as jest.Mock).mockReturnValue({
+    vi.clearAllMocks()
+    ;(useStores as vi.Mock).mockReturnValue({
       calibreRootStore: {
         libraryMap: mockLibraryMap,
         setLibrary: mockSetLibrary,
       },
     })
-    ;(useNavigation as jest.Mock).mockReturnValue({
+    ;(useNavigation as vi.Mock).mockReturnValue({
       navigate: mockNavigate,
     })
   })
@@ -134,7 +134,7 @@ describe("useCalibreRoot", () => {
     renderUseCalibreRoot()
 
     expect(useStores).toHaveBeenCalled()
-    const stores = (useStores as jest.Mock).mock.results[0].value
+    const stores = (useStores as vi.Mock).mock.results[0].value
     expect(stores.calibreRootStore).toBeDefined()
   })
 })

@@ -1,4 +1,4 @@
-import { beforeAll, describe as baseDescribe, expect, mock, test as baseTest } from "bun:test"
+import { vi, beforeAll, describe as baseDescribe, expect, test as baseTest } from "vitest"
 import { render } from "@testing-library/react"
 import type React from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
@@ -10,10 +10,10 @@ const componentsMock = {
   Text: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
 }
 
-mock.module("@/components", () => componentsMock)
-mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
+vi.doMock("@/components", () => componentsMock)
+vi.doMock("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
-mock.module("@/theme", () => ({
+vi.doMock("@/theme", () => ({
   usePalette: () => ({
     textPrimary: "#fff",
     bg0: "#000",
@@ -28,17 +28,17 @@ const reactNativeMock = {
   useColorScheme: () => "dark",
 }
 
-mock.module("react-native", () => reactNativeMock)
-mock.module("/home/amka78/private/open-bookshelf/node_modules/react-native/index.js", () => reactNativeMock)
+vi.doMock("react-native", () => reactNativeMock)
+vi.doMock("/home/amka78/private/open-bookshelf/node_modules/react-native/index.js", () => reactNativeMock)
 
-mock.module("react-native-webview", () => ({
+vi.doMock("react-native-webview", () => ({
   WebView: (props: Record<string, unknown>) => {
     capturedWebViewProps.push(props)
     return <div data-testid="webview" />
   },
 }))
 
-mock.module("./shared", () => ({
+vi.doMock("./shared", () => ({
   calibreHtmlPageInteractionMessageType: "interaction",
   calibreHtmlPageLongPressAction: "longPress",
   calibreHtmlPageSizeMessageType: "size",

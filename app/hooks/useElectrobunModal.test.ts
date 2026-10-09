@@ -1,36 +1,36 @@
-import { afterEach, beforeEach, describe, expect, jest, mock, test } from "bun:test"
+import { vi, afterEach, beforeEach, describe, expect, test } from "vitest"
 import { renderHook } from "@testing-library/react"
 
-const useModalMock = jest.fn()
+const useModalMock = vi.fn()
 
-mock.module("react-native-modalfy", () => ({
+vi.doMock("react-native-modalfy", () => ({
   useModal: () => useModalMock(),
-  modalfy: jest.fn(),
+  modalfy: vi.fn(),
 }))
 
-mock.module("@/i18n", () => ({
+vi.doMock("@/i18n", () => ({
   translate: (key: string) => key,
 }))
 
-mock.module(
+vi.doMock(
   "/home/amka78/open-bookshelf/node_modules/react-native-modalfy/lib/commonjs/index.js",
   () => ({
     useModal: () => useModalMock(),
-    modalfy: jest.fn(),
+    modalfy: vi.fn(),
   }),
 )
 
 describe("useElectrobunModal", () => {
-  const passthroughOpenModal = jest.fn()
+  const passthroughOpenModal = vi.fn()
   const originalElectrobunFlag = window.__ELECTROBUN__
   const originalShowConfirm = window.__electrobunShowConfirm
   const originalShowError = window.__electrobunShowError
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     useModalMock.mockReturnValue({
       openModal: passthroughOpenModal,
-      closeModal: jest.fn(),
+      closeModal: vi.fn(),
     })
     window.__ELECTROBUN__ = false
     window.__electrobunShowConfirm = undefined
@@ -41,7 +41,7 @@ describe("useElectrobunModal", () => {
     window.__ELECTROBUN__ = originalElectrobunFlag
     window.__electrobunShowConfirm = originalShowConfirm
     window.__electrobunShowError = originalShowError
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   })
 
   test("returns the original modalfy modal object outside Electrobun", async () => {
@@ -54,10 +54,10 @@ describe("useElectrobunModal", () => {
 
   test("routes ConfirmModal to the native confirm dialog inside Electrobun", async () => {
     window.__ELECTROBUN__ = true
-    const showNativeConfirmMock = jest.fn().mockResolvedValue(true)
+    const showNativeConfirmMock = vi.fn().mockResolvedValue(true)
     window.__electrobunShowConfirm = showNativeConfirmMock
-    const onOKPress = jest.fn()
-    const onCancelPress = jest.fn()
+    const onOKPress = vi.fn()
+    const onCancelPress = vi.fn()
     const { useElectrobunModal } = await import("./useElectrobunModal")
 
     const { result } = renderHook(() => useElectrobunModal())
@@ -86,10 +86,10 @@ describe("useElectrobunModal", () => {
 
   test("routes a rejected native confirm choice to the cancel callback inside Electrobun", async () => {
     window.__ELECTROBUN__ = true
-    const showNativeConfirmMock = jest.fn().mockResolvedValue(false)
+    const showNativeConfirmMock = vi.fn().mockResolvedValue(false)
     window.__electrobunShowConfirm = showNativeConfirmMock
-    const onOKPress = jest.fn()
-    const onCancelPress = jest.fn()
+    const onOKPress = vi.fn()
+    const onCancelPress = vi.fn()
     const { useElectrobunModal } = await import("./useElectrobunModal")
 
     const { result } = renderHook(() => useElectrobunModal())
@@ -115,7 +115,7 @@ describe("useElectrobunModal", () => {
 
   test("routes ErrorModal to the native error dialog inside Electrobun", async () => {
     window.__ELECTROBUN__ = true
-    const showNativeErrorMock = jest.fn().mockResolvedValue(undefined)
+    const showNativeErrorMock = vi.fn().mockResolvedValue(undefined)
     window.__electrobunShowError = showNativeErrorMock
     const { useElectrobunModal } = await import("./useElectrobunModal")
 

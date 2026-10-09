@@ -1,12 +1,4 @@
-import {
-  describe as baseDescribe,
-  test as baseTest,
-  beforeAll,
-  beforeEach,
-  expect,
-  jest,
-  mock,
-} from "bun:test"
+import { vi, describe as baseDescribe, test as baseTest, beforeAll, beforeEach, expect } from "vitest"
 import { useStores } from "@/models"
 import { OpdsChildrenModel, OpdsModel } from "@/models/opds/OpdsRootStore"
 import { usePalette } from "@/theme"
@@ -34,19 +26,19 @@ async function playAcquisitionPressesEntry({
   fireEvent.click(within(item).getByRole("button"))
 }
 
-const mockedUseStores = useStores as unknown as jest.Mock
-const mockedUseNavigation = useNavigation as unknown as jest.Mock
-const mockedUseRoute = useRoute as unknown as jest.Mock
-const mockedUsePalette = usePalette as unknown as jest.Mock
+const mockedUseStores = useStores as unknown as vi.Mock
+const mockedUseNavigation = useNavigation as unknown as vi.Mock
+const mockedUseRoute = useRoute as unknown as vi.Mock
+const mockedUsePalette = usePalette as unknown as vi.Mock
 
-const opdsLoadMock = jest.fn()
-const opdsCreateMock = jest.fn()
+const opdsLoadMock = vi.fn()
+const opdsCreateMock = vi.fn()
 
-mock.module("mobx-react-lite", () => ({
+vi.doMock("mobx-react-lite", () => ({
   observer: (component: unknown) => component,
 }))
 
-mock.module("expo-image", () => ({
+vi.doMock("expo-image", () => ({
   Image: () => <img alt="cover" />,
 }))
 
@@ -81,8 +73,8 @@ const componentsMock = {
 
 ;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
 
-mock.module("@/components", () => componentsMock)
-mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
+vi.doMock("@/components", () => componentsMock)
+vi.doMock("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
 let AcquisitionScreen: typeof import("./AcquisitionScreen").AcquisitionScreen
 
@@ -100,18 +92,18 @@ const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 
 describe("AcquisitionScreen", () => {
-  const push = jest.fn()
-  const setOptions = jest.fn()
+  const push = vi.fn()
+  const setOptions = vi.fn()
 
   beforeAll(async () => {
     ;({ AcquisitionScreen } = await import("./AcquisitionScreen"))
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
-    jest.spyOn(OpdsModel, "create").mockImplementation(() => opdsCreateMock())
-    jest
+    vi.spyOn(OpdsModel, "create").mockImplementation(() => opdsCreateMock())
+    vi
       .spyOn(OpdsChildrenModel as { create: (...args: unknown[]) => unknown }, "create")
       .mockReturnValue({})
 

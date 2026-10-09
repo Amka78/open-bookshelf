@@ -1,12 +1,4 @@
-import {
-  beforeAll,
-  beforeEach,
-  describe as baseDescribe,
-  expect,
-  jest,
-  mock,
-  test as baseTest,
-} from "bun:test"
+import { vi, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
 import { fireEvent, render } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
@@ -14,17 +6,17 @@ import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 
-const useStoresMock = jest.fn()
+const useStoresMock = vi.fn()
 
-mock.module("@/models", () => ({
+vi.doMock("@/models", () => ({
   useStores: useStoresMock,
 }))
 
-mock.module("/home/amka78/private/open-bookshelf/app/models/index.ts", () => ({
+vi.doMock("/home/amka78/private/open-bookshelf/app/models/index.ts", () => ({
   useStores: useStoresMock,
 }))
 
-mock.module("@/components/Button/Button", () => ({
+vi.doMock("@/components/Button/Button", () => ({
   Button: ({
     children,
     tx,
@@ -42,11 +34,11 @@ mock.module("@/components/Button/Button", () => ({
   ),
 }))
 
-mock.module("@/components/Heading/Heading", () => ({
+vi.doMock("@/components/Heading/Heading", () => ({
   Heading: ({ children, tx }: { children?: ReactNode; tx?: string }) => <div>{children ?? tx}</div>,
 }))
 
-mock.module("@/components/IconButton/IconButton", () => ({
+vi.doMock("@/components/IconButton/IconButton", () => ({
   IconButton: ({ onPress, testID }: { onPress?: () => void; testID?: string }) => (
     <button data-testid={testID} type="button" onClick={onPress}>
       icon
@@ -54,15 +46,15 @@ mock.module("@/components/IconButton/IconButton", () => ({
   ),
 }))
 
-mock.module("@/components/Input/Input", () => ({
+vi.doMock("@/components/Input/Input", () => ({
   Input: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-mock.module("@/components/Text/Text", () => ({
+vi.doMock("@/components/Text/Text", () => ({
   Text: ({ children, tx }: { children?: ReactNode; tx?: string }) => <div>{children ?? tx}</div>,
 }))
 
-mock.module("@/theme", () => ({
+vi.doMock("@/theme", () => ({
   usePalette: () => ({
     textPrimary: "#111",
     textSecondary: "#666",
@@ -71,7 +63,7 @@ mock.module("@/theme", () => ({
   }),
 }))
 
-mock.module("@gluestack-ui/themed", () => ({
+vi.doMock("@gluestack-ui/themed", () => ({
   HStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   VStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   Pressable: ({
@@ -104,11 +96,11 @@ mock.module("@gluestack-ui/themed", () => ({
   ),
 }))
 
-mock.module("./Body", () => ({
+vi.doMock("./Body", () => ({
   Body: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-mock.module("./CloseButton", () => ({
+vi.doMock("./CloseButton", () => ({
   CloseButton: ({ onPress }: { onPress?: () => void }) => (
     <button type="button" onClick={onPress}>
       close
@@ -116,15 +108,15 @@ mock.module("./CloseButton", () => ({
   ),
 }))
 
-mock.module("./Header", () => ({
+vi.doMock("./Header", () => ({
   Header: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-mock.module("./ModalFooter", () => ({
+vi.doMock("./ModalFooter", () => ({
   Footer: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-mock.module("./Root", () => ({
+vi.doMock("./Root", () => ({
   Root: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
@@ -135,13 +127,13 @@ beforeAll(async () => {
 })
 
 describe("ReadingSettingsModal", () => {
-  const setViewerFontSizePt = jest.fn()
-  const setViewerTheme = jest.fn()
-  const closeModal = jest.fn()
-  const onAutoPageTurnIntervalChange = jest.fn()
+  const setViewerFontSizePt = vi.fn()
+  const setViewerTheme = vi.fn()
+  const closeModal = vi.fn()
+  const onAutoPageTurnIntervalChange = vi.fn()
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     useStoresMock.mockReturnValue({
       settingStore: {
         viewerFontSizePt: 16,

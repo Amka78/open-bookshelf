@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe as baseDescribe, expect, mock, test as baseTest } from "bun:test"
+import { vi, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
@@ -156,10 +156,10 @@ const componentsMock = {
   ),
 }
 
-mock.module("@/components", () => componentsMock)
-mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
+vi.doMock("@/components", () => componentsMock)
+vi.doMock("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
-mock.module("@/components/InputField/InputField", () => ({
+vi.doMock("@/components/InputField/InputField", () => ({
   InputField: ({
     onChangeText,
     testID,
@@ -177,7 +177,7 @@ mock.module("@/components/InputField/InputField", () => ({
   ),
 }))
 
-mock.module("@gluestack-ui/themed", () => ({
+vi.doMock("@gluestack-ui/themed", () => ({
   Pressable: ({
     children,
     onLongPress,
@@ -207,11 +207,11 @@ mock.module("@gluestack-ui/themed", () => ({
   ),
 }))
 
-mock.module("mobx-react-lite", () => ({
+vi.doMock("mobx-react-lite", () => ({
   observer: <T extends (...args: never[]) => unknown>(component: T) => component,
 }))
 
-mock.module("react-native", () => ({
+vi.doMock("react-native", () => ({
   PanResponder: {
     create: () => ({ panHandlers: {} }),
   },
@@ -258,8 +258,8 @@ describe("LibraryTableItem", () => {
   })
 
   test("pressing the book cell triggers selection", () => {
-    const onPress = mock(() => {})
-    const update = mock(async () => true)
+    const onPress = vi.fn(() => {})
+    const update = vi.fn(async () => true)
     const book = {
       id: 1,
       metaData: {
@@ -288,7 +288,7 @@ describe("LibraryTableItem", () => {
   })
 
   test.skip("saving inline metadata updates the book", async () => {
-    const update = mock(async () => true)
+    const update = vi.fn(async () => true)
     const book = {
       id: 1,
       metaData: {
@@ -343,7 +343,7 @@ describe("LibraryTableItem", () => {
   })
 
   test("selected rows show an outline and keep the action menu inline", () => {
-    const update = mock(async () => true)
+    const update = vi.fn(async () => true)
     const book = {
       id: 1,
       metaData: {

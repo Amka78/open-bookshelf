@@ -7,8 +7,8 @@ describe("useViewerMenuState", () => {
       useViewerMenuState({
         pageDirection: "left",
         readingStyle: "singlePage",
-        onSelectReadingStyle: jest.fn(),
-        onSelectPageDirection: jest.fn(),
+        onSelectReadingStyle: vi.fn(),
+        onSelectPageDirection: vi.fn(),
       }),
     )
 
@@ -17,13 +17,13 @@ describe("useViewerMenuState", () => {
   })
 
   test("updates reading style", () => {
-    const onSelectReadingStyle = jest.fn()
+    const onSelectReadingStyle = vi.fn()
     const { result } = renderHook(() =>
       useViewerMenuState({
         pageDirection: "left",
         readingStyle: "singlePage",
         onSelectReadingStyle,
-        onSelectPageDirection: jest.fn(),
+        onSelectPageDirection: vi.fn(),
       }),
     )
 
@@ -35,12 +35,12 @@ describe("useViewerMenuState", () => {
   })
 
   test("toggles page direction", () => {
-    const onSelectPageDirection = jest.fn()
+    const onSelectPageDirection = vi.fn()
     const { result } = renderHook(() =>
       useViewerMenuState({
         pageDirection: "left",
         readingStyle: "singlePage",
-        onSelectReadingStyle: jest.fn(),
+        onSelectReadingStyle: vi.fn(),
         onSelectPageDirection,
       }),
     )

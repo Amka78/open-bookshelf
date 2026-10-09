@@ -1,4 +1,4 @@
-import { beforeAll, describe as baseDescribe, expect, test as baseTest } from "bun:test"
+import { vi, beforeAll, describe as baseDescribe, expect, test as baseTest } from "vitest"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 import { ExpoGoOcrUnavailableError } from "./errors"
 

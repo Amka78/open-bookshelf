@@ -1,28 +1,20 @@
-import {
-  beforeAll,
-  beforeEach,
-  describe as baseDescribe,
-  expect,
-  jest,
-  mock,
-  test as baseTest,
-} from "bun:test"
+import { vi, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
 import { renderHook } from "@testing-library/react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 
-const useStoresMock = jest.fn()
-const usePaletteMock = jest.fn()
-const useColorSchemeMock = jest.fn()
-const usePreparedCalibreHtmlDocumentMock = jest.fn()
+const useStoresMock = vi.fn()
+const usePaletteMock = vi.fn()
+const useColorSchemeMock = vi.fn()
+const usePreparedCalibreHtmlDocumentMock = vi.fn()
 
-mock.module("@/models", () => ({
+vi.doMock("@/models", () => ({
   useStores: useStoresMock,
 }))
 
-mock.module("@/theme", () => ({
+vi.doMock("@/theme", () => ({
   usePalette: usePaletteMock,
 }))
 
@@ -38,10 +30,10 @@ const reactNativeMock = {
 
 ;(global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock = reactNativeMock
 
-mock.module("react-native", () => reactNativeMock)
-mock.module("/home/amka78/private/open-bookshelf/node_modules/react-native/index.js", () => reactNativeMock)
+vi.doMock("react-native", () => reactNativeMock)
+vi.doMock("/home/amka78/private/open-bookshelf/node_modules/react-native/index.js", () => reactNativeMock)
 
-mock.module("../BookHtmlPage/shared", () => ({
+vi.doMock("../BookHtmlPage/shared", () => ({
   usePreparedCalibreHtmlDocument: usePreparedCalibreHtmlDocumentMock,
 }))
 
@@ -53,7 +45,7 @@ beforeAll(async () => {
 
 describe("useTextBookSpineDocument", () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     useStoresMock.mockReturnValue({
       settingStore: {
         viewerFontSizePt: 16,

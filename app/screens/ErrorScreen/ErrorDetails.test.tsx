@@ -1,11 +1,4 @@
-import {
-  describe as baseDescribe,
-  test as baseTest,
-  beforeEach,
-  expect,
-  jest,
-  mock,
-} from "bun:test"
+import { vi, describe as baseDescribe, test as baseTest, beforeEach, expect } from "vitest"
 import { fireEvent, render } from "@testing-library/react"
 import type { ErrorInfo, ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
@@ -30,13 +23,13 @@ async function playPressResetButton({ canvasElement }: { canvasElement: HTMLElem
   await new Promise((resolve) => setTimeout(resolve, 50))
 }
 
-const BoxMock = jest.fn(({ children }: { children?: ReactNode }) => <div>{children}</div>)
+const BoxMock = vi.fn(({ children }: { children?: ReactNode }) => <div>{children}</div>)
 
-mock.module("@/components/Box/Box", () => ({
+vi.doMock("@/components/Box/Box", () => ({
   Box: (props: { children?: ReactNode; flex?: number; testID?: string }) => BoxMock(props),
 }))
 
-mock.module("@/components/Button/Button", () => ({
+vi.doMock("@/components/Button/Button", () => ({
   Button: ({ onPress, testID }: { onPress?: () => void; testID?: string }) => (
     <button type="button" data-testid={testID} onClick={onPress}>
       Reset
@@ -44,17 +37,17 @@ mock.module("@/components/Button/Button", () => ({
   ),
 }))
 
-mock.module("@/components/Heading/Heading", () => ({
+vi.doMock("@/components/Heading/Heading", () => ({
   Heading: ({ tx }: { tx?: string }) => <h1>{tx}</h1>,
 }))
 
-mock.module("@/components/RootContainer/RootContainer", () => ({
+vi.doMock("@/components/RootContainer/RootContainer", () => ({
   RootContainer: ({ children, testID }: { children?: ReactNode; testID?: string }) => (
     <div data-testid={testID}>{children}</div>
   ),
 }))
 
-mock.module("@/components/Text/Text", () => ({
+vi.doMock("@/components/Text/Text", () => ({
   Text: ({
     children,
     selectable: _,
@@ -65,7 +58,7 @@ mock.module("@/components/Text/Text", () => ({
   }) => <span>{children}</span>,
 }))
 
-mock.module("@/components/VStack/VStack", () => ({
+vi.doMock("@/components/VStack/VStack", () => ({
   VStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
@@ -73,7 +66,7 @@ let ErrorDetails: typeof import("@/screens/ErrorScreen/ErrorDetails").ErrorDetai
 
 beforeEach(async () => {
   BoxMock.mockClear()
-  jest.clearAllMocks()
+  vi.clearAllMocks()
   ;({ ErrorDetails } = await import("@/screens/ErrorScreen/ErrorDetails"))
 })
 
@@ -82,7 +75,7 @@ const test = localizeTestRegistrar(baseTest)
 
 describe("ErrorDetails", () => {
   test("reset button is visible", async () => {
-    const onReset = jest.fn()
+    const onReset = vi.fn()
     const { container } = render(
       <ErrorDetails
         error={new Error("Something went wrong")}
@@ -101,7 +94,7 @@ describe("ErrorDetails", () => {
       <ErrorDetails
         error={new Error("Something went wrong")}
         errorInfo={{ componentStack: "at TestComponent" } as ErrorInfo}
-        onReset={jest.fn()}
+        onReset={vi.fn()}
       />,
     )
 
@@ -116,7 +109,7 @@ describe("ErrorDetails", () => {
   })
 
   test("pressing reset button calls onReset", async () => {
-    const onReset = jest.fn()
+    const onReset = vi.fn()
     const { container } = render(
       <ErrorDetails
         error={new Error("Something went wrong")}

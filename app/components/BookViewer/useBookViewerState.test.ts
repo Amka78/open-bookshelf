@@ -10,7 +10,7 @@ describe("useBookViewerState", () => {
   const createFlashListRef = () => {
     return {
       current: {
-        scrollToIndex: jest.fn(),
+        scrollToIndex: vi.fn(),
       },
     } as React.RefObject<FlashListHandle>
   }
@@ -23,8 +23,8 @@ describe("useBookViewerState", () => {
         totalPage: 3,
         initialPage: 0,
         readingStyle: "singlePage",
-        onPageChange: jest.fn(),
-        onLastPage: jest.fn(),
+        onPageChange: vi.fn(),
+        onLastPage: vi.fn(),
         initialAutoPageTurnIntervalMs: 1000,
         flashListRef,
       }),
@@ -41,8 +41,8 @@ describe("useBookViewerState", () => {
         totalPage: 5,
         initialPage: 0,
         readingStyle: "facingPage",
-        onPageChange: jest.fn(),
-        onLastPage: jest.fn(),
+        onPageChange: vi.fn(),
+        onLastPage: vi.fn(),
         initialAutoPageTurnIntervalMs: 1000,
         flashListRef,
       }),
@@ -59,8 +59,8 @@ describe("useBookViewerState", () => {
         totalPage: 3,
         initialPage: 0,
         readingStyle: "singlePage",
-        onPageChange: jest.fn(),
-        onLastPage: jest.fn(),
+        onPageChange: vi.fn(),
+        onLastPage: vi.fn(),
         initialAutoPageTurnIntervalMs: 500,
         flashListRef,
       }),

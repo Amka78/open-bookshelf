@@ -1,11 +1,4 @@
-import {
-  beforeAll,
-  beforeEach,
-  describe as baseDescribe,
-  expect,
-  jest,
-  test as baseTest,
-} from "bun:test"
+import { vi, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
 import { act, renderHook } from "@testing-library/react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
@@ -26,7 +19,7 @@ describe("useLibraryScrollPosition", () => {
   })
 
   test("restores the last saved offset when the library screen mounts again", () => {
-    const initialRestore = jest.fn()
+    const initialRestore = vi.fn()
     const initialHook = renderHook(() =>
       useLibraryScrollPosition({
         libraryId: "library-1",
@@ -40,7 +33,7 @@ describe("useLibraryScrollPosition", () => {
     })
     initialHook.unmount()
 
-    const restoreOffset = jest.fn()
+    const restoreOffset = vi.fn()
     const restoredHook = renderHook(() =>
       useLibraryScrollPosition({
         libraryId: "library-1",
@@ -62,14 +55,14 @@ describe("useLibraryScrollPosition", () => {
       useLibraryScrollPosition({
         libraryId: "library-1",
         isFocused: true,
-        onRestoreOffset: jest.fn(),
+        onRestoreOffset: vi.fn(),
       }),
     )
     const secondHook = renderHook(() =>
       useLibraryScrollPosition({
         libraryId: "library-2",
         isFocused: true,
-        onRestoreOffset: jest.fn(),
+        onRestoreOffset: vi.fn(),
       }),
     )
 
@@ -81,8 +74,8 @@ describe("useLibraryScrollPosition", () => {
     firstHook.unmount()
     secondHook.unmount()
 
-    const firstRestore = jest.fn()
-    const secondRestore = jest.fn()
+    const firstRestore = vi.fn()
+    const secondRestore = vi.fn()
     const firstRestoredHook = renderHook(() =>
       useLibraryScrollPosition({
         libraryId: "library-1",
@@ -112,7 +105,7 @@ describe("useLibraryScrollPosition", () => {
       useLibraryScrollPosition({
         libraryId: "library-1",
         isFocused: true,
-        onRestoreOffset: jest.fn(),
+        onRestoreOffset: vi.fn(),
       }),
     )
 
@@ -121,7 +114,7 @@ describe("useLibraryScrollPosition", () => {
     })
     initialHook.unmount()
 
-    const restoreOffset = jest.fn()
+    const restoreOffset = vi.fn()
     const { result, rerender } = renderHook(
       ({ isFocused }) =>
         useLibraryScrollPosition({

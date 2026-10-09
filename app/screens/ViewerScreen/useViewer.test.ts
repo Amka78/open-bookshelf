@@ -1,5 +1,5 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, jest, mock, test } from "bun:test"
 import { act, renderHook } from "@testing-library/react"
+import { afterAll, beforeAll, beforeEach, describe, expect, test, vi } from "vitest"
 
 function createFrameScheduler() {
   let nextId = 1
@@ -65,34 +65,30 @@ async function playResumeReadingPromptDeclines({
   })
 }
 
-const useStoresMock = jest.fn()
-const useModalMock = jest.fn()
-const mockSyncReadingPosition = jest.fn().mockResolvedValue({ kind: "ok" })
-const mockSyncReadingPositionFull = jest.fn().mockResolvedValue({ kind: "ok" })
-const mockGetBookFileUrl = jest.fn(
+const useStoresMock = vi.fn()
+const useModalMock = vi.fn()
+const mockSyncReadingPosition = vi.fn().mockResolvedValue({ kind: "ok" })
+const mockSyncReadingPositionFull = vi.fn().mockResolvedValue({ kind: "ok" })
+const mockGetBookFileUrl = vi.fn(
   (bookId: number, format: string, size: number, hash: number, path: string, libraryId: string) =>
     `http://calibrelocal/book-file/${bookId}/${format}/${size}/${hash}/${path}?library_id=${libraryId}`,
 )
-const mockFetchWithAuth = jest.fn().mockResolvedValue({
+const mockFetchWithAuth = vi.fn().mockResolvedValue({
   ok: true,
   status: 200,
   headers: { get: () => "image/png" },
   blob: async () => new Blob([new Uint8Array([137, 80, 78, 71])], { type: "image/png" }),
 })
-const mockSetCoverBinary = jest.fn().mockResolvedValue({ kind: "ok" })
-const mockExpoFile = jest.fn((path: string) => {
+const mockSetCoverBinary = vi.fn().mockResolvedValue({ kind: "ok" })
+const mockExpoFile = vi.fn((path: string) => {
   return new Blob([new Uint8Array([137, 80, 78, 71])], { type: "image/png" })
 })
 
-mock.module("@/models", () => ({
+vi.doMock("@/models", () => ({
   useStores: useStoresMock,
 }))
 
-mock.module("/home/amka78/open-bookshelf/app/models/index.ts", () => ({
-  useStores: useStoresMock,
-}))
-
-mock.module("@/services/api", () => ({
+vi.doMock("@/services/api", () => ({
   api: {
     syncReadingPosition: mockSyncReadingPosition,
     syncReadingPositionFull: mockSyncReadingPositionFull,
@@ -102,40 +98,22 @@ mock.module("@/services/api", () => ({
   },
 }))
 
-mock.module("/home/amka78/open-bookshelf/app/services/api/index.ts", () => ({
-  api: {
-    syncReadingPosition: mockSyncReadingPosition,
-    syncReadingPositionFull: mockSyncReadingPositionFull,
-    getBookFileUrl: (...args: Parameters<typeof mockGetBookFileUrl>) => mockGetBookFileUrl(...args),
-    fetchWithAuth: (...args: Parameters<typeof mockFetchWithAuth>) => mockFetchWithAuth(...args),
-    setCoverBinary: (...args: Parameters<typeof mockSetCoverBinary>) => mockSetCoverBinary(...args),
-  },
-}))
-
-mock.module("expo-file-system", () => ({
+vi.doMock("expo-file-system", () => ({
   File: function MockExpoFile(path: string) {
     return mockExpoFile(path)
   },
 }))
 
-mock.module("../../hooks/useConvergence", () => ({
-  useConvergence: jest.fn(),
+vi.doMock("../../hooks/useConvergence", () => ({
+  useConvergence: vi.fn(),
 }))
 
-mock.module("react-native-modalfy", () => ({
+vi.doMock("react-native-modalfy", () => ({
   useModal: () => useModalMock(),
-  modalfy: jest.fn(),
+  modalfy: vi.fn(),
 }))
 
-mock.module(
-  "/home/amka78/open-bookshelf/node_modules/react-native-modalfy/lib/commonjs/index.js",
-  () => ({
-    useModal: () => useModalMock(),
-    modalfy: jest.fn(),
-  }),
-)
-
-mock.module("@/hooks/useElectrobunModal", () => ({
+vi.doMock("@/hooks/useElectrobunModal", () => ({
   useElectrobunModal: () => useModalMock(),
 }))
 
@@ -143,10 +121,10 @@ let useConvergence: typeof import("../../hooks/useConvergence").useConvergence
 let useViewer: typeof import("./useViewer").useViewer
 
 describe("useViewer", () => {
-  const mockSetProp = jest.fn()
-  const mockSetCurrentPage = jest.fn()
-  const mockUpdate = jest.fn().mockResolvedValue(true)
-  const mockOpenModal = jest.fn()
+  const mockSetProp = vi.fn()
+  const mockSetCurrentPage = vi.fn()
+  const mockUpdate = vi.fn().mockResolvedValue(true)
+  const mockOpenModal = vi.fn()
 
   const mockClientSetting = {
     id: 1,
@@ -170,13 +148,13 @@ describe("useViewer", () => {
       formatSizes: new Map([["pdf", 100]]),
       title: "Test Book",
       rating: 0,
-      setProp: jest.fn(),
+      setProp: vi.fn(),
     },
     update: mockUpdate,
   }
 
-  const mockSetServerPosition = jest.fn()
-  const mockBumpBookThumbnailRevision = jest.fn()
+  const mockSetServerPosition = vi.fn()
+  const mockBumpBookThumbnailRevision = vi.fn()
 
   const mockHistory = {
     bookId: 1,
@@ -186,7 +164,7 @@ describe("useViewer", () => {
     cachedPath: ["cached1.png", "cached2.png", "cached3.png"],
     textSpinePageCounts: [],
     setCurrentPage: mockSetCurrentPage,
-    setTextSpinePageCounts: jest.fn(),
+    setTextSpinePageCounts: vi.fn(),
     setServerPosition: mockSetServerPosition,
   }
 
@@ -195,7 +173,7 @@ describe("useViewer", () => {
     selectedBook: mockSelectedBook,
     clientSetting: [mockClientSetting],
     readingHistories: [mockHistory],
-    setProp: jest.fn(),
+    setProp: vi.fn(),
   }
 
   const mockCalibreRootStore = {
@@ -216,13 +194,13 @@ describe("useViewer", () => {
   }
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     mockSelectedBook.pageProgressionDirection = null
     mockSelectedLibrary.clientSetting = [mockClientSetting]
     useStoresMock.mockReturnValue({
       calibreRootStore: mockCalibreRootStore,
     })
-    ;(useConvergence as jest.Mock).mockReturnValue({
+    ;(useConvergence as vi.Mock).mockReturnValue({
       isLarge: false,
       orientation: "vertical",
     })
@@ -233,7 +211,7 @@ describe("useViewer", () => {
   })
 
   beforeAll(() => {
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   beforeAll(async () => {
@@ -242,7 +220,7 @@ describe("useViewer", () => {
   })
 
   afterAll(() => {
-    jest.useRealTimers()
+    vi.useRealTimers()
     globalThis.requestAnimationFrame = originalRequestAnimationFrame
     globalThis.cancelAnimationFrame = originalCancelAnimationFrame
     window.__ELECTROBUN__ = originalElectrobunFlag
@@ -259,7 +237,7 @@ describe("useViewer", () => {
   })
 
   test("returns correct reading style for vertical orientation", () => {
-    ;(useConvergence as jest.Mock).mockReturnValue({
+    ;(useConvergence as vi.Mock).mockReturnValue({
       isLarge: false,
       orientation: "vertical",
     })
@@ -270,7 +248,7 @@ describe("useViewer", () => {
   })
 
   test("returns correct reading style for horizontal orientation", () => {
-    ;(useConvergence as jest.Mock).mockReturnValue({
+    ;(useConvergence as vi.Mock).mockReturnValue({
       isLarge: false,
       orientation: "horizontal",
     })
@@ -281,7 +259,7 @@ describe("useViewer", () => {
   })
 
   test("returns correct page direction for vertical orientation", () => {
-    ;(useConvergence as jest.Mock).mockReturnValue({
+    ;(useConvergence as vi.Mock).mockReturnValue({
       isLarge: false,
       orientation: "vertical",
     })
@@ -292,7 +270,7 @@ describe("useViewer", () => {
   })
 
   test("returns correct page direction for horizontal orientation", () => {
-    ;(useConvergence as jest.Mock).mockReturnValue({
+    ;(useConvergence as vi.Mock).mockReturnValue({
       isLarge: false,
       orientation: "horizontal",
     })
@@ -369,7 +347,7 @@ describe("useViewer", () => {
   })
 
   test("onPageChange updates current page in history", async () => {
-    jest.useFakeTimers()
+    vi.useFakeTimers()
     const { result } = renderHook(() => useViewer())
 
     await act(async () => {
@@ -377,11 +355,11 @@ describe("useViewer", () => {
     })
 
     expect(mockSetCurrentPage).toHaveBeenCalledWith(3)
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   test("onPageChange does not update if page is same as current", async () => {
-    jest.useFakeTimers()
+    vi.useFakeTimers()
     const { result } = renderHook(() => useViewer())
 
     mockSetCurrentPage.mockClear()
@@ -391,11 +369,11 @@ describe("useViewer", () => {
     })
 
     expect(mockSetCurrentPage).not.toHaveBeenCalled()
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   test("onPageChange stores text spine page counts even when the page is unchanged", async () => {
-    jest.useFakeTimers()
+    vi.useFakeTimers()
     useStoresMock.mockReturnValue({
       calibreRootStore: {
         selectedLibrary: {
@@ -429,11 +407,10 @@ describe("useViewer", () => {
 
     expect(mockHistory.setTextSpinePageCounts).toHaveBeenCalledWith([3, 2])
     expect(mockSetCurrentPage).not.toHaveBeenCalled()
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
-
   test("onPageChange calls syncReadingPositionFull after debounce", async () => {
-    jest.useFakeTimers()
+    vi.useFakeTimers()
     const { result } = renderHook(() => useViewer())
 
     await act(async () => {
@@ -443,7 +420,7 @@ describe("useViewer", () => {
     expect(mockSyncReadingPositionFull).not.toHaveBeenCalled()
 
     await act(async () => {
-      jest.advanceTimersByTime(1000)
+      vi.advanceTimersByTime(1000)
     })
 
     expect(mockSyncReadingPositionFull).toHaveBeenCalledWith(
@@ -453,11 +430,11 @@ describe("useViewer", () => {
       1,
       "epubcfi(/2/2/4/10[page_5]@50:49.87)",
     )
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   test("onPageChange debounces rapid page changes and only syncs the final page", async () => {
-    jest.useFakeTimers()
+    vi.useFakeTimers()
     const { result } = renderHook(() => useViewer())
 
     await act(async () => {
@@ -467,7 +444,7 @@ describe("useViewer", () => {
     })
 
     await act(async () => {
-      jest.advanceTimersByTime(1000)
+      vi.advanceTimersByTime(1000)
     })
 
     expect(mockSyncReadingPositionFull).toHaveBeenCalledTimes(1)
@@ -478,11 +455,11 @@ describe("useViewer", () => {
       1,
       "epubcfi(/2/2/4/10[page_5]@50:49.87)",
     )
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   test("onPageChange syncs html formats using spine-based position and CFI", async () => {
-    jest.useFakeTimers()
+    vi.useFakeTimers()
     useStoresMock.mockReturnValue({
       calibreRootStore: {
         selectedLibrary: {
@@ -518,7 +495,7 @@ describe("useViewer", () => {
     })
 
     await act(async () => {
-      jest.advanceTimersByTime(1000)
+      vi.advanceTimersByTime(1000)
     })
 
     expect(mockSyncReadingPositionFull).toHaveBeenCalledWith(
@@ -528,11 +505,11 @@ describe("useViewer", () => {
       0.625,
       "epubcfi(/4/2/4/102[page_51]@50:49.87)",
     )
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   test("onPageChange does not sync when page is unchanged", async () => {
-    jest.useFakeTimers()
+    vi.useFakeTimers()
     const { result } = renderHook(() => useViewer())
 
     await act(async () => {
@@ -540,11 +517,11 @@ describe("useViewer", () => {
     })
 
     await act(async () => {
-      jest.advanceTimersByTime(1000)
+      vi.advanceTimersByTime(1000)
     })
 
     expect(mockSyncReadingPositionFull).not.toHaveBeenCalled()
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   test("cachedPathList returns history cached path", () => {
@@ -670,7 +647,7 @@ describe("useViewer", () => {
   })
 
   test("restores the selected format from reading history when the book format is unset", async () => {
-    const setSelectedFormat = jest.fn()
+    const setSelectedFormat = vi.fn()
     useStoresMock.mockReturnValue({
       calibreRootStore: {
         selectedLibrary: {

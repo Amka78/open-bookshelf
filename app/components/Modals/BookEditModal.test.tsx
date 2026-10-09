@@ -1,23 +1,15 @@
-import {
-  describe as baseDescribe,
-  test as baseTest,
-  beforeAll,
-  beforeEach,
-  expect,
-  jest,
-  mock,
-} from "bun:test"
+import { vi, describe as baseDescribe, test as baseTest, beforeAll, beforeEach, expect } from "vitest"
 import { render } from "@testing-library/react"
 import * as DocumentPicker from "expo-document-picker"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 import { playBookEditModalFormatClickRunsUpload } from "./bookEditModalStoryPlay"
 
-mock.module("@/utils/fileToDataUrl", () => ({
-  fileToDataUrl: jest.fn().mockResolvedValue("data:application/epub+zip;base64,abc123"),
+vi.doMock("@/utils/fileToDataUrl", () => ({
+  fileToDataUrl: vi.fn().mockResolvedValue("data:application/epub+zip;base64,abc123"),
 }))
 
-mock.module("@/components/BookEditFieldList/BookEditFieldList", () => ({
+vi.doMock("@/components/BookEditFieldList/BookEditFieldList", () => ({
   BookEditFieldList: ({
     onUploadFormat,
   }: {
@@ -38,15 +30,15 @@ mock.module("@/components/BookEditFieldList/BookEditFieldList", () => ({
   ),
 }))
 
-mock.module("mobx-state-tree", () => ({
-  getSnapshot: jest.fn(() => ({
+vi.doMock("mobx-state-tree", () => ({
+  getSnapshot: vi.fn(() => ({
     formats: ["EPUB", "PDF"],
     languages: [],
     langNames: {},
   })),
 }))
 
-mock.module("@/components/Button/Button", () => ({
+vi.doMock("@/components/Button/Button", () => ({
   Button: ({ children, ...props }: Record<string, unknown> & { children?: ReactNode }) => (
     <button type="button" {...(props as object)}>
       {children}
@@ -54,29 +46,29 @@ mock.module("@/components/Button/Button", () => ({
   ),
 }))
 
-mock.module("@/components/Forms/FormImageUploader", () => ({
+vi.doMock("@/components/Forms/FormImageUploader", () => ({
   FormImageUploader: () => <div />,
 }))
 
-mock.module("@/components/HStack/HStack", () => ({
+vi.doMock("@/components/HStack/HStack", () => ({
   HStack: ({ children, ...props }: Record<string, unknown> & { children?: ReactNode }) => (
     <div {...(props as object)}>{children}</div>
   ),
 }))
 
-mock.module("@/components/Heading/Heading", () => ({
+vi.doMock("@/components/Heading/Heading", () => ({
   Heading: ({ children, ...props }: Record<string, unknown> & { children?: ReactNode }) => (
     <div {...(props as object)}>{children}</div>
   ),
 }))
 
-mock.module("./Body", () => ({
+vi.doMock("./Body", () => ({
   Body: ({ children, ...props }: Record<string, unknown> & { children?: ReactNode }) => (
     <div {...(props as object)}>{children}</div>
   ),
 }))
 
-mock.module("./CloseButton", () => ({
+vi.doMock("./CloseButton", () => ({
   CloseButton: ({ onPress }: { onPress?: () => void }) => (
     <button type="button" onClick={onPress}>
       close
@@ -84,19 +76,19 @@ mock.module("./CloseButton", () => ({
   ),
 }))
 
-mock.module("./Header", () => ({
+vi.doMock("./Header", () => ({
   Header: ({ children, ...props }: Record<string, unknown> & { children?: ReactNode }) => (
     <div {...(props as object)}>{children}</div>
   ),
 }))
 
-mock.module("./ModalFooter", () => ({
+vi.doMock("./ModalFooter", () => ({
   Footer: ({ children, ...props }: Record<string, unknown> & { children?: ReactNode }) => (
     <div {...(props as object)}>{children}</div>
   ),
 }))
 
-mock.module("./Root", () => ({
+vi.doMock("./Root", () => ({
   Root: ({ children, ...props }: Record<string, unknown> & { children?: ReactNode }) => (
     <div {...(props as object)}>{children}</div>
   ),
@@ -107,7 +99,7 @@ const mockSelectedBook = {
   metaData: {
     formats: ["EPUB", "PDF"],
   },
-  update: jest.fn(),
+  update: vi.fn(),
 }
 
 const mockSelectedLibrary = {
@@ -128,16 +120,16 @@ const test = localizeTestRegistrar(baseTest)
 
 describe("BookEditModal format upload wiring", () => {
   beforeEach(async () => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
     const stores = await import("@/models")
-    ;(stores.useStores as unknown as jest.Mock).mockReturnValue({
+    ;(stores.useStores as unknown as vi.Mock).mockReturnValue({
       calibreRootStore: {
         selectedLibrary: mockSelectedLibrary,
       },
     })
 
-    jest.spyOn(DocumentPicker, "getDocumentAsync").mockResolvedValue({
+    vi.spyOn(DocumentPicker, "getDocumentAsync").mockResolvedValue({
       canceled: false,
       assets: [
         {
@@ -150,7 +142,7 @@ describe("BookEditModal format upload wiring", () => {
   })
 
   test("clicking format row in modal stores pending upload", async () => {
-    const closeModal = jest.fn()
+    const closeModal = vi.fn()
 
     const { container } = render(
       <BookEditModal

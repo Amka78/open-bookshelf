@@ -1,46 +1,37 @@
-import {
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe as baseDescribe,
-  expect,
-  jest,
-  mock,
-  test as baseTest,
-} from "bun:test"
+import { vi, afterEach, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
 import { act, renderHook, waitFor } from "@testing-library/react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 
-const useStoresMock = jest.fn()
-const useNavigationMock = jest.fn()
-const useRouteMock = jest.fn()
-const useConvergenceMock = jest.fn()
-const recognizeCoverMock = jest.fn()
+const useStoresMock = vi.fn()
+const useNavigationMock = vi.fn()
+const useRouteMock = vi.fn()
+const useConvergenceMock = vi.fn()
+const recognizeCoverMock = vi.fn()
 class MockExpoGoOcrUnavailableError extends Error {}
 
-mock.module("@/models", () => ({
+vi.doMock("@/models", () => ({
   useStores: useStoresMock,
 }))
 
-mock.module("@react-navigation/native", () => ({
+vi.doMock("@react-navigation/native", () => ({
   ...(global as { __navMock?: Record<string, unknown> }).__navMock,
   useNavigation: useNavigationMock,
   useRoute: useRouteMock,
 }))
 
-mock.module("@/hooks/useConvergence", () => ({
+vi.doMock("@/hooks/useConvergence", () => ({
   useConvergence: useConvergenceMock,
 }))
 
-mock.module("@/services/ocr", () => ({
+vi.doMock("@/services/ocr", () => ({
   ExpoGoOcrUnavailableError: MockExpoGoOcrUnavailableError,
   recognizeCover: recognizeCoverMock,
 }))
 
-mock.module("mobx-state-tree", () => ({
+vi.doMock("mobx-state-tree", () => ({
   getSnapshot: (value: unknown) => value,
 }))
 
@@ -51,9 +42,9 @@ beforeAll(async () => {
 })
 
 describe("useBookOcrReview", () => {
-  const mockGoBack = jest.fn()
-  const mockSetOptions = jest.fn()
-  const mockUpdate = jest.fn().mockResolvedValue(true)
+  const mockGoBack = vi.fn()
+  const mockSetOptions = vi.fn()
+  const mockUpdate = vi.fn().mockResolvedValue(true)
 
   const selectedBook = {
     id: 1,
@@ -85,7 +76,7 @@ describe("useBookOcrReview", () => {
   }
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
     useStoresMock.mockReturnValue({
       calibreRootStore: {
@@ -124,7 +115,7 @@ describe("useBookOcrReview", () => {
   })
 
   afterEach(() => {
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   })
 
   test("prefills the metadata form with OCR-detected values", async () => {

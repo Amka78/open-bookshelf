@@ -23,7 +23,7 @@ describe("useDownloadBook", () => {
   }) => {
     return {
       authenticationStore: {
-        getHeader: jest.fn().mockReturnValue({ Authorization: "Basic token" }),
+        getHeader: vi.fn().mockReturnValue({ Authorization: "Basic token" }),
       },
       calibreRootStore: {
         selectedLibrary: {
@@ -36,17 +36,17 @@ describe("useDownloadBook", () => {
 
   const createModal = (overrides: Partial<TestModal> = {}): TestModal => ({
     currentModal: null,
-    openModal: jest.fn() as TestModal["openModal"],
-    closeModal: jest.fn() as TestModal["closeModal"],
-    closeModals: jest.fn() as TestModal["closeModals"],
-    closeAllModals: jest.fn() as TestModal["closeAllModals"],
+    openModal: vi.fn() as TestModal["openModal"],
+    closeModal: vi.fn() as TestModal["closeModal"],
+    closeModals: vi.fn() as TestModal["closeModals"],
+    closeAllModals: vi.fn() as TestModal["closeAllModals"],
     ...overrides,
   })
 
   afterEach(() => {
     setPlatformOS("web")
-    jest.restoreAllMocks()
-    jest.clearAllMocks()
+    vi.restoreAllMocks()
+    vi.clearAllMocks()
   })
 
   test("downloads and shares when only one format exists", async () => {
@@ -59,9 +59,9 @@ describe("useDownloadBook", () => {
         formats: ["EPUB"],
       },
     }
-    ;(useStores as jest.Mock).mockReturnValue(createStore(selectedBook))
-    jest.spyOn(api, "getBookDownloadUrl").mockReturnValue("https://example/book")
-    jest.spyOn(api, "downloadFileWithAuth").mockResolvedValue({
+    ;(useStores as vi.Mock).mockReturnValue(createStore(selectedBook))
+    vi.spyOn(api, "getBookDownloadUrl").mockReturnValue("https://example/book")
+    vi.spyOn(api, "downloadFileWithAuth").mockResolvedValue({
       uri: "file:///documents/book.epub",
     } as unknown as Awaited<ReturnType<typeof api.downloadFileWithAuth>>)
 
@@ -82,7 +82,7 @@ describe("useDownloadBook", () => {
   test("opens format selector when multiple formats exist", async () => {
     setPlatformOS("ios")
 
-    const openModal = jest.fn()
+    const openModal = vi.fn()
     const selectedBook = {
       id: 11,
       metaData: {
@@ -90,9 +90,9 @@ describe("useDownloadBook", () => {
         formats: ["EPUB", "PDF"],
       },
     }
-    ;(useStores as jest.Mock).mockReturnValue(createStore(selectedBook))
-    jest.spyOn(api, "getBookDownloadUrl").mockReturnValue("https://example/book-pdf")
-    jest.spyOn(api, "downloadFileWithAuth").mockResolvedValue({
+    ;(useStores as vi.Mock).mockReturnValue(createStore(selectedBook))
+    vi.spyOn(api, "getBookDownloadUrl").mockReturnValue("https://example/book-pdf")
+    vi.spyOn(api, "downloadFileWithAuth").mockResolvedValue({
       uri: "file:///documents/book.pdf",
     } as unknown as Awaited<ReturnType<typeof api.downloadFileWithAuth>>)
 
@@ -116,7 +116,7 @@ describe("useDownloadBook", () => {
   test("opens error modal when download fails", async () => {
     setPlatformOS("ios")
 
-    const openModal = jest.fn()
+    const openModal = vi.fn()
     const selectedBook = {
       id: 12,
       metaData: {
@@ -124,9 +124,9 @@ describe("useDownloadBook", () => {
         formats: ["EPUB"],
       },
     }
-    ;(useStores as jest.Mock).mockReturnValue(createStore(selectedBook))
-    jest.spyOn(api, "getBookDownloadUrl").mockReturnValue("https://example/broken")
-    jest.spyOn(api, "downloadFileWithAuth").mockRejectedValue(new Error("network failed"))
+    ;(useStores as vi.Mock).mockReturnValue(createStore(selectedBook))
+    vi.spyOn(api, "getBookDownloadUrl").mockReturnValue("https://example/broken")
+    vi.spyOn(api, "downloadFileWithAuth").mockRejectedValue(new Error("network failed"))
 
     const { execute } = useDownloadBook()
 

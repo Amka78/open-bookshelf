@@ -1,32 +1,32 @@
-import { afterAll, afterEach, beforeEach, describe, expect, jest, mock, test } from "bun:test"
+import { vi, afterAll, afterEach, beforeEach, describe, expect, test } from "vitest"
 import { useStores } from "@/models"
 import { useNavigation } from "@react-navigation/native"
 
-const useFormMock = jest.fn()
+const useFormMock = vi.fn()
 
-mock.module("react-hook-form", () => ({
+vi.doMock("react-hook-form", () => ({
   useForm: () => useFormMock(),
 }))
 
-const mockedUseStores = useStores as unknown as jest.Mock
-const mockedUseNavigation = useNavigation as unknown as jest.Mock
+const mockedUseStores = useStores as unknown as vi.Mock
+const mockedUseNavigation = useNavigation as unknown as vi.Mock
 
 const { useConnect } = await import("./useConnect.ts")
 
 describe("useConnect", () => {
-  const navigate = jest.fn()
-  const initialize = jest.fn()
-  const setConnectionSetting = jest.fn()
+  const navigate = vi.fn()
+  const initialize = vi.fn()
+  const setConnectionSetting = vi.fn()
   const mockForm = {
     control: {},
-    handleSubmit: jest.fn((handler) => handler),
+    handleSubmit: vi.fn((handler) => handler),
     formState: {
       isValid: true,
     },
   }
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     mockedUseNavigation.mockReturnValue({ navigate })
     mockedUseStores.mockReturnValue({
       settingStore: {
@@ -125,6 +125,6 @@ afterAll(() => {
   // Restore real react-hook-form so subsequent test files aren't contaminated
   const realRHF = (global as { __realReactHookForm?: Record<string, unknown> }).__realReactHookForm
   if (realRHF) {
-    mock.module("react-hook-form", () => realRHF)
+    vi.doMock("react-hook-form", () => realRHF)
   }
 })

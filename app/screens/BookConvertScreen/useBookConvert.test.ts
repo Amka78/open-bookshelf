@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, jest, mock, test } from "bun:test"
+import { vi, afterEach, beforeEach, describe, expect, test } from "vitest"
 import {
   DEFAULT_CONVERT_HEURISTICS,
   DEFAULT_CONVERT_LOOK_AND_FEEL,
@@ -13,16 +13,16 @@ import { api } from "@/services/api"
 import { act, renderHook, waitFor } from "@testing-library/react"
 import { useBookConvert } from "./useBookConvert"
 
-mock.module("@/services/api", () => ({
+vi.doMock("@/services/api", () => ({
   api: {
-    getConversionBookData: jest.fn(),
+    getConversionBookData: vi.fn(),
   },
 }))
 
 describe("useBookConvert", () => {
-  const mockConvert = jest.fn()
-  const mockStartConvert = jest.fn()
-  const mockAddConversionJob = jest.fn()
+  const mockConvert = vi.fn()
+  const mockStartConvert = vi.fn()
+  const mockAddConversionJob = vi.fn()
 
   const mockSelectedBook = {
     id: 1,
@@ -45,8 +45,8 @@ describe("useBookConvert", () => {
   }
 
   beforeEach(() => {
-    jest.clearAllMocks()
-    jest.spyOn(api, "getConversionBookData").mockResolvedValue({
+    vi.clearAllMocks()
+    vi.spyOn(api, "getConversionBookData").mockResolvedValue({
       kind: "ok",
       data: {
         input_formats: ["EPUB", "PDF", "MOBI"],
@@ -58,13 +58,13 @@ describe("useBookConvert", () => {
         book_id: 1,
       },
     })
-    ;(useStores as jest.Mock).mockReturnValue({
+    ;(useStores as vi.Mock).mockReturnValue({
       calibreRootStore: mockCalibreRootStore,
     })
   })
 
   afterEach(() => {
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   })
 
   const renderUseBookConvertAndWaitForInitialization = async () => {
@@ -105,11 +105,11 @@ describe("useBookConvert", () => {
     })
 
     test("falls back to input formats when conversion book data fails", async () => {
-      jest.spyOn(api, "getConversionBookData").mockResolvedValueOnce({
+      vi.spyOn(api, "getConversionBookData").mockResolvedValueOnce({
         kind: "not-found",
         message: "not found",
       })
-      ;(useStores as jest.Mock).mockReturnValue({
+      ;(useStores as vi.Mock).mockReturnValue({
         calibreRootStore: {
           selectedLibrary: {
             id: "test-library",
@@ -139,7 +139,7 @@ describe("useBookConvert", () => {
         | ((value: Awaited<ReturnType<typeof api.getConversionBookData>>) => void)
         | undefined
 
-      jest.spyOn(api, "getConversionBookData").mockReturnValueOnce(
+      vi.spyOn(api, "getConversionBookData").mockReturnValueOnce(
         new Promise((resolve) => {
           resolveBookData = resolve
         }),

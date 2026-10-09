@@ -1,72 +1,71 @@
-import {
-  afterAll,
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  jest,
-  mock,
-  test,
-} from "bun:test"
 import { api } from "@/services/api"
 import { renderHook } from "@testing-library/react"
 import * as DocumentPicker from "expo-document-picker"
-import * as reactHookForm from "react-hook-form"
+import type * as reactHookForm from "react-hook-form"
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest"
 
-const useStoresMock = jest.fn()
-const useNavigationMock = jest.fn()
-const mockOpenModal = jest.fn()
+// ESM のモジュール名前空間は不変なので vi.spyOn(reactHookForm, "useForm") は
+// "Cannot spy on export" になる。vi.mock で差し替え、spy は hoisted な関数として持つ。
+const { useFormMock } = vi.hoisted(() => ({ useFormMock: vi.fn() }))
 
-mock.module("@/services/api", () => ({
+vi.mock("react-hook-form", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react-hook-form")>()
+  return { ...actual, useForm: useFormMock }
+})
+
+const useStoresMock = vi.fn()
+const useNavigationMock = vi.fn()
+const mockOpenModal = vi.fn()
+
+vi.doMock("@/services/api", () => ({
   api: {
-    setCoverBinary: jest.fn(),
+    setCoverBinary: vi.fn(),
   },
 }))
 
-mock.module("@/models", () => ({
+vi.doMock("@/models", () => ({
   useStores: useStoresMock,
 }))
 
-mock.module("@react-navigation/native", () => ({
+vi.doMock("@react-navigation/native", () => ({
   ...(global as { __navMock?: Record<string, unknown> }).__navMock,
   useNavigation: useNavigationMock,
 }))
 
-mock.module("@/hooks/useElectrobunModal", () => ({
+vi.doMock("@/hooks/useElectrobunModal", () => ({
   useElectrobunModal: () => ({
     openModal: mockOpenModal,
   }),
 }))
 
-mock.module("@/utils/fileToDataUrl", () => ({
-  fileToDataUrl: jest.fn().mockResolvedValue("data:application/epub+zip;base64,abc123"),
+vi.doMock("@/utils/fileToDataUrl", () => ({
+  fileToDataUrl: vi.fn().mockResolvedValue("data:application/epub+zip;base64,abc123"),
 }))
 
-mock.module("mobx-state-tree", () => ({
+vi.doMock("mobx-state-tree", () => ({
   getSnapshot: (value: unknown) => value,
 }))
 
 // Restore real mobx-state-tree after this file so subsequent test files that import
-// @/models/calibre (which uses MST models) don't encounter a broken partial mock.
+// @/models/calibre (which uses MST models) don't encounter a broken partial vi.
 afterAll(() => {
-  mock.module(
+  vi.doMock(
     "mobx-state-tree",
     () => (global as { __realMST?: Record<string, unknown> }).__realMST ?? {},
   )
 })
 
 afterEach(() => {
-  jest.clearAllMocks()
+  vi.clearAllMocks()
 })
 
 let useBookEdit: typeof import("./useBookEdit").useBookEdit
 
 describe("useBookEdit", () => {
-  const mockUpdate = jest.fn()
-  const mockGoBack = jest.fn()
-  const mockHandleSubmit = jest.fn()
-  const mockBumpBookThumbnailRevision = jest.fn()
+  const mockUpdate = vi.fn()
+  const mockGoBack = vi.fn()
+  const mockHandleSubmit = vi.fn()
+  const mockBumpBookThumbnailRevision = vi.fn()
 
   const mockBook = {
     id: 1,
@@ -103,7 +102,7 @@ describe("useBookEdit", () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     useStoresMock.mockReturnValue({
       calibreRootStore: {
         selectedLibrary: mockSelectedLibrary,
@@ -113,9 +112,9 @@ describe("useBookEdit", () => {
     useNavigationMock.mockReturnValue({
       goBack: mockGoBack,
     })
-    jest
-      .spyOn(reactHookForm, "useForm")
-      .mockReturnValue(mockForm as unknown as ReturnType<(typeof reactHookForm)["useForm"]>)
+    useFormMock.mockReturnValue(
+      mockForm as unknown as ReturnType<(typeof reactHookForm)["useForm"]>,
+    )
     mockHandleSubmit.mockImplementation((fn) => {
       return () => {
         fn({
@@ -129,7 +128,7 @@ describe("useBookEdit", () => {
   })
 
   afterEach(() => {
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   })
 
   test("returns form object", () => {
@@ -208,13 +207,13 @@ describe("useBookEdit", () => {
   test("useForm is called with correct type parameters", () => {
     renderHook(() => useBookEdit())
 
-    expect(reactHookForm.useForm).toHaveBeenCalled()
+    expect(useFormMock).toHaveBeenCalled()
   })
 
   test("useForm receives display-friendly language names as default values", () => {
     renderHook(() => useBookEdit())
 
-    expect(reactHookForm.useForm).toHaveBeenCalledWith(
+    expect(useFormMock).toHaveBeenCalledWith(
       expect.objectContaining({
         defaultValues: expect.objectContaining({
           languages: ["English", "Japanese"],
@@ -242,7 +241,7 @@ describe("useBookEdit", () => {
   })
 
   test("onUploadFormat stores pending format data and returns success", async () => {
-    jest.spyOn(DocumentPicker, "getDocumentAsync").mockResolvedValue({
+    vi.spyOn(DocumentPicker, "getDocumentAsync").mockResolvedValue({
       canceled: false,
       assets: [
         {
@@ -261,7 +260,7 @@ describe("useBookEdit", () => {
   })
 
   test("onUploadFormat derives the target format from the selected file extension when none is provided", async () => {
-    jest.spyOn(DocumentPicker, "getDocumentAsync").mockResolvedValue({
+    vi.spyOn(DocumentPicker, "getDocumentAsync").mockResolvedValue({
       canceled: false,
       assets: [
         {
@@ -280,7 +279,7 @@ describe("useBookEdit", () => {
   })
 
   test("onUploadFormat returns failure when the picker is canceled", async () => {
-    jest.spyOn(DocumentPicker, "getDocumentAsync").mockResolvedValue({
+    vi.spyOn(DocumentPicker, "getDocumentAsync").mockResolvedValue({
       canceled: true,
       assets: [],
     } as unknown as DocumentPicker.DocumentPickerResult)
@@ -292,7 +291,7 @@ describe("useBookEdit", () => {
   })
 
   test("onUploadFormat returns failure when the selected asset has no usable file payload", async () => {
-    jest.spyOn(DocumentPicker, "getDocumentAsync").mockResolvedValue({
+    vi.spyOn(DocumentPicker, "getDocumentAsync").mockResolvedValue({
       canceled: false,
       assets: [
         {

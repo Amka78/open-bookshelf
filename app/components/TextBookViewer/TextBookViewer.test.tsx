@@ -1,13 +1,4 @@
-import {
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe as baseDescribe,
-  expect,
-  jest,
-  mock,
-  test as baseTest,
-} from "bun:test"
+import { vi, afterEach, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
 import { act, render, screen } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
@@ -15,35 +6,35 @@ import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 
-const usePaletteMock = jest.fn()
-const useStoresMock = jest.fn()
-const useNavigationMock = jest.fn()
-const useModalMock = jest.fn()
-const useAnnotationsMock = jest.fn()
+const usePaletteMock = vi.fn()
+const useStoresMock = vi.fn()
+const useNavigationMock = vi.fn()
+const useModalMock = vi.fn()
+const useAnnotationsMock = vi.fn()
 
 let latestTextBookSpineProps: Record<string, unknown> | null = null
 
-mock.module("@/theme", () => ({
+vi.doMock("@/theme", () => ({
   usePalette: usePaletteMock,
 }))
 
-mock.module("@/models", () => ({
+vi.doMock("@/models", () => ({
   useStores: useStoresMock,
 }))
 
-mock.module("@react-navigation/native", () => ({
+vi.doMock("@react-navigation/native", () => ({
   useNavigation: useNavigationMock,
 }))
 
-mock.module("@/hooks/useElectrobunModal", () => ({
+vi.doMock("@/hooks/useElectrobunModal", () => ({
   useElectrobunModal: () => useModalMock(),
 }))
 
-mock.module("@/screens/ViewerScreen/useAnnotations", () => ({
+vi.doMock("@/screens/ViewerScreen/useAnnotations", () => ({
   useAnnotations: () => useAnnotationsMock(),
 }))
 
-mock.module("@/components", () => ({
+vi.doMock("@/components", () => ({
   GradientBackground: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   PageManager: ({
     currentPage,
@@ -61,20 +52,20 @@ mock.module("@/components", () => ({
   ViewerHeader: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-mock.module("@/components/AnnotationPanel", () => ({
+vi.doMock("@/components/AnnotationPanel", () => ({
   AnnotationPanel: () => <div data-testid="text-book-viewer-annotation-panel" />,
 }))
 
-mock.module("./TextBookSpine", () => ({
+vi.doMock("./TextBookSpine", () => ({
   TextBookSpine: (props: Record<string, unknown>) => {
     latestTextBookSpineProps = props
     return <div data-testid="text-book-viewer-spine" />
   },
 }))
 
-mock.module("react-native", () => ({
+vi.doMock("react-native", () => ({
   Platform: { OS: "web" },
-  Share: { share: jest.fn() },
+  Share: { share: vi.fn() },
   StyleSheet: { create: <T,>(styles: T) => styles },
   View: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
@@ -86,8 +77,8 @@ beforeAll(async () => {
 })
 
 describe("TextBookViewer", () => {
-  const goBack = jest.fn()
-  const onPageChange = jest.fn()
+  const goBack = vi.fn()
+  const onPageChange = vi.fn()
 
   const createViewerHook = (overrides: Record<string, unknown> = {}) => ({
     selectedBook: {
@@ -109,18 +100,18 @@ describe("TextBookViewer", () => {
     readingStyle: "singlePage",
     pageDirection: "left",
     showMenu: false,
-    onManageMenu: jest.fn(),
-    onSetBookReadingStyle: jest.fn(),
-    onSetPageDirection: jest.fn(),
+    onManageMenu: vi.fn(),
+    onSetBookReadingStyle: vi.fn(),
+    onSetPageDirection: vi.fn(),
     onPageChange,
-    onLastPage: jest.fn(),
+    onLastPage: vi.fn(),
     toc: null,
-    goToTocEntry: jest.fn(),
+    goToTocEntry: vi.fn(),
     ...overrides,
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     latestTextBookSpineProps = null
     usePaletteMock.mockReturnValue({
       gradient: ["#000000", "#111111"],
@@ -128,17 +119,17 @@ describe("TextBookViewer", () => {
     useStoresMock.mockReturnValue({
       settingStore: {
         autoPageTurnIntervalMs: 1500,
-        setAutoPageTurnIntervalMs: jest.fn(),
+        setAutoPageTurnIntervalMs: vi.fn(),
       },
     })
     useNavigationMock.mockReturnValue({ goBack })
-    useModalMock.mockReturnValue({ openModal: jest.fn() })
+    useModalMock.mockReturnValue({ openModal: vi.fn() })
     useAnnotationsMock.mockReturnValue({
       annotations: [],
-      addBookmark: jest.fn(),
-      addHighlight: jest.fn(),
-      deleteAnnotation: jest.fn(),
-      exportAnnotationsAsMarkdown: jest.fn(),
+      addBookmark: vi.fn(),
+      addHighlight: vi.fn(),
+      deleteAnnotation: vi.fn(),
+      exportAnnotationsAsMarkdown: vi.fn(),
     })
   })
 

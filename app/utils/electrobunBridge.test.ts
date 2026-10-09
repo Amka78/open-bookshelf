@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, jest, test } from "bun:test"
+import { vi, afterEach, describe, expect, test } from "vitest"
 
 import { isElectrobun, showNativeConfirm, showNativeError } from "./electrobunBridge"
 
@@ -11,7 +11,7 @@ describe("electrobunBridge", () => {
     window.__ELECTROBUN__ = originalElectrobunFlag
     window.__electrobunShowConfirm = originalShowConfirm
     window.__electrobunShowError = originalShowError
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   })
 
   test("detects when the app is not running inside Electrobun", () => {
@@ -28,7 +28,7 @@ describe("electrobunBridge", () => {
 
   test("returns false from showNativeConfirm when Electrobun is not active", async () => {
     window.__ELECTROBUN__ = false
-    const nativeConfirm = jest.fn().mockResolvedValue(true)
+    const nativeConfirm = vi.fn().mockResolvedValue(true)
     window.__electrobunShowConfirm = nativeConfirm
 
     const confirmed = await showNativeConfirm("Title", "Message")
@@ -48,7 +48,7 @@ describe("electrobunBridge", () => {
 
   test("passes all confirm arguments to the native Electrobun bridge", async () => {
     window.__ELECTROBUN__ = true
-    const nativeConfirm = jest.fn().mockResolvedValue(true)
+    const nativeConfirm = vi.fn().mockResolvedValue(true)
     window.__electrobunShowConfirm = nativeConfirm
 
     const confirmed = await showNativeConfirm("Resume", "Continue?", "Yes", "No")
@@ -59,7 +59,7 @@ describe("electrobunBridge", () => {
 
   test("returns without calling the native error bridge when Electrobun is not active", async () => {
     window.__ELECTROBUN__ = false
-    const nativeError = jest.fn().mockResolvedValue(undefined)
+    const nativeError = vi.fn().mockResolvedValue(undefined)
     window.__electrobunShowError = nativeError
 
     await showNativeError("Error", "Failure")
@@ -76,7 +76,7 @@ describe("electrobunBridge", () => {
 
   test("passes all error arguments to the native Electrobun bridge", async () => {
     window.__ELECTROBUN__ = true
-    const nativeError = jest.fn().mockResolvedValue(undefined)
+    const nativeError = vi.fn().mockResolvedValue(undefined)
     window.__electrobunShowError = nativeError
 
     await showNativeError("Error", "Failure")

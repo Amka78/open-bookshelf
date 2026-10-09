@@ -1,13 +1,4 @@
-import {
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe as baseDescribe,
-  expect,
-  jest,
-  mock,
-  test as baseTest,
-} from "bun:test"
+import { vi, afterEach, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
 import { fireEvent, render, waitFor } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
@@ -15,43 +6,43 @@ import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 
-const useStoresMock = jest.fn()
-const useNavigationMock = jest.fn()
-const useConvergenceMock = jest.fn()
-const recognizeCoverMock = jest.fn()
+const useStoresMock = vi.fn()
+const useNavigationMock = vi.fn()
+const useConvergenceMock = vi.fn()
+const recognizeCoverMock = vi.fn()
 class MockExpoGoOcrUnavailableError extends Error {}
-const mockUpdate = jest.fn().mockResolvedValue(true)
-const rootPropsSpy = jest.fn()
-const bodyPropsSpy = jest.fn()
-const scrollViewPropsSpy = jest.fn()
+const mockUpdate = vi.fn().mockResolvedValue(true)
+const rootPropsSpy = vi.fn()
+const bodyPropsSpy = vi.fn()
+const scrollViewPropsSpy = vi.fn()
 
-mock.module("@/models", () => ({
+vi.doMock("@/models", () => ({
   useStores: useStoresMock,
 }))
 
-mock.module("@react-navigation/native", () => ({
+vi.doMock("@react-navigation/native", () => ({
   ...(global as { __navMock?: Record<string, unknown> }).__navMock,
   useNavigation: useNavigationMock,
 }))
 
-mock.module("@/hooks/useConvergence", () => ({
+vi.doMock("@/hooks/useConvergence", () => ({
   useConvergence: useConvergenceMock,
 }))
 
-mock.module("@/services/ocr", () => ({
+vi.doMock("@/services/ocr", () => ({
   ExpoGoOcrUnavailableError: MockExpoGoOcrUnavailableError,
   recognizeCover: recognizeCoverMock,
 }))
 
-mock.module("mobx-state-tree", () => ({
+vi.doMock("mobx-state-tree", () => ({
   getSnapshot: (value: unknown) => value,
 }))
 
-mock.module("@/screens/BookOcrReviewScreen/BookOcrReviewContent", () => ({
+vi.doMock("@/screens/BookOcrReviewScreen/BookOcrReviewContent", () => ({
   BookOcrReviewContent: () => <div data-testid="book-ocr-review-content" />,
 }))
 
-mock.module("@/components/Button/Button", () => ({
+vi.doMock("@/components/Button/Button", () => ({
   Button: ({
     onPress,
     children,
@@ -67,25 +58,25 @@ mock.module("@/components/Button/Button", () => ({
   ),
 }))
 
-mock.module("@/components/Heading/Heading", () => ({
+vi.doMock("@/components/Heading/Heading", () => ({
   Heading: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-mock.module("@/components/ScrollView/ScrollView", () => ({
+vi.doMock("@/components/ScrollView/ScrollView", () => ({
   ScrollView: ({ children, ...props }: { children?: ReactNode }) => {
     scrollViewPropsSpy(props)
     return <div>{children}</div>
   },
 }))
 
-mock.module("./Body", () => ({
+vi.doMock("./Body", () => ({
   Body: ({ children, ...props }: { children?: ReactNode }) => {
     bodyPropsSpy(props)
     return <div>{children}</div>
   },
 }))
 
-mock.module("./CloseButton", () => ({
+vi.doMock("./CloseButton", () => ({
   CloseButton: ({ onPress }: { onPress?: () => void }) => (
     <button data-testid="book-ocr-close-button" type="button" onClick={onPress}>
       close
@@ -93,15 +84,15 @@ mock.module("./CloseButton", () => ({
   ),
 }))
 
-mock.module("./Header", () => ({
+vi.doMock("./Header", () => ({
   Header: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-mock.module("./ModalFooter", () => ({
+vi.doMock("./ModalFooter", () => ({
   Footer: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-mock.module("./Root", () => ({
+vi.doMock("./Root", () => ({
   Root: ({ children, ...props }: { children?: ReactNode }) => {
     rootPropsSpy(props)
     return <div>{children}</div>
@@ -116,7 +107,7 @@ beforeAll(async () => {
 
 describe("BookOcrReviewModal", () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
     useStoresMock.mockReturnValue({
       calibreRootStore: {
@@ -142,8 +133,8 @@ describe("BookOcrReviewModal", () => {
       },
     })
     useNavigationMock.mockReturnValue({
-      goBack: jest.fn(),
-      setOptions: jest.fn(),
+      goBack: vi.fn(),
+      setOptions: vi.fn(),
     })
     useConvergenceMock.mockReturnValue({
       isLarge: true,
@@ -158,11 +149,11 @@ describe("BookOcrReviewModal", () => {
   })
 
   afterEach(() => {
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   })
 
   test("saves through the OCR controller and closes the modal", async () => {
-    const closeModal = jest.fn()
+    const closeModal = vi.fn()
 
     const { getByTestId } = render(
       <BookOcrReviewModal
@@ -213,7 +204,7 @@ describe("BookOcrReviewModal", () => {
       <BookOcrReviewModal
         modal={
           {
-            closeModal: jest.fn(),
+            closeModal: vi.fn(),
             params: {
               imageUrl: "https://example.com/ocr-image.jpg",
             },

@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test"
+import { vi, describe, expect, test } from "vitest"
 
 type QueryOperator = "AND" | "OR"
 type CalibreFieldOperator = "=" | "~" | "!=" | "!~"

@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe as baseDescribe, expect, mock, test as baseTest } from "bun:test"
+import { vi, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
 import { render } from "@testing-library/react"
 import type { Book } from "@/models/calibre/BookModel"
 import type { ReactNode } from "react"
@@ -24,10 +24,10 @@ function normalizeStyle(style: unknown): React.CSSProperties | undefined {
   return style && typeof style === "object" ? (style as React.CSSProperties) : undefined
 }
 
-mock.module("react-native", () => reactNativeMock)
-mock.module("/home/amka78/private/open-bookshelf/node_modules/react-native/index.js", () => reactNativeMock)
+vi.doMock("react-native", () => reactNativeMock)
+vi.doMock("/home/amka78/private/open-bookshelf/node_modules/react-native/index.js", () => reactNativeMock)
 
-mock.module("@/theme", () => ({
+vi.doMock("@/theme", () => ({
   usePalette: () => ({
     textPrimary: "#111",
     textSecondary: "#555",
@@ -41,7 +41,7 @@ mock.module("@/theme", () => ({
   }),
 }))
 
-mock.module("@/theme/typography", () => ({
+vi.doMock("@/theme/typography", () => ({
   typography: {
     primary: {
       normal: "serif",
@@ -111,10 +111,10 @@ const componentsMock = {
   ),
 }
 
-mock.module("@/components", () => componentsMock)
-mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
+vi.doMock("@/components", () => componentsMock)
+vi.doMock("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
-mock.module("@gluestack-ui/themed", () => ({
+vi.doMock("@gluestack-ui/themed", () => ({
   Pressable: ({
     children,
     onPress,
@@ -248,7 +248,7 @@ describe("BookListItem", () => {
   })
 
   test("calls onPress when row is clicked", () => {
-    const onPress = mock(() => {})
+    const onPress = vi.fn(() => {})
     const { container } = render(
       <BookListItem
         book={makeBook()}

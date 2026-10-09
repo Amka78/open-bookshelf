@@ -3,11 +3,11 @@ import { useRomajiText } from "./useRomajiText"
 
 describe("useRomajiText", () => {
   afterEach(() => {
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   })
 
   function mockLocale(locale: string) {
-    jest.spyOn(i18n, "locale", "get").mockReturnValue(locale)
+    vi.spyOn(i18n, "locale", "get").mockReturnValue(locale)
   }
 
   test("converts kana to romaji", () => {

@@ -1,43 +1,47 @@
 import {
+  vi,
   afterEach,
   beforeAll,
   beforeEach,
   describe as baseDescribe,
   expect,
-  jest,
-  mock,
   test as baseTest,
-} from "bun:test"
-import { useStores } from "@/models"
-import { useNavigation } from "@react-navigation/native"
+} from "vitest"
 import { localizeTestRegistrar } from "../../test/test-name-i18n"
 
 const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 
-mock.module("@/models", () => ({
-  useStores: jest.fn(),
+vi.doMock("@/models", () => ({
+  useStores: vi.fn(),
 }))
 
-mock.module("@react-navigation/native", () => ({
-  useNavigation: jest.fn(),
+vi.doMock("@react-navigation/native", () => ({
+  useNavigation: vi.fn(),
 }))
 
+// 静的 import だと setup が登録した mock インスタンスを掴んでしまい、vi.doMock 後に
+// 動的 import される useOpenViewer 内部のものと別物になる（bun の mock.module は
+// 登録簿を遡及的に書き換えるため同一だった）。mock を共有するため全て動的に取得する。
+let useStores: typeof import("@/models").useStores
+let useNavigation: typeof import("@react-navigation/native").useNavigation
 let useOpenViewer: typeof import("./useOpenViewer").useOpenViewer
 
 beforeAll(async () => {
+  ;({ useStores } = await import("@/models"))
+  ;({ useNavigation } = await import("@react-navigation/native"))
   ;({ useOpenViewer } = await import("./useOpenViewer"))
 })
 
 describe("useOpenViewer", () => {
-  const navigate = jest.fn()
-  const openModal = jest.fn()
+  const navigate = vi.fn()
+  const openModal = vi.fn()
 
   const selectedBook = {
     id: 11,
     metaData: {
       formats: ["EPUB"],
-      setProp: jest.fn(),
+      setProp: vi.fn(),
     },
   }
 
@@ -46,10 +50,10 @@ describe("useOpenViewer", () => {
   } as Parameters<ReturnType<typeof useOpenViewer>["execute"]>[0]
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
-    ;(useNavigation as jest.Mock).mockReturnValue({ navigate })
-    ;(useStores as jest.Mock).mockReturnValue({
+    ;(useNavigation as vi.Mock).mockReturnValue({ navigate })
+    ;(useStores as vi.Mock).mockReturnValue({
       calibreRootStore: {
         selectedLibrary: {
           id: "library-1",
@@ -63,7 +67,7 @@ describe("useOpenViewer", () => {
   })
 
   afterEach(() => {
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   })
 
   test("navigates to Viewer with a preparation request for non-PDF formats", async () => {
@@ -82,7 +86,7 @@ describe("useOpenViewer", () => {
   })
 
   test("navigates to PDFViewer with a preparation request for PDF", async () => {
-    ;(useStores as jest.Mock).mockReturnValue({
+    ;(useStores as vi.Mock).mockReturnValue({
       calibreRootStore: {
         selectedLibrary: {
           id: "library-1",
@@ -90,7 +94,7 @@ describe("useOpenViewer", () => {
             ...selectedBook,
             metaData: {
               formats: ["PDF"],
-              setProp: jest.fn(),
+              setProp: vi.fn(),
             },
           },
         },
@@ -114,7 +118,7 @@ describe("useOpenViewer", () => {
   })
 
   test("uses the preferred format when it is available", async () => {
-    ;(useStores as jest.Mock).mockReturnValue({
+    ;(useStores as vi.Mock).mockReturnValue({
       calibreRootStore: {
         selectedLibrary: {
           id: "library-1",
@@ -122,7 +126,7 @@ describe("useOpenViewer", () => {
             ...selectedBook,
             metaData: {
               formats: ["EPUB", "PDF"],
-              setProp: jest.fn(),
+              setProp: vi.fn(),
             },
           },
         },
@@ -147,7 +151,7 @@ describe("useOpenViewer", () => {
   })
 
   test("opens the format selector when multiple formats exist without a preferred format", async () => {
-    ;(useStores as jest.Mock).mockReturnValue({
+    ;(useStores as vi.Mock).mockReturnValue({
       calibreRootStore: {
         selectedLibrary: {
           id: "library-1",
@@ -155,7 +159,7 @@ describe("useOpenViewer", () => {
             ...selectedBook,
             metaData: {
               formats: ["EPUB", "PDF"],
-              setProp: jest.fn(),
+              setProp: vi.fn(),
             },
           },
         },

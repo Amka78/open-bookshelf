@@ -1,11 +1,11 @@
-import { describe as baseDescribe, test as baseTest, beforeAll, expect, jest, mock } from "bun:test"
+import { vi, describe as baseDescribe, test as baseTest, beforeAll, expect } from "vitest"
 import { localizeTestRegistrar } from "../../test/test-name-i18n"
 
 const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 
-const mockUseOrientation = jest.fn()
-const mockUseBreakpointValue = jest.fn()
+const mockUseOrientation = vi.fn()
+const mockUseBreakpointValue = vi.fn()
 const mockScreenOrientation = {
   Orientation: {
     PORTRAIT_UP: 1,
@@ -14,13 +14,13 @@ const mockScreenOrientation = {
   },
 }
 
-mock.module("@/hooks/useOrientation", () => ({
+vi.doMock("@/hooks/useOrientation", () => ({
   default: mockUseOrientation,
 }))
 
-mock.module("expo-screen-orientation", () => mockScreenOrientation)
+vi.doMock("expo-screen-orientation", () => mockScreenOrientation)
 
-mock.module("@gluestack-ui/themed", () => ({
+vi.doMock("@gluestack-ui/themed", () => ({
   useBreakpointValue: mockUseBreakpointValue,
   Box: "div",
   HStack: "div",
@@ -57,7 +57,7 @@ mock.module("@gluestack-ui/themed", () => ({
   Image: "img",
   GluestackUIProvider: ({ children }: { children: unknown }) => children,
   ChevronDownIcon: "span",
-  styled: jest.fn((component: unknown) => component),
+  styled: vi.fn((component: unknown) => component),
 }))
 
 let useConvergence: typeof import("./useConvergence").useConvergence

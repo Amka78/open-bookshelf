@@ -1,32 +1,32 @@
-import { afterAll, beforeAll, beforeEach, expect, jest, mock } from "bun:test"
-import { describe as baseDescribe, test as baseTest } from "bun:test"
+import { vi, afterAll, beforeAll, beforeEach, expect } from "vitest"
+import { describe as baseDescribe, test as baseTest } from "vitest"
 import { act, renderHook } from "@testing-library/react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 
-const useStoresMock = jest.fn()
+const useStoresMock = vi.fn()
 
-mock.module("@/models", () => ({
+vi.doMock("@/models", () => ({
   useStores: useStoresMock,
 }))
 
-mock.module("/home/amka78/private/open-bookshelf/app/models/index.ts", () => ({
+vi.doMock("/home/amka78/private/open-bookshelf/app/models/index.ts", () => ({
   useStores: useStoresMock,
 }))
 
-mock.module("@/services/api", () => ({
+vi.doMock("@/services/api", () => ({
   api: {
-    getInlineBookUrl: jest.fn(() => "http://calibre-test/book.pdf"),
-    getAuthHeaders: jest.fn(() => ({ Authorization: "Digest token-xyz" })),
+    getInlineBookUrl: vi.fn(() => "http://calibre-test/book.pdf"),
+    getAuthHeaders: vi.fn(() => ({ Authorization: "Digest token-xyz" })),
   },
 }))
 
-mock.module("/home/amka78/private/open-bookshelf/app/services/api/index.ts", () => ({
+vi.doMock("/home/amka78/private/open-bookshelf/app/services/api/index.ts", () => ({
   api: {
-    getInlineBookUrl: jest.fn(() => "http://calibre-test/book.pdf"),
-    getAuthHeaders: jest.fn(() => ({ Authorization: "Digest token-xyz" })),
+    getInlineBookUrl: vi.fn(() => "http://calibre-test/book.pdf"),
+    getAuthHeaders: vi.fn(() => ({ Authorization: "Digest token-xyz" })),
   },
 }))
 
@@ -66,7 +66,7 @@ function makeMockStore(overrides: { cachedPdfPath?: string } = {}) {
 }
 
 afterAll(() => {
-  jest.restoreAllMocks()
+  vi.restoreAllMocks()
 })
 
 describe("usePDFViewer", () => {

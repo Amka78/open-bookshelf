@@ -1,13 +1,4 @@
-import {
-  afterAll,
-  describe as baseDescribe,
-  test as baseTest,
-  beforeAll,
-  beforeEach,
-  expect,
-  jest,
-  mock,
-} from "bun:test"
+import { vi, afterAll, describe as baseDescribe, test as baseTest, beforeAll, beforeEach, expect } from "vitest"
 import { useStores } from "@/models"
 import { api } from "@/services/api"
 import { useNavigation } from "@react-navigation/native"
@@ -17,24 +8,24 @@ import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 
-const mockUseConvergence = jest.fn()
+const mockUseConvergence = vi.fn()
 
-mock.module("@/hooks/useConvergence", () => ({
+vi.doMock("@/hooks/useConvergence", () => ({
   useConvergence: mockUseConvergence,
 }))
 
-const mockUseNavigation = jest.fn()
+const mockUseNavigation = vi.fn()
 
-mock.module("@react-navigation/native", () => ({
+vi.doMock("@react-navigation/native", () => ({
   useNavigation: mockUseNavigation,
 }))
 
 let useLibrary: typeof import("./useLibrary").useLibrary
 
 describe("useLibrary", () => {
-  const mockSearchLibrary = jest.fn().mockResolvedValue(undefined)
-  const mockGetTagBrowser = jest.fn().mockResolvedValue(undefined)
-  const mockSetProp = jest.fn()
+  const mockSearchLibrary = vi.fn().mockResolvedValue(undefined)
+  const mockGetTagBrowser = vi.fn().mockResolvedValue(undefined)
+  const mockSetProp = vi.fn()
 
   const mockSelectedLibrary = {
     id: "test-library",
@@ -65,7 +56,7 @@ describe("useLibrary", () => {
       ],
     ]),
     tagBrowser: [],
-    setBook: jest.fn(),
+    setBook: vi.fn(),
   }
 
   const mockCallibreRootStore = {
@@ -76,28 +67,28 @@ describe("useLibrary", () => {
   }
 
   beforeEach(() => {
-    jest.restoreAllMocks()
-    jest.clearAllMocks()
-    ;(useStores as jest.Mock).mockReturnValue({
+    vi.restoreAllMocks()
+    vi.clearAllMocks()
+    ;(useStores as vi.Mock).mockReturnValue({
       calibreRootStore: mockCallibreRootStore,
       settingStore: {
         booksPerPage: 20,
-        addRecentSearch: jest.fn(),
+        addRecentSearch: vi.fn(),
       },
     })
     mockUseConvergence.mockReturnValue({
       isLarge: false,
     })
-    ;(useNavigation as jest.Mock).mockReturnValue({})
+    ;(useNavigation as vi.Mock).mockReturnValue({})
   })
 
   beforeAll(async () => {
     ;({ useLibrary } = await import("./useLibrary"))
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   afterAll(() => {
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   const renderUseLibrary = async () => {
@@ -122,16 +113,16 @@ describe("useLibrary", () => {
       sortField: [],
       fieldMetadataList: new Map(),
       tagBrowser: [],
-      setBook: jest.fn(),
+      setBook: vi.fn(),
     }
-    ;(useStores as jest.Mock).mockReturnValue({
+    ;(useStores as vi.Mock).mockReturnValue({
       calibreRootStore: {
         ...mockCallibreRootStore,
         selectedLibrary: mockSelectedLibrary,
       },
       settingStore: {
         booksPerPage: 20,
-        addRecentSearch: jest.fn(),
+        addRecentSearch: vi.fn(),
       },
     })
 
@@ -179,14 +170,14 @@ describe("useLibrary", () => {
   })
 
   test("searchParameterCandidates returns empty array if no library", async () => {
-    ;(useStores as jest.Mock).mockReturnValue({
+    ;(useStores as vi.Mock).mockReturnValue({
       calibreRootStore: {
         ...mockCallibreRootStore,
         selectedLibrary: null,
       },
       settingStore: {
         booksPerPage: 20,
-        addRecentSearch: jest.fn(),
+        addRecentSearch: vi.fn(),
       },
     })
 
@@ -240,7 +231,7 @@ describe("useLibrary", () => {
   })
 
   test("onUploadFile uploads file and searches", async () => {
-    const mockUploadFile = jest.spyOn(api, "uploadFile").mockResolvedValue({ kind: "ok" })
+    const mockUploadFile = vi.spyOn(api, "uploadFile").mockResolvedValue({ kind: "ok" })
 
     const { result } = await renderUseLibrary()
 

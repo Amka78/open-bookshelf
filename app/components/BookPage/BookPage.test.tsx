@@ -1,7 +1,7 @@
-import { beforeAll, describe as baseDescribe, test as baseTest, expect, mock } from "bun:test"
 import { render } from "@testing-library/react"
 import React from "react"
 import type { ReactNode } from "react"
+import { describe as baseDescribe, test as baseTest, beforeAll, expect, vi } from "vitest"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 const componentsMock = {
@@ -32,16 +32,19 @@ const componentsMock = {
   VStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }
 
-mock.module("@/components", () => componentsMock)
-mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
+vi.doMock("@/components", () => componentsMock)
+vi.doMock("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
 const reactNativeMock = {
   ...((global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock ?? {}),
   useWindowDimensions: () => ({ width: 375, height: 812 }),
 }
 
-mock.module("react-native", () => reactNativeMock)
-mock.module("/home/amka78/private/open-bookshelf/node_modules/react-native/index.js", () => reactNativeMock)
+vi.doMock("react-native", () => reactNativeMock)
+vi.doMock(
+  "/home/amka78/private/open-bookshelf/node_modules/react-native/index.js",
+  () => reactNativeMock,
+)
 
 const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
@@ -65,7 +68,7 @@ describe("BookPage", () => {
     expect(img?.getAttribute("src")).toBe("http://example.com/page1.jpg")
   })
 
-  test("passes the same source object to Image when re-rendered with a new object but same URI", () => {
+  test("passes the same source object to Image when re-rendered with a new object but same URI", async () => {
     const capturedSources: unknown[] = []
 
     const rerenderComponentsMock = {
@@ -97,12 +100,19 @@ describe("BookPage", () => {
       VStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
     }
 
-    mock.module("@/components", () => rerenderComponentsMock)
-    mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => rerenderComponentsMock)
+    vi.doMock("@/components", () => rerenderComponentsMock)
+    vi.doMock(
+      "/home/amka78/private/open-bookshelf/app/components/index.ts",
+      () => rerenderComponentsMock,
+    )
+    // 再 import しないと capturedSources が空のままになり、
+    // expect(secondSource).toBe(firstSource) が undefined === undefined で空振りする。
+    vi.resetModules()
+    const { BookPage: BookPageWithCapture } = await import("./BookPage")
 
     function Wrapper({ headers }: { headers?: Record<string, string> }) {
       return (
-        <BookPage
+        <BookPageWithCapture
           source={{ uri: "http://example.com/page2.jpg", headers }}
           availableWidth={375}
           availableHeight={812}
@@ -121,7 +131,7 @@ describe("BookPage", () => {
     expect(secondSource).toBe(firstSource)
   })
 
-  test("updates source when URI changes", () => {
+  test("updates source when URI changes", async () => {
     const capturedSources: unknown[] = []
 
     const rerenderComponentsMock = {
@@ -153,12 +163,19 @@ describe("BookPage", () => {
       VStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
     }
 
-    mock.module("@/components", () => rerenderComponentsMock)
-    mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => rerenderComponentsMock)
+    vi.doMock("@/components", () => rerenderComponentsMock)
+    vi.doMock(
+      "/home/amka78/private/open-bookshelf/app/components/index.ts",
+      () => rerenderComponentsMock,
+    )
+    // 既に import 済みの BookPage は古い mock を保持し続けるため、再 import しないと
+    // capturedSources が常に空になりアサートが空振りする。
+    vi.resetModules()
+    const { BookPage: BookPageWithCapture } = await import("./BookPage")
 
     function Wrapper({ page }: { page: number }) {
       return (
-        <BookPage
+        <BookPageWithCapture
           source={{ uri: `http://example.com/page${page}.jpg` }}
           availableWidth={375}
           availableHeight={812}

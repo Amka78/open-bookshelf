@@ -1,4 +1,4 @@
-import { describe as baseDescribe, test as baseTest, expect, jest } from "bun:test"
+import { vi, describe as baseDescribe, test as baseTest, expect } from "vitest"
 import type { Book } from "@/models/calibre"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 import {
@@ -22,7 +22,7 @@ describe("buildThumbnailSourceCache", () => {
         headers: { Authorization: "Digest cached" },
       },
     }
-    const getAuthHeaders = jest.fn(() => ({ Authorization: "Digest new" }))
+    const getAuthHeaders = vi.fn(() => ({ Authorization: "Digest new" }))
 
     const result = buildThumbnailSourceCache({
       authStateVersion: 3,
@@ -47,7 +47,7 @@ describe("buildThumbnailSourceCache", () => {
       },
     }
     const nextHeaders = { Authorization: "Digest refreshed" }
-    const getAuthHeaders = jest.fn(() => nextHeaders)
+    const getAuthHeaders = vi.fn(() => nextHeaders)
 
     const result = buildThumbnailSourceCache({
       authStateVersion: 3,
@@ -73,7 +73,7 @@ describe("buildThumbnailSourceCache", () => {
       },
     }
     const nextHeaders = { Authorization: "Digest refreshed" }
-    const getAuthHeaders = jest.fn(() => nextHeaders)
+    const getAuthHeaders = vi.fn(() => nextHeaders)
 
     const result = buildThumbnailSourceCache({
       authStateVersion: 3,
@@ -99,7 +99,7 @@ describe("buildThumbnailSourceCache", () => {
       },
     }
     const nextHeaders = { Authorization: "Digest refreshed" }
-    const getAuthHeaders = jest.fn(() => nextHeaders)
+    const getAuthHeaders = vi.fn(() => nextHeaders)
 
     const result = buildThumbnailSourceCache({
       authStateVersion: 3,

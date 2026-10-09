@@ -1,20 +1,20 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, jest, mock, test } from "bun:test"
+import { vi, afterAll, beforeAll, beforeEach, describe, expect, test } from "vitest"
 import { act, renderHook } from "@testing-library/react"
 
-const mockSaveAnnotations = jest.fn().mockResolvedValue({ kind: "ok" })
-const mockUseStores = jest.fn()
+const mockSaveAnnotations = vi.fn().mockResolvedValue({ kind: "ok" })
+const mockUseStores = vi.fn()
 
-mock.module("@/services/api", () => ({
+vi.doMock("@/services/api", () => ({
   api: {
     saveAnnotations: mockSaveAnnotations,
     // Keep stubs for methods fired by useViewer's 1s debounce timer
     // which may still be pending when this file runs.
-    syncReadingPosition: jest.fn().mockResolvedValue(undefined),
-    syncReadingPositionFull: jest.fn().mockResolvedValue(undefined),
+    syncReadingPosition: vi.fn().mockResolvedValue(undefined),
+    syncReadingPositionFull: vi.fn().mockResolvedValue(undefined),
   },
 }))
 
-mock.module("@/models", () => ({
+vi.doMock("@/models", () => ({
   useStores: mockUseStores,
 }))
 
@@ -38,8 +38,8 @@ const makeAnnotation = (overrides = {}) => ({
   timestamp: "2024-01-01T00:00:00.000Z",
   title: "Page 3",
   posFrac: 0.2,
-  setNotes: jest.fn(),
-  setTitle: jest.fn(),
+  setNotes: vi.fn(),
+  setTitle: vi.fn(),
   ...overrides,
 })
 
@@ -57,7 +57,7 @@ const makeHighlightAnnotation = (overrides = {}) =>
   })
 
 const makeStore = (annotations: ReturnType<typeof makeAnnotation>[]) => {
-  const mockSetAnnotations = jest.fn()
+  const mockSetAnnotations = vi.fn()
   return {
     calibreRootStore: {
       selectedLibrary: {

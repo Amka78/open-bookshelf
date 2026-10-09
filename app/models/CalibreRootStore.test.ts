@@ -4,11 +4,11 @@ import { getSnapshot } from "mobx-state-tree"
 import { CalibreRootStore } from "./CalibreRootStore"
 describe("CalibreRootStore test", () => {
   beforeAll(() => {
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   afterAll(() => {
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   test("Successful execution of Initialize", () => {
@@ -16,7 +16,7 @@ describe("CalibreRootStore test", () => {
       kind: "ok",
       data: initializeData,
     }
-    const mockInitializeCalibre = jest.spyOn(api, "initializeCalibre")
+    const mockInitializeCalibre = vi.spyOn(api, "initializeCalibre")
     mockInitializeCalibre.mockResolvedValue(
       resp as Awaited<ReturnType<typeof api.initializeCalibre>>,
     )
@@ -55,7 +55,7 @@ describe("CalibreRootStore test", () => {
 
   test("searchLibrary loads custom column values into customColumns map", async () => {
     const initResp = { kind: "ok" as const, data: initializeData }
-    jest
+    vi
       .spyOn(api, "initializeCalibre")
       .mockResolvedValue(initResp as Awaited<ReturnType<typeof api.initializeCalibre>>)
 
@@ -116,7 +116,7 @@ describe("CalibreRootStore test", () => {
       },
     }
 
-    jest
+    vi
       .spyOn(api, "getLibrary")
       .mockResolvedValue(libraryResp as Awaited<ReturnType<typeof api.getLibrary>>)
 

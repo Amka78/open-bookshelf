@@ -1,30 +1,22 @@
-import {
-  beforeAll,
-  beforeEach,
-  describe as baseDescribe,
-  expect,
-  jest,
-  mock,
-  test as baseTest,
-} from "bun:test"
+import { vi, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
 import { render, waitFor } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
-const mockGetConversionStatus = jest.fn()
-const mockUseStores = jest.fn()
+const mockGetConversionStatus = vi.fn()
+const mockUseStores = vi.fn()
 
-mock.module("@/models", () => ({
+vi.doMock("@/models", () => ({
   useStores: mockUseStores,
 }))
 
-mock.module("@/services/api", () => ({
+vi.doMock("@/services/api", () => ({
   api: {
     getConversionStatus: mockGetConversionStatus,
   },
 }))
 
-mock.module("@/components/Button/Button", () => ({
+vi.doMock("@/components/Button/Button", () => ({
   Button: ({
     children,
     tx,
@@ -40,15 +32,15 @@ mock.module("@/components/Button/Button", () => ({
   ),
 }))
 
-mock.module("@/components/Heading/Heading", () => ({
+vi.doMock("@/components/Heading/Heading", () => ({
   Heading: ({ children, tx }: { children?: ReactNode; tx?: string }) => <div>{children ?? tx}</div>,
 }))
 
-mock.module("@/components/Text/Text", () => ({
+vi.doMock("@/components/Text/Text", () => ({
   Text: ({ children, tx }: { children?: ReactNode; tx?: string }) => <div>{children ?? tx}</div>,
 }))
 
-mock.module("@gluestack-ui/themed", () => {
+vi.doMock("@gluestack-ui/themed", () => {
   const Div = ({ children }: { children?: ReactNode }) => <div>{children}</div>
   return {
     HStack: Div,
@@ -58,11 +50,11 @@ mock.module("@gluestack-ui/themed", () => {
   }
 })
 
-mock.module("./Body", () => ({
+vi.doMock("./Body", () => ({
   Body: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-mock.module("./CloseButton", () => ({
+vi.doMock("./CloseButton", () => ({
   CloseButton: ({ onPress }: { onPress?: () => void }) => (
     <button type="button" onClick={onPress}>
       close
@@ -70,15 +62,15 @@ mock.module("./CloseButton", () => ({
   ),
 }))
 
-mock.module("./Header", () => ({
+vi.doMock("./Header", () => ({
   Header: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-mock.module("./ModalFooter", () => ({
+vi.doMock("./ModalFooter", () => ({
   Footer: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-mock.module("./Root", () => ({
+vi.doMock("./Root", () => ({
   Root: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
@@ -109,14 +101,14 @@ function createTrackedJob(overrides?: Record<string, unknown>) {
 function createCalibreRootStore(trackedJobs: ReturnType<typeof createTrackedJob>[]) {
   return {
     selectedLibrary: { id: "lib1" },
-    getConversionJobsForLibrary: jest.fn(() => trackedJobs),
-    updateConversionJobRunning: jest.fn(
+    getConversionJobsForLibrary: vi.fn(() => trackedJobs),
+    updateConversionJobRunning: vi.fn(
       (_libraryId: string, _jobId: number, percent: number, _msg: string | null) => {
         const job = trackedJobs.find((j) => j.jobId === _jobId)
         if (job) job.percent = percent
       },
     ),
-    updateConversionJobFinished: jest.fn(
+    updateConversionJobFinished: vi.fn(
       (params: { jobId: number; ok: boolean; wasAborted: boolean }) => {
         const job = trackedJobs.find((j) => j.jobId === params.jobId)
         if (job) {
@@ -131,14 +123,14 @@ function createCalibreRootStore(trackedJobs: ReturnType<typeof createTrackedJob>
 function renderJobQueueModal() {
   return render(
     <JobQueueModal
-      modal={{ closeModal: jest.fn(), params: {} } as never}
+      modal={{ closeModal: vi.fn(), params: {} } as never}
     />,
   )
 }
 
 describe("JobQueueModal", () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   test("shows tracked conversion jobs started from the convert modal", async () => {

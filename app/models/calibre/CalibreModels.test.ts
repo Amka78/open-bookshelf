@@ -1,8 +1,8 @@
-import { afterEach, describe, expect, jest, mock, test } from "bun:test"
+import { vi, afterEach, describe, expect, test } from "vitest"
 
-mock.module("@/services/api", () => ({
+vi.doMock("@/services/api", () => ({
   api: {
-    deleteBook: jest.fn(),
+    deleteBook: vi.fn(),
   },
 }))
 
@@ -26,7 +26,7 @@ import { LibraryMapModel } from "./LibraryMapModel"
 
 describe("Calibre models", () => {
   afterEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   test("Category-related models create and mutate", () => {
@@ -175,7 +175,7 @@ describe("Calibre models", () => {
   })
 
   test("LibraryMap setBook and deleteBook actions", async () => {
-    const deleteBook = jest.spyOn(api, "deleteBook")
+    const deleteBook = vi.spyOn(api, "deleteBook")
     deleteBook.mockResolvedValue({ kind: "ok" })
 
     const library = LibraryMapModel.create({

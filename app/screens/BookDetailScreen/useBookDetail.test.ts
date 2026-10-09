@@ -1,13 +1,4 @@
-import {
-  afterEach,
-  describe as baseDescribe,
-  test as baseTest,
-  beforeAll,
-  beforeEach,
-  expect,
-  jest,
-  mock,
-} from "bun:test"
+import { vi, afterEach, describe as baseDescribe, test as baseTest, beforeAll, beforeEach, expect } from "vitest"
 import { useStores } from "@/models"
 import { useNavigation, useRoute } from "@react-navigation/native"
 import { act, renderHook } from "@testing-library/react"
@@ -17,28 +8,28 @@ import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 
-const mockUseConvergence = jest.fn()
-const mockUseDeleteBook = jest.fn()
-const mockUseDownloadBook = jest.fn()
-const mockUseOpenViewer = jest.fn()
-const mockUseElectrobunModal = jest.fn()
-const mockShareShare = jest.fn()
-const mockEditBook = jest.fn()
-const mockGetBookDownloadUrl = jest.fn()
-const mockGetBookThumbnailUrl = jest.fn()
-const mockSendBookByEmail = jest.fn()
+const mockUseConvergence = vi.fn()
+const mockUseDeleteBook = vi.fn()
+const mockUseDownloadBook = vi.fn()
+const mockUseOpenViewer = vi.fn()
+const mockUseElectrobunModal = vi.fn()
+const mockShareShare = vi.fn()
+const mockEditBook = vi.fn()
+const mockGetBookDownloadUrl = vi.fn()
+const mockGetBookThumbnailUrl = vi.fn()
+const mockSendBookByEmail = vi.fn()
 const reactNativeMockFactory = () => ({
   ...((global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock ?? {}),
   Share: { share: mockShareShare },
 })
 
-mock.module("react-native", reactNativeMockFactory)
-mock.module(
+vi.doMock("react-native", reactNativeMockFactory)
+vi.doMock(
   "/home/amka78/private/open-bookshelf/node_modules/react-native/index.js",
   reactNativeMockFactory,
 )
 
-mock.module("@/services/api", () => ({
+vi.doMock("@/services/api", () => ({
   api: {
     getBookDownloadUrl: mockGetBookDownloadUrl,
     getBookThumbnailUrl: mockGetBookThumbnailUrl,
@@ -47,28 +38,28 @@ mock.module("@/services/api", () => ({
   },
 }))
 
-mock.module("@/hooks/useConvergence", () => ({
+vi.doMock("@/hooks/useConvergence", () => ({
   useConvergence: mockUseConvergence,
 }))
 
-mock.module("../../hooks/useDeleteBook", () => ({
+vi.doMock("../../hooks/useDeleteBook", () => ({
   useDeleteBook: mockUseDeleteBook,
 }))
 
-mock.module("../../hooks/useDownloadBook", () => ({
+vi.doMock("../../hooks/useDownloadBook", () => ({
   useDownloadBook: mockUseDownloadBook,
 }))
 
-mock.module("../../hooks/useOpenViewer", () => ({
+vi.doMock("../../hooks/useOpenViewer", () => ({
   useOpenViewer: mockUseOpenViewer,
 }))
 
-mock.module("@/hooks/useElectrobunModal", () => ({
+vi.doMock("@/hooks/useElectrobunModal", () => ({
   useElectrobunModal: mockUseElectrobunModal,
 }))
 
-mock.module("@/utils/fileToDataUrl", () => ({
-  fileToDataUrl: jest.fn().mockResolvedValue("data:application/epub+zip;base64,abc123"),
+vi.doMock("@/utils/fileToDataUrl", () => ({
+  fileToDataUrl: vi.fn().mockResolvedValue("data:application/epub+zip;base64,abc123"),
 }))
 
 let useBookDetail: typeof import("./useBookDetail").useBookDetail
@@ -78,14 +69,14 @@ beforeAll(async () => {
 })
 
 describe("useBookDetail", () => {
-  const mockNavigate = jest.fn()
-  const mockGoBack = jest.fn()
-  const mockSetOptions = jest.fn()
-  const mockOnLinkPress = jest.fn()
-  const mockOpenViewerExecute = jest.fn()
-  const mockDeleteBookExecute = jest.fn()
-  const mockDownloadBookExecute = jest.fn()
-  const mockOpenModal = jest.fn()
+  const mockNavigate = vi.fn()
+  const mockGoBack = vi.fn()
+  const mockSetOptions = vi.fn()
+  const mockOnLinkPress = vi.fn()
+  const mockOpenViewerExecute = vi.fn()
+  const mockDeleteBookExecute = vi.fn()
+  const mockDownloadBookExecute = vi.fn()
+  const mockOpenModal = vi.fn()
   const mockModal = { openModal: mockOpenModal } as Record<string, unknown>
 
   const mockSelectedBook = {
@@ -93,12 +84,12 @@ describe("useBookDetail", () => {
     metaData: {
       title: "Test Book",
       formats: ["EPUB", "PDF"],
-      setProp: jest.fn(),
+      setProp: vi.fn(),
     },
   }
 
-  const mockGetReadStatus = jest.fn().mockReturnValue(null)
-  const mockSetReadStatus = jest.fn()
+  const mockGetReadStatus = vi.fn().mockReturnValue(null)
+  const mockSetReadStatus = vi.fn()
 
   const mockSettingStore = {
     getReadStatus: mockGetReadStatus,
@@ -127,23 +118,23 @@ describe("useBookDetail", () => {
   }
 
   afterEach(() => {
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
     // Setup mocks
-    ;(useStores as jest.Mock).mockReturnValue({
+    ;(useStores as vi.Mock).mockReturnValue({
       calibreRootStore: mockCalibreRootStore,
       settingStore: mockSettingStore,
     })
-    ;(useNavigation as jest.Mock).mockReturnValue({
+    ;(useNavigation as vi.Mock).mockReturnValue({
       navigate: mockNavigate,
       goBack: mockGoBack,
       setOptions: mockSetOptions,
     })
-    ;(useRoute as jest.Mock).mockReturnValue(mockRoute)
+    ;(useRoute as vi.Mock).mockReturnValue(mockRoute)
     mockUseElectrobunModal.mockReturnValue(mockModal)
     mockUseConvergence.mockReturnValue({
       isLarge: false,
@@ -209,8 +200,8 @@ describe("useBookDetail", () => {
   })
 
   test("executes the custom open action instead of the default viewer action when provided", async () => {
-    const customOpenAction = jest.fn().mockResolvedValue(undefined)
-    ;(useRoute as jest.Mock).mockReturnValue({
+    const customOpenAction = vi.fn().mockResolvedValue(undefined)
+    ;(useRoute as vi.Mock).mockReturnValue({
       params: {
         ...mockRoute.params,
         onOpenBookAction: customOpenAction,
@@ -238,8 +229,8 @@ describe("useBookDetail", () => {
   })
 
   test("executes the custom download action instead of the default download flow when provided", async () => {
-    const customDownloadAction = jest.fn().mockResolvedValue(undefined)
-    ;(useRoute as jest.Mock).mockReturnValue({
+    const customDownloadAction = vi.fn().mockResolvedValue(undefined)
+    ;(useRoute as vi.Mock).mockReturnValue({
       params: {
         ...mockRoute.params,
         onDownloadBookAction: customDownloadAction,
@@ -267,8 +258,8 @@ describe("useBookDetail", () => {
   })
 
   test("executes the custom delete action instead of the default delete flow when provided", async () => {
-    const customDeleteAction = jest.fn().mockResolvedValue(undefined)
-    ;(useRoute as jest.Mock).mockReturnValue({
+    const customDeleteAction = vi.fn().mockResolvedValue(undefined)
+    ;(useRoute as vi.Mock).mockReturnValue({
       params: {
         ...mockRoute.params,
         onDeleteBookAction: customDeleteAction,
@@ -286,8 +277,8 @@ describe("useBookDetail", () => {
   })
 
   test("uses the custom edit navigation callback instead of screen navigation when provided", () => {
-    const customEditNavigation = jest.fn()
-    ;(useRoute as jest.Mock).mockReturnValue({
+    const customEditNavigation = vi.fn()
+    ;(useRoute as vi.Mock).mockReturnValue({
       params: {
         ...mockRoute.params,
         onNavigateToBookEdit: customEditNavigation,
@@ -329,8 +320,8 @@ describe("useBookDetail", () => {
   })
 
   test("uses the custom OCR navigation callback when provided", () => {
-    const customOcrNavigation = jest.fn()
-    ;(useRoute as jest.Mock).mockReturnValue({
+    const customOcrNavigation = vi.fn()
+    ;(useRoute as vi.Mock).mockReturnValue({
       params: {
         ...mockRoute.params,
         onNavigateToBookOcr: customOcrNavigation,
@@ -371,9 +362,9 @@ describe("useBookDetail", () => {
     })
 
     test("On small screens, use the custom convert navigation callback when provided", () => {
-      const customConvertNavigation = jest.fn()
+      const customConvertNavigation = vi.fn()
       mockUseConvergence.mockReturnValue({ isLarge: false })
-      ;(useRoute as jest.Mock).mockReturnValue({
+      ;(useRoute as vi.Mock).mockReturnValue({
         params: {
           ...mockRoute.params,
           onNavigateToBookConvert: customConvertNavigation,
@@ -424,7 +415,7 @@ describe("useBookDetail", () => {
         ...mockSelectedBook,
         metaData: { ...mockSelectedBook.metaData, formats: ["EPUB"] },
       }
-      ;(useStores as jest.Mock).mockReturnValue({
+      ;(useStores as vi.Mock).mockReturnValue({
         calibreRootStore: {
           selectedLibrary: {
             ...mockSelectedLibrary,
@@ -451,7 +442,7 @@ describe("useBookDetail", () => {
         ...mockSelectedBook,
         metaData: { ...mockSelectedBook.metaData, formats: [] },
       }
-      ;(useStores as jest.Mock).mockReturnValue({
+      ;(useStores as vi.Mock).mockReturnValue({
         calibreRootStore: {
           selectedLibrary: {
             ...mockSelectedLibrary,
@@ -478,7 +469,7 @@ describe("useBookDetail", () => {
         ...mockSelectedBook,
         metaData: { ...mockSelectedBook.metaData, formats: [] },
       }
-      ;(useStores as jest.Mock).mockReturnValue({
+      ;(useStores as vi.Mock).mockReturnValue({
         calibreRootStore: {
           selectedLibrary: {
             ...mockSelectedLibrary,
@@ -605,7 +596,7 @@ describe("useBookDetail", () => {
     })
 
     test("shows a success modal after uploading a format", async () => {
-      jest.spyOn(DocumentPicker, "getDocumentAsync").mockResolvedValue({
+      vi.spyOn(DocumentPicker, "getDocumentAsync").mockResolvedValue({
         canceled: false,
         assets: [
           {

@@ -1,12 +1,4 @@
-import {
-  describe as baseDescribe,
-  test as baseTest,
-  beforeAll,
-  beforeEach,
-  expect,
-  jest,
-  mock,
-} from "bun:test"
+import { vi, describe as baseDescribe, test as baseTest, beforeAll, beforeEach, expect } from "vitest"
 import { act, renderHook } from "@testing-library/react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
@@ -50,21 +42,21 @@ describe("getCurrentToken (internal logic)", () => {
 })
 
 describe("getSearchSuggestions (useLibrary)", () => {
-  const mockSearchLibrary = jest.fn().mockResolvedValue(undefined)
-  const mockGetTagBrowser = jest.fn()
-  const useStoresMock = jest.fn()
+  const mockSearchLibrary = vi.fn().mockResolvedValue(undefined)
+  const mockGetTagBrowser = vi.fn()
+  const useStoresMock = vi.fn()
 
-  mock.module("@/models", () => ({
+  vi.doMock("@/models", () => ({
     useStores: useStoresMock,
   }))
 
-  mock.module("@/services/api", () => ({
+  vi.doMock("@/services/api", () => ({
     api: {
-      uploadFile: jest.fn(),
+      uploadFile: vi.fn(),
     },
   }))
 
-  mock.module("@/hooks/useConvergence", () => ({
+  vi.doMock("@/hooks/useConvergence", () => ({
     useConvergence: () => ({ isLarge: false }),
   }))
 
@@ -75,7 +67,7 @@ describe("getSearchSuggestions (useLibrary)", () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     useStoresMock.mockReturnValue({
       calibreRootStore: {
         selectedLibrary: {
@@ -94,7 +86,7 @@ describe("getSearchSuggestions (useLibrary)", () => {
       },
       settingStore: {
         booksPerPage: 20,
-        addRecentSearch: jest.fn(),
+        addRecentSearch: vi.fn(),
       },
     })
   })

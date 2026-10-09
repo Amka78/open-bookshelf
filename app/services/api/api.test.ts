@@ -1,11 +1,11 @@
-import { beforeEach, describe, expect, jest, test } from "bun:test"
+import { vi, beforeEach, describe, expect, test } from "vitest"
 import type { ApiResponse } from "apisauce"
 import { Api } from "./api"
 
 describe("Api.startConversion", () => {
   test("sends options as a nested object under the 'options' key", async () => {
     const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
-    const postSpy = jest.spyOn(api.apisauce, "post").mockResolvedValue({
+    const postSpy = vi.spyOn(api.apisauce, "post").mockResolvedValue({
       ok: true,
       status: 200,
       data: 42,
@@ -26,7 +26,7 @@ describe("Api.startConversion", () => {
 
   test("sends empty options object when no convertParams provided", async () => {
     const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
-    const postSpy = jest.spyOn(api.apisauce, "post").mockResolvedValue({
+    const postSpy = vi.spyOn(api.apisauce, "post").mockResolvedValue({
       ok: true,
       status: 200,
       data: 99,
@@ -42,7 +42,7 @@ describe("Api.startConversion", () => {
 
   test("returns job id from response data", async () => {
     const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
-    jest.spyOn(api.apisauce, "post").mockResolvedValue({
+    vi.spyOn(api.apisauce, "post").mockResolvedValue({
       ok: true,
       status: 200,
       data: 42,
@@ -55,7 +55,7 @@ describe("Api.startConversion", () => {
 
   test("returns not-found problem on 404", async () => {
     const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
-    jest.spyOn(api.apisauce, "post").mockResolvedValue({
+    vi.spyOn(api.apisauce, "post").mockResolvedValue({
       ok: false,
       status: 404,
       data: "Book not found",
@@ -69,7 +69,7 @@ describe("Api.startConversion", () => {
 
 describe("Api.fetchWithAuth", () => {
   beforeEach(() => {
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   })
 
   test("uses URL-specific Digest authorization headers for each fetch", async () => {
@@ -88,7 +88,7 @@ describe("Api.fetchWithAuth", () => {
       algorithm: "MD5",
     }
 
-    const fetchMock = jest
+    const fetchMock = vi
       .spyOn(globalThis, "fetch")
       .mockResolvedValue({ ok: true, status: 200 } as Response)
 
@@ -109,7 +109,7 @@ describe("Api.fetchWithAuth", () => {
 
   test("uploadFile uses auth-aware fetch for Digest-protected uploads", async () => {
     const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
-    const fetchWithAuthSpy = jest
+    const fetchWithAuthSpy = vi
       .spyOn(api, "fetchWithAuth")
       .mockResolvedValue({ ok: true, status: 200 } as Response)
 
@@ -124,7 +124,7 @@ describe("Api.fetchWithAuth", () => {
 
   test("editBook sends removed_formats via cdb/set-fields", async () => {
     const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
-    const postSpy = jest.spyOn(api.apisauce, "post").mockResolvedValue({
+    const postSpy = vi.spyOn(api.apisauce, "post").mockResolvedValue({
       ok: true,
       status: 200,
       data: {},
@@ -148,7 +148,7 @@ describe("Api.fetchWithAuth", () => {
 
   test("editBook sends added_formats via cdb/set-fields", async () => {
     const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
-    const postSpy = jest.spyOn(api.apisauce, "post").mockResolvedValue({
+    const postSpy = vi.spyOn(api.apisauce, "post").mockResolvedValue({
       ok: true,
       status: 200,
       data: {},
@@ -180,7 +180,7 @@ describe("Api.fetchWithAuth", () => {
 
   test("setCoverBinary posts image blob via apisauce to cdb/set-cover", async () => {
     const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
-    const postSpy = jest
+    const postSpy = vi
       .spyOn(api.apisauce, "post")
       .mockResolvedValueOnce({ ok: true, status: 200, data: null } as ApiResponse<unknown>)
 
@@ -200,7 +200,7 @@ describe("Api.fetchWithAuth", () => {
   test("setCoverBinary returns server error when server responds with 500", async () => {
     const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
     // biome-ignore lint/complexity/useLiteralKeys: accessing private apisauce for test spy
-    jest.spyOn(api["apisauce"], "post").mockResolvedValueOnce({
+    vi.spyOn(api["apisauce"], "post").mockResolvedValueOnce({
       ok: false,
       status: 500,
       problem: "SERVER_ERROR",
@@ -216,7 +216,7 @@ describe("Api.fetchWithAuth", () => {
   test("setCoverBinary returns unauthorized on 401", async () => {
     const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
     // biome-ignore lint/complexity/useLiteralKeys: accessing private apisauce for test spy
-    jest.spyOn(api["apisauce"], "post").mockResolvedValueOnce({
+    vi.spyOn(api["apisauce"], "post").mockResolvedValueOnce({
       ok: false,
       status: 401,
       problem: "CLIENT_ERROR",

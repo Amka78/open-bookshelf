@@ -4,7 +4,7 @@ import { SettingStoreModel } from "./SettingStore"
 
 describe("Store models", () => {
   afterEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   test("RootStoreModel creates optional child stores", () => {
@@ -54,7 +54,7 @@ describe("Store models", () => {
   })
 
   test("SettingStoreModel setConnectionSetting handles OPDS URL", async () => {
-    const setUrl = jest.spyOn(api, "setUrl").mockImplementation(() => undefined)
+    const setUrl = vi.spyOn(api, "setUrl").mockImplementation(() => undefined)
     const store = SettingStoreModel.create({})
 
     await store.setConnectionSetting("https://example.com/opds", true)

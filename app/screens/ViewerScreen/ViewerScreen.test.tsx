@@ -1,13 +1,4 @@
-import {
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe as baseDescribe,
-  expect,
-  jest,
-  mock,
-  test as baseTest,
-} from "bun:test"
+import { vi, afterEach, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
 import { cleanup, render, screen } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
@@ -15,28 +6,28 @@ import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 
-const useStoresMock = jest.fn()
-const useNavigationMock = jest.fn()
-const useViewerMock = jest.fn()
-const useViewerPreparationMock = jest.fn()
+const useStoresMock = vi.fn()
+const useNavigationMock = vi.fn()
+const useViewerMock = vi.fn()
+const useViewerPreparationMock = vi.fn()
 
-mock.module("@/models", () => ({
+vi.doMock("@/models", () => ({
   useStores: useStoresMock,
 }))
 
-mock.module("@react-navigation/native", () => ({
+vi.doMock("@react-navigation/native", () => ({
   useNavigation: useNavigationMock,
 }))
 
-mock.module("./useViewer", () => ({
+vi.doMock("./useViewer", () => ({
   useViewer: () => useViewerMock(),
 }))
 
-mock.module("./useViewerPreparation", () => ({
+vi.doMock("./useViewerPreparation", () => ({
   useViewerPreparation: () => useViewerPreparationMock(),
 }))
 
-mock.module("mobx-react-lite", () => ({
+vi.doMock("mobx-react-lite", () => ({
   observer: (component: unknown) => component,
 }))
 
@@ -87,10 +78,10 @@ const componentsMock = {
 
 ;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
 
-mock.module("@/components", () => componentsMock)
-mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
+vi.doMock("@/components", () => componentsMock)
+vi.doMock("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
-mock.module("@/components/BookHtmlPage", () => ({
+vi.doMock("@/components/BookHtmlPage", () => ({
   BookHtmlPage: () => <div data-testid="viewer-screen-html-page" />,
 }))
 
@@ -101,10 +92,10 @@ beforeAll(async () => {
 })
 
 describe("ViewerScreen", () => {
-  const navigate = jest.fn()
+  const navigate = vi.fn()
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     useNavigationMock.mockReturnValue({ navigate })
     useViewerPreparationMock.mockReturnValue({
       messageTx: "viewerPreparation.preparing",
@@ -112,7 +103,7 @@ describe("ViewerScreen", () => {
     })
     useStoresMock.mockReturnValue({
       authenticationStore: {
-        getHeader: jest.fn().mockReturnValue({ Authorization: "Basic token" }),
+        getHeader: vi.fn().mockReturnValue({ Authorization: "Basic token" }),
       },
     })
     useViewerMock.mockReturnValue({
@@ -132,8 +123,8 @@ describe("ViewerScreen", () => {
       initialPage: 1,
       viewerReady: true,
       cachedPathList: ["file:///cache/page-1.jpg", "file:///cache/page-2.jpg"],
-      onPageChange: jest.fn(),
-      onLastPage: jest.fn(),
+      onPageChange: vi.fn(),
+      onLastPage: vi.fn(),
     })
   })
 
@@ -182,8 +173,8 @@ describe("ViewerScreen", () => {
       initialPage: 0,
       viewerReady: true,
       cachedPathList: undefined,
-      onPageChange: jest.fn(),
-      onLastPage: jest.fn(),
+      onPageChange: vi.fn(),
+      onLastPage: vi.fn(),
     })
 
     render(<ViewerScreen />)
@@ -198,8 +189,8 @@ describe("ViewerScreen", () => {
       initialPage: 0,
       viewerReady: true,
       cachedPathList: undefined,
-      onPageChange: jest.fn(),
-      onLastPage: jest.fn(),
+      onPageChange: vi.fn(),
+      onLastPage: vi.fn(),
     })
 
     render(<ViewerScreen />)

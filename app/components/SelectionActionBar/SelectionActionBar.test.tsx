@@ -1,4 +1,4 @@
-import { beforeAll, describe as baseDescribe, expect, jest, mock, test as baseTest } from "bun:test"
+import { vi, beforeAll, describe as baseDescribe, expect, test as baseTest } from "vitest"
 import { fireEvent, render } from "@testing-library/react"
 import type { ComponentType, ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
@@ -26,22 +26,22 @@ const componentsMock = {
 
 ;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
 
-mock.module("@/components", () => componentsMock)
-mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
+vi.doMock("@/components", () => componentsMock)
+vi.doMock("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
-mock.module("@/i18n", () => ({
+vi.doMock("@/i18n", () => ({
   translate: (key: string, params?: Record<string, unknown>) =>
     key === "multiSelectBar.selectedCount" ? `${params?.count ?? 0} selected` : key,
 }))
 
-mock.module("@/theme", () => ({
+vi.doMock("@/theme", () => ({
   usePalette: () => ({
     surfaceStrong: "#000",
     textPrimary: "#fff",
   }),
 }))
 
-mock.module("@/hooks/useConvergence", () => ({
+vi.doMock("@/hooks/useConvergence", () => ({
   useConvergence: () => ({
     isLarge: true,
   }),
@@ -62,10 +62,10 @@ describe("SelectionActionBar", () => {
       <SelectionActionBar
         selectedCount={1}
         allVisibleSelected={false}
-        onToggleVisibleSelection={jest.fn()}
-        onBulkEdit={jest.fn()}
-        onBulkDownload={jest.fn()}
-        onClearSelection={jest.fn()}
+        onToggleVisibleSelection={vi.fn()}
+        onBulkEdit={vi.fn()}
+        onBulkDownload={vi.fn()}
+        onClearSelection={vi.fn()}
       />,
     )
 
@@ -79,10 +79,10 @@ describe("SelectionActionBar", () => {
       <SelectionActionBar
         selectedCount={3}
         allVisibleSelected={true}
-        onToggleVisibleSelection={jest.fn()}
-        onBulkEdit={jest.fn()}
-        onBulkDownload={jest.fn()}
-        onClearSelection={jest.fn()}
+        onToggleVisibleSelection={vi.fn()}
+        onBulkEdit={vi.fn()}
+        onBulkDownload={vi.fn()}
+        onClearSelection={vi.fn()}
       />,
     )
 
@@ -92,15 +92,15 @@ describe("SelectionActionBar", () => {
   })
 
   test("calls the visible selection toggle handler when the toggle button is pressed", () => {
-    const onToggleVisibleSelection = jest.fn()
+    const onToggleVisibleSelection = vi.fn()
     const { getByTestId } = render(
       <SelectionActionBar
         selectedCount={2}
         allVisibleSelected={false}
         onToggleVisibleSelection={onToggleVisibleSelection}
-        onBulkEdit={jest.fn()}
-        onBulkDownload={jest.fn()}
-        onClearSelection={jest.fn()}
+        onBulkEdit={vi.fn()}
+        onBulkDownload={vi.fn()}
+        onClearSelection={vi.fn()}
       />,
     )
 

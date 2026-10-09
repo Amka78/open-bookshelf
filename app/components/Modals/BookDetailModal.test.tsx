@@ -1,12 +1,4 @@
-import {
-  beforeAll,
-  beforeEach,
-  describe as baseDescribe,
-  expect,
-  jest,
-  mock,
-  test as baseTest,
-} from "bun:test"
+import { vi, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
 import { fireEvent, render } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
@@ -14,36 +6,36 @@ import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 
-const useStoresMock = jest.fn()
-const mockGetBookThumbnailUrl = jest.fn()
+const useStoresMock = vi.fn()
+const mockGetBookThumbnailUrl = vi.fn()
 
-mock.module("@/models", () => ({
+vi.doMock("@/models", () => ({
   useStores: useStoresMock,
 }))
 
-mock.module("@/services/api", () => ({
+vi.doMock("@/services/api", () => ({
   api: {
     getBookThumbnailUrl: mockGetBookThumbnailUrl,
   },
 }))
 
-mock.module("@/hooks/useOpenViewer", () => ({
-  useOpenViewer: () => ({ execute: jest.fn() }),
+vi.doMock("@/hooks/useOpenViewer", () => ({
+  useOpenViewer: () => ({ execute: vi.fn() }),
 }))
 
-mock.module("@/hooks/useDeleteBook", () => ({
-  useDeleteBook: () => ({ execute: jest.fn() }),
+vi.doMock("@/hooks/useDeleteBook", () => ({
+  useDeleteBook: () => ({ execute: vi.fn() }),
 }))
 
-mock.module("@/hooks/useDownloadBook", () => ({
-  useDownloadBook: () => ({ execute: jest.fn() }),
+vi.doMock("@/hooks/useDownloadBook", () => ({
+  useDownloadBook: () => ({ execute: vi.fn() }),
 }))
 
-mock.module("@/components/BookDetailFieldList/BookDetailFieldList", () => ({
+vi.doMock("@/components/BookDetailFieldList/BookDetailFieldList", () => ({
   BookDetailFieldList: () => <div data-testid="book-detail-field-list" />,
 }))
 
-mock.module("@/components/BookDetailMenu/BookDetailMenu", () => ({
+vi.doMock("@/components/BookDetailMenu/BookDetailMenu", () => ({
   BookDetailMenu: ({ onRunCoverOcr }: { onRunCoverOcr?: () => void }) => (
     <button data-testid="book-detail-run-cover-ocr" type="button" onClick={onRunCoverOcr}>
       OCR
@@ -51,31 +43,31 @@ mock.module("@/components/BookDetailMenu/BookDetailMenu", () => ({
   ),
 }))
 
-mock.module("@/components/BookImageItem/BookImageItem", () => ({
+vi.doMock("@/components/BookImageItem/BookImageItem", () => ({
   BookImageItem: () => <div data-testid="book-detail-image" />,
 }))
 
-mock.module("@/components/Box/Box", () => ({
+vi.doMock("@/components/Box/Box", () => ({
   Box: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-mock.module("@/components/HStack/HStack", () => ({
+vi.doMock("@/components/HStack/HStack", () => ({
   HStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-mock.module("@/components/Heading/Heading", () => ({
+vi.doMock("@/components/Heading/Heading", () => ({
   Heading: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-mock.module("@/components/VStack/VStack", () => ({
+vi.doMock("@/components/VStack/VStack", () => ({
   VStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-mock.module("./Body", () => ({
+vi.doMock("./Body", () => ({
   Body: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-mock.module("./CloseButton", () => ({
+vi.doMock("./CloseButton", () => ({
   CloseButton: ({ onPress }: { onPress?: () => void }) => (
     <button type="button" onClick={onPress}>
       close
@@ -83,11 +75,11 @@ mock.module("./CloseButton", () => ({
   ),
 }))
 
-mock.module("./Header", () => ({
+vi.doMock("./Header", () => ({
   Header: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-mock.module("./Root", () => ({
+vi.doMock("./Root", () => ({
   Root: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
@@ -99,7 +91,7 @@ beforeAll(async () => {
 
 describe("BookDetailModal", () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     mockGetBookThumbnailUrl.mockReturnValue("https://example.com/ocr-image.jpg")
     useStoresMock.mockReturnValue({
       calibreRootStore: {
@@ -119,14 +111,14 @@ describe("BookDetailModal", () => {
   })
 
   test("opens the OCR review modal when OCR is requested from the detail modal", () => {
-    const openModal = jest.fn()
+    const openModal = vi.fn()
 
     const { getByTestId } = render(
       <BookDetailModal
         modal={
           {
             openModal,
-            closeModal: jest.fn(),
+            closeModal: vi.fn(),
             params: {
               imageUrl: "https://example.com/cover.jpg",
             },

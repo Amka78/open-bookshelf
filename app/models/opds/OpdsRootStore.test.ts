@@ -1,15 +1,18 @@
-import { afterAll, beforeAll, describe, expect, jest, mock, test } from "bun:test"
+import { vi, afterAll, beforeAll, describe, expect, test } from "vitest"
 
-const loadOPDSMock = jest.fn()
+const loadOPDSMock = vi.fn()
 
-mock.module("@/services/api", () => ({
+vi.doMock("@/services/api", () => ({
   api: {
     loadOPDS: loadOPDSMock,
   },
 }))
 
 import type { api } from "@/services/api"
-import { OpdsModel } from "./OpdsRootStore"
+
+// OpdsModel は ./OpdsRootStore が @/services/api を読むため、vi.doMock 後に動的 import する。
+// 静的 import だと setup の mock インスタンスを掴み loadOPDSMock が呼ばれない。
+let OpdsModel: typeof import("./OpdsRootStore").OpdsModel
 
 const sampleXml = `<?xml version='1.0' encoding='utf-8'?>
 <feed xmlns=\"http://www.w3.org/2005/Atom\" xmlns:dc=\"http://purl.org/dc/terms/\" xmlns:opds=\"http://opds-spec.org/2010/catalog\">
@@ -89,13 +92,17 @@ const sampleXml = `<?xml version='1.0' encoding='utf-8'?>
   </entry>
 </feed>`
 
+beforeAll(async () => {
+  ;({ OpdsModel } = await import("./OpdsRootStore"))
+})
+
 describe("OpdsRootStore test", () => {
   beforeAll(() => {
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   afterAll(() => {
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   test("initialize OPDS", async () => {

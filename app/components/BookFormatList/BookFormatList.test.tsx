@@ -1,9 +1,9 @@
-import { describe as baseDescribe, test as baseTest, beforeAll, expect, jest, mock } from "bun:test"
 import { fireEvent, render } from "@testing-library/react"
 import type { ComponentType, ReactNode } from "react"
+import { describe as baseDescribe, test as baseTest, beforeAll, expect, vi } from "vitest"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
-const mockOpenModal = jest.fn()
+const mockOpenModal = vi.fn()
 const reactNativeMock = {
   ...((global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock ?? {}),
   Pressable: ({
@@ -64,27 +64,32 @@ const componentsMock = {
   ),
   LabeledSpinner: () => <div data-testid="labeled-spinner" />,
   MaterialCommunityIcon: () => <span data-testid="material-community-icon" />,
-  VStack: ({ children }: Record<string, unknown> & { children?: ReactNode }) => <div>{children}</div>,
+  VStack: ({ children }: Record<string, unknown> & { children?: ReactNode }) => (
+    <div>{children}</div>
+  ),
 }
 
-mock.module("@/components", () => componentsMock)
-mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
+vi.doMock("@/components", () => componentsMock)
+vi.doMock("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
-mock.module("@/hooks/useElectrobunModal", () => ({
+vi.doMock("@/hooks/useElectrobunModal", () => ({
   useElectrobunModal: () => ({
     openModal: mockOpenModal,
   }),
 }))
 
-mock.module("react-native", () => reactNativeMock)
-mock.module("/home/amka78/private/open-bookshelf/node_modules/react-native/index.js", () => reactNativeMock)
+vi.doMock("react-native", () => reactNativeMock)
+vi.doMock(
+  "/home/amka78/private/open-bookshelf/node_modules/react-native/index.js",
+  () => reactNativeMock,
+)
 
-mock.module("@/i18n", () => ({
+vi.doMock("@/i18n", () => ({
   translate: (key: string) => key,
 }))
 
-mock.module("@/theme", () => ({
-  usePalette: jest.fn().mockReturnValue({ $primary400: "#6b7cf6" }),
+vi.doMock("@/theme", () => ({
+  usePalette: vi.fn().mockReturnValue({ $primary400: "#6b7cf6" }),
 }))
 
 const describe = localizeTestRegistrar(baseDescribe)
@@ -107,9 +112,9 @@ describe("BookFormatList", () => {
     const { getByText } = render(
       <BookFormatList
         formats={["EPUB", "PDF"]}
-        onDownload={jest.fn()}
-        onDelete={jest.fn()}
-        onUpload={jest.fn()}
+        onDownload={vi.fn()}
+        onDelete={vi.fn()}
+        onUpload={vi.fn()}
       />,
     )
     expect(getByText("EPUB")).toBeTruthy()
@@ -117,13 +122,13 @@ describe("BookFormatList", () => {
   })
 
   test("calls onDownload with the correct format when download button is pressed", () => {
-    const onDownload = jest.fn()
+    const onDownload = vi.fn()
     const { getByTestId } = render(
       <BookFormatList
         formats={["EPUB"]}
         onDownload={onDownload}
-        onDelete={jest.fn()}
-        onUpload={jest.fn()}
+        onDelete={vi.fn()}
+        onUpload={vi.fn()}
       />,
     )
     fireEvent.click(getByTestId("download-EPUB"))
@@ -135,9 +140,9 @@ describe("BookFormatList", () => {
     const { getByTestId } = render(
       <BookFormatList
         formats={["PDF"]}
-        onDownload={jest.fn()}
-        onDelete={jest.fn()}
-        onUpload={jest.fn()}
+        onDownload={vi.fn()}
+        onDelete={vi.fn()}
+        onUpload={vi.fn()}
       />,
     )
     fireEvent.click(getByTestId("delete-PDF"))
@@ -152,13 +157,13 @@ describe("BookFormatList", () => {
 
   test("calls onDelete after the confirmation modal OK handler runs", () => {
     mockOpenModal.mockClear()
-    const onDelete = jest.fn()
+    const onDelete = vi.fn()
     const { getByTestId } = render(
       <BookFormatList
         formats={["PDF"]}
-        onDownload={jest.fn()}
+        onDownload={vi.fn()}
         onDelete={onDelete}
-        onUpload={jest.fn()}
+        onUpload={vi.fn()}
       />,
     )
 
@@ -171,14 +176,9 @@ describe("BookFormatList", () => {
   })
 
   test("calls onUpload when upload button is pressed", () => {
-    const onUpload = jest.fn()
+    const onUpload = vi.fn()
     const { getByTestId } = render(
-      <BookFormatList
-        formats={[]}
-        onDownload={jest.fn()}
-        onDelete={jest.fn()}
-        onUpload={onUpload}
-      />,
+      <BookFormatList formats={[]} onDownload={vi.fn()} onDelete={vi.fn()} onUpload={onUpload} />,
     )
     fireEvent.click(getByTestId("upload-format"))
     expect(onUpload).toHaveBeenCalled()

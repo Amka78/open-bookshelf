@@ -1,19 +1,19 @@
-import { beforeAll, beforeEach, describe as baseDescribe, expect, jest, mock, test as baseTest } from "bun:test"
+import { vi, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
 import { fireEvent, render } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
-const mockUseBookConvert = jest.fn()
-const mockOpenModal = jest.fn()
+const mockUseBookConvert = vi.fn()
+const mockOpenModal = vi.fn()
 const reactNativeMockFactory = () => ({
   ...((global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock ?? {}),
 })
 
-mock.module("@/components/BookConvertForm/BookConvertForm", () => ({
+vi.doMock("@/components/BookConvertForm/BookConvertForm", () => ({
   BookConvertForm: () => <div data-testid="book-convert-form" />,
 }))
 
-mock.module("@/components/Button/Button", () => ({
+vi.doMock("@/components/Button/Button", () => ({
   Button: ({
     children,
     onPress,
@@ -33,15 +33,15 @@ mock.module("@/components/Button/Button", () => ({
   ),
 }))
 
-mock.module("@/components/Heading/Heading", () => ({
+vi.doMock("@/components/Heading/Heading", () => ({
   Heading: ({ children, tx }: { children?: ReactNode; tx?: string }) => <div>{children ?? tx}</div>,
 }))
 
-mock.module("./Body", () => ({
+vi.doMock("./Body", () => ({
   Body: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-mock.module("./CloseButton", () => ({
+vi.doMock("./CloseButton", () => ({
   CloseButton: ({ onPress }: { onPress?: () => void }) => (
     <button data-testid="close-button" type="button" onClick={onPress}>
       Close
@@ -49,34 +49,34 @@ mock.module("./CloseButton", () => ({
   ),
 }))
 
-mock.module("./Header", () => ({
+vi.doMock("./Header", () => ({
   Header: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-mock.module("./ModalFooter", () => ({
+vi.doMock("./ModalFooter", () => ({
   Footer: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-mock.module("./Root", () => ({
+vi.doMock("./Root", () => ({
   Root: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-mock.module("@/hooks/useElectrobunModal", () => ({
+vi.doMock("@/hooks/useElectrobunModal", () => ({
   useElectrobunModal: () => ({
     openModal: mockOpenModal,
   }),
 }))
 
-mock.module("@/screens/BookConvertScreen/useBookConvert", () => ({
+vi.doMock("@/screens/BookConvertScreen/useBookConvert", () => ({
   useBookConvert: mockUseBookConvert,
 }))
 
-mock.module("mobx-react-lite", () => ({
+vi.doMock("mobx-react-lite", () => ({
   observer: <T,>(component: T) => component,
 }))
 
-mock.module("react-native", reactNativeMockFactory)
-mock.module(
+vi.doMock("react-native", reactNativeMockFactory)
+vi.doMock(
   "/home/amka78/private/open-bookshelf/node_modules/react-native/index.js",
   reactNativeMockFactory,
 )
@@ -91,12 +91,12 @@ beforeAll(async () => {
 })
 
 describe("BookConvertModal", () => {
-  const mockHandleStartConvert = jest.fn()
-  const mockCloseModal = jest.fn()
-  const mockOnConvertComplete = jest.fn()
+  const mockHandleStartConvert = vi.fn()
+  const mockCloseModal = vi.fn()
+  const mockOnConvertComplete = vi.fn()
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     mockUseBookConvert.mockReturnValue({
       selectedBook: {
         metaData: {
@@ -112,7 +112,7 @@ describe("BookConvertModal", () => {
       },
       convertStatus: "idle",
       errorMessage: "",
-      handleConvert: jest.fn(),
+      handleConvert: vi.fn(),
       handleStartConvert: mockHandleStartConvert,
     })
   })

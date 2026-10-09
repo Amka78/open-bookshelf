@@ -1,17 +1,17 @@
-import { afterEach, beforeAll, beforeEach, describe, expect, jest, mock, test } from "bun:test"
+import { vi, afterEach, beforeAll, beforeEach, describe, expect, test } from "vitest"
 
 // Mock delay so that the polling loop doesn't actually wait
-mock.module("@/utils/delay", () => ({ delay: jest.fn().mockResolvedValue(undefined) }))
+vi.doMock("@/utils/delay", () => ({ delay: vi.fn().mockResolvedValue(undefined) }))
 
-const mockCheckBookConverting = jest.fn()
-const mockGetLibraryInformation = jest.fn()
-const mockEditBook = jest.fn()
+const mockCheckBookConverting = vi.fn()
+const mockGetLibraryInformation = vi.fn()
+const mockEditBook = vi.fn()
 
-mock.module("@/services/api", () => ({
+vi.doMock("@/services/api", () => ({
   api: {
     CheckBookConverting: mockCheckBookConverting,
     getLibraryInformation: mockGetLibraryInformation,
-    getConversionStatus: jest.fn(),
+    getConversionStatus: vi.fn(),
     editBook: mockEditBook,
   },
 }))
@@ -108,11 +108,11 @@ const createBook = () =>
 
 describe("BookModel.convert", () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   afterEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   test("AZW3 pushes spine HTML paths", async () => {

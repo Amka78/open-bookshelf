@@ -1,30 +1,30 @@
-import { beforeAll, beforeEach, describe, expect, jest, mock, test } from "bun:test"
+import { vi, beforeAll, beforeEach, describe, expect, test } from "vitest"
 import { renderHook, waitFor } from "@testing-library/react"
 
-const fetchWithAuthMock = jest.fn()
-const getBookFileUrlMock = jest.fn(
+const fetchWithAuthMock = vi.fn()
+const getBookFileUrlMock = vi.fn(
   (bookId: number, format: string, size: number, hash: number, path: string, libraryId: string) => {
     return `http://calibrelocal/book-file/${bookId}/${format}/${size}/${hash}/${path}?library_id=${libraryId}`
   },
 )
 
-mock.module("@/services/api", () => ({
+vi.doMock("@/services/api", () => ({
   api: {
     fetchWithAuth: (...args: Parameters<typeof fetchWithAuthMock>) => fetchWithAuthMock(...args),
     getBookFileUrl: (...args: Parameters<typeof getBookFileUrlMock>) => getBookFileUrlMock(...args),
-    loadOPDS: jest.fn(),
-    syncReadingPosition: jest.fn().mockResolvedValue(undefined),
-    syncReadingPositionFull: jest.fn().mockResolvedValue(undefined),
+    loadOPDS: vi.fn(),
+    syncReadingPosition: vi.fn().mockResolvedValue(undefined),
+    syncReadingPositionFull: vi.fn().mockResolvedValue(undefined),
   },
 }))
 
-mock.module("/home/amka78/open-bookshelf/app/services/api/index.ts", () => ({
+vi.doMock("/home/amka78/open-bookshelf/app/services/api/index.ts", () => ({
   api: {
     fetchWithAuth: (...args: Parameters<typeof fetchWithAuthMock>) => fetchWithAuthMock(...args),
     getBookFileUrl: (...args: Parameters<typeof getBookFileUrlMock>) => getBookFileUrlMock(...args),
-    loadOPDS: jest.fn(),
-    syncReadingPosition: jest.fn().mockResolvedValue(undefined),
-    syncReadingPositionFull: jest.fn().mockResolvedValue(undefined),
+    loadOPDS: vi.fn(),
+    syncReadingPosition: vi.fn().mockResolvedValue(undefined),
+    syncReadingPositionFull: vi.fn().mockResolvedValue(undefined),
   },
 }))
 
@@ -92,8 +92,8 @@ beforeAll(async () => {
 
 describe("useCalibreHtmlDocument", () => {
   beforeEach(() => {
-    jest.clearAllMocks()
-    jest.spyOn(globalThis, "fetch").mockImplementation(() => {
+    vi.clearAllMocks()
+    vi.spyOn(globalThis, "fetch").mockImplementation(() => {
       throw new Error("BookHtmlPage should load resources through api.fetchWithAuth")
     })
   })

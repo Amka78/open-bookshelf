@@ -1,12 +1,4 @@
-import {
-  describe as baseDescribe,
-  test as baseTest,
-  beforeAll,
-  beforeEach,
-  expect,
-  jest,
-  mock,
-} from "bun:test"
+import { vi, describe as baseDescribe, test as baseTest, beforeAll, beforeEach, expect } from "vitest"
 import { useStores } from "@/models"
 import { useNavigation } from "@react-navigation/native"
 import { act, render } from "@testing-library/react"
@@ -18,16 +10,16 @@ import {
   playConnectShowsHeading,
 } from "./connectScreenStoryPlay"
 
-const useSafeAreaInsetsMock = jest.fn()
+const useSafeAreaInsetsMock = vi.fn()
 
-const mockedUseStores = useStores as unknown as jest.Mock
-const mockedUseNavigation = useNavigation as unknown as jest.Mock
+const mockedUseStores = useStores as unknown as vi.Mock
+const mockedUseNavigation = useNavigation as unknown as vi.Mock
 
-mock.module("react-native-safe-area-context", () => ({
+vi.doMock("react-native-safe-area-context", () => ({
   useSafeAreaInsets: () => useSafeAreaInsetsMock(),
 }))
 
-mock.module("mobx-react-lite", () => ({
+vi.doMock("mobx-react-lite", () => ({
   observer: (component: unknown) => component,
 }))
 
@@ -78,8 +70,8 @@ const componentsMock = {
 
 ;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
 
-mock.module("@/components", () => componentsMock)
-mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
+vi.doMock("@/components", () => componentsMock)
+vi.doMock("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
 let ConnectScreen: typeof import("./ConnectScreen").ConnectScreen
 
@@ -97,16 +89,16 @@ const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 
 describe("ConnectScreen", () => {
-  const navigate = jest.fn()
-  const initialize = jest.fn()
-  const setConnectionSetting = jest.fn()
+  const navigate = vi.fn()
+  const initialize = vi.fn()
+  const setConnectionSetting = vi.fn()
 
   beforeAll(async () => {
     ;({ ConnectScreen } = await import("./ConnectScreen"))
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     useSafeAreaInsetsMock.mockReturnValue({ bottom: 12 })
     mockedUseNavigation.mockReturnValue({ navigate })
     mockedUseStores.mockReturnValue({

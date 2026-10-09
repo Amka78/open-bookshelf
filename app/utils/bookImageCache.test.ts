@@ -1,4 +1,4 @@
-import { describe, expect, mock, test, jest, beforeAll, afterEach } from "bun:test"
+import { vi, describe, expect, test, beforeAll, afterEach } from "vitest"
 import { detectCoverImagePath, verifyCachedBookImages, reCacheMissingImages } from "./bookImageCache"
 
 describe("detectCoverImagePath", () => {

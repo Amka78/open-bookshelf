@@ -1,13 +1,4 @@
-import {
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe as baseDescribe,
-  expect,
-  jest,
-  mock,
-  test as baseTest,
-} from "bun:test"
+import { vi, afterEach, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
 import * as bookImageCache from "@/utils/bookImageCache"
 import * as network from "@/utils/network"
 import { ReadingHistoryModel } from "@/models/calibre"
@@ -41,7 +32,7 @@ describe("prepareViewerSession", () => {
     id: 1,
     hash: 101,
     path: ["page-1.jpg", "page-2.jpg"],
-    convert: jest.fn(async (_format, _libraryId, callback: () => Promise<void>) => {
+    convert: vi.fn(async (_format, _libraryId, callback: () => Promise<void>) => {
       await callback()
     }),
     metaData: {
@@ -51,7 +42,7 @@ describe("prepareViewerSession", () => {
         ["PDF", 100],
         ["MOBI", 100],
       ]),
-      setProp: jest.fn(),
+      setProp: vi.fn(),
     },
     manifestServerPosFrac: null,
     manifestServerEpoch: null,
@@ -61,19 +52,19 @@ describe("prepareViewerSession", () => {
   const createStores = ({
     selectedBook,
     readingHistories = [],
-    addReadingHistory = jest.fn(),
+    addReadingHistory = vi.fn(),
   }: {
     selectedBook: ReturnType<typeof createBook>
     readingHistories?: Array<Record<string, unknown>>
-    addReadingHistory?: ReturnType<typeof jest.fn>
+    addReadingHistory?: ReturnType<typeof vi.fn>
   }) => ({
     calibreRootStore: {
       libraryMap: new Map([["library-1", true]]),
-      setLibrary: jest.fn(),
+      setLibrary: vi.fn(),
       selectedLibrary: {
         id: "library-1",
         selectedBook,
-        setBook: jest.fn(),
+        setBook: vi.fn(),
       },
       readingHistories,
       addReadingHistory,
@@ -86,11 +77,11 @@ describe("prepareViewerSession", () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   afterEach(() => {
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   })
 
   test("creates cached PDF history when opening a PDF", async () => {
@@ -98,14 +89,14 @@ describe("prepareViewerSession", () => {
       metaData: {
         formats: ["PDF"],
         formatSizes: new Map([["PDF", 100]]),
-        setProp: jest.fn(),
+        setProp: vi.fn(),
       },
     })
-    const addReadingHistory = jest.fn()
+    const addReadingHistory = vi.fn()
     const stores = createStores({ selectedBook, addReadingHistory })
 
-    jest.spyOn(bookImageCache, "cacheBookFile").mockResolvedValue("file:///cache/book.pdf")
-    jest.spyOn(ReadingHistoryModel, "create").mockReturnValue({ history: true } as never)
+    vi.spyOn(bookImageCache, "cacheBookFile").mockResolvedValue("file:///cache/book.pdf")
+    vi.spyOn(ReadingHistoryModel, "create").mockReturnValue({ history: true } as never)
 
     await prepareViewerSession({
       request: {
@@ -123,7 +114,7 @@ describe("prepareViewerSession", () => {
 
   test("verifies existing cached images before opening", async () => {
     const selectedBook = createBook()
-    const setCacheVerified = jest.fn()
+    const setCacheVerified = vi.fn()
     const stores = createStores({
       selectedBook,
       readingHistories: [
@@ -137,8 +128,8 @@ describe("prepareViewerSession", () => {
       ],
     })
 
-    const onProgress = jest.fn()
-    jest.spyOn(bookImageCache, "verifyCachedBookImages").mockResolvedValue({
+    const onProgress = vi.fn()
+    vi.spyOn(bookImageCache, "verifyCachedBookImages").mockResolvedValue({
       allExist: true,
       missingIndices: [],
     })
@@ -159,13 +150,13 @@ describe("prepareViewerSession", () => {
 
   test("converts and caches image pages when history does not exist", async () => {
     const selectedBook = createBook()
-    const addReadingHistory = jest.fn()
+    const addReadingHistory = vi.fn()
     const stores = createStores({ selectedBook, addReadingHistory })
 
-    jest
+    vi
       .spyOn(bookImageCache, "cacheBookImages")
       .mockResolvedValue(["file:///cache/page-1.jpg", "file:///cache/page-2.jpg"])
-    jest.spyOn(ReadingHistoryModel, "create").mockReturnValue({ history: true } as never)
+    vi.spyOn(ReadingHistoryModel, "create").mockReturnValue({ history: true } as never)
 
     await prepareViewerSession({
       request: {
@@ -192,13 +183,13 @@ describe("prepareViewerSession", () => {
           format: "EPUB",
           cachedPath: [],
           bookHash: 101,
-          setCachePath: jest.fn(),
-          setCacheVerified: jest.fn(),
+          setCachePath: vi.fn(),
+          setCacheVerified: vi.fn(),
         },
       ],
     })
 
-    jest.spyOn(network, "isNetworkAvailable").mockResolvedValue(false)
+    vi.spyOn(network, "isNetworkAvailable").mockResolvedValue(false)
 
     await expect(
       prepareViewerSession({
@@ -215,15 +206,15 @@ describe("prepareViewerSession", () => {
   test("does not cache XHTML paths for text formats", async () => {
     const selectedBook = createBook({
       path: [],
-      convert: jest.fn(async (_format, _libraryId, callback: () => Promise<void>) => {
+      convert: vi.fn(async (_format, _libraryId, callback: () => Promise<void>) => {
         selectedBook.path = ["index.xhtml", "chapter-1.xhtml"]
         await callback()
       }),
     })
-    const addReadingHistory = jest.fn()
+    const addReadingHistory = vi.fn()
     const stores = createStores({ selectedBook, addReadingHistory })
-    const cacheBookImagesSpy = jest.spyOn(bookImageCache, "cacheBookImages")
-    jest.spyOn(ReadingHistoryModel, "create").mockReturnValue({ history: true } as never)
+    const cacheBookImagesSpy = vi.spyOn(bookImageCache, "cacheBookImages")
+    vi.spyOn(ReadingHistoryModel, "create").mockReturnValue({ history: true } as never)
 
     await prepareViewerSession({
       request: {

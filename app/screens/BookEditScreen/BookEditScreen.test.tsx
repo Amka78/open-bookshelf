@@ -1,12 +1,4 @@
-import {
-  afterAll,
-  describe as baseDescribe,
-  test as baseTest,
-  beforeEach,
-  expect,
-  jest,
-  mock,
-} from "bun:test"
+import { vi, afterAll, describe as baseDescribe, test as baseTest, beforeEach, expect } from "vitest"
 import { render } from "@testing-library/react"
 import { type ReactNode, forwardRef, useImperativeHandle, useRef } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
@@ -19,23 +11,23 @@ import {
   playSmallScreenHidesSaveButton,
 } from "./bookEditScreenStoryPlay"
 
-const useKeyboardVisibilityMock = jest.fn()
-const useConvergenceMock = jest.fn()
-const useStoresMock = jest.fn()
-const useNavigationMock = jest.fn()
-const useRouteMock = jest.fn()
-const scrollToEndMock = jest.fn()
-const scrollToMock = jest.fn()
-const mockUpdate = jest.fn()
-const mockSetOptions = jest.fn()
-const mockGoBack = jest.fn()
-const mockBumpBookThumbnailRevision = jest.fn()
-const measureLayoutMock = jest.fn()
-const findNodeHandleMock = jest.fn()
-const currentlyFocusedInputMock = jest.fn()
+const useKeyboardVisibilityMock = vi.fn()
+const useConvergenceMock = vi.fn()
+const useStoresMock = vi.fn()
+const useNavigationMock = vi.fn()
+const useRouteMock = vi.fn()
+const scrollToEndMock = vi.fn()
+const scrollToMock = vi.fn()
+const mockUpdate = vi.fn()
+const mockSetOptions = vi.fn()
+const mockGoBack = vi.fn()
+const mockBumpBookThumbnailRevision = vi.fn()
+const measureLayoutMock = vi.fn()
+const findNodeHandleMock = vi.fn()
+const currentlyFocusedInputMock = vi.fn()
 let platformOS: "android" | "web" = "web"
 
-mock.module("react-native", () => ({
+vi.doMock("react-native", () => ({
   ...(global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock,
   Platform: {
     get OS() {
@@ -51,46 +43,46 @@ mock.module("react-native", () => ({
   findNodeHandle: findNodeHandleMock,
 }))
 
-mock.module("@/hooks/useKeyboardVisibility", () => ({
+vi.doMock("@/hooks/useKeyboardVisibility", () => ({
   useKeyboardVisibility: () => useKeyboardVisibilityMock(),
 }))
 
-mock.module("@/hooks/useConvergence", () => ({
+vi.doMock("@/hooks/useConvergence", () => ({
   useConvergence: () => useConvergenceMock(),
 }))
 
-mock.module("@/models", () => ({
+vi.doMock("@/models", () => ({
   useStores: useStoresMock,
 }))
 
-mock.module("mobx-state-tree", () => ({
+vi.doMock("mobx-state-tree", () => ({
   getSnapshot: (value: unknown) => value,
 }))
 
 afterAll(() => {
-  mock.module(
+  vi.doMock(
     "mobx-state-tree",
     () => (global as { __realMST?: Record<string, unknown> }).__realMST ?? {},
   )
 })
 
-mock.module("@react-navigation/native", () => ({
+vi.doMock("@react-navigation/native", () => ({
   ...(global as { __navMock?: Record<string, unknown> }).__navMock,
   useRoute: useRouteMock,
   useNavigation: useNavigationMock,
 }))
 
-mock.module("@/components/RootContainer/RootContainer", () => ({
+vi.doMock("@/components/RootContainer/RootContainer", () => ({
   RootContainer: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-mock.module("@/components/VStack/VStack", () => ({
+vi.doMock("@/components/VStack/VStack", () => ({
   VStack: ({ children, testID }: { children?: ReactNode; testID?: string }) => (
     <div data-testid={testID}>{children}</div>
   ),
 }))
 
-mock.module("@/components/ScrollView/ScrollView", () => ({
+vi.doMock("@/components/ScrollView/ScrollView", () => ({
   ScrollView: forwardRef(function MockScrollView(
     {
       children,
@@ -136,11 +128,11 @@ mock.module("@/components/ScrollView/ScrollView", () => ({
   }),
 }))
 
-mock.module("@/components/Forms/FormImageUploader", () => ({
+vi.doMock("@/components/Forms/FormImageUploader", () => ({
   FormImageUploader: () => <div data-testid="book-edit-image-uploader" />,
 }))
 
-mock.module("@/components/BookEditFieldList/BookEditFieldList", () => ({
+vi.doMock("@/components/BookEditFieldList/BookEditFieldList", () => ({
   BookEditFieldList: ({
     onTextInputFocus,
   }: {
@@ -152,7 +144,7 @@ mock.module("@/components/BookEditFieldList/BookEditFieldList", () => ({
   ),
 }))
 
-mock.module("@/components/Button/Button", () => ({
+vi.doMock("@/components/Button/Button", () => ({
   Button: ({
     children,
     tx,
@@ -164,14 +156,14 @@ mock.module("@/components/Button/Button", () => ({
   ),
 }))
 
-mock.module("@/theme", () => ({
-  usePalette: jest.fn(() => ({ textPrimary: "#111318" })),
+vi.doMock("@/theme", () => ({
+  usePalette: vi.fn(() => ({ textPrimary: "#111318" })),
 }))
 
 let BookEditScreen: typeof import("./BookEditScreen").BookEditScreen
 
 beforeEach(async () => {
-  jest.clearAllMocks()
+  vi.clearAllMocks()
   scrollToEndMock.mockReset()
   scrollToMock.mockReset()
   measureLayoutMock.mockReset()

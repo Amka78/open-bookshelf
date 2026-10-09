@@ -1,11 +1,4 @@
-import {
-  describe as baseDescribe,
-  test as baseTest,
-  beforeEach,
-  expect,
-  jest,
-  mock,
-} from "bun:test"
+import { vi, describe as baseDescribe, test as baseTest, beforeEach, expect } from "vitest"
 import { render } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
@@ -13,30 +6,30 @@ import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 
-const useStoresMock = jest.fn()
-const useNavigationMock = jest.fn()
-const useRouteMock = jest.fn()
-const mockSetOptions = jest.fn()
-const mockGoBack = jest.fn()
-const mockOnSearch = jest.fn()
+const useStoresMock = vi.fn()
+const useNavigationMock = vi.fn()
+const useRouteMock = vi.fn()
+const mockSetOptions = vi.fn()
+const mockGoBack = vi.fn()
+const mockOnSearch = vi.fn()
 
-mock.module("@/models", () => ({
+vi.doMock("@/models", () => ({
   useStores: useStoresMock,
 }))
 
-mock.module("@react-navigation/native", () => ({
+vi.doMock("@react-navigation/native", () => ({
   ...(global as { __navMock?: Record<string, unknown> }).__navMock,
   useNavigation: useNavigationMock,
   useRoute: useRouteMock,
 }))
 
-mock.module("@/components/Box/Box", () => ({
+vi.doMock("@/components/Box/Box", () => ({
   Box: ({ children, testID }: { children?: ReactNode; testID?: string }) => (
     <div data-testid={testID}>{children}</div>
   ),
 }))
 
-mock.module("@/components/IconButton/IconButton", () => ({
+vi.doMock("@/components/IconButton/IconButton", () => ({
   IconButton: ({
     onPress,
     testID,
@@ -50,7 +43,7 @@ mock.module("@/components/IconButton/IconButton", () => ({
   ),
 }))
 
-mock.module("@/components/LeftSideMenu/LeftSideMenu", () => {
+vi.doMock("@/components/LeftSideMenu/LeftSideMenu", () => {
   const CATEGORY_ALIASES: Record<string, string> = {
     author: "authors",
     authors: "authors",
@@ -119,7 +112,7 @@ mock.module("@/components/LeftSideMenu/LeftSideMenu", () => {
 let DetailSearchScreen: typeof import("./DetailSearchScreen").DetailSearchScreen
 
 beforeEach(async () => {
-  jest.clearAllMocks()
+  vi.clearAllMocks()
 
   useNavigationMock.mockReturnValue({ setOptions: mockSetOptions, goBack: mockGoBack })
   useRouteMock.mockReturnValue({

@@ -8,33 +8,33 @@ type TestModal = UsableModalProp<ModalStackParams>
 
 const createModal = (overrides: Partial<TestModal> = {}): TestModal => ({
   currentModal: null,
-  openModal: jest.fn() as TestModal["openModal"],
-  closeModal: jest.fn() as TestModal["closeModal"],
-  closeModals: jest.fn() as TestModal["closeModals"],
-  closeAllModals: jest.fn() as TestModal["closeAllModals"],
+  openModal: vi.fn() as TestModal["openModal"],
+  closeModal: vi.fn() as TestModal["closeModal"],
+  closeModals: vi.fn() as TestModal["closeModals"],
+  closeAllModals: vi.fn() as TestModal["closeAllModals"],
   ...overrides,
 })
 
-jest.mock("@/i18n", () => ({
-  translate: jest.fn(),
+vi.mock("@/i18n", () => ({
+  translate: vi.fn(),
 }))
 
 describe("useDeleteBook", () => {
   afterEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   test("opens confirm modal and deletes selected book on OK", async () => {
-    const deleteBook = jest.fn()
-    const closeModal = jest.fn()
-    const openModal = jest.fn()
+    const deleteBook = vi.fn()
+    const closeModal = vi.fn()
+    const openModal = vi.fn()
     const selectedBook = {
       id: 123,
       metaData: {
         title: "Book Title",
       },
     }
-    ;(useStores as jest.Mock).mockReturnValue({
+    ;(useStores as vi.Mock).mockReturnValue({
       calibreRootStore: {
         selectedLibrary: {
           selectedBook,
@@ -42,7 +42,7 @@ describe("useDeleteBook", () => {
         },
       },
     })
-    ;(translate as jest.Mock).mockReturnValue("translated message")
+    ;(translate as vi.Mock).mockReturnValue("translated message")
 
     const { execute } = useDeleteBook()
 

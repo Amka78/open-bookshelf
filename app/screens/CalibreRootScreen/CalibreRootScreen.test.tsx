@@ -1,35 +1,34 @@
+import { useStores } from "@/models"
+import { useNavigation } from "@react-navigation/native"
+import { act, render } from "@testing-library/react"
+import type { ReactNode } from "react"
 import {
   describe as baseDescribe,
   test as baseTest,
   beforeAll,
   beforeEach,
   expect,
-  jest,
-  mock,
-} from "bun:test"
-import { useStores } from "@/models"
-import { useNavigation } from "@react-navigation/native"
-import { act, render } from "@testing-library/react"
-import type { ReactNode } from "react"
+  vi,
+} from "vitest"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 import {
   playCalibreRootPressesLibrary,
   playCalibreRootShowsLibraryNames,
 } from "./calibreRootScreenStoryPlay"
 
-const mockedUseStores = useStores as unknown as jest.Mock
-const mockedUseNavigation = useNavigation as unknown as jest.Mock
-const useElectrobunModalMock = jest.fn()
+const mockedUseStores = useStores as unknown as vi.Mock
+const mockedUseNavigation = useNavigation as unknown as vi.Mock
+const useElectrobunModalMock = vi.fn()
 
-mock.module("@/hooks/useElectrobunModal", () => ({
+vi.doMock("@/hooks/useElectrobunModal", () => ({
   useElectrobunModal: () => useElectrobunModalMock(),
 }))
 
-mock.module("mobx-react-lite", () => ({
+vi.doMock("mobx-react-lite", () => ({
   observer: (component: unknown) => component,
 }))
 
-mock.module("react-native", () => ({
+vi.doMock("react-native", () => ({
   ...(global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock,
   View: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
@@ -45,11 +44,11 @@ const componentsMock = {
     LeftComponent?: ReactNode
     onPress?: () => void
   }) => (
-    <div data-testid="calibre-root-item">
-      <button onClick={onPress} type="button">
-        {LeftComponent}
-      </button>
-    </div>
+    // 実 ListItem は testID を TouchableOpacity（＝クリック可能要素そのもの）に載せる。
+    // mock を div > button の入れ子にすると play のクリック対象が実装とずれる。
+    <button data-testid="calibre-root-item" onClick={onPress} type="button">
+      {LeftComponent}
+    </button>
   ),
   FlatList: <T,>({
     data,
@@ -65,11 +64,10 @@ const componentsMock = {
     </div>
   ),
 }
-
 ;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
 
-mock.module("@/components", () => componentsMock)
-mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
+vi.doMock("@/components", () => componentsMock)
+vi.doMock("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
 let CalibreRootScreen: typeof import("./CalibreRootScreen").CalibreRootScreen
 
@@ -87,15 +85,15 @@ const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 
 describe("CalibreRootScreen", () => {
-  const navigate = jest.fn()
-  const setLibrary = jest.fn()
+  const navigate = vi.fn()
+  const setLibrary = vi.fn()
 
   beforeAll(async () => {
     ;({ CalibreRootScreen } = await import("./CalibreRootScreen"))
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     mockedUseNavigation.mockReturnValue({ navigate })
     mockedUseStores.mockReturnValue({
       calibreRootStore: {

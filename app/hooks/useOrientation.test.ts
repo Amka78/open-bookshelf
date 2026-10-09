@@ -7,7 +7,7 @@ import {
 } from "expo-screen-orientation"
 import useOrientation from "./useOrientation"
 
-jest.mock("expo-screen-orientation", () => ({
+vi.mock("expo-screen-orientation", () => ({
   Orientation: {
     UNKNOWN: 0,
     PORTRAIT_UP: 1,
@@ -15,19 +15,19 @@ jest.mock("expo-screen-orientation", () => ({
     LANDSCAPE_LEFT: 3,
     LANDSCAPE_RIGHT: 4,
   },
-  addOrientationChangeListener: jest.fn(),
-  getOrientationAsync: jest.fn(),
-  removeOrientationChangeListener: jest.fn(),
+  addOrientationChangeListener: vi.fn(),
+  getOrientationAsync: vi.fn(),
+  removeOrientationChangeListener: vi.fn(),
 }))
 
 describe("useOrientation", () => {
   afterEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   test("loads initial orientation", async () => {
-    ;(getOrientationAsync as jest.Mock).mockResolvedValue(Orientation.LANDSCAPE_LEFT)
-    ;(addOrientationChangeListener as jest.Mock).mockReturnValue({ id: 1 })
+    ;(getOrientationAsync as vi.Mock).mockResolvedValue(Orientation.LANDSCAPE_LEFT)
+    ;(addOrientationChangeListener as vi.Mock).mockReturnValue({ id: 1 })
 
     const { result } = renderHook(() => useOrientation())
 
@@ -37,10 +37,10 @@ describe("useOrientation", () => {
   })
 
   test("updates orientation and runs callback when orientation changes", async () => {
-    const onOrientationChange = jest.fn()
+    const onOrientationChange = vi.fn()
     let listener: ((event: { orientationInfo: { orientation: Orientation } }) => void) | undefined
-    ;(getOrientationAsync as jest.Mock).mockResolvedValue(Orientation.PORTRAIT_UP)
-    ;(addOrientationChangeListener as jest.Mock).mockImplementation((cb) => {
+    ;(getOrientationAsync as vi.Mock).mockResolvedValue(Orientation.PORTRAIT_UP)
+    ;(addOrientationChangeListener as vi.Mock).mockImplementation((cb) => {
       listener = cb
       return { id: 2 }
     })
@@ -63,8 +63,8 @@ describe("useOrientation", () => {
 
   test("removes orientation listener on unmount", () => {
     const subscription = { id: 3 }
-    ;(getOrientationAsync as jest.Mock).mockResolvedValue(Orientation.UNKNOWN)
-    ;(addOrientationChangeListener as jest.Mock).mockReturnValue(subscription)
+    ;(getOrientationAsync as vi.Mock).mockResolvedValue(Orientation.UNKNOWN)
+    ;(addOrientationChangeListener as vi.Mock).mockReturnValue(subscription)
 
     const { unmount } = renderHook(() => useOrientation())
     unmount()

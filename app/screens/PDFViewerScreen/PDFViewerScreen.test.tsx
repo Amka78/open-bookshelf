@@ -1,57 +1,47 @@
-import {
-  afterAll,
-  afterEach,
-  describe as baseDescribe,
-  test as baseTest,
-  beforeAll,
-  beforeEach,
-  expect,
-  jest,
-  mock,
-} from "bun:test"
+import { vi, afterAll, afterEach, describe as baseDescribe, test as baseTest, beforeAll, beforeEach, expect } from "vitest"
 import { act, cleanup, render, screen } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 import * as _realUsePDFViewerNs from "./usePDFViewer"
 
 // Snapshot the real usePDFViewer BEFORE mocking (top-level imports are hoisted, so this
-// runs before mock.module calls which are also hoisted but after static imports in Bun).
+// runs before vi.module calls which are also hoisted but after static imports in Bun).
 const _realUsePDFViewer = Object.assign({}, _realUsePDFViewerNs)
 
-const usePDFViewerMock = jest.fn()
-const useViewerMock = jest.fn()
-const useViewerPreparationMock = jest.fn()
-const fileExistsMock = jest.fn()
-const fileBase64Mock = jest.fn()
-const loggerWarnMock = jest.fn()
-const loggerErrorMock = jest.fn()
+const usePDFViewerMock = vi.fn()
+const useViewerMock = vi.fn()
+const useViewerPreparationMock = vi.fn()
+const fileExistsMock = vi.fn()
+const fileBase64Mock = vi.fn()
+const loggerWarnMock = vi.fn()
+const loggerErrorMock = vi.fn()
 
-mock.module("mobx-react-lite", () => ({
+vi.doMock("mobx-react-lite", () => ({
   observer: (component: unknown) => component,
 }))
 
-mock.module("@/screens/PDFViewerScreen/usePDFViewer", () => ({
+vi.doMock("@/screens/PDFViewerScreen/usePDFViewer", () => ({
   usePDFViewer: () => usePDFViewerMock(),
 }))
 
-mock.module("@/screens/ViewerScreen/useViewer", () => ({
+vi.doMock("@/screens/ViewerScreen/useViewer", () => ({
   useViewer: () => useViewerMock(),
 }))
 
-mock.module("@/screens/ViewerScreen/useViewerPreparation", () => ({
+vi.doMock("@/screens/ViewerScreen/useViewerPreparation", () => ({
   useViewerPreparation: () => useViewerPreparationMock(),
 }))
 
-mock.module("@/utils/logger", () => ({
+vi.doMock("@/utils/logger", () => ({
   logger: {
-    debug: jest.fn(),
-    info: jest.fn(),
+    debug: vi.fn(),
+    info: vi.fn(),
     warn: (...args: unknown[]) => loggerWarnMock(...args),
     error: (...args: unknown[]) => loggerErrorMock(...args),
   },
 }))
 
-mock.module("expo-file-system", () => ({
+vi.doMock("expo-file-system", () => ({
   File: class MockFile {
     exists: boolean
 
@@ -65,7 +55,7 @@ mock.module("expo-file-system", () => ({
   },
 }))
 
-mock.module("@/library/PDF/Pdf", () => ({
+vi.doMock("@/library/PDF/Pdf", () => ({
   PDF: ({
     source,
     page,
@@ -83,7 +73,7 @@ mock.module("@/library/PDF/Pdf", () => ({
   ),
 }))
 
-mock.module("@/library/PDF/PDFWebPage", () => ({
+vi.doMock("@/library/PDF/PDFWebPage", () => ({
   PDFWebPage: ({ uri }: { uri: string }) => <div data-testid="pdf-page-count" data-uri={uri} />,
 }))
 
@@ -135,8 +125,8 @@ const componentsMock = {
 
 ;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
 
-mock.module("@/components", () => componentsMock)
-mock.module("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
+vi.doMock("@/components", () => componentsMock)
+vi.doMock("/home/amka78/private/open-bookshelf/app/components/index.ts", () => componentsMock)
 
 let PDFViewerScreen: typeof import("./PDFViewerScreen").PDFViewerScreen
 
@@ -153,7 +143,7 @@ describe("PDFViewerScreen", () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     fileBase64Mock.mockResolvedValue("ZmFrZS1iYXNlNjQ=")
     useViewerPreparationMock.mockReturnValue({
       messageTx: "viewerPreparation.preparing",
@@ -162,7 +152,7 @@ describe("PDFViewerScreen", () => {
 
     useViewerMock.mockReturnValue({
       initialPage: 2,
-      onPageChange: jest.fn(),
+      onPageChange: vi.fn(),
     })
 
     usePDFViewerMock.mockReturnValue({
@@ -172,11 +162,11 @@ describe("PDFViewerScreen", () => {
         },
       },
       totalPages: 7,
-      setTotalPages: jest.fn(),
+      setTotalPages: vi.fn(),
       sourceUri: "file:///cache/book.pdf",
       remoteUri: "https://server.example/book.pdf",
       windowDimension: { width: 320, height: 480 },
-      calculatePageDimensions: jest.fn(() => ({ width: 320, height: 480 })),
+      calculatePageDimensions: vi.fn(() => ({ width: 320, height: 480 })),
       header: { Authorization: "Basic token" },
     })
   })
@@ -215,11 +205,11 @@ describe("PDFViewerScreen", () => {
         },
       },
       totalPages: undefined,
-      setTotalPages: jest.fn(),
+      setTotalPages: vi.fn(),
       sourceUri: "file:///cache/book.pdf",
       remoteUri: "https://server.example/book.pdf",
       windowDimension: { width: 320, height: 480 },
-      calculatePageDimensions: jest.fn(() => ({ width: 320, height: 480 })),
+      calculatePageDimensions: vi.fn(() => ({ width: 320, height: 480 })),
       header: { Authorization: "Basic token" },
     })
 
@@ -250,5 +240,5 @@ describe("PDFViewerScreen", () => {
 
 afterAll(() => {
   // Restore the real usePDFViewer so usePDFViewer.test.ts can use it
-  mock.module("@/screens/PDFViewerScreen/usePDFViewer", () => _realUsePDFViewer)
+  vi.doMock("@/screens/PDFViewerScreen/usePDFViewer", () => _realUsePDFViewer)
 })

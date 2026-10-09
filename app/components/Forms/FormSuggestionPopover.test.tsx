@@ -1,21 +1,20 @@
+import { fireEvent, render, waitFor } from "@testing-library/react"
+import { type ComponentType, type ReactNode, forwardRef } from "react"
 import {
+  describe as baseDescribe,
+  test as baseTest,
   beforeAll,
   beforeEach,
-  describe as baseDescribe,
   expect,
-  jest,
-  mock,
-  test as baseTest,
-} from "bun:test"
-import { fireEvent, render, waitFor } from "@testing-library/react"
-import { forwardRef, type ComponentType, type ReactNode } from "react"
+  vi,
+} from "vitest"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 let platformOS: "android" | "web" = "web"
-const useKeyboardVisibilityMock = jest.fn()
+const useKeyboardVisibilityMock = vi.fn()
 
 function applyFormSuggestionPopoverMocks() {
-  mock.module("react-native", () => ({
+  vi.doMock("react-native", () => ({
     Platform: {
       get OS() {
         return platformOS
@@ -24,19 +23,19 @@ function applyFormSuggestionPopoverMocks() {
     },
   }))
 
-  mock.module("@/hooks/useKeyboardVisibility", () => ({
+  vi.doMock("@/hooks/useKeyboardVisibility", () => ({
     useKeyboardVisibility: () => useKeyboardVisibilityMock(),
   }))
 
-  mock.module("@/theme", () => ({
-    usePalette: jest.fn().mockReturnValue({
+  vi.doMock("@/theme", () => ({
+    usePalette: vi.fn().mockReturnValue({
       surface: "#111",
       borderStrong: "#333",
       accent: "#999",
     }),
   }))
 
-  mock.module("@/components/Box/Box", () => ({
+  vi.doMock("@/components/Box/Box", () => ({
     Box: forwardRef<
       HTMLDivElement,
       Record<string, unknown> & { children?: ReactNode; testID?: string }
@@ -47,7 +46,7 @@ function applyFormSuggestionPopoverMocks() {
     )),
   }))
 
-  mock.module("@/components/Text/Text", () => ({
+  vi.doMock("@/components/Text/Text", () => ({
     Text: ({
       children,
       testID,
@@ -59,7 +58,7 @@ function applyFormSuggestionPopoverMocks() {
     ),
   }))
 
-  mock.module("@/components/Pressable/Pressable", () => ({
+  vi.doMock("@/components/Pressable/Pressable", () => ({
     Pressable: ({
       children,
       onPress,
@@ -88,7 +87,7 @@ function applyFormSuggestionPopoverMocks() {
     ),
   }))
 
-  mock.module("@/components/Popover/Popover", () => ({
+  vi.doMock("@/components/Popover/Popover", () => ({
     Popover: ({
       children,
       trigger,
@@ -131,7 +130,6 @@ function applyFormSuggestionPopoverMocks() {
 applyFormSuggestionPopoverMocks()
 
 let resolveSuggestionPopoverPlacement: typeof import("./formSuggestionPlacement").resolveSuggestionPopoverPlacement
-let formSuggestionImportNonce = 0
 
 beforeAll(async () => {
   applyFormSuggestionPopoverMocks()
@@ -140,7 +138,7 @@ beforeAll(async () => {
 
 beforeEach(() => {
   applyFormSuggestionPopoverMocks()
-  jest.clearAllMocks()
+  vi.clearAllMocks()
   platformOS = "web"
   document.body.innerHTML = ""
   useKeyboardVisibilityMock.mockReturnValue({
@@ -163,8 +161,10 @@ async function loadFormSuggestionPopover(): Promise<
   }>
 > {
   applyFormSuggestionPopoverMocks()
-  formSuggestionImportNonce += 1
-  const imported = await import(`./FormSuggestionPopover.tsx?test=${formSuggestionImportNonce}`)
+  // bun 版は `?test=<nonce>` でキャッシュバスティングしていたが、Vitest はテンプレートリテラルの
+  // 動的 import を静的解析できず "Unknown variable dynamic import" になる。resetModules で代替する。
+  vi.resetModules()
+  const imported = await import("./FormSuggestionPopover.tsx")
   return imported.FormSuggestionPopover
 }
 
@@ -182,7 +182,7 @@ describe("FormSuggestionPopover", () => {
 
   test("selects a candidate on press in for native popovers", async () => {
     platformOS = "android"
-    const onSelect = jest.fn()
+    const onSelect = vi.fn()
     const FormSuggestionPopover = await loadFormSuggestionPopover()
 
     const { getByTestId } = render(
@@ -206,7 +206,7 @@ describe("FormSuggestionPopover", () => {
 
   test("renders web suggestions in a portal attached to document.body", async () => {
     platformOS = "web"
-    const onSelect = jest.fn()
+    const onSelect = vi.fn()
     const FormSuggestionPopover = await loadFormSuggestionPopover()
 
     const { container } = render(

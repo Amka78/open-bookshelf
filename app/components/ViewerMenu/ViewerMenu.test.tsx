@@ -1,12 +1,4 @@
-import {
-  beforeAll,
-  beforeEach,
-  describe as baseDescribe,
-  expect,
-  jest,
-  mock,
-  test as baseTest,
-} from "bun:test"
+import { vi, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
 import { render } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
@@ -14,27 +6,27 @@ import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 
-const useConvergenceMock = jest.fn()
+const useConvergenceMock = vi.fn()
 
-mock.module("@/hooks/useConvergence", () => ({
+vi.doMock("@/hooks/useConvergence", () => ({
   useConvergence: useConvergenceMock,
 }))
 
-mock.module("/home/amka78/private/open-bookshelf/app/hooks/useConvergence.ts", () => ({
+vi.doMock("/home/amka78/private/open-bookshelf/app/hooks/useConvergence.ts", () => ({
   useConvergence: useConvergenceMock,
 }))
 
-mock.module("@/theme", () => ({
+vi.doMock("@/theme", () => ({
   usePalette: () => ({
     textSecondary: "#666",
   }),
 }))
 
-mock.module("@/i18n", () => ({
+vi.doMock("@/i18n", () => ({
   translate: (key: string) => key,
 }))
 
-mock.module("@/components", () => ({
+vi.doMock("@/components", () => ({
   HStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   IconButton: ({
     name,
@@ -55,7 +47,7 @@ mock.module("@/components", () => ({
   Text: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-mock.module("@gluestack-ui/themed", () => ({
+vi.doMock("@gluestack-ui/themed", () => ({
   Menu: ({
     children,
     trigger,
@@ -90,7 +82,7 @@ beforeAll(async () => {
 
 describe("ViewerMenu", () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     useConvergenceMock.mockReturnValue({
       orientation: "horizontal",
       isLarge: true,

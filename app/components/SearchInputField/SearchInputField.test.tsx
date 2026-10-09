@@ -1,12 +1,12 @@
-import { describe as baseDescribe, test as baseTest, beforeAll, expect, jest, mock } from "bun:test"
+import { vi, describe as baseDescribe, test as baseTest, beforeAll, expect } from "vitest"
 import { act, fireEvent, render, screen } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { useState } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 // Mock dependencies
-mock.module("@/theme", () => ({
-  usePalette: jest.fn().mockReturnValue({
+vi.doMock("@/theme", () => ({
+  usePalette: vi.fn().mockReturnValue({
     surface: "#111",
     borderStrong: "#333",
     accent: "#999",
@@ -15,7 +15,7 @@ mock.module("@/theme", () => ({
   }),
 }))
 
-mock.module("@/components/Box/Box", () => ({
+vi.doMock("@/components/Box/Box", () => ({
   Box: ({
     children,
     testID,
@@ -27,7 +27,7 @@ mock.module("@/components/Box/Box", () => ({
   ),
 }))
 
-mock.module("@/components/Text/Text", () => ({
+vi.doMock("@/components/Text/Text", () => ({
   Text: ({
     children,
     testID,
@@ -39,7 +39,7 @@ mock.module("@/components/Text/Text", () => ({
   ),
 }))
 
-mock.module("@gluestack-ui/themed", () => ({
+vi.doMock("@gluestack-ui/themed", () => ({
   HStack: ({
     children,
     testID,
@@ -65,7 +65,7 @@ mock.module("@gluestack-ui/themed", () => ({
   ScrollView: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-mock.module("@/components/Forms/FormSuggestionPopover", () => ({
+vi.doMock("@/components/Forms/FormSuggestionPopover", () => ({
   FormSuggestionPopover: ({
     trigger,
     isOpen,
@@ -112,7 +112,7 @@ mock.module("@/components/Forms/FormSuggestionPopover", () => ({
   ),
 }))
 
-mock.module("@/components/InputField/InputField", () => ({
+vi.doMock("@/components/InputField/InputField", () => ({
   InputField: ({
     testID,
     value,
@@ -143,7 +143,7 @@ mock.module("@/components/InputField/InputField", () => ({
   ),
 }))
 
-mock.module("@/components/IconButton/IconButton", () => ({
+vi.doMock("@/components/IconButton/IconButton", () => ({
   IconButton: ({
     testID,
     labelTx,
@@ -153,7 +153,7 @@ mock.module("@/components/IconButton/IconButton", () => ({
   ),
 }))
 
-mock.module("@/components/Popover/Popover", () => ({
+vi.doMock("@/components/Popover/Popover", () => ({
   Popover: () => null,
   PopoverBackdrop: () => null,
   PopoverContent: () => null,
@@ -205,7 +205,7 @@ const test = localizeTestRegistrar(baseTest)
 
 describe("SearchInputField backspace functionality", () => {
   beforeAll(() => {
-    jest.useFakeTimers()
+    vi.useFakeTimers()
   })
 
   test("backspace removes text from authors:=", async () => {
@@ -259,7 +259,7 @@ describe("SearchInputField backspace functionality", () => {
 
     await act(async () => {
       fireEvent.blur(input)
-      jest.runAllTimers()
+      vi.runAllTimers()
     })
 
     expect(screen.queryByTestId("search-input-suggestion-authors%3A%3D")).toBeNull()

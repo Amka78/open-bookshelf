@@ -1,26 +1,17 @@
-import {
-  afterEach,
-  describe as baseDescribe,
-  test as baseTest,
-  beforeAll,
-  beforeEach,
-  expect,
-  jest,
-  mock,
-} from "bun:test"
+import { vi, afterEach, describe as baseDescribe, test as baseTest, beforeAll, beforeEach, expect } from "vitest"
 import { act, renderHook } from "@testing-library/react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 
-const useStoresMock = jest.fn()
+const useStoresMock = vi.fn()
 
-mock.module("@/models", () => ({
+vi.doMock("@/models", () => ({
   useStores: useStoresMock,
 }))
 
-mock.module("@/components/LeftSideMenu/LeftSideMenu", () => {
+vi.doMock("@/components/LeftSideMenu/LeftSideMenu", () => {
   const CATEGORY_ALIASES: Record<string, string> = {
     author: "authors",
     authors: "authors",
@@ -112,7 +103,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  jest.clearAllMocks()
+  vi.clearAllMocks()
 })
 
 describe("useDetailSearch", () => {

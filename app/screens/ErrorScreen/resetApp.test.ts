@@ -1,22 +1,15 @@
-import {
-  describe as baseDescribe,
-  test as baseTest,
-  beforeEach,
-  expect,
-  jest,
-  mock,
-} from "bun:test"
+import { vi, describe as baseDescribe, test as baseTest, beforeEach, expect } from "vitest"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
-const storageClearMock = jest.fn()
-const resetRootMock = jest.fn()
-const isNavigationReadyMock = jest.fn()
+const storageClearMock = vi.fn()
+const resetRootMock = vi.fn()
+const isNavigationReadyMock = vi.fn()
 
-mock.module("@/utils/storage", () => ({
+vi.doMock("@/utils/storage", () => ({
   clear: () => storageClearMock(),
 }))
 
-mock.module("@/navigators", () => ({
+vi.doMock("@/navigators", () => ({
   isNavigationReady: () => isNavigationReadyMock(),
   resetRoot: (params: unknown) => resetRootMock(params),
 }))
@@ -24,7 +17,7 @@ mock.module("@/navigators", () => ({
 let resetAppToConnect: typeof import("./resetApp").resetAppToConnect
 
 beforeEach(async () => {
-  jest.clearAllMocks()
+  vi.clearAllMocks()
   storageClearMock.mockReset()
   resetRootMock.mockReset()
   isNavigationReadyMock.mockReset()

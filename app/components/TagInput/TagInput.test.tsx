@@ -1,6 +1,6 @@
-import { beforeAll, describe as baseDescribe, expect, mock, test as baseTest } from "bun:test"
 import { fireEvent, render, screen } from "@testing-library/react"
 import type { ReactNode } from "react"
+import { describe as baseDescribe, test as baseTest, beforeAll, expect, vi } from "vitest"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 const describe = localizeTestRegistrar(baseDescribe)
@@ -17,7 +17,40 @@ function normalizeStyle(style: unknown): React.CSSProperties | undefined {
   return style && typeof style === "object" ? (style as React.CSSProperties) : undefined
 }
 
+// TagInput は barrel（@/components）から InputField を import するため、barrel mock にも
+// 同じ実装を入れる。Vitest は mock に無い export を参照するとエラーにする（bun は検証しない）。
+const inputFieldMock = ({
+  onBlur,
+  onChange,
+  onChangeText,
+  onFocus,
+  onKeyDown,
+  testID,
+  value,
+}: {
+  onBlur?: () => void
+  onChange?: (event: unknown) => void
+  onChangeText?: (text: string) => void
+  onFocus?: () => void
+  onKeyDown?: (event: { key: string; preventDefault: () => void }) => void
+  testID?: string
+  value?: string
+}) => (
+  <input
+    data-testid={testID}
+    onBlur={onBlur}
+    onChange={(event) => {
+      onChange?.(event)
+      onChangeText?.((event.target as HTMLInputElement).value)
+    }}
+    onFocus={onFocus}
+    onKeyDown={onKeyDown}
+    value={value ?? ""}
+  />
+)
+
 const componentsMock = {
+  InputField: inputFieldMock,
   Box: ({
     children,
     style,
@@ -29,11 +62,7 @@ const componentsMock = {
     testID?: string
     onPress?: () => void
   }) => (
-    <div
-      data-testid={testID}
-      onClick={onPress}
-      style={normalizeStyle(style)}
-    >
+    <div data-testid={testID} onClick={onPress} style={normalizeStyle(style)}>
       {children}
     </div>
   ),
@@ -51,12 +80,7 @@ const componentsMock = {
     testID?: string
     style?: unknown
   }) => (
-    <button
-      data-testid={testID}
-      onClick={onPress}
-      style={normalizeStyle(style)}
-      type="button"
-    >
+    <button data-testid={testID} onClick={onPress} style={normalizeStyle(style)} type="button">
       {name}
     </button>
   ),
@@ -66,41 +90,13 @@ const componentsMock = {
   ),
 }
 
-mock.module("@/components", () => componentsMock)
+vi.doMock("@/components", () => componentsMock)
 
-mock.module("@/components/InputField/InputField", () => ({
-  InputField: ({
-    onBlur,
-    onChange,
-    onChangeText,
-    onFocus,
-    onKeyDown,
-    testID,
-    value,
-  }: {
-    onBlur?: () => void
-    onChange?: (event: unknown) => void
-    onChangeText?: (text: string) => void
-    onFocus?: () => void
-    onKeyDown?: (event: { key: string; preventDefault: () => void }) => void
-    testID?: string
-    value?: string
-  }) => (
-    <input
-      data-testid={testID}
-      onBlur={onBlur}
-      onChange={(event) => {
-        onChange?.(event)
-        onChangeText?.((event.target as HTMLInputElement).value)
-      }}
-      onFocus={onFocus}
-      onKeyDown={onKeyDown}
-      value={value ?? ""}
-    />
-  ),
+vi.doMock("@/components/InputField/InputField", () => ({
+  InputField: inputFieldMock,
 }))
 
-mock.module("@/theme", () => ({
+vi.doMock("@/theme", () => ({
   usePalette: () => ({
     background: "#ffffff",
     backgroundLight: "#f3f4f6",
@@ -110,7 +106,7 @@ mock.module("@/theme", () => ({
   }),
 }))
 
-mock.module("@gluestack-ui/themed", () => ({
+vi.doMock("@gluestack-ui/themed", () => ({
   Pressable: ({
     children,
     onPress,
@@ -134,7 +130,7 @@ mock.module("@gluestack-ui/themed", () => ({
   ),
 }))
 
-mock.module("react-native", () => ({
+vi.doMock("react-native", () => ({
   Platform: { OS: "web" },
   StyleSheet: {
     create: <T extends Record<string, unknown>>(value: T) => value,
@@ -151,7 +147,7 @@ beforeAll(async () => {
 
 describe("TagInput", () => {
   test("renders tags from value prop", () => {
-    const onChange = mock(() => {})
+    const onChange = vi.fn(() => {})
     render(<TagInput value={["Tag1", "Tag2"]} onChange={onChange} testID="test" />)
 
     expect(screen.getByTestId("test-tag-0")).toBeTruthy()
@@ -159,7 +155,7 @@ describe("TagInput", () => {
   })
 
   test("adds a tag when Enter is pressed", () => {
-    const onChange = mock(() => {})
+    const onChange = vi.fn(() => {})
     render(<TagInput value={[]} onChange={onChange} testID="test" />)
 
     const input = screen.getByTestId("test-input")
@@ -170,7 +166,7 @@ describe("TagInput", () => {
   })
 
   test("removes a tag when remove button is clicked", () => {
-    const onChange = mock(() => {})
+    const onChange = vi.fn(() => {})
     render(<TagInput value={["Tag1", "Tag2"]} onChange={onChange} testID="test" />)
 
     fireEvent.click(screen.getByTestId("test-tag-0-remove"))
@@ -179,7 +175,7 @@ describe("TagInput", () => {
   })
 
   test("adds tags when separator is typed", () => {
-    const onChange = mock(() => {})
+    const onChange = vi.fn(() => {})
     render(<TagInput value={[]} onChange={onChange} testID="test" />)
 
     const input = screen.getByTestId("test-input")
@@ -191,7 +187,7 @@ describe("TagInput", () => {
   })
 
   test("removes last tag when Backspace is pressed on empty input", () => {
-    const onChange = mock(() => {})
+    const onChange = vi.fn(() => {})
     render(<TagInput value={["Tag1", "Tag2"]} onChange={onChange} testID="test" />)
 
     const input = screen.getByTestId("test-input")
@@ -201,7 +197,7 @@ describe("TagInput", () => {
   })
 
   test("adds tag on blur if input has value", () => {
-    const onChange = mock(() => {})
+    const onChange = vi.fn(() => {})
     render(<TagInput value={[]} onChange={onChange} testID="test" />)
 
     const input = screen.getByTestId("test-input")
@@ -212,7 +208,7 @@ describe("TagInput", () => {
   })
 
   test("does not add duplicate tags", () => {
-    const onChange = mock(() => {})
+    const onChange = vi.fn(() => {})
     render(<TagInput value={["Tag1"]} onChange={onChange} testID="test" />)
 
     const input = screen.getByTestId("test-input")
@@ -223,7 +219,7 @@ describe("TagInput", () => {
   })
 
   test("shows copy and paste buttons when showCopyPaste is true", () => {
-    const onChange = mock(() => {})
+    const onChange = vi.fn(() => {})
     render(<TagInput value={["Tag1"]} onChange={onChange} testID="test" showCopyPaste />)
 
     expect(screen.getByTestId("test-copy")).toBeTruthy()
@@ -231,7 +227,7 @@ describe("TagInput", () => {
   })
 
   test("does not show copy and paste buttons when showCopyPaste is false", () => {
-    const onChange = mock(() => {})
+    const onChange = vi.fn(() => {})
     render(<TagInput value={["Tag1"]} onChange={onChange} testID="test" />)
 
     expect(screen.queryByTestId("test-copy")).toBeNull()
@@ -239,7 +235,7 @@ describe("TagInput", () => {
   })
 
   test("enters edit mode when tag text is clicked", () => {
-    const onChange = mock(() => {})
+    const onChange = vi.fn(() => {})
     render(<TagInput value={["Tag1"]} onChange={onChange} testID="test" />)
 
     fireEvent.click(screen.getByTestId("test-tag-0-text"))
@@ -248,7 +244,7 @@ describe("TagInput", () => {
   })
 
   test("commits edit on Enter key", () => {
-    const onChange = mock(() => {})
+    const onChange = vi.fn(() => {})
     render(<TagInput value={["Tag1"]} onChange={onChange} testID="test" />)
 
     fireEvent.click(screen.getByTestId("test-tag-0-text"))
@@ -260,7 +256,7 @@ describe("TagInput", () => {
   })
 
   test("commits edit on blur", () => {
-    const onChange = mock(() => {})
+    const onChange = vi.fn(() => {})
     render(<TagInput value={["Tag1"]} onChange={onChange} testID="test" />)
 
     fireEvent.click(screen.getByTestId("test-tag-0-text"))
@@ -272,7 +268,7 @@ describe("TagInput", () => {
   })
 
   test("cancels edit on Escape key", () => {
-    const onChange = mock(() => {})
+    const onChange = vi.fn(() => {})
     render(<TagInput value={["Tag1"]} onChange={onChange} testID="test" />)
 
     fireEvent.click(screen.getByTestId("test-tag-0-text"))
