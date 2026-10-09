@@ -1,4 +1,12 @@
-import { Box, HStack, IconButton, Input, InputField, Text } from "@/components"
+import {
+  Box,
+  HStack,
+  IconButton,
+  Input,
+  InputField,
+  type InputFieldKeyDownEvent,
+  Text,
+} from "@/components"
 import { usePalette } from "@/theme"
 import { Pressable } from "@gluestack-ui/themed"
 import { useState } from "react"
@@ -82,7 +90,7 @@ export function TagInput({
     setEditingValue("")
   }
 
-  const handleEditKeyDown = (event: { key: string }) => {
+  const handleEditKeyDown = (event: InputFieldKeyDownEvent) => {
     if (event.key === "Enter") {
       event.preventDefault()
       commitEditing()
@@ -146,7 +154,7 @@ export function TagInput({
     }
   }
 
-  const handleKeyDown = (event: { key: string }) => {
+  const handleKeyDown = (event: InputFieldKeyDownEvent) => {
     if (event.key === "Enter") {
       event.preventDefault()
       if (inputValue.trim()) {
@@ -177,8 +185,8 @@ export function TagInput({
             key={tag}
             style={[
               styles.tag,
-              { backgroundColor: palette.backgroundLight, borderColor: palette.border },
-              editingIndex === index ? { borderColor: palette.primary } : undefined,
+              { backgroundColor: palette.surfaceMuted, borderColor: palette.borderSubtle },
+              editingIndex === index ? { borderColor: palette.accent } : undefined,
             ]}
             testID={`${testID}-tag-${index}`}
           >
@@ -227,7 +235,7 @@ export function TagInput({
               onKeyDown={Platform.OS === "web" ? handleKeyDown : undefined}
               placeholder={value.length === 0 ? placeholder : ""}
               testID={`${testID}-input`}
-              disabled={disabled}
+              editable={!disabled}
             />
           </Input>
         </Box>
@@ -253,12 +261,12 @@ export function TagInput({
         <Box
           style={[
             styles.suggestionsContainer,
-            { backgroundColor: palette.background, borderColor: palette.border },
+            { backgroundColor: palette.bg0, borderColor: palette.borderSubtle },
           ]}
           testID={`${testID}-suggestions`}
         >
           {filteredSuggestions.slice(0, 5).map((suggestion, index) => (
-            <Box
+            <Pressable
               key={suggestion}
               style={styles.suggestionItem}
               onPress={() => {
@@ -268,7 +276,7 @@ export function TagInput({
               testID={`${testID}-suggestion-${index}`}
             >
               <Text>{suggestion}</Text>
-            </Box>
+            </Pressable>
           ))}
         </Box>
       )}

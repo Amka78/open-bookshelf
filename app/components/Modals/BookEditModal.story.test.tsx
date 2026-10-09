@@ -1,5 +1,5 @@
-import { describe as baseDescribe, test as baseTest, expect, jest } from "bun:test"
 import { render } from "@testing-library/react"
+import { describe as baseDescribe, test as baseTest, expect, vi } from "vitest"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 import { playBookEditModalFormatClickRunsUpload } from "./bookEditModalStoryPlay"
 
@@ -7,7 +7,7 @@ const describe = localizeTestRegistrar(baseDescribe)
 const test = localizeTestRegistrar(baseTest)
 
 describe("BookEditModal story play", () => {
-  const onClick = jest.fn()
+  const onClick = vi.fn()
 
   const renderModalDom = () =>
     render(

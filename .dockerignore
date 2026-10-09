@@ -1,0 +1,27 @@
+# Docker ビルドコンテキストから除外するもの。
+# 重要: node_modules を除外しないと COPY . . が `bun install --frozen-lockfile` の結果を
+# ローカルの node_modules で上書きする。dist を除外しないと古い export 結果が混入し、
+# `expo export` が失敗しても dist/index.html の存在チェックを通過してしまう。
+.git
+.github
+.gitignore
+.expo
+node_modules
+dist
+storybook-static
+android
+ios
+detox
+
+# 開発ツール・キャッシュ
+.codegraph
+.qwen
+.reasonix
+*.log
+
+# 意図的に除外しないもの:
+# - .env            : 追跡されており expo export が EXPO_PUBLIC_* を読む
+# - .storybook/     : app/app.tsx が require("../.storybook/native") を持つ
+# - *.stories.tsx   : 同上の経路でバンドルが参照しうる
+# - test/           : app 側から参照されるヘルパ（test/test-name-i18n 等）を含む
+# - bin/, nginx.conf, package.json, bun.lock, bunfig.toml : ビルドに必要

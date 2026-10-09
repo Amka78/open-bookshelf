@@ -2,7 +2,6 @@ import {
   BookDetailMenu,
   type BookDetailMenuProps,
   Box,
-  Button,
   HStack,
   IconButton,
   Image,

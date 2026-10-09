@@ -1,6 +1,6 @@
-import { readFileSync } from "node:fs"
 import path from "node:path"
 import { storybookTest } from "@storybook/experimental-addon-test/vitest-plugin"
+import commonjs from "vite-plugin-commonjs"
 import tsconfigPaths from "vite-tsconfig-paths"
 import { defineConfig } from "vitest/config"
 
@@ -44,7 +44,9 @@ export default defineConfig({
         // include が vitest/ 配下なのは、bun run test:unit の glob（find app test -name '*.test.ts'）
         // に拾われないため。Phase 4 でランナーを切り替えた後は app/ test/ へ戻す。
         // tsconfigPaths() が無いと "@/..." が解決できず import 解析で失敗する。
-        plugins: [tsconfigPaths()],
+        // commonjs() は require() を ESM import へ書き換える。これが無いと CommonJS な
+        // ソース（withAndroidMainActivityAttributes.js）内の require を vi.mock が傍受できない。
+        plugins: [tsconfigPaths(), commonjs()],
         // rnw() は入れない（react-native → react-native-web の alias が vi.doMock("react-native")
         // と衝突するため）。expo / react-native が参照する global だけ define する。
         // tsconfig.json は app/**/*.test.tsx を exclude しているため Vite が jsx 設定を読めず、
@@ -68,15 +70,7 @@ export default defineConfig({
           // bun:test 由来の import を持たない（グローバル前提の）テストファイルがあるため。
           globals: true,
           setupFiles: ["./test/vitest-setup.ts"],
-          // Phase 4 移行中は「Vitest へ移し終えたファイル」を vitest/migrated.txt で管理する。
-          // 全ファイル移行後に app/**・test/** の glob へ置き換えてこのファイルは削除する。
-          include: [
-            "vitest/unit/**/*.test.@(ts|tsx)",
-            ...readFileSync(path.resolve(process.cwd(), "vitest/migrated.txt"), "utf8")
-              .split("\n")
-              .map((line) => line.trim())
-              .filter(Boolean),
-          ],
+          include: ["app/**/*.test.@(ts|tsx)", "test/**/*.test.@(ts|tsx)"],
           passWithNoTests: true,
         },
       },

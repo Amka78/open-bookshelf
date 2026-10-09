@@ -137,7 +137,9 @@ export const buildTextBookHtmlDocument = ({
         const helperSelector = '[data-obs-helper="1"]'
         const anchor = document.getElementById("obs-body-anchor")
         const paginationMessageType = ${serializeForScriptTag(textBookViewerPaginationMessageType)}
-        const interactionMessageType = ${serializeForScriptTag(textBookViewerInteractionMessageType)}
+        const interactionMessageType = ${serializeForScriptTag(
+          textBookViewerInteractionMessageType,
+        )}
         const selectionMessageType = ${serializeForScriptTag(textBookViewerSelectionMessageType)}
         const commandMessageType = ${serializeForScriptTag(textBookViewerCommandMessageType)}
         const tapAction = ${serializeForScriptTag(textBookViewerTapAction)}
@@ -832,26 +834,6 @@ export const buildTextBookHtmlDocument = ({
 
         const getScrollInlineOffset = () => {
           return getAxisScrollOffset(getInlineScrollAxis(layoutState.isVerticalWriting))
-        }
-
-        const getInlineExtent = (isVertical) => {
-          const axis = getInlineScrollAxis(isVertical)
-          const scrollContainer = getScrollContainer(axis)
-          if (scrollContainer) {
-            return axis === "x"
-              ? Math.max(scrollContainer.scrollWidth || 0, scrollContainer.clientWidth || 0)
-              : Math.max(scrollContainer.scrollHeight || 0, scrollContainer.clientHeight || 0)
-          }
-
-          return isVertical
-            ? Math.max(
-                document.documentElement?.scrollHeight || 0,
-                document.body?.scrollHeight || 0,
-              )
-            : Math.max(
-                document.documentElement?.scrollWidth || 0,
-                document.body?.scrollWidth || 0,
-              )
         }
 
         const getBlockExtent = (isVertical) => {

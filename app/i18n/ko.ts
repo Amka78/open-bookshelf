@@ -185,6 +185,11 @@ const ko: Translations = {
     bulkEdit: "일괄 편집",
     bulkDownload: "일괄 다운로드",
     bulkDelete: "전체 삭제",
+    copyAuthors: "저자 복사",
+    copyTags: "태그 복사",
+    pasteAuthors: "저자 붙여넣기",
+    pasteTags: "태그 붙여넣기",
+    extractSeries: "시리즈 추출",
     clearSelection: "선택 해제",
   },
   searchBar: {
@@ -303,6 +308,7 @@ const ko: Translations = {
     preferredFormatAuto: "자동",
     dateDisplayFormat: "날짜 형식",
     booksPerPage: "페이지당 도서 수",
+    bulkEditAutoRefresh: "일괄 편집 후 자동 새로고침",
   },
   seriesNavigation: {
     prevBook: "이전",

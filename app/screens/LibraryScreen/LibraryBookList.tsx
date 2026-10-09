@@ -1,7 +1,11 @@
 import { Box, FlatList, type FlatListProps, ScrollView } from "@/components"
 import type { Book } from "@/models/calibre"
 import type React from "react"
-import { type NativeScrollEvent, type NativeSyntheticEvent, useWindowDimensions } from "react-native"
+import {
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+  useWindowDimensions,
+} from "react-native"
 
 type LibraryBookListProps = {
   bookList: Book[]
@@ -16,7 +20,8 @@ type LibraryBookListProps = {
   preparing: boolean
   wrapInHorizontalScroll?: boolean
   horizontalContentWidth?: number
-  ListHeaderComponent?: React.ReactNode
+  // FlatList の ListHeaderComponent は ReactNode を受け付けない（ReactElement か ComponentType）。
+  ListHeaderComponent?: React.ReactElement | React.ComponentType<unknown>
 }
 
 export function LibraryBookList({
@@ -61,9 +66,7 @@ export function LibraryBookList({
   if (wrapInHorizontalScroll && horizontalContentWidth) {
     return (
       <ScrollView horizontal showsHorizontalScrollIndicator={true}>
-        <Box width={Math.max(window.width, horizontalContentWidth)}>
-          {list}
-        </Box>
+        <Box width={Math.max(window.width, horizontalContentWidth)}>{list}</Box>
       </ScrollView>
     )
   }

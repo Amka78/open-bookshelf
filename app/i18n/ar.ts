@@ -185,6 +185,11 @@ const ar: Translations = {
     bulkEdit: "تعديل الكل",
     bulkDownload: "تنزيل الكل",
     bulkDelete: "حذف الكل",
+    copyAuthors: "نسخ المؤلفين",
+    copyTags: "نسخ الوسوم",
+    pasteAuthors: "لصق المؤلفين",
+    pasteTags: "لصق الوسوم",
+    extractSeries: "استخراج السلسلة",
     clearSelection: "إلغاء التحديد",
   },
   searchBar: {
@@ -240,6 +245,7 @@ const ar: Translations = {
     preferredFormatAuto: "تلقائي",
     dateDisplayFormat: "تنسيق التاريخ",
     booksPerPage: "الكتب في الصفحة",
+    bulkEditAutoRefresh: "تحديث تلقائي بعد التعديل الجماعي",
   },
   bookConvertScreen: {
     inputFormat: "التنسيقات الحالية",

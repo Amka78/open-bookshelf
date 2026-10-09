@@ -1,7 +1,7 @@
-import { describe as baseDescribe, test as baseTest, beforeAll, expect, jest, mock } from "bun:test"
 import { render } from "@testing-library/react"
 import type { ComponentType, ReactNode } from "react"
 import { useForm } from "react-hook-form"
+import { describe as baseDescribe, test as baseTest, beforeAll, expect, vi } from "vitest"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 import {
   playClickDisplayedFormatTextTriggersUpload,
@@ -11,25 +11,25 @@ import {
   playSingleFormatHidesMinusButton,
 } from "./formFormatFieldStoryPlay"
 
-mock.module("@/components/VStack/VStack", () => ({
+vi.doMock("@/components/VStack/VStack", () => ({
   VStack: ({ children, ...props }: Record<string, unknown> & { children?: ReactNode }) => (
     <div {...(props as object)}>{children}</div>
   ),
 }))
 
-mock.module("@/components/HStack/HStack", () => ({
+vi.doMock("@/components/HStack/HStack", () => ({
   HStack: ({ children, ...props }: Record<string, unknown> & { children?: ReactNode }) => (
     <div {...(props as object)}>{children}</div>
   ),
 }))
 
-mock.module("@/components/Input/Input", () => ({
+vi.doMock("@/components/Input/Input", () => ({
   Input: ({ children, ...props }: Record<string, unknown> & { children?: ReactNode }) => (
     <div {...(props as object)}>{children}</div>
   ),
 }))
 
-mock.module("@/components/Pressable/Pressable", () => ({
+vi.doMock("@/components/Pressable/Pressable", () => ({
   Pressable: ({
     children,
     onPress,
@@ -46,13 +46,13 @@ mock.module("@/components/Pressable/Pressable", () => ({
   ),
 }))
 
-mock.module("@/components/Text/Text", () => ({
+vi.doMock("@/components/Text/Text", () => ({
   Text: ({ children, ...props }: Record<string, unknown> & { children?: ReactNode }) => (
     <span {...(props as object)}>{children}</span>
   ),
 }))
 
-mock.module("@/components/IconButton/IconButton", () => ({
+vi.doMock("@/components/IconButton/IconButton", () => ({
   IconButton: ({
     onPress,
     testID,
@@ -116,13 +116,11 @@ const test = localizeTestRegistrar(baseTest)
 
 describe("FormFormatField story play", () => {
   test("format text click triggers upload processing", async () => {
-    const uploadMock = jest
+    const uploadMock = vi
       .fn<(params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>>()
       .mockResolvedValue({ success: true })
 
-    const { container } = render(
-      <TestHarness onUploadFormat={uploadMock} />,
-    )
+    const { container } = render(<TestHarness onUploadFormat={uploadMock} />)
 
     await playClickFormatTriggersUpload({
       canvasElement: container,
@@ -133,13 +131,11 @@ describe("FormFormatField story play", () => {
   })
 
   test("displayed format string click triggers upload processing", async () => {
-    const uploadMock = jest
+    const uploadMock = vi
       .fn<(params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>>()
       .mockResolvedValue({ success: true })
 
-    const { container } = render(
-      <TestHarness onUploadFormat={uploadMock} />,
-    )
+    const { container } = render(<TestHarness onUploadFormat={uploadMock} />)
 
     await playClickDisplayedFormatTextTriggersUpload({
       canvasElement: container,
@@ -150,13 +146,11 @@ describe("FormFormatField story play", () => {
   })
 
   test("plus triggers upload and adds row only on success", async () => {
-    const uploadMock = jest
+    const uploadMock = vi
       .fn<(params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>>()
       .mockResolvedValue({ success: true, format: "AZW3" })
 
-    const { container } = render(
-      <TestHarness onUploadFormat={uploadMock} />,
-    )
+    const { container } = render(<TestHarness onUploadFormat={uploadMock} />)
 
     await playPlusUploadsAndAddsRow({
       canvasElement: container,
@@ -167,13 +161,11 @@ describe("FormFormatField story play", () => {
   })
 
   test("minus removes the format row from the form", async () => {
-    const uploadMock = jest
+    const uploadMock = vi
       .fn<(params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>>()
       .mockResolvedValue({ success: true })
 
-    const { container } = render(
-      <TestHarness onUploadFormat={uploadMock} />,
-    )
+    const { container } = render(<TestHarness onUploadFormat={uploadMock} />)
 
     await playMinusDeletesFormatRow({
       canvasElement: container,
@@ -182,15 +174,12 @@ describe("FormFormatField story play", () => {
   })
 
   test("single format hides the minus button", async () => {
-    const uploadMock = jest
+    const uploadMock = vi
       .fn<(params: { targetFormat?: string }) => Promise<{ success: boolean; format?: string }>>()
       .mockResolvedValue({ success: true })
 
     const { container } = render(
-      <TestHarness
-        onUploadFormat={uploadMock}
-        defaultFormats={["EPUB"]}
-      />,
+      <TestHarness onUploadFormat={uploadMock} defaultFormats={["EPUB"]} />,
     )
 
     await playSingleFormatHidesMinusButton({

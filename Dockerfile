@@ -15,8 +15,11 @@ RUN --mount=type=cache,target=/root/.bun/install/cache \
 
 # Copy source and build
 COPY . .
-RUN timeout 300 bunx expo export --platform web --output-dir dist; \
-    [ -f dist/index.html ] || exit 1
+# `;` にすると export が失敗（timeout 含む）しても exit code が無視され、
+# 後段の存在チェックだけを通過して「成功なのに中身が古い」イメージになる。&& で伝播させる。
+# timeout は実測（expo export に約5.5分）に対して 300s では余裕が無いため引き上げる。
+RUN timeout 900 bunx expo export --platform web --output-dir dist && \
+    [ -f dist/index.html ]
 
 # Stage 2: Serve
 FROM nginx:alpine

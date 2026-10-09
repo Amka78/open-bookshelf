@@ -1,4 +1,4 @@
-import { vi, describe as baseDescribe, expect, test as baseTest } from "vitest"
+import { describe as baseDescribe, test as baseTest, expect, vi } from "vitest"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 import { buildTextBookHtmlDocument } from "./textBookHtml"
 
@@ -28,14 +28,14 @@ describe("textBookHtml", () => {
       leadingBlankPage: false,
     })
 
-    expect(html).toContain('document.querySelectorAll(\'link[rel~="stylesheet"], style\')')
+    expect(html).toContain("document.querySelectorAll('link[rel~=\"stylesheet\"], style')")
     expect(html).toContain("const waitForInitialResources = async () => {")
     expect(html).toContain("await Promise.race([Promise.allSettled(pendingResources), timeout])")
     expect(html).toContain("window.setTimeout(resolve, 5000)")
     expect(html).toContain("document.fonts?.ready")
     expect(html).toContain('document.documentElement.style.overflow = "visible"')
     expect(html).toContain('document.body.style.setProperty("-webkit-margin-collapse", "separate")')
-    expect(html).toContain('bodyChildren.length === 1')
+    expect(html).toContain("bodyChildren.length === 1")
     expect(html).toContain('style.setProperty("height", "auto", "important")')
   })
 
@@ -65,7 +65,9 @@ describe("textBookHtml", () => {
     expect(html).toContain("const getPageInlineSize = (inlineViewportSize, spreadPageCount) => {")
     expect(html).toContain("-webkit-column-width")
     expect(html).toContain("column-width")
-    expect(html).toContain("const pageInlineSize = getPageInlineSize(inlineViewportSize, spreadPageCount)")
+    expect(html).toContain(
+      "const pageInlineSize = getPageInlineSize(inlineViewportSize, spreadPageCount)",
+    )
   })
 
   test("does not block paginated spine wrappers from splitting across columns", () => {
@@ -176,8 +178,12 @@ describe("textBookHtml", () => {
     })
 
     expect(html).toContain("const applyDerivedRootWritingMode = () => {")
-    expect(html).toContain('document.body.style.setProperty("writing-mode", candidateState.writingMode, "important")')
-    expect(html).toContain('document.body.style.setProperty("direction", candidateStyle.direction, "important")')
+    expect(html).toContain(
+      'document.body.style.setProperty("writing-mode", candidateState.writingMode, "important")',
+    )
+    expect(html).toContain(
+      'document.body.style.setProperty("direction", candidateStyle.direction, "important")',
+    )
     expect(html).toContain("applyDerivedRootWritingMode()")
   })
 
@@ -279,7 +285,7 @@ describe("textBookHtml", () => {
     expect(html).toContain("if (pendingCommandPayload) {")
   })
 
-  test("getInlineExtent accepts isVertical parameter and computePageMetrics passes fresh value", () => {
+  test("computePageMetrics derives fresh isVerticalWriting for the measure axis", () => {
     const html = buildTextBookHtmlDocument({
       documentData: {
         tree: { n: "html", c: [{ n: "body", c: [{ n: "p", c: ["hello"] }] }] },
@@ -301,10 +307,10 @@ describe("textBookHtml", () => {
       leadingBlankPage: false,
     })
 
-    // getInlineExtent accepts explicit isVertical parameter (not stale layoutState)
-    expect(html).toContain("const getInlineExtent = (isVertical) =>")
-    // computePageMetrics passes fresh isVerticalWriting to getInlineExtent
-    expect(html).toContain("getInlineExtent(isVerticalWriting)")
+    // computePageMetrics derives a fresh isVerticalWriting from getLayoutDirectionState()
+    // instead of reading stale layoutState, and uses it to pick the measure axis.
+    expect(html).toContain("const { isVerticalWriting } = getLayoutDirectionState()")
+    expect(html).toContain("const measureAxis = isVerticalWriting ? 'scrollHeight' : 'scrollWidth'")
   })
 
   test("uses the active scroll container when computing and changing paginated position", () => {
@@ -334,11 +340,13 @@ describe("textBookHtml", () => {
     expect(html).toContain("return null")
     expect(html).toContain("const getAxisScrollOffset = (axis) => {")
     expect(html).toContain("const scrollToAxisOffset = (axis, offset) => {")
-    expect(html).toContain("return getAxisScrollOffset(getInlineScrollAxis(layoutState.isVerticalWriting))")
+    expect(html).toContain(
+      "return getAxisScrollOffset(getInlineScrollAxis(layoutState.isVerticalWriting))",
+    )
     expect(html).toContain('document.addEventListener("scroll", schedulePaginationUpdate, true)')
   })
 
-  test("keeps paginated body overflow visible and constrains media to page inline size", () => {
+  test("clips paginated body overflow and constrains media to page inline size", () => {
     const html = buildTextBookHtmlDocument({
       documentData: {
         tree: { n: "html", c: [{ n: "body", c: [{ n: "img", a: [["src", "cover.jpg"]] }] }] },
@@ -360,10 +368,16 @@ describe("textBookHtml", () => {
       leadingBlankPage: false,
     })
 
-    expect(html).toContain('applyImportantStyle(document.body, "overflow", "visible")')
-    expect(html).toContain('applyImportantStyle(document.body, "overflow-x", isVerticalWriting ? "hidden" : "auto")')
-    expect(html).toContain('applyImportantStyle(document.body, "overflow-y", isVerticalWriting ? "auto" : "hidden")')
-    expect(html).toContain('const mediaElements = document.querySelectorAll("img, svg, video, canvas, iframe")')
+    // 頁送り時は overflow:clip（Chrome の overflow:hidden はクリップ外を描画しない
+    // 最適化が働き、translateY で表示された時に空白になるため）。
+    expect(html).toContain('applyImportantStyle(document.body, "overflow", "clip")')
+    expect(html).toContain('document.documentElement.style.overflow = "clip"')
+    // 縦スクロール時の分岐
+    expect(html).toContain('applyImportantStyle(document.body, "overflow-x", "hidden")')
+    expect(html).toContain('applyImportantStyle(document.body, "overflow-y", "auto")')
+    expect(html).toContain(
+      'const mediaElements = document.querySelectorAll("img, svg, video, canvas, iframe")',
+    )
     expect(html).toContain('applyImportantStyle(element, "max-height", pageInlineSize + "px")')
     expect(html).toContain('applyImportantStyle(element, "max-width", pageInlineSize + "px")')
   })
@@ -391,10 +405,14 @@ describe("textBookHtml", () => {
     })
 
     expect(html).toContain("const bodyState = getWritingModeState(")
-    expect(html).toContain("return htmlState.isVerticalWriting || htmlState.rtl ? htmlState : bodyState")
+    expect(html).toContain(
+      "return htmlState.isVerticalWriting || htmlState.rtl ? htmlState : bodyState",
+    )
     expect(html).toContain("const getBlockExtent = (isVertical) => {")
     expect(html).toContain("getBlockExtent(isVerticalWriting)")
-    expect(html).toContain("scrollToAxisOffset(getBlockScrollAxis(layoutState.isVerticalWriting), offset)")
+    expect(html).toContain(
+      "scrollToAxisOffset(getBlockScrollAxis(layoutState.isVerticalWriting), offset)",
+    )
   })
 
   test("applies preferred writing mode metadata before deriving layout direction", () => {
@@ -422,7 +440,9 @@ describe("textBookHtml", () => {
 
     expect(html).toContain('const preferredWritingMode = "vertical-rl"')
     expect(html).toContain("const applyPreferredWritingMode = () => {")
-    expect(html).toContain('document.body.style.setProperty("writing-mode", preferredWritingMode, "important")')
+    expect(html).toContain(
+      'document.body.style.setProperty("writing-mode", preferredWritingMode, "important")',
+    )
     const clearLayoutIndex = html.indexOf("clearLayoutOverrides()")
     const applyPreferredIndex = html.indexOf("applyPreferredWritingMode()")
     expect(clearLayoutIndex).toBeGreaterThan(-1)
