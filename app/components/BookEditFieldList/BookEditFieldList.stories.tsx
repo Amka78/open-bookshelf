@@ -1,3 +1,4 @@
+import { fireEvent } from "@testing-library/react"
 import { BookEditFieldList } from "@/components"
 import type { Meta, StoryObj } from "@storybook/react"
 
@@ -6,8 +7,18 @@ import {
   bookDetailFieldListStoryArgs,
   bookDetailFieldListWithCustomFieldsStoryArgs,
 } from "../../../.storybook/stories/data/bookDetailFieldListStoryData"
-import { playCustomFieldsTab } from "./bookEditFieldListStoryPlay"
 import { FormBookEditFieldList } from "./FormBookEditFieldList"
+
+/** Click the Custom Fields tab */
+async function playCustomFieldsTab({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}): Promise<void> {
+  const customTab = canvasElement.querySelector<HTMLElement>('[data-testid="book-edit-tab-custom"]')
+  if (!customTab) throw new Error("Custom fields tab not found in canvas")
+  fireEvent.click(customTab)
+}
 
 export default {
   title: "BookEditFieldList",

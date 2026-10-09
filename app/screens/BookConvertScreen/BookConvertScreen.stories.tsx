@@ -2,17 +2,90 @@ import { Heading, RootContainer } from "@/components"
 import { BookConvertForm } from "@/components/BookConvertForm/BookConvertForm"
 import type { ConvertOptions } from "@/components/BookConvertForm/ConvertOptions"
 import { DEFAULT_CONVERT_OPTIONS } from "@/components/BookConvertForm/ConvertOptions"
+import { fireEvent } from "@testing-library/react"
 import type { Meta, StoryObj } from "@storybook/react"
 import { useForm } from "react-hook-form"
 import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
-import {
-  playBookConvertSelectsOutputFormat,
-  playBookConvertShowsAccordionSections,
-  playBookConvertShowsErrorState,
-  playBookConvertShowsFormatSelection,
-  playBookConvertShowsSpinnerWhileConverting,
-  playBookConvertShowsSuccessState,
-} from "./bookConvertScreenStoryPlay"
+
+async function findByTestId(canvasElement: HTMLElement, testId: string): Promise<HTMLElement> {
+  for (let retry = 0; retry < 15; retry += 1) {
+    const found = canvasElement.querySelector(`[data-testid="${testId}"]`) as HTMLElement | null
+    if (found) {
+      return found
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 20))
+  }
+
+  throw new Error(`Element with data-testid='${testId}' was not found.`)
+}
+
+async function findByText(canvasElement: HTMLElement, text: string): Promise<HTMLElement> {
+  for (let retry = 0; retry < 15; retry += 1) {
+    const candidates = Array.from(canvasElement.querySelectorAll("*")) as HTMLElement[]
+    const found = candidates.find((element) => element.textContent?.includes(text))
+    if (found) {
+      return found
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 20))
+  }
+
+  throw new Error(`Element containing text '${text}' was not found.`)
+}
+
+async function playBookConvertSelectsOutputFormat({
+  canvasElement,
+  format,
+}: {
+  canvasElement: HTMLElement
+  format: string
+}) {
+  const button = await findByTestId(canvasElement, `format-button-${format}`)
+  fireEvent.click(button)
+}
+
+async function playBookConvertShowsFormatSelection({
+  canvasElement,
+  format,
+}: {
+  canvasElement: HTMLElement
+  format: string
+}) {
+  await findByTestId(canvasElement, `format-button-${format}`)
+}
+
+async function playBookConvertShowsSpinnerWhileConverting({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  await findByText(canvasElement, "Converting...")
+}
+
+async function playBookConvertShowsSuccessState({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  await findByTestId(canvasElement, "convert-success")
+}
+
+async function playBookConvertShowsErrorState({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  await findByTestId(canvasElement, "convert-error")
+}
+
+async function playBookConvertShowsAccordionSections({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  await findByTestId(canvasElement, "convert-accordion")
+}
 
 // ============================================================
 // Storybook用ラッパー: react-hook-form の Context を提供

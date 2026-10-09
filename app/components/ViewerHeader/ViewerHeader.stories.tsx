@@ -7,7 +7,30 @@ import {
   viewerMenuStoryArgTypes,
   viewerMenuStoryArgs,
 } from "../../../.storybook/stories/data/viewerMenuStoryData"
-import { playViewerHeaderShowsTitleAndActions } from "./viewerHeaderStoryPlay"
+
+async function findByTestId(canvasElement: HTMLElement, testId: string): Promise<HTMLElement> {
+  for (let retry = 0; retry < 15; retry += 1) {
+    const found = canvasElement.querySelector(`[data-testid="${testId}"]`) as HTMLElement | null
+    if (found) {
+      return found
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 20))
+  }
+
+  throw new Error(`Element with data-testid='${testId}' was not found.`)
+}
+
+async function playViewerHeaderShowsTitleAndActions({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  await findByTestId(canvasElement, "viewer-header-title")
+  await findByTestId(canvasElement, "viewer-toc-button")
+  await findByTestId(canvasElement, "viewer-bookmark-button")
+  await findByTestId(canvasElement, "viewer-overflow-trigger")
+}
 
 export default {
   title: "ViewerHeader",

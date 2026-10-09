@@ -1,12 +1,39 @@
+import { act, fireEvent } from "@testing-library/react"
 import type { Meta, StoryObj } from "@storybook/react"
 import { fn } from "@storybook/test"
 import { BookDetailMenu } from "./BookDetailMenu"
-import {
-  playBookDetailMenuEditDoesNotBubble,
-  playBookDetailMenuOcrDoesNotBubble,
-} from "./bookDetailMenuStoryPlay"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
+
+function findByTestId(canvasElement: HTMLElement, testId: string): HTMLElement {
+  const found = canvasElement.querySelector(`[data-testid="${testId}"]`) as HTMLElement | null
+
+  if (!found) {
+    throw new Error(`Element with data-testid='${testId}' was not found.`)
+  }
+
+  return found
+}
+
+async function playBookDetailMenuEditDoesNotBubble({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  await act(async () => {
+    fireEvent.click(findByTestId(canvasElement, "book-detail-edit-button"))
+  })
+}
+
+async function playBookDetailMenuOcrDoesNotBubble({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  await act(async () => {
+    fireEvent.click(findByTestId(canvasElement, "book-detail-ocr-button"))
+  })
+}
 
 export default {
   title: "BookDetailMenu",

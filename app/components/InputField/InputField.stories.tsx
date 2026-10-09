@@ -1,9 +1,47 @@
+import { fireEvent } from "@testing-library/react"
 import { Input } from "@/components"
 import type { Meta, StoryObj } from "@storybook/react"
 import { InputField } from "./InputField"
-import { playShowsPlaceholder, playTypingUpdatesInput } from "./inputFieldStoryPlay"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
+
+function findInputByPlaceholder(canvasElement: HTMLElement, placeholder: string): HTMLInputElement {
+  const input = canvasElement.querySelector(`input[placeholder="${placeholder}"]`) as HTMLInputElement | null
+
+  if (!input) {
+    throw new Error(`Input with placeholder '${placeholder}' was not found.`)
+  }
+
+  return input
+}
+
+async function playShowsPlaceholder({
+  canvasElement,
+  placeholder,
+}: {
+  canvasElement: HTMLElement
+  placeholder: string
+}) {
+  findInputByPlaceholder(canvasElement, placeholder)
+}
+
+async function playTypingUpdatesInput({
+  canvasElement,
+  placeholder,
+  value,
+}: {
+  canvasElement: HTMLElement
+  placeholder: string
+  value: string
+}) {
+  const input = findInputByPlaceholder(canvasElement, placeholder)
+
+  fireEvent.change(input, { target: { value } })
+
+  if (input.value !== value) {
+    throw new Error(`Expected input value to be '${value}'.`)
+  }
+}
 
 export default {
   title: "InputField",

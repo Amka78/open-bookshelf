@@ -1,19 +1,153 @@
+import { fireEvent } from "@testing-library/react"
 import { Box } from "@/components/Box/Box"
 import { Pressable } from "@/components/Pressable/Pressable"
 import type { Meta, StoryObj } from "@storybook/react"
 import { useState } from "react"
 import { SearchInputField } from "./SearchInputField"
-import {
-  playBackspaceRemovesText,
-  playBlurClosesSuggestions,
-  playFocusShowsSuggestions,
-  playSaveButtonHidesLabel,
-  playSelectSuggestionClosesSuggestions,
-  playTypingFiltersSuggestions,
-  playTypingKeepsSuggestionsVisible,
-} from "./SearchInputField.storyPlay"
 
 import { withComponentHolder } from "../../../.storybook/stories/ComponentHolder"
+import {
+  findByTestId as findInDom,
+  waitForAbsence as waitGoneInDom,
+} from "../../../.storybook/stories/storyPlayDom"
+
+const RETRY = { retries: 30, intervalMs: 100 }
+
+const findByTestId = (canvasElement: HTMLElement, testId: string) =>
+  findInDom(canvasElement, testId, RETRY)
+
+const waitForAbsence = (canvasElement: HTMLElement, testId: string) =>
+  waitGoneInDom(canvasElement, testId, RETRY)
+
+function typeInput(input: HTMLElement, value: string) {
+  fireEvent.change(input, { target: { value } })
+}
+
+function expectInputValue(input: HTMLElement, value: string) {
+  if ((input as HTMLInputElement).value !== value) {
+    throw new Error(`Expected input value to be '${value}'.`)
+  }
+}
+
+async function playFocusShowsSuggestions({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  const input = await findByTestId(canvasElement, "search-input-story")
+  fireEvent.focus(input)
+  typeInput(input, "a")
+
+  await findByTestId(canvasElement, "search-input-suggestion-authors%3A%3D")
+}
+
+async function playTypingKeepsSuggestionsVisible({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  const input = await findByTestId(canvasElement, "search-input-story")
+  fireEvent.focus(input)
+
+  // Type a character that matches suggestions
+  typeInput(input, "t")
+  await findByTestId(canvasElement, "search-input-suggestion-title%3A%3D")
+
+  // Wait 1 second - suggestions should STILL be visible (this is the bug fix verification)
+  await new Promise((resolve) => setTimeout(resolve, 1000))
+  await findByTestId(canvasElement, "search-input-suggestion-title%3A%3D")
+
+  // Type another character
+  typeInput(input, "ti")
+  await findByTestId(canvasElement, "search-input-suggestion-title%3A%3D")
+
+  // Wait another 1 second - suggestions should still be visible
+  await new Promise((resolve) => setTimeout(resolve, 1000))
+  await findByTestId(canvasElement, "search-input-suggestion-title%3A%3D")
+}
+
+async function playTypingFiltersSuggestions({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  const input = await findByTestId(canvasElement, "search-input-story")
+  fireEvent.focus(input)
+
+  // Type "au" - should match author:=
+  typeInput(input, "au")
+  await findByTestId(canvasElement, "search-input-suggestion-authors%3A%3D")
+}
+
+async function playSelectSuggestionClosesSuggestions({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  const input = await findByTestId(canvasElement, "search-input-story")
+  fireEvent.focus(input)
+  typeInput(input, "a")
+
+  const candidate = await findByTestId(canvasElement, "search-input-suggestion-authors%3A%3D")
+  fireEvent.click(candidate)
+
+  // Suggestions should close
+  await waitForAbsence(canvasElement, "search-input-suggestion-authors%3A%3D")
+}
+
+async function playBlurClosesSuggestions({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  const input = await findByTestId(canvasElement, "search-input-story")
+  fireEvent.focus(input)
+  typeInput(input, "a")
+  await findByTestId(canvasElement, "search-input-suggestion-authors%3A%3D")
+
+  fireEvent.blur(input)
+
+  await waitForAbsence(canvasElement, "search-input-suggestion-authors%3A%3D")
+}
+
+async function playBackspaceRemovesText({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  const input = await findByTestId(canvasElement, "search-input-story")
+  fireEvent.focus(input)
+
+  // Type "authors:="
+  typeInput(input, "authors:=")
+  await findByTestId(canvasElement, "search-input-suggestion-authors%3A%3D")
+
+  // Verify the value is "authors:="
+  expectInputValue(input, "authors:=")
+
+  // Simulate backspace - remove "="
+  typeInput(input, "authors:")
+  expectInputValue(input, "authors:")
+
+  // Simulate another backspace - remove ":"
+  typeInput(input, "authors")
+  expectInputValue(input, "authors")
+
+  // Simulate another backspace - remove "s"
+  typeInput(input, "author")
+  expectInputValue(input, "author")
+}
+
+async function playSaveButtonHidesLabel({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  const saveButton = await findByTestId(canvasElement, "search-input-save-button")
+  if (saveButton.getAttribute("data-label-tx")) {
+    throw new Error("Expected the save button label to be hidden.")
+  }
+}
 
 export function SearchInputFieldStoryWrapper({
   enableSaveButton = false,

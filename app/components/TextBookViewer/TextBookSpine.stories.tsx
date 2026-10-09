@@ -1,13 +1,82 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
 import { TextBookSpine } from "./TextBookSpine"
-import { buildTextBookHtmlDocument } from "./textBookHtml"
-import {
-  STORY_SPINE_KEY,
-  playNavigateToSecondPage,
-  playPaginationReported,
-  playVerticalWritingPaginationReported,
-} from "./textBookSpineStoryPlay"
+import { buildTextBookHtmlDocument, textBookViewerPaginationMessageType } from "./textBookHtml"
+
+const STORY_SPINE_KEY = "story-spine-1"
+
+async function waitForIframe(canvasElement: HTMLElement): Promise<HTMLElement | null> {
+  for (let retry = 0; retry < 20; retry++) {
+    const el = canvasElement.querySelector(
+      `iframe[title="text-book-spine-${STORY_SPINE_KEY}"]`,
+    ) as HTMLElement | null
+    if (el) {
+      return el
+    }
+    await new Promise((r) => setTimeout(r, 20))
+  }
+  return null
+}
+
+async function playPaginationReported({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  await waitForIframe(canvasElement)
+
+  window.postMessage(
+    JSON.stringify({
+      type: textBookViewerPaginationMessageType,
+      key: STORY_SPINE_KEY,
+      currentPage: 0,
+      totalPages: 3,
+    }),
+    "*",
+  )
+
+  await new Promise((r) => setTimeout(r, 30))
+}
+
+async function playNavigateToSecondPage({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  await waitForIframe(canvasElement)
+
+  window.postMessage(
+    JSON.stringify({
+      type: textBookViewerPaginationMessageType,
+      key: STORY_SPINE_KEY,
+      currentPage: 1,
+      totalPages: 3,
+    }),
+    "*",
+  )
+
+  await new Promise((r) => setTimeout(r, 30))
+}
+
+async function playVerticalWritingPaginationReported({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  await waitForIframe(canvasElement)
+
+  window.postMessage(
+    JSON.stringify({
+      type: textBookViewerPaginationMessageType,
+      key: STORY_SPINE_KEY,
+      currentPage: 0,
+      totalPages: 4,
+    }),
+    "*",
+  )
+
+  await new Promise((r) => setTimeout(r, 30))
+}
 
 const LONG_PARAGRAPH =
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt " +

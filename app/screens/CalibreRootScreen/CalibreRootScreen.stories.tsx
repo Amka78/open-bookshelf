@@ -1,13 +1,39 @@
 import { CalibreRootScreen } from "@/screens/CalibreRootScreen/CalibreRootScreen"
 import type { Meta, StoryObj } from "@storybook/react"
+import { findByText, fireEvent } from "@testing-library/react"
 import React from "react"
 
 import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
 import { createCalibreRootStoryRootStore } from "../../../.storybook/stories/screens/bookScreenStoryData"
-import {
-  playCalibreRootPressesLibrary,
-  playCalibreRootShowsLibraryNames,
-} from "./calibreRootScreenStoryPlay"
+
+async function playCalibreRootShowsLibraryNames({
+  canvasElement,
+  libraryNames,
+}: {
+  canvasElement: HTMLElement
+  libraryNames: string[]
+}) {
+  for (const libraryName of libraryNames) {
+    await findByText(canvasElement, libraryName)
+  }
+}
+
+async function playCalibreRootPressesLibrary({
+  canvasElement,
+  libraryName,
+}: {
+  canvasElement: HTMLElement
+  libraryName: string
+}) {
+  const row = await findByText(canvasElement, libraryName)
+  const pressable = row.closest('[data-testid="calibre-root-item"]')
+
+  if (!pressable) {
+    throw new Error(`Could not find pressable item for library ${libraryName}.`)
+  }
+
+  fireEvent.click(pressable)
+}
 
 export default {
   component: CalibreRootScreen,

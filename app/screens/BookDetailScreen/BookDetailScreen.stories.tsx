@@ -6,18 +6,66 @@ import { useNavigation } from "@react-navigation/native"
 import { action } from "@storybook/addon-actions"
 import type { Meta, StoryObj } from "@storybook/react"
 import { type ReactElement, useLayoutEffect } from "react"
-import {
-  playBookDetailConvertNavigation,
-  playBookDetailDeleteAction,
-  playBookDetailDownloadAction,
-  playBookDetailEditNavigation,
-  playBookDetailOcrNavigation,
-  playBookDetailOpenAction,
-} from "./bookDetailScreenStoryPlay"
 
 import { defaultBookImageUrl } from "../../../.storybook/stories/defaultBookImageUrl"
 import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
 import { createBookScreenRootStore } from "../../../.storybook/stories/screens/bookScreenStoryData"
+
+async function clickByTestId(canvasElement: HTMLElement, testId: string) {
+  const button = canvasElement.querySelector(`[data-testid="${testId}"]`)
+  if (!button || typeof (button as { click?: unknown }).click !== "function") {
+    throw new Error(`Element with data-testid='${testId}' was not found.`)
+  }
+  ;(button as unknown as { click: () => void }).click()
+}
+
+async function playBookDetailOpenAction({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  await clickByTestId(canvasElement, "book-detail-open-button")
+}
+
+async function playBookDetailDownloadAction({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  await clickByTestId(canvasElement, "book-detail-download-button")
+}
+
+async function playBookDetailConvertNavigation({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  await clickByTestId(canvasElement, "book-detail-convert-button")
+}
+
+async function playBookDetailEditNavigation({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  await clickByTestId(canvasElement, "book-detail-edit-button")
+}
+
+async function playBookDetailOcrNavigation({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  await clickByTestId(canvasElement, "book-detail-ocr-button")
+}
+
+async function playBookDetailDeleteAction({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  await clickByTestId(canvasElement, "book-detail-delete-button")
+}
 
 const defaultImageUrl = defaultBookImageUrl
 

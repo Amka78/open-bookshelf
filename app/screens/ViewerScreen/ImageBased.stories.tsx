@@ -7,7 +7,6 @@ import {
   IMAGE_BASED_FORMATS,
   createMockImagePage,
 } from "../../components/BookViewer/bookViewerStoryData"
-import { playImageBasedViewerRenders } from "../../components/BookViewer/bookViewerStoryPlay"
 
 // ============================================================
 // Helpers
@@ -125,6 +124,67 @@ function ImageViewerStoryWrapper({ format, pageCount }: WrapperProps) {
       }}
     />
   )
+}
+
+// ============================================================
+// Play helpers (inlined from bookViewerStoryPlay)
+// ============================================================
+
+function querySvgPageImages(canvasElement: HTMLElement) {
+  return Array.from(canvasElement.querySelectorAll("img")).filter((img) =>
+    (img.getAttribute("src") ?? "").startsWith("data:image/svg+xml"),
+  )
+}
+
+async function playViewerShowsTitleIfVisible({
+  canvasElement,
+  title,
+}: {
+  canvasElement: HTMLElement
+  title: string
+}) {
+  const titleEl = canvasElement.querySelector(`[data-testid="viewer-header-title"]`)
+  if (titleEl) {
+    const text = titleEl.textContent ?? ""
+    if (!text.includes(title)) {
+      throw new Error(`Expected title to include "${title}" but found "${text}"`)
+    }
+  }
+  // If not visible, skip check — menu is hidden by default
+}
+
+async function playImageBasedViewerRendersPages({
+  canvasElement,
+  pageCount,
+  maxRetries = 30,
+}: {
+  canvasElement: HTMLElement
+  pageCount: number
+  maxRetries?: number
+}) {
+  for (let i = 0; i < maxRetries; i++) {
+    if (querySvgPageImages(canvasElement).length === pageCount) {
+      return
+    }
+    await new Promise((r) => setTimeout(r, 100))
+  }
+
+  throw new Error(
+    `Expected ${pageCount} SVG page images but found ${querySvgPageImages(canvasElement).length}.`,
+  )
+}
+
+async function playImageBasedViewerRenders({
+  canvasElement,
+  bookTitle,
+  pageCount,
+}: {
+  canvasElement: HTMLElement
+  bookTitle?: string
+  pageCount: number
+}) {
+  await playImageBasedViewerRendersPages({ canvasElement, pageCount })
+  await playViewerShowsTitleIfVisible({ canvasElement, title: bookTitle ?? "" })
 }
 
 // ============================================================

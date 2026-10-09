@@ -1,18 +1,143 @@
+import { findByPlaceholderText, findByTestId, findByText, fireEvent } from "@testing-library/react"
 import type { Meta, StoryObj } from "@storybook/react"
 import { LibraryScreen } from "./LibraryScreen"
 
 import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
-import {
-  playLibraryChangesListStyle,
-  playLibraryRestoresScrollPosition,
-  playLibraryRunsCoverOcr,
-  playLibraryKeepsMultiSelectionAfterLongPress,
-  playLibraryShowsGridItem,
-  playLibraryShowsSearchInput,
-  playLibraryShowsTableItem,
-  playLibraryTogglesListItemSelection,
-  playLibraryTogglesSelectAllVisible,
-} from "./libraryScreenStoryPlay"
+
+async function playLibraryShowsSearchInput({
+  canvasElement,
+  placeholder,
+}: {
+  canvasElement: HTMLElement
+  placeholder: string
+}) {
+  await findByPlaceholderText(canvasElement, placeholder)
+}
+
+async function playLibrarySearchesByQuery({
+  canvasElement,
+  placeholder,
+  query,
+}: {
+  canvasElement: HTMLElement
+  placeholder: string
+  query: string
+}) {
+  const input = await findByPlaceholderText(canvasElement, placeholder)
+  fireEvent.change(input, { target: { value: query } })
+  fireEvent.keyDown(input, { key: "Enter", code: "Enter" })
+}
+
+async function playLibraryChangesListStyle({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  const button = await findByText(canvasElement, "Change View")
+  fireEvent.click(button)
+}
+
+async function playLibraryChangesSort({
+  canvasElement,
+  option,
+}: {
+  canvasElement: HTMLElement
+  option: string
+}) {
+  const select = await findByTestId(canvasElement, "library-sort")
+  fireEvent.change(select, { target: { value: option } })
+}
+
+async function playLibraryOpensBook({
+  canvasElement,
+  title,
+}: {
+  canvasElement: HTMLElement
+  title: string
+}) {
+  const item = await findByText(canvasElement, title)
+  fireEvent.click(item)
+}
+
+async function playLibraryRunsCoverOcr({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  const button = await findByTestId(canvasElement, "library-run-cover-ocr")
+  fireEvent.click(button)
+}
+
+async function playLibraryShowsDescriptionItem({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  await findByTestId(canvasElement, "library-description-item")
+}
+
+async function playLibraryShowsGridItem({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  await findByTestId(canvasElement, "library-grid-item")
+}
+
+async function playLibraryTogglesListItemSelection({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  const button = await findByTestId(canvasElement, "library-list-item")
+  fireEvent.click(button)
+}
+
+async function playLibraryKeepsMultiSelectionAfterLongPress({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  const longPressButton = await findByTestId(canvasElement, "library-list-item-long-press")
+  const secondButton = await findByTestId(canvasElement, "library-list-item-second")
+
+  fireEvent.click(longPressButton)
+  fireEvent.click(secondButton)
+}
+
+async function playLibraryShowsTableItem({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  await findByTestId(canvasElement, "library-table-item")
+}
+
+async function playLibraryTogglesSelectAllVisible({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  const button = await findByTestId(canvasElement, "selection-action-bar-toggle-visible")
+  fireEvent.click(button)
+}
+
+async function playLibraryRestoresScrollPosition({
+  canvasElement,
+  scrollTop,
+}: {
+  canvasElement: HTMLElement
+  scrollTop: number
+}) {
+  const scrollRegion = await findByTestId(canvasElement, "library-scroll-region")
+  const saveButton = await findByTestId(canvasElement, "library-save-scroll")
+  const restoreButton = await findByTestId(canvasElement, "library-restore-scroll")
+
+  scrollRegion.scrollTop = scrollTop
+  fireEvent.click(saveButton)
+  scrollRegion.scrollTop = 0
+  fireEvent.click(restoreButton)
+}
 
 export default {
   component: LibraryScreen,

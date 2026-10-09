@@ -1,18 +1,90 @@
+import { findByText, fireEvent } from "@testing-library/react"
 import type { Category } from "@/models/calibre"
 import type { Meta, StoryObj } from "@storybook/react"
 import { useState } from "react"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 import { type CalibreFieldOperator, LeftSideMenu, type QueryOperator } from "./LeftSideMenu"
-import {
-  playLeftSideMenuCalibreOperatorVisible,
-  playLeftSideMenuExpandsCategory,
-  playLeftSideMenuNodeIsVisible,
-  playLeftSideMenuOperatorBadgeVisible,
-  playLeftSideMenuSelectNode,
-  playLeftSideMenuToggleCalibreOperator,
-  playLeftSideMenuToggleOperator,
-} from "./leftSideMenuStoryPlay"
+
+async function playLeftSideMenuExpandsCategory({
+  canvasElement,
+  categoryName,
+}: {
+  canvasElement: HTMLElement
+  categoryName: string
+}) {
+  const node = await findByText(canvasElement, categoryName)
+  fireEvent.click(node)
+}
+
+async function playLeftSideMenuNodeIsVisible({
+  canvasElement,
+  nodeName,
+}: {
+  canvasElement: HTMLElement
+  nodeName: string
+}) {
+  await findByText(canvasElement, nodeName)
+}
+
+async function playLeftSideMenuSelectNode({
+  canvasElement,
+  nodeName,
+}: {
+  canvasElement: HTMLElement
+  nodeName: string
+}) {
+  const node = await findByText(canvasElement, nodeName)
+  fireEvent.click(node)
+}
+
+async function playLeftSideMenuOperatorBadgeVisible({
+  canvasElement,
+  operator,
+}: {
+  canvasElement: HTMLElement
+  operator: "AND" | "OR"
+}) {
+  const badge = await findByText(canvasElement, operator)
+  if (!badge) {
+    throw new Error(`Operator badge '${operator}' should be visible.`)
+  }
+}
+
+async function playLeftSideMenuToggleOperator({
+  canvasElement,
+  operator,
+}: {
+  canvasElement: HTMLElement
+  operator: "AND" | "OR"
+}) {
+  const badge = await findByText(canvasElement, operator)
+  fireEvent.click(badge)
+}
+
+async function playLeftSideMenuCalibreOperatorVisible({
+  canvasElement,
+  calibreOp,
+}: {
+  canvasElement: HTMLElement
+  calibreOp: string
+}) {
+  const badge = await findByText(canvasElement, calibreOp)
+  if (!badge) {
+    throw new Error(`Calibre operator badge '${calibreOp}' should be visible.`)
+  }
+}
+
+async function playLeftSideMenuToggleCalibreOperator({
+  canvasElement,
+  calibreOp,
+}: {
+  canvasElement: HTMLElement
+  calibreOp: string
+}) {
+  const badge = await findByText(canvasElement, calibreOp)
+  fireEvent.click(badge)
+}
 
 const mockTagBrowser = [
   {

@@ -1,13 +1,46 @@
+import { act, fireEvent } from "@testing-library/react"
 import type { Meta, StoryObj } from "@storybook/react"
 import { fn } from "@storybook/test"
 import React from "react"
 import { BookImageItem } from "./BookImageItem"
-import {
-  playBookImageItemSelectedSearchPressesAuthorLink,
-  playBookImageItemShowsDetailMenuWhenSelected,
-} from "./bookImageItemStoryPlay"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
+
+function findElementByTestId(canvasElement: HTMLElement, testId: string): HTMLElement {
+  const found = canvasElement.querySelector(`[data-testid="${testId}"]`) as HTMLElement | null
+
+  if (!found) {
+    throw new Error(`Element with data-testid='${testId}' was not found.`)
+  }
+
+  return found
+}
+
+async function playBookImageItemSelectedSearchPressesAuthorLink({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  findElementByTestId(canvasElement, "book-image-hover-overlay")
+  findElementByTestId(canvasElement, "book-image-hover-title-authors")
+  findElementByTestId(canvasElement, "book-image-hover-title-series")
+  findElementByTestId(canvasElement, "book-image-hover-title-tags")
+  findElementByTestId(canvasElement, "book-image-hover-title-formats")
+
+  await act(async () => {
+    fireEvent.click(
+      findElementByTestId(canvasElement, "book-image-hover-link-authors-Ursula K. Le Guin"),
+    )
+  })
+}
+
+async function playBookImageItemShowsDetailMenuWhenSelected({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  findElementByTestId(canvasElement, "book-image-detail-menu-overlay")
+}
 
 export default {
   title: "BookImageItem",
