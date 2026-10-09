@@ -7,7 +7,7 @@ import {
   IMAGE_BASED_FORMATS,
   createMockImagePage,
 } from "../../components/BookViewer/bookViewerStoryData"
-import { playBasicViewerRenders } from "../../components/BookViewer/bookViewerStoryPlay"
+import { playImageBasedViewerRenders } from "../../components/BookViewer/bookViewerStoryPlay"
 
 // ============================================================
 // Helpers
@@ -156,35 +156,35 @@ type Story = StoryObj<typeof ImageViewerStoryWrapper>
 export const EPUB: Story = {
   args: { format: "EPUB", pageCount: 8 },
   play: async ({ canvasElement }) => {
-    await playBasicViewerRenders({ canvasElement, bookTitle: "EPUB Book", pageCount: 8 })
+    await playImageBasedViewerRenders({ canvasElement, bookTitle: "EPUB Book", pageCount: 8 })
   },
 }
 
 export const CBZ: Story = {
   args: { format: "CBZ", pageCount: 8 },
   play: async ({ canvasElement }) => {
-    await playBasicViewerRenders({ canvasElement, bookTitle: "CBZ Book", pageCount: 8 })
+    await playImageBasedViewerRenders({ canvasElement, bookTitle: "CBZ Book", pageCount: 8 })
   },
 }
 
 export const CBR: Story = {
   args: { format: "CBR", pageCount: 8 },
   play: async ({ canvasElement }) => {
-    await playBasicViewerRenders({ canvasElement, bookTitle: "CBR Book", pageCount: 8 })
+    await playImageBasedViewerRenders({ canvasElement, bookTitle: "CBR Book", pageCount: 8 })
   },
 }
 
 export const CB7: Story = {
   args: { format: "CB7", pageCount: 8 },
   play: async ({ canvasElement }) => {
-    await playBasicViewerRenders({ canvasElement, bookTitle: "CB7 Book", pageCount: 8 })
+    await playImageBasedViewerRenders({ canvasElement, bookTitle: "CB7 Book", pageCount: 8 })
   },
 }
 
 export const CBC: Story = {
   args: { format: "CBC", pageCount: 8 },
   play: async ({ canvasElement }) => {
-    await playBasicViewerRenders({ canvasElement, bookTitle: "CBC Book", pageCount: 8 })
+    await playImageBasedViewerRenders({ canvasElement, bookTitle: "CBC Book", pageCount: 8 })
   },
 }
 
@@ -195,10 +195,10 @@ export const ImageInteractive: Story = {
     pageCount: { control: { type: "number", min: 2, max: 20 } },
   },
   play: async ({ canvasElement, args }) => {
-    await playBasicViewerRenders({
+    await playImageBasedViewerRenders({
       canvasElement,
       bookTitle: `${args.format} Book`,
-      pageCount: args.pageCount,
+      pageCount: args.pageCount ?? 6,
     })
   },
 }

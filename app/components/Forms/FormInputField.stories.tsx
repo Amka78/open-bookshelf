@@ -1,4 +1,5 @@
 import { Box } from "@/components/Box/Box"
+import { Input } from "@/components/Input/Input"
 import { Pressable } from "@/components/Pressable/Pressable"
 import type { Meta, StoryObj } from "@storybook/react"
 import { useForm } from "react-hook-form"
@@ -13,6 +14,8 @@ import {
   playTypingFiltersSuggestions,
   playTypingKeepsSuggestionsVisible,
 } from "./formInputFieldStoryPlay"
+
+import { withComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
 type StoryForm = {
   title: string | null
@@ -31,13 +34,15 @@ export function FormInputFieldStoryWrapper({ suggestions }: WrapperProps) {
 
   return (
     <Box width="$full" padding="$4">
-      <FormInputField
-        control={form.control}
-        name="title"
-        suggestions={suggestions}
-        width="$full"
-        testID="form-input-story-input"
-      />
+      <Input width="$full">
+        <FormInputField
+          control={form.control}
+          name="title"
+          suggestions={suggestions}
+          width="$full"
+          testID="form-input-story-input"
+        />
+      </Input>
       <Pressable testID="form-input-story-outside">
         <Box height="$10" />
       </Pressable>
@@ -48,6 +53,7 @@ export function FormInputFieldStoryWrapper({ suggestions }: WrapperProps) {
 export default {
   title: "Forms/FormInputField",
   component: FormInputFieldStoryWrapper,
+  decorators: [withComponentHolder],
   args: {
     suggestions: ["Alpha", "Beta", "Gamma", "Delta"],
   },

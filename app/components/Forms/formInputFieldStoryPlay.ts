@@ -1,44 +1,6 @@
 import { act } from "@testing-library/react"
 
-async function findByTestId(canvasElement: HTMLElement, testId: string): Promise<HTMLElement> {
-  for (let retry = 0; retry < 15; retry += 1) {
-    const found = canvasElement.querySelector(`[data-testid="${testId}"]`) as HTMLElement | null
-    if (found) {
-      return found
-    }
-    await new Promise((resolve) => {
-      setTimeout(resolve, 20)
-    })
-  }
-
-  throw new Error(`Element with data-testid='${testId}' was not found.`)
-}
-
-function typeInput(input: HTMLElement, value: string) {
-  const htmlInput = input as HTMLInputElement
-  const eventConstructor = htmlInput.ownerDocument.defaultView?.Event
-  if (!eventConstructor) {
-    throw new Error("Event constructor is unavailable.")
-  }
-
-  htmlInput.value = value
-  htmlInput.dispatchEvent(new eventConstructor("input", { bubbles: true }))
-  htmlInput.dispatchEvent(new eventConstructor("change", { bubbles: true }))
-}
-
-async function waitForAbsence(canvasElement: HTMLElement, testId: string): Promise<void> {
-  for (let retry = 0; retry < 15; retry += 1) {
-    const found = canvasElement.querySelector(`[data-testid="${testId}"]`) as HTMLElement | null
-    if (!found) {
-      return
-    }
-    await new Promise((resolve) => {
-      setTimeout(resolve, 20)
-    })
-  }
-
-  throw new Error(`Element with data-testid='${testId}' was expected to disappear.`)
-}
+import { findByTestId, typeInput, waitForAbsence } from "../../../.storybook/stories/storyPlayDom"
 
 export async function playFocusShowsSuggestions({
   canvasElement,

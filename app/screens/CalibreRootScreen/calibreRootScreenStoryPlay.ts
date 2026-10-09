@@ -1,4 +1,4 @@
-import { findByText, fireEvent, within } from "@testing-library/react"
+import { findByText, fireEvent } from "@testing-library/react"
 
 export async function playCalibreRootShowsLibraryNames({
   canvasElement,
@@ -26,5 +26,7 @@ export async function playCalibreRootPressesLibrary({
     throw new Error(`Could not find pressable item for library ${libraryName}.`)
   }
 
-  fireEvent.click(within(pressable as HTMLElement).getByRole("button"))
+  // calibre-root-item は TouchableOpacity 自身に付く。within(...).getByRole("button") だと
+  // 自分自身を含まない子孫だけを探して空振りするため、要素そのものをクリックする。
+  fireEvent.click(pressable)
 }

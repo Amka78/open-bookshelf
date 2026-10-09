@@ -1,4 +1,4 @@
-import { expect, fireEvent, within } from "@storybook/test"
+import { expect, fireEvent, waitFor, within } from "@storybook/test"
 
 export async function playFiveStarRendersStars({
   canvasElement,
@@ -6,8 +6,9 @@ export async function playFiveStarRendersStars({
   canvasElement: HTMLElement
 }) {
   const canvas = within(canvasElement)
-  const stars = canvas.getAllByTestId("rating-star")
-  await expect(stars).toHaveLength(5)
+  // findByTestId 系は「1件以上見つかるまで」しか待たないため、星が4個の時点で解決してしまう。
+  // 個数が確定するまで待つには waitFor で件数そのものをアサートする。
+  await waitFor(() => expect(canvas.queryAllByTestId("rating-star")).toHaveLength(5))
 }
 
 export async function playSelectableRatingPressesHandler({
@@ -18,6 +19,6 @@ export async function playSelectableRatingPressesHandler({
   canvasElement: HTMLElement
 }) {
   const canvas = within(canvasElement)
-  fireEvent.click(canvas.getByRole("button"))
+  fireEvent.click(await canvas.findByRole("button"))
   await expect(args.onPress).toHaveBeenCalledWith(args.rating ?? 0)
 }

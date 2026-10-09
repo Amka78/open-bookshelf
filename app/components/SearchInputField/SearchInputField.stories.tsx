@@ -13,6 +13,8 @@ import {
   playTypingKeepsSuggestionsVisible,
 } from "./SearchInputField.storyPlay"
 
+import { withComponentHolder } from "../../../.storybook/stories/ComponentHolder"
+
 export function SearchInputFieldStoryWrapper({
   enableSaveButton = false,
   initialValue = "",
@@ -49,6 +51,7 @@ export function SearchInputFieldStoryWrapper({
 export default {
   title: "SearchInputField",
   component: SearchInputFieldStoryWrapper,
+  decorators: [withComponentHolder],
 } as Meta<typeof SearchInputFieldStoryWrapper>
 
 type Story = StoryObj<typeof SearchInputFieldStoryWrapper>
@@ -81,7 +84,11 @@ export const BackspaceRemovesText: Story = {
 
 export const SaveButtonHidesLabel: Story = {
   render: () => (
-    <SearchInputFieldStoryWrapper enableSaveButton={true} initialValue="Dune" showSaveLabel={false} />
+    <SearchInputFieldStoryWrapper
+      enableSaveButton={true}
+      initialValue="Dune"
+      showSaveLabel={false}
+    />
   ),
   play: playSaveButtonHidesLabel,
 }

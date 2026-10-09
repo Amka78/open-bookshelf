@@ -137,7 +137,13 @@ export const ListItem = memo(function ListItem(props: ListItemProps) {
 
   return (
     <View style={$containerStyles}>
-      <TouchableOpacity {...TouchableOpacityProps} style={$touchableStyles}>
+      <TouchableOpacity
+        // react-native-web の TouchableOpacity は role を出力しないため、
+        // web で getByRole("button") が原理的に失敗する。明示的に付与する。
+        accessibilityRole="button"
+        {...TouchableOpacityProps}
+        style={$touchableStyles}
+      >
         <ListItemAction
           side="left"
           size={height}
@@ -179,4 +185,3 @@ const $touchableStyle: ViewStyle = {
   flexDirection: "row",
   alignItems: "flex-start",
 }
-

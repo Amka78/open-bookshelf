@@ -13,6 +13,7 @@ export const CalibreRootScreen: FC = observer(() => {
     ({ item }: { item: LibraryMap }) => {
       return (
         <ListItem
+          testID="calibre-root-item"
           LeftComponent={
             <View>
               <Text fontSize={"$lg"}>{item.id}</Text>

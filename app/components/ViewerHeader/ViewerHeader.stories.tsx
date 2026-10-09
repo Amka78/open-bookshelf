@@ -1,5 +1,6 @@
 import { ViewerHeader } from "@/components"
 import type { Meta, StoryObj } from "@storybook/react"
+import { fn } from "@storybook/test"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 import {
@@ -16,6 +17,10 @@ export default {
     title: "HeaderTitle",
     visible: true,
     autoPageTurning: false,
+    // argTypes の action は prop 値を供給しない。これらが undefined だと
+    // TOC / ブックマークボタンが条件分岐で描画されない。
+    onShowToc: fn(),
+    onAddBookmark: fn(),
   },
   argTypes: {
     ...viewerMenuStoryArgTypes,

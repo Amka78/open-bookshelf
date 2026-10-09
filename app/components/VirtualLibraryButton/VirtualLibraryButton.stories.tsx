@@ -1,7 +1,6 @@
 import { VirtualLibraryButton } from "@/components/VirtualLibraryButton/VirtualLibraryButton"
-import { expect } from "@storybook/jest"
 import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, within } from "@storybook/testing-library"
+import { expect, fn, userEvent, within } from "@storybook/test"
 import React from "react"
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
@@ -9,9 +8,17 @@ export default {
   title: "VirtualLibraryButton",
   component: VirtualLibraryButton,
   args: {
-    virtualLibraries: ["Fiction", "Non-Fiction", "Unread", "Favorites"],
+    // VirtualLibrary は { name, path } の object。文字列を渡すと vl.name が undefined になり
+    // testID が全て vl-item-undefined になって play が見つからない。
+    virtualLibraries: [
+      { name: "Fiction", path: "fiction" },
+      { name: "Non-Fiction", path: "non-fiction" },
+      { name: "Unread", path: "unread" },
+      { name: "Favorites", path: "favorites" },
+    ],
     selectedVl: null,
-    onSelect: () => {},
+    // no-op だと play の toHaveBeenCalledWith が spy 不在で失敗するため fn() を渡す。
+    onSelect: fn(),
   },
   argTypes: {
     onSelect: { action: "selected" },

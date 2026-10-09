@@ -86,7 +86,12 @@ export const BookListItem = memo(function BookListItem({
         isSelected && { backgroundColor: SELECTED_OVERLAY_COLOR },
       ]}
     >
-      <Pressable onPress={onPress ?? onSelectToggle} onLongPress={onLongPress} style={styles.rowContent}>
+      <Pressable
+        accessibilityRole="button"
+        onPress={onPress ?? onSelectToggle}
+        onLongPress={onLongPress}
+        style={styles.rowContent}
+      >
         <HStack alignItems="center" space="md">
           {/* Cover image */}
           <Box style={styles.coverContainer}>

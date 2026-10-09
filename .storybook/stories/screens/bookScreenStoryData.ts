@@ -1,3 +1,4 @@
+import { getSnapshot } from "mobx-state-tree"
 import { RootStoreModel } from "../../../app/models"
 import type { RootStore } from "../../../app/models/RootStore"
 import type { BookSnapshotIn } from "../../../app/models/calibre"
@@ -333,6 +334,28 @@ export function createBookScreenRootStore(): RootStore {
       },
       selectedLibrary: "library-1",
       readingHistories: [],
+    },
+  })
+}
+
+// CalibreRootScreen は props を取らず useCalibreRoot() 経由でストアの libraryMap を読むため、
+// story の args ではライブラリを増やせない。2件必要な play 用に library-1 を複製して追加する。
+// MST は生成後の map 変更を action 外で禁止しているため、snapshot を組み立ててから create する。
+export function createCalibreRootStoryRootStore(): RootStore {
+  const snapshot = getSnapshot(createBookScreenRootStore())
+  const { libraryMap } = snapshot.calibreRootStore
+  const first = libraryMap["library-1"]
+
+  return RootStoreModel.create({
+    ...snapshot,
+    calibreRootStore: {
+      ...snapshot.calibreRootStore,
+      libraryMap: {
+        ...libraryMap,
+        // books まで複製すると同一 id の BookModel が2箇所にでき、
+        // MST の types.reference が解決不能になるため library-2 は空にする。
+        ...(first ? { "library-2": { ...first, id: "library-2", books: {} } } : {}),
+      },
     },
   })
 }

@@ -1,24 +1,19 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import React from "react"
-import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
+import { withComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 import { DateTimePicker } from "./DateTimePicker"
 
 export default {
   title: "DateTimePicker",
   component: DateTimePicker,
   args: {
-    value: new Date(),
+    // native は parseISO、web は value.split("T")[0] を呼ぶため ISO 文字列が契約。
+    value: "2024-06-15T00:00:00.000Z",
   },
   argTypes: {
     onChange: { action: "Change DateTime." },
   },
-  decorators: [
-    (Story) => (
-      <ComponentHolder>
-        <Story />
-      </ComponentHolder>
-    ),
-  ],
+  decorators: [withComponentHolder],
 } as Meta<typeof DateTimePicker>
 
 type CheckboxStory = StoryObj<typeof DateTimePicker>

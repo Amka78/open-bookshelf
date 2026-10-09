@@ -1,9 +1,9 @@
+import { Pressable, styled } from "@gluestack-ui/themed"
+import type { ComponentProps } from "react"
 import { Box } from "../Box/Box"
 import { HStack } from "../HStack/HStack"
 import { MaterialCommunityIcon } from "../MaterialCommunityIcon/MaterialCommunityIcon"
 import { Text } from "../Text/Text"
-import { Pressable, styled } from "@gluestack-ui/themed"
-import type { ComponentProps } from "react"
 export type RatingProps = {
   rating: number | null
   ticks?: number
@@ -30,7 +30,7 @@ function RatingCore({ ticks = 2, ...restProps }: RatingProps) {
       }
     }
     ratingCore = ratingList.map((value) => {
-      return <MaterialCommunityIcon key={`rating-${value}`} name="star" />
+      return <MaterialCommunityIcon key={`rating-${value}`} name="star" testID="rating-star" />
     })
   } else {
     ratingCore = <RatingText tx="rating.noRate" />
@@ -41,6 +41,7 @@ function RatingCore({ ticks = 2, ...restProps }: RatingProps) {
     <Box {...props}>
       {props.onPress ? (
         <Pressable
+          accessibilityRole="button"
           onPress={() => {
             props.onPress?.(props.rating ?? 0)
           }}

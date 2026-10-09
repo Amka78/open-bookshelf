@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 import React from "react"
 
 import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
+import { createCalibreRootStoryRootStore } from "../../../.storybook/stories/screens/bookScreenStoryData"
 import {
   playCalibreRootPressesLibrary,
   playCalibreRootShowsLibraryNames,
@@ -10,8 +11,15 @@ import {
 
 export default {
   component: CalibreRootScreen,
+  // CalibreRootScreen は props を取らずストアの libraryMap を読むため、args ではなく
+  // rootStore でライブラリを注入する。story 間の状態漏れを避けるため毎回新しく作る。
   decorators: [
-    (Story) => <ScreenContainer stackScreen={{ name: "CalibreRoot", story: () => <Story /> }} />,
+    (Story) => (
+      <ScreenContainer
+        rootStore={createCalibreRootStoryRootStore()}
+        stackScreen={{ name: "CalibreRoot", story: () => <Story /> }}
+      />
+    ),
   ],
   title: "Screens/CalibreRootScreen",
 } as Meta<typeof CalibreRootScreen>

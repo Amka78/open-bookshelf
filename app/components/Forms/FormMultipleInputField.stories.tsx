@@ -14,6 +14,8 @@ import {
   playMultipleTypingKeepsSuggestionsVisible,
 } from "./formMultipleInputFieldStoryPlay"
 
+import { withComponentHolder } from "../../../.storybook/stories/ComponentHolder"
+
 type StoryForm = {
   tags: string[]
 }
@@ -50,6 +52,7 @@ export function FormMultipleInputFieldStoryWrapper({ suggestions }: WrapperProps
 export default {
   title: "Forms/FormMultipleInputField",
   component: FormMultipleInputFieldStoryWrapper,
+  decorators: [withComponentHolder],
   args: {
     suggestions: ["Alpha", "Beta", "Gamma", "Delta"],
   },

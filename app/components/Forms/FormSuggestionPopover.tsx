@@ -4,8 +4,8 @@ import { Pressable } from "@/components/Pressable/Pressable"
 import { Text } from "@/components/Text/Text"
 import { useKeyboardVisibility } from "@/hooks/useKeyboardVisibility"
 import { usePalette } from "@/theme"
-import { createPortal } from "react-dom"
 import { type ReactNode, useEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import { Platform } from "react-native"
 import type { DimensionValue } from "react-native"
 import { resolveSuggestionPopoverPlacement } from "./formSuggestionPlacement"
@@ -130,6 +130,35 @@ export function FormSuggestionPopover(props: FormSuggestionPopoverProps) {
           )
         : null
 
+    // native の PopoverBackdrop 相当。web 分岐にも置かないと「外側を押して閉じる」動作が
+    // プラットフォームで食い違い、backdropTestID を探す play も web では検証できない。
+    const backdrop =
+      isOpen && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              data-testid={backdropTestID ?? `${testIdPrefix}-backdrop`}
+              role="presentation"
+              onClick={() => {
+                onClose()
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
+                  onClose()
+                }
+              }}
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 9998,
+              }}
+            />,
+            document.body,
+          )
+        : null
+
     return (
       <>
         <div
@@ -140,6 +169,7 @@ export function FormSuggestionPopover(props: FormSuggestionPopoverProps) {
         >
           {trigger({})}
         </div>
+        {backdrop}
         {suggestions}
       </>
     )

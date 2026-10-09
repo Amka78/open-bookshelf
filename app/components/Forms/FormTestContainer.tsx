@@ -6,6 +6,7 @@ import {
   FormInputField,
   FormMultipleInputField,
   FormRatingGroup,
+  Input,
   VStack,
 } from "@/components"
 import { useForm } from "react-hook-form"
@@ -26,7 +27,9 @@ export function FormTestContainer(props: FormTestContainerProps) {
 
   return (
     <VStack space={"md"}>
-      <FormInputField control={form.control} name={"input"} />
+      <Input width={"$full"}>
+        <FormInputField control={form.control} name={"input"} />
+      </Input>
       <FormCheckbox control={form.control} name={"checkbox"}>
         {"CheckBox"}
       </FormCheckbox>

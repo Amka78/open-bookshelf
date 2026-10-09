@@ -1,6 +1,7 @@
-import { BookImageItem } from "./BookImageItem"
 import type { Meta, StoryObj } from "@storybook/react"
+import { fn } from "@storybook/test"
 import React from "react"
+import { BookImageItem } from "./BookImageItem"
 import {
   playBookImageItemSelectedSearchPressesAuthorLink,
   playBookImageItemShowsDetailMenuWhenSelected,
@@ -46,6 +47,9 @@ export const SelectedSearchLinks: BookImageItemStory = {
   args: {
     selected: true,
     showSelectionDetails: true,
+    // argTypes の action は prop 値を供給しない。undefined だと showHoverSearchOverlay が
+    // false になり overlay 全体が描画されない。
+    onHoverSearchPress: fn(),
     hoverSearchMetadata: {
       authors: ["Ursula K. Le Guin"],
       series: "Earthsea",

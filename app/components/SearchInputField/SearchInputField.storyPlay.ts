@@ -1,31 +1,20 @@
 import { fireEvent } from "@testing-library/react"
 
-async function findByTestId(canvasElement: HTMLElement, testId: string): Promise<HTMLElement> {
-  for (let retry = 0; retry < 30; retry += 1) {
-    const found = canvasElement.querySelector(`[data-testid="${testId}"]`) as HTMLElement | null
-    if (found) {
-      return found
-    }
-    await new Promise((resolve) => setTimeout(resolve, 100))
-  }
+import {
+  findByTestId as findInDom,
+  waitForAbsence as waitGoneInDom,
+} from "../../../.storybook/stories/storyPlayDom"
 
-  throw new Error(`Element with data-testid='${testId}' was not found.`)
-}
+const RETRY = { retries: 30, intervalMs: 100 }
+
+const findByTestId = (canvasElement: HTMLElement, testId: string) =>
+  findInDom(canvasElement, testId, RETRY)
+
+const waitForAbsence = (canvasElement: HTMLElement, testId: string) =>
+  waitGoneInDom(canvasElement, testId, RETRY)
 
 function typeInput(input: HTMLElement, value: string) {
   fireEvent.change(input, { target: { value } })
-}
-
-async function waitForAbsence(canvasElement: HTMLElement, testId: string): Promise<void> {
-  for (let retry = 0; retry < 30; retry += 1) {
-    const found = canvasElement.querySelector(`[data-testid="${testId}"]`) as HTMLElement | null
-    if (!found) {
-      return
-    }
-    await new Promise((resolve) => setTimeout(resolve, 100))
-  }
-
-  throw new Error(`Element with data-testid='${testId}' was expected to disappear.`)
 }
 
 function expectInputValue(input: HTMLElement, value: string) {

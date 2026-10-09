@@ -27,22 +27,6 @@ async function findByText(
 }
 
 /**
- * Wait for an element matching the given testID to appear in the DOM.
- */
-async function findByTestId(
-  canvasElement: HTMLElement,
-  testId: string,
-  maxRetries = 30,
-): Promise<HTMLElement> {
-  for (let i = 0; i < maxRetries; i++) {
-    const el = canvasElement.querySelector(`[data-testid="${testId}"]`) as HTMLElement | null
-    if (el) return el
-    await new Promise((r) => setTimeout(r, 100))
-  }
-  throw new Error(`Element with testID '${testId}' was not found after ${maxRetries} retries.`)
-}
-
-/**
  * Verify that the viewer renders at least one mock page.
  *
  * The mock SVG pages contain text like "Page 1 / 6".
@@ -102,5 +86,55 @@ export async function playBasicViewerRenders({
   pageCount?: number
 }) {
   await playViewerRendersPage({ canvasElement, bookTitle, pageCount })
+  await playViewerShowsTitleIfVisible({ canvasElement, title: bookTitle ?? "" })
+}
+
+function querySvgPageImages(canvasElement: HTMLElement) {
+  return Array.from(canvasElement.querySelectorAll("img")).filter((img) =>
+    (img.getAttribute("src") ?? "").startsWith("data:image/svg+xml"),
+  )
+}
+
+/**
+ * Verify that an image-based viewer rendered the expected number of page images.
+ *
+ * The mock pages are SVG data URIs shown through <img>, so their "Page N / M" label
+ * lives inside the image and never reaches the DOM text. playViewerRendersPage
+ * (text based) therefore cannot be used for image-based formats.
+ */
+export async function playImageBasedViewerRendersPages({
+  canvasElement,
+  pageCount,
+  maxRetries = 30,
+}: {
+  canvasElement: HTMLElement
+  pageCount: number
+  maxRetries?: number
+}) {
+  for (let i = 0; i < maxRetries; i++) {
+    if (querySvgPageImages(canvasElement).length === pageCount) {
+      return
+    }
+    await new Promise((r) => setTimeout(r, 100))
+  }
+
+  throw new Error(
+    `Expected ${pageCount} SVG page images but found ${querySvgPageImages(canvasElement).length}.`,
+  )
+}
+
+/**
+ * Image-based counterpart of playBasicViewerRenders.
+ */
+export async function playImageBasedViewerRenders({
+  canvasElement,
+  bookTitle,
+  pageCount,
+}: {
+  canvasElement: HTMLElement
+  bookTitle?: string
+  pageCount: number
+}) {
+  await playImageBasedViewerRendersPages({ canvasElement, pageCount })
   await playViewerShowsTitleIfVisible({ canvasElement, title: bookTitle ?? "" })
 }
