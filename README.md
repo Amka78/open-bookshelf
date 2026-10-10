@@ -14,7 +14,7 @@ A cross-platform book library management application built with React Native, Ex
 - 📖 **PDF Viewer**: Built-in PDF viewer for reading books
 - 🎯 **Navigation & Organization**: Intuitive navigation with bottom tab bar and side menu
 - 💾 **Persistent Storage**: Async storage for local data persistence
-- 🧪 **Testing**: Detox end-to-end tests and Jest unit tests
+- 🧪 **Testing**: Jest unit tests
 
 ## Tech Stack
 
@@ -27,7 +27,7 @@ A cross-platform book library management application built with React Native, Ex
 - **Forms**: React Hook Form
 - **Internationalization**: i18n-js
 - **Build Tools**: Metro bundler, Webpack5 for Storybook
-- **Testing**: Jest, Detox, Storybook
+- **Testing**: Jest, Storybook
 
 ## Project Structure
 
@@ -52,7 +52,6 @@ open-bookshelf
 ├── ios/                     # iOS native code
 ├── .storybook/              # Storybook configuration (Web & Native)
 ├── test/                    # Test setup and mocks
-├── detox/                   # End-to-end tests
 ├── app.config.ts            # Expo configuration
 ├── babel.config.js          # Babel configuration with React Refresh
 ├── metro.config.js          # Metro bundler configuration
@@ -239,15 +238,6 @@ Add or modify translations in `app/i18n/`:
 bun run test:unit
 bun run test:watch
 ```
-
-### End-to-End Tests (Detox)
-
-```bash
-bun run build:detox
-bun run test:detox
-```
-
-See [Detox Setup](./detox/README.md) for detailed instructions.
 
 ### Component Testing with Storybook
 

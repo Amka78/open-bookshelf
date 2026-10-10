@@ -46,21 +46,6 @@ command -v bun >/dev/null 2>&1 || {
   brew install bun
 }
 
-# IF NEEDED: Ensure appleSimUtils is installed
-# command -v applesimutils >/dev/null 2>&1 || {
-#   echo "This app requires appleSimUtils to run end to end tests, but it was not found on your system."
-#   echo "Installing applesimutils with brew..."
-#   brew tap wix/brew
-#   brew install applesimutils
-# }
-
-# IF NEEDED: Ensure detox-cli is installed
-# command -v detox >/dev/null 2>&1 || {
-#   echo "This app requires detox to run end to end tests, but it was not found on your system."
-#   echo "Installing detox with bunx..."
-#   bunx detox --help
-# }
-
 # IF NEEDED: Ensure phraseapp is installed
 # command -v phraseapp >/dev/null 2>&1 || {
 #   echo "This app requires phraseapp to run localizations, but it was not found on your system."

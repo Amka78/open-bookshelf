@@ -9,15 +9,11 @@
     "start:debug:dev-client": "EXPO_PUBLIC_LOG_LEVEL=debug bunx expo start --dev-client",
     "ios": "bunx react-native run-ios",
     "android": "bunx react-native run-android --active-arch-only",
-    "test:detox": "detox test -c ios.sim.debug",
-    "build:detox": "detox build -c ios.sim.debug",
-    "ci:test:detox": "detox test -c ios.sim.release -l verbose --cleanup",
-    "ci:build:detox": "detox build -c ios.sim.release",
     "compile": "tsc --noEmit -p tsconfig.compile.json --pretty",
     "format": "biome format --write app test",
     "lint": "biome lint app test",
     "patch": "bunx patch-package",
-    "test": "bun run test:unit && bun run test:detox",
+    "test": "bun run test:unit",
     "test:watch": "bun test --watch app test",
     "test:unit": "vitest run --project=unit",
     "test:unit:watch": "vitest --project=unit",
@@ -37,8 +33,6 @@
     "expo:web": "bunx expo start --web",
     "debug:web": "EXPO_PUBLIC_LOG_LEVEL=debug bunx expo start --web",
     "desktop": "electrobun dev",
-    "expo:build:detox": "detox build -c ios.sim.expo",
-    "expo:test:detox": "./bin/downloadExpoApp.sh && detox test --configuration ios.sim.expo",
     "reactotron": "bun run adb && reactotron-app",
     "storybook-generate": "sb-rn-get-stories",
     "storybook-watch": "sb-rn-watcher",
@@ -145,8 +139,6 @@
     "@vitest/browser": "3",
     "@vitest/runner": "3",
     "babel-plugin-react-compiler": "^1.0.0",
-    "detox": "19.12.1",
-    "detox-expo-helpers": "0.6.0",
     "electrobun": "latest",
     "gh-pages": "^6.3.0",
     "jsdom": "^29.0.2",
@@ -164,35 +156,5 @@
     "vite-plugin-rnw": "^0.0.12",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "3"
-  },
-  "detox": {
-    "test-runner": "jest",
-    "runnerConfig": "./detox/config.json",
-    "specs": "detox",
-    "configurations": {
-      "ios.sim.debug": {
-        "binaryPath": "ios/build/Build/Products/Debug-iphonesimulator/OpenBookShelf.app",
-        "build": "xcodebuild -workspace ios/OpenBookShelf.xcworkspace -scheme OpenBookShelf -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build -destination 'name=iPhone 14'",
-        "type": "ios.simulator",
-        "device": {
-          "name": "iPhone 14",
-          "os": "iOS 15.5"
-        }
-      },
-      "ios.sim.release": {
-        "binaryPath": "ios/build/Build/Products/Release-iphonesimulator/OpenBookShelf.app",
-        "build": "xcodebuild -workspace ios/OpenBookShelf.xcworkspace -scheme OpenBookShelf -configuration Release -sdk iphonesimulator -derivedDataPath ios/build -destination 'name=iPhone 14'",
-        "type": "ios.simulator",
-        "device": {
-          "name": "iPhone 14",
-          "os": "iOS 15.5"
-        }
-      },
-      "ios.sim.expo": {
-        "binaryPath": "bin/Exponent.app",
-        "type": "ios.simulator",
-        "name": "iPhone 14"
-      }
-    }
   }
 }
