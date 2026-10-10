@@ -6,6 +6,7 @@ import {
   type ApiBookInfoCore,
   type ApiCalibreInterfaceType,
   type FieldMetadata,
+  type MetadataType,
   api,
 } from "../services/api"
 import {
@@ -56,8 +57,8 @@ export const CalibreRootStore = types
       const response = yield api.initializeCalibre()
       if (response.kind === "ok") {
         const data: ApiCalibreInterfaceType = response.data
-        root.defaultLibraryId = data.default_library_id
-        root.numPerPage = data.num_per_page
+        root.defaultLibraryId = data.default_library_id ?? null
+        root.numPerPage = data.num_per_page ?? null
 
         root.libraryMap.clear()
         Object.keys(data.library_map).forEach((keyName: string) => {
@@ -104,12 +105,13 @@ export const CalibreRootStore = types
       return false
     }),
     getTagBrowser: flow(function* () {
-      const response = yield api.getTagBrowser(root.defaultLibraryId)
+      const response = yield api.getTagBrowser(root.defaultLibraryId ?? "")
       if (response.kind === "ok") {
-        root.selectedLibrary.tagBrowser.clear()
+        root.selectedLibrary!.tagBrowser.clear()
 
-        Object.values(response.data.root.children).forEach(
-          (value: { id: string; children: { id: string; children: { id: string }[] }[] }) => {
+        const rootChildren = Object.values((response.data as any).root.children) as any[]
+        rootChildren.forEach(
+          (value: any) => {
             const category = response.data.item_map[value.id]
 
             const categoryModel = CategoryModel.create({
@@ -123,7 +125,7 @@ export const CalibreRootStore = types
             })
 
             const subCategoryArray: Instance<typeof SubCategoryModel>[] = []
-            Object.values(value.children).forEach((subValue) => {
+            Object.values(value.children).forEach((subValue: any) => {
               const subCateogy = response.data.item_map[subValue.id]
               const subCategoryModel = SubCategoryModel.create({
                 category: subCateogy.category,
@@ -134,7 +136,7 @@ export const CalibreRootStore = types
               })
 
               const nodeArray: Instance<typeof NodeModel>[] = []
-              Object.values(subValue.children).forEach((nodeValue: { id: string }) => {
+              Object.values(subValue.children).forEach((nodeValue: any) => {
                 const node = response.data.item_map[nodeValue.id]
 
                 const nodeModel = NodeModel.create({
@@ -151,7 +153,7 @@ export const CalibreRootStore = types
             })
 
             categoryModel.setProp("subCategory", subCategoryArray)
-            root.selectedLibrary.tagBrowser.push(categoryModel)
+            root.selectedLibrary!.tagBrowser.push(categoryModel)
           },
         )
         return true
@@ -162,18 +164,18 @@ export const CalibreRootStore = types
     searchLibrary: flow(function* (num?: number) {
       root.isFetchingMore = false
       const response = yield api.getLibrary(
-        root.selectedLibrary.id,
-        root.selectedLibrary.searchSetting ? root.selectedLibrary.searchSetting.query : "",
-        root.selectedLibrary.searchSetting ? root.selectedLibrary.searchSetting.sort : "timestamp",
-        root.selectedLibrary.searchSetting ? root.selectedLibrary.searchSetting.sortOrder : "desc",
-        root.selectedLibrary.searchSetting?.vl,
+        root.selectedLibrary!.id,
+        root.selectedLibrary!.searchSetting ? root.selectedLibrary!.searchSetting.query ?? "" : "",
+        root.selectedLibrary!.searchSetting ? (root.selectedLibrary!.searchSetting.sort ?? "timestamp") : "timestamp",
+        root.selectedLibrary!.searchSetting ? (root.selectedLibrary!.searchSetting.sortOrder ?? "desc") : "desc",
+        root.selectedLibrary!.searchSetting?.vl,
         num,
       )
 
       if (response.kind === "ok") {
-        root.selectedLibrary.books.clear()
-        convertLibraryInformation(response.data, root.selectedLibrary)
-        convertSearchResult(response.data, root.selectedLibrary)
+        root.selectedLibrary!.books.clear()
+        convertLibraryInformation(response.data, root.selectedLibrary!)
+        convertSearchResult(response.data, root.selectedLibrary!)
 
         return true
       }
@@ -194,10 +196,10 @@ export const CalibreRootStore = types
       try {
         const response = yield api.getMoreLibrary(selectedLibrary.id, {
           offset: offset,
-          query: selectedLibrary.searchSetting.query ? selectedLibrary.searchSetting.query : "",
-          sort: selectedLibrary.searchSetting.sort,
-          sort_order: selectedLibrary.searchSetting.sortOrder,
-          vl: selectedLibrary.searchSetting.vl ?? "",
+          query: selectedLibrary.searchSetting!.query ? selectedLibrary.searchSetting!.query : "",
+          sort: selectedLibrary.searchSetting!.sort,
+          sort_order: selectedLibrary.searchSetting!.sortOrder,
+          vl: selectedLibrary.searchSetting!.vl ?? "",
         })
 
         if (response.kind === "ok") {
@@ -332,11 +334,11 @@ function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap)
     sortOrder: data.search_result.sort_order,
     totalNum: data.search_result.total_num
       ? data.search_result.total_num
-      : selectedLibrary.searchSetting.totalNum,
+      : selectedLibrary.searchSetting!.totalNum,
     vl: selectedLibrary.searchSetting?.vl ?? null,
   })
   data.search_result.book_ids.forEach((bookId: number) => {
-    const metadata = data.metadata[bookId]
+    const metadata = (data.metadata as unknown as Record<string, MetadataType>)[bookId]
 
     const metaDataModel = MetadataModel.create({
       authors: metadata.authors,
@@ -369,7 +371,7 @@ function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap)
 
     selectedLibrary.books.set(bookId.toString(), {
       id: bookId,
-      metaData: metaDataModel as unknown,
+      metaData: metaDataModel as any,
     })
   })
 

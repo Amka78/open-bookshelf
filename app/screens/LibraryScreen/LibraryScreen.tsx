@@ -137,8 +137,8 @@ const LibrarySearchHeader = observer(
           isLargeScreen={convergenceHook.isLarge}
         />
         <SortMenu
-          selectedSort={selectedLibrary?.searchSetting?.sort}
-          selectedSortOrder={selectedLibrary?.searchSetting?.sortOrder}
+          selectedSort={selectedLibrary?.searchSetting?.sort ?? undefined}
+          selectedSortOrder={selectedLibrary?.searchSetting?.sortOrder ?? undefined}
           field={selectedLibrary?.sortField}
           onSortChange={onSort}
           isLargeScreen={convergenceHook.isLarge}
@@ -353,24 +353,24 @@ export const LibraryScreen: FC = observer(() => {
       const readingProgress = readingProgressById.get(item.id) ?? null
       const isSelected = libraryHook.isBookSelected(item.id)
       const showSingleSelectionDetails = isSelected && libraryHook.selectedBookIds.size === 1
-      const readStatus = settingStore.getReadStatus(selectedLibrary.id, item.id) as
+      const readStatus = settingStore.getReadStatus(selectedLibrary!.id, item.id) as
         | "want-to-read"
         | "reading"
         | "finished"
         | undefined
 
       const handleSetStatus = (status: "want-to-read" | "reading" | "finished" | null) => {
-        settingStore.setReadStatus(selectedLibrary.id, item.id, status)
+        settingStore.setReadStatus(selectedLibrary!.id, item.id, status)
       }
 
-      const thumbnailUri = encodeURI(api.getBookThumbnailUrl(item.id, selectedLibrary.id))
+      const thumbnailUri = encodeURI(api.getBookThumbnailUrl(item.id, selectedLibrary!.id))
       const imageSource = thumbnailSourceById.get(item.id)?.source ?? {
         uri: thumbnailUri,
         headers: api.getAuthHeaders(thumbnailUri),
       }
       const imageUrl = imageSource.uri
       const ocrImageUrl = encodeURI(
-        api.getBookThumbnailUrl(item.id, selectedLibrary.id, "1200x1600"),
+        api.getBookThumbnailUrl(item.id, selectedLibrary!.id, "1200x1600"),
       )
       const handleBookMetadataSearch = async (query: string) => {
         libraryHook.setHeaderSearchText(query)
@@ -378,18 +378,18 @@ export const LibraryScreen: FC = observer(() => {
       }
 
       const onOpenBook = async () => {
-        selectedLibrary.setBook(item.id)
+        selectedLibrary!.setBook(item.id)
         await openViewerHook.execute(modal)
       }
 
       const onDownloadBook = async () => {
-        selectedLibrary.setBook(item.id)
+        selectedLibrary!.setBook(item.id)
         await downloadBookHook.execute(modal)
       }
 
       const onConvertBook = async () => {
-        selectedLibrary.setBook(item.id)
-        const book = selectedLibrary.selectedBook
+        selectedLibrary!.setBook(item.id)
+        const book = selectedLibrary!.selectedBook
         if (!book?.metaData?.formats?.length) {
           return
         }
@@ -397,7 +397,7 @@ export const LibraryScreen: FC = observer(() => {
       }
 
       const onEditBook = () => {
-        selectedLibrary.setBook(item.id)
+        selectedLibrary!.setBook(item.id)
         if (convergenceHook.isLarge) {
           modal.openModal("BookEditModal", {
             imageUrl: imageUrl,
@@ -410,7 +410,7 @@ export const LibraryScreen: FC = observer(() => {
       }
 
       const onRunCoverOcr = () => {
-        selectedLibrary.setBook(item.id)
+        selectedLibrary!.setBook(item.id)
         if (convergenceHook.isLarge) {
           modal.openModal("BookOcrReviewModal", {
             imageUrl: ocrImageUrl,
@@ -424,7 +424,7 @@ export const LibraryScreen: FC = observer(() => {
       }
 
       const onOpenBookDetail = () => {
-        selectedLibrary.setBook(item.id)
+        selectedLibrary!.setBook(item.id)
         if (convergenceHook.isLarge) {
           modal.openModal("BookDetailModal", {
             imageUrl: imageUrl,
@@ -455,7 +455,7 @@ export const LibraryScreen: FC = observer(() => {
       }
 
       const onDeleteBook = async () => {
-        selectedLibrary.setBook(item.id)
+        selectedLibrary!.setBook(item.id)
         await deleteBookHook.execute(modal)
       }
 
@@ -466,11 +466,11 @@ export const LibraryScreen: FC = observer(() => {
           onOKPress: async () => {
             try {
               const targetReadingHistories = calibreRootStore.readingHistories.filter((history) => {
-                return history.libraryId === selectedLibrary.id && history.bookId === item.id
+                return history.libraryId === selectedLibrary!.id && history.bookId === item.id
               })
 
               const cachedPathList = targetReadingHistories.flatMap((history) => history.cachedPath)
-              calibreRootStore.removeReadingHistoriesByBook(selectedLibrary.id, item.id)
+              calibreRootStore.removeReadingHistoriesByBook(selectedLibrary!.id, item.id)
 
               await deleteCachedBookImages(cachedPathList)
             } catch (e) {
@@ -525,12 +525,12 @@ export const LibraryScreen: FC = observer(() => {
           <LibraryTableItem
             book={item}
             source={imageSource}
-            libraryId={selectedLibrary.id}
+            libraryId={selectedLibrary!.id}
             isSelected={isSelected}
             columnWidths={tableColumnWidths}
             showSelectionActions={showSingleSelectionDetails}
             detailMenuProps={detailMenuProps}
-            fieldMetadataList={selectedLibrary.fieldMetadataList}
+            fieldMetadataList={selectedLibrary!.fieldMetadataList}
             onPress={() => libraryHook.handleBookPress(item.id)}
             onLongPress={() => {
               libraryHook.enterMultiSelection(item.id)
@@ -552,10 +552,10 @@ export const LibraryScreen: FC = observer(() => {
           onLongPress={() => libraryHook.enterMultiSelection(item.id)}
           onOpenBookDetail={onOpenBookDetail}
           hoverSearchMetadata={{
-            authors: [...item.metaData.authors],
-            series: item.metaData.series,
-            tags: [...item.metaData.tags],
-            formats: [...item.metaData.formats],
+            authors: [...item.metaData!.authors],
+            series: item.metaData!.series,
+            tags: [...item.metaData!.tags],
+            formats: [...item.metaData!.formats],
           }}
           onHoverSearchPress={(query) => {
             void handleBookMetadataSearch(query)
@@ -589,7 +589,7 @@ export const LibraryScreen: FC = observer(() => {
     if (libraryHook.selectedBooks.length === 0) return
     modal.openModal("BulkEditModal", {
       books: libraryHook.selectedBooks,
-      libraryId: selectedLibrary.id,
+      libraryId: selectedLibrary!.id,
       onComplete: () => {
         libraryHook.clearSelection()
       },
@@ -598,7 +598,7 @@ export const LibraryScreen: FC = observer(() => {
 
   const onBulkDownload = async () => {
     if (libraryHook.selectedBooks.length === 0) return
-    await bulkDownloadHook.execute(libraryHook.selectedBooks, selectedLibrary.id, modal)
+    await bulkDownloadHook.execute(libraryHook.selectedBooks, selectedLibrary!.id, modal)
   }
 
   const onBulkDelete = () => {
@@ -609,7 +609,7 @@ export const LibraryScreen: FC = observer(() => {
       onOKPress: async () => {
         try {
           const bookIds = Array.from(libraryHook.selectedBookIds)
-          await api.deleteBooks(selectedLibrary.id, bookIds)
+          await api.deleteBooks(selectedLibrary!.id, bookIds)
           libraryHook.clearSelection()
           await libraryHook.onSearch()
         } catch (e) {
@@ -626,7 +626,7 @@ export const LibraryScreen: FC = observer(() => {
     if (libraryHook.selectedBooks.length === 0) return
     const allAuthors = new Set<string>()
     for (const book of libraryHook.selectedBooks) {
-      for (const author of book.metaData.authors ?? []) {
+      for (const author of book.metaData!.authors ?? []) {
         if (author.trim()) {
           allAuthors.add(author.trim())
         }
@@ -642,7 +642,7 @@ export const LibraryScreen: FC = observer(() => {
     if (libraryHook.selectedBooks.length === 0) return
     const allTags = new Set<string>()
     for (const book of libraryHook.selectedBooks) {
-      for (const tag of book.metaData.tags ?? []) {
+      for (const tag of book.metaData!.tags ?? []) {
         if (tag.trim()) {
           allTags.add(tag.trim())
         }
@@ -666,9 +666,9 @@ export const LibraryScreen: FC = observer(() => {
       if (newAuthors.length === 0) return
 
       for (const book of libraryHook.selectedBooks) {
-        const existingAuthors = (book.metaData.authors ?? []).map((a) => a.trim()).filter(Boolean)
+        const existingAuthors = (book.metaData!.authors ?? []).map((a) => a.trim()).filter(Boolean)
         const mergedAuthors = Array.from(new Set([...existingAuthors, ...newAuthors]))
-        await book.update(selectedLibrary.id, { authors: mergedAuthors }, ["authors"])
+        await book.update(selectedLibrary!.id, { authors: mergedAuthors }, ["authors"])
       }
       if (settingStore.bulkEditAutoRefresh) {
         await libraryHook.onSearch()
@@ -690,9 +690,9 @@ export const LibraryScreen: FC = observer(() => {
       if (newTags.length === 0) return
 
       for (const book of libraryHook.selectedBooks) {
-        const existingTags = (book.metaData.tags ?? []).map((t) => t.trim()).filter(Boolean)
+        const existingTags = (book.metaData!.tags ?? []).map((t) => t.trim()).filter(Boolean)
         const mergedTags = Array.from(new Set([...existingTags, ...newTags]))
-        await book.update(selectedLibrary.id, { tags: mergedTags }, ["tags"])
+        await book.update(selectedLibrary!.id, { tags: mergedTags }, ["tags"])
       }
       if (settingStore.bulkEditAutoRefresh) {
         await libraryHook.onSearch()
@@ -707,7 +707,7 @@ export const LibraryScreen: FC = observer(() => {
     const SERIES_PATTERN = /^(.+?)\s+(\d+|[Vv]ol\.?\s*\d+|第\s*\d+\s*巻)$/
 
     for (const book of libraryHook.selectedBooks) {
-      const title = book.metaData.title?.trim() ?? ""
+      const title = book.metaData!.title?.trim() ?? ""
       const match = title.match(SERIES_PATTERN)
       if (match) {
         const seriesName = match[1].trim()
@@ -716,7 +716,7 @@ export const LibraryScreen: FC = observer(() => {
         const numMatch = seriesNumber.match(/(\d+)/)
         const seriesIndex = numMatch ? Number(numMatch[1]) : null
         await book.update(
-          selectedLibrary.id,
+          selectedLibrary!.id,
           { series: seriesName, seriesIndex },
           ["series", "seriesIndex"],
         )
@@ -751,7 +751,7 @@ export const LibraryScreen: FC = observer(() => {
       {selectedLibrary ? (
         <LibraryBookList
           bookList={bookList}
-          listRef={listRef}
+          listRef={listRef as any}
           renderItem={renderItem}
           numColumns={viewMode === "grid" ? Math.max(1, Math.floor(window.width / 242)) : 1}
           isFocused={isFocused}

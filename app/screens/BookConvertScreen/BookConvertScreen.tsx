@@ -29,7 +29,7 @@ export const BookConvertScreen: FC = observer(() => {
   useLayoutEffect(() => {
     const isDisabled = convertStatus === "converting" || !outputFormat
     navigation.setOptions({
-      headerTitle: translate("modal.bookConvertModal.title"),
+      headerTitle: translate("modal.bookConvertModal.title") ?? undefined,
       headerRight: () => (
         <Button tx="bookConvertScreen.convert" onPress={handleConvert} isDisabled={isDisabled} />
       ),
@@ -39,7 +39,7 @@ export const BookConvertScreen: FC = observer(() => {
   return (
     <RootContainer padding={"$4"}>
       <Heading isTruncated={true} marginBottom={"$3"}>
-        {selectedBook?.metaData?.title ?? ""}
+        {selectedBook.metaData?.title ?? ""}
       </Heading>
       <BookConvertForm
         inputFormats={inputFormats}

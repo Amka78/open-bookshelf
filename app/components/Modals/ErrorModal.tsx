@@ -15,10 +15,10 @@ import type { ModalStackParams } from "./Types"
 export type ErrorModalProps = ModalComponentProp<ModalStackParams, void, "ErrorModal">
 
 export function ErrorModal(props: ErrorModalProps) {
-  const titleTx = props.modal.params.titleTx
-  const title = props.modal.params.title
-  const messageTx = props.modal.params.messageTx
-  const message = props.modal.params.message
+  const titleTx = props.modal.params!.titleTx
+  const title = props.modal.params!.title
+  const messageTx = props.modal.params!.messageTx
+  const message = props.modal.params!.message
 
   return (
     <Root>

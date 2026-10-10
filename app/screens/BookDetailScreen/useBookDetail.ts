@@ -25,15 +25,15 @@ export function useBookDetail() {
   const deleteBookHook = useDeleteBook()
   const downloadBookHook = useDownloadBook()
 
-  const selectedLibrary = calibreRootStore.selectedLibrary
-  const selectedBook = selectedLibrary.selectedBook
+  const selectedLibrary = calibreRootStore.selectedLibrary!
+  const selectedBook = selectedLibrary.selectedBook!
   const ocrImageUrl = encodeURI(api.getBookThumbnailUrl(selectedBook.id, selectedLibrary.id, "1200x1600"))
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerTitle: selectedBook.metaData.title,
+      headerTitle: selectedBook.metaData!.title ?? undefined,
     })
-  }, [navigation, selectedBook.metaData.title])
+  }, [navigation, selectedBook.metaData!.title])
 
   const handleOpenBook = async () => {
     if (route.params.onOpenBookAction) {
@@ -115,12 +115,12 @@ export function useBookDetail() {
   }
 
   const handleShareLink = async () => {
-    const formats = selectedBook.metaData.formats
+    const formats = selectedBook.metaData!.formats
     if (!formats || formats.length === 0) return
 
     const shareForFormat = async (format: string) => {
       const url = api.getBookDownloadUrl(format, selectedBook.id, selectedLibrary.id)
-      await Share.share({ url, message: `${selectedBook.metaData.title} - ${url}` })
+      await Share.share({ url, message: `${selectedBook.metaData!.title} - ${url}` })
     }
 
     if (formats.length === 1) {
@@ -153,7 +153,7 @@ export function useBookDetail() {
         message: translate("emailDelivery.confirmMessage", {
           format,
           title: book.metaData?.title ?? "",
-        }),
+        }) ?? undefined,
         okTx: "emailDelivery.send",
         onOKPress: async () => {
           const result = await api.sendBookByEmail(library.id, book.id, format)

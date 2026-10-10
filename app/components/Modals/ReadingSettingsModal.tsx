@@ -31,7 +31,7 @@ export const ReadingSettingsModal = observer((props: ReadingSettingsModalProps) 
   const fontSize = settingStore.viewerFontSizePt
   const theme = settingStore.viewerTheme
   const [intervalInput, setIntervalInput] = useState(
-    String(props.modal.params.autoPageTurnIntervalMs),
+    String(props.modal.params!.autoPageTurnIntervalMs),
   )
   const intervalMs = Number(intervalInput)
   const isInvalidInterval = !Number.isFinite(intervalMs) || intervalMs < 100
@@ -125,7 +125,7 @@ export const ReadingSettingsModal = observer((props: ReadingSettingsModalProps) 
         <Button
           onPress={() => {
             if (isInvalidInterval) return
-            props.modal.params.onAutoPageTurnIntervalChange?.(Math.floor(intervalMs))
+            props.modal.params!.onAutoPageTurnIntervalChange?.(Math.floor(intervalMs))
             props.modal.closeModal()
           }}
           tx="common.ok"

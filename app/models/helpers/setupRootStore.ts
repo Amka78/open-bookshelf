@@ -54,7 +54,7 @@ export async function setupRootStore(rootStore: RootStore): Promise<{
   } catch (e) {
     // if there's any problems loading, then inform the dev what happened
     if (__DEV__) {
-      console.tron.error(e.message, null)
+      console.tron.error((e as Error).message, null)
     }
   }
 
@@ -66,7 +66,7 @@ export async function setupRootStore(rootStore: RootStore): Promise<{
 
   const unsubscribe = () => {
     _disposer()
-    _disposer = undefined
+    _disposer = undefined as any
   }
 
   return { rootStore, restoredState, unsubscribe }

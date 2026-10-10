@@ -21,7 +21,7 @@ export type ViewerRatingModalProps = ModalComponentProp<ModalStackParams, void, 
 export function ViewerRatingModal(props: ViewerRatingModalProps) {
   const form = useForm<FormValues>({
     defaultValues: {
-      rating: props.modal.params.initialRating ?? 0,
+      rating: props.modal.params!.initialRating ?? 0,
     },
   })
 
@@ -45,7 +45,7 @@ export function ViewerRatingModal(props: ViewerRatingModalProps) {
         <Button
           tx="common.yes"
           onPress={form.handleSubmit(async (value) => {
-            await props.modal.params.onSubmit(value.rating)
+            await props.modal.params!.onSubmit(value.rating)
             props.modal.closeModal()
           })}
         />

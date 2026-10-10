@@ -109,10 +109,10 @@ export function ModalTestContainer(props: ModalTestContainerProp) {
       <ModalLaunchButton
         onPress={() => {
           modal.openModal("BookDetailModal", {
-            selectedBook: BookDetailFieldListStories.args.book,
-            imageUrl: BookImageItemStories.args.source as string,
-            fieldNameList: BookDetailFieldListStories.args.fieldNameList,
-            fieldMetadataList: BookDetailFieldListStories.args.fieldMetadataList,
+            selectedBook: BookDetailFieldListStories.args!.book,
+            imageUrl: BookImageItemStories.args!.source as string,
+            fieldNameList: BookDetailFieldListStories.args!.fieldNameList,
+            fieldMetadataList: BookDetailFieldListStories.args!.fieldMetadataList,
             onConvertBook: props.onConvertBook,
             onDeleteBook: props.onDeleteBook,
             onDownloadBook: async () => {
@@ -129,9 +129,9 @@ export function ModalTestContainer(props: ModalTestContainerProp) {
       <ModalLaunchButton
         onPress={() => {
           modal.openModal("BookEditModal", {
-            selectedBook: BookDetailFieldListStories.args.book,
-            imageUrl: String(BookImageItemStories.args.source),
-            fieldMetadataList: BookDetailFieldListStories.args.fieldMetadataList,
+            selectedBook: BookDetailFieldListStories.args!.book,
+            imageUrl: String(BookImageItemStories.args!.source),
+            fieldMetadataList: BookDetailFieldListStories.args!.fieldMetadataList,
             onOKPress: props.onOKPress,
           })
         }}

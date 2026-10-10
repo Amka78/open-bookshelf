@@ -98,13 +98,13 @@ export function BookEditField(props: BookEditFieldProps) {
       const seriesName = match[1].trim()
       const seriesIndex = Number(match[2])
       return {
-        series: seriesName.length > 0 ? seriesName : null,
+        series: seriesName.length > 0 ? seriesName : "",
         seriesIndex,
       }
     }
 
     return {
-      series: title.length > 0 ? title : null,
+      series: title.length > 0 ? title : "",
       seriesIndex: null,
     }
   }
@@ -169,7 +169,7 @@ export function BookEditField(props: BookEditFieldProps) {
           <FormDateTimePicker
             control={props.control}
             name={label}
-            dateFormat={props.fieldMetadata.display.dateFormat}
+            dateFormat={props.fieldMetadata.display!.dateFormat}
           />
         )
         break
@@ -188,8 +188,8 @@ export function BookEditField(props: BookEditFieldProps) {
             <FormMultipleInputField
               control={props.control}
               name={label}
-              textToValue={props.fieldMetadata.isMultiple.uiToList}
-              valueToText={props.fieldMetadata.isMultiple.listToUi}
+              textToValue={props.fieldMetadata.isMultiple.uiToList ?? ""}
+              valueToText={props.fieldMetadata.isMultiple.listToUi ?? ""}
               suggestions={props.suggestions}
               onInputFocus={handleInputFocus}
               width={"$full"}

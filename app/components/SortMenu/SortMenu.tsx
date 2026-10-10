@@ -37,7 +37,7 @@ export function SortMenu(props: SortMenuProps) {
             textValue={value.id}
             id={value.id}
             onPress={() => {
-              props.onSortChange(value.id)
+              props.onSortChange!(value.id)
             }}
           >
             <MenuItemLabel>{text}</MenuItemLabel>

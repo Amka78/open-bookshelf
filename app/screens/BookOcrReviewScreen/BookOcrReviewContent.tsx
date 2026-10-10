@@ -115,8 +115,8 @@ export function BookOcrReviewContent({
         <BookEditFieldList
           book={selectedBook}
           control={form.control}
-          fieldMetadataList={selectedLibrary.fieldMetadataList}
-          tagBrowser={selectedLibrary.tagBrowser}
+          fieldMetadataList={selectedLibrary!.fieldMetadataList}
+          tagBrowser={selectedLibrary!.tagBrowser}
           flex={1}
           minHeight={0}
           scrollViewProps={isLarge ? { flex: 1, nestedScrollEnabled: true } : undefined}

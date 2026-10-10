@@ -6,7 +6,7 @@ import { FormSuggestionPopover } from "./FormSuggestionPopover"
 
 const MAX_SUGGESTIONS = 5
 
-export type FormMultipleInputFiledProps<T> = Omit<InputFieldProps, "onChangeText"> &
+export type FormMultipleInputFiledProps<T extends FieldValues> = Omit<InputFieldProps, "onChangeText"> &
   Omit<ControllerProps<T>, "render"> & {
     textToValue: string
     valueToText: string

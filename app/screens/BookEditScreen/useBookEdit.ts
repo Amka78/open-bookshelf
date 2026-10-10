@@ -17,8 +17,8 @@ export function useBookEdit() {
   const { calibreRootStore } = useStores()
   const navigation = useNavigation<ApppNavigationProp>()
 
-  const selectedLibrary = calibreRootStore.selectedLibrary
-  const selectedBook = selectedLibrary.selectedBook
+  const selectedLibrary = calibreRootStore.selectedLibrary!
+  const selectedBook = selectedLibrary.selectedBook!
   const bookMetaDataSnapshot = selectedBook.metaData
     ? (getSnapshot(selectedBook.metaData) as MetadataFormValues)
     : undefined

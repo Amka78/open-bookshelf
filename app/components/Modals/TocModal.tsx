@@ -55,8 +55,8 @@ function TocEntry({ item, depth, onSelect }: TocEntryProps) {
 }
 
 export function TocModal(props: TocModalProps) {
-  const toc: TocItem = props.modal.params.toc
-  const onNavigate: (dest: string) => void = props.modal.params.onNavigate
+  const toc: TocItem = props.modal.params!.toc
+  const onNavigate: (dest: string) => void = props.modal.params!.onNavigate
 
   const hasChapters = toc.children.length > 0
 

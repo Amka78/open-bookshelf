@@ -39,9 +39,10 @@ export default {
   title: "BookDetailMenu",
   component: BookDetailMenu,
   // argTypes の action はコントロール設定にすぎず prop 値を供給しない。
-  // onRunCoverOcr が undefined だと OCR ボタン自体が描画されないため args で spy を渡す。
+  // undefined の prop を wrapMenuAction が受け取るとエラーになるため、必要な spy を渡す。
   args: {
     onRunCoverOcr: fn(),
+    onEditBook: fn(),
   },
   decorators: [
     (Story) => (

@@ -22,7 +22,7 @@ export type SelectOption<T extends string = string> = {
   label?: string
 }
 
-export type FormSelectFieldProps<TForm, TValue extends string = string> = Omit<
+export type FormSelectFieldProps<TForm extends FieldValues, TValue extends string = string> = Omit<
   ControllerProps<TForm>,
   "render"
 > & {
@@ -37,7 +37,7 @@ export function FormSelectField<TForm extends FieldValues, TValue extends string
 ) {
   const { control, name, rules, shouldUnregister, defaultValue, disabled, options, width } = props
 
-  const placeholder = props.placeholderTx ? translate(props.placeholderTx) : props.placeholder
+  const placeholder = props.placeholderTx ? translate(props.placeholderTx) ?? undefined : props.placeholder
 
   return (
     <Controller
@@ -67,7 +67,7 @@ export function FormSelectField<TForm extends FieldValues, TValue extends string
                 {options.map((opt) => (
                   <SelectItem
                     key={opt.value}
-                    label={opt.labelTx ? translate(opt.labelTx) : opt.label ?? opt.value}
+                    label={opt.labelTx ? translate(opt.labelTx) ?? opt.value : opt.label ?? opt.value}
                     value={opt.value}
                   />
                 ))}

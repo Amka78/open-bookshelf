@@ -1,6 +1,5 @@
 [test]
-# Setup file to run before tests (equivalent to Jest setupFiles)
-preload = ["./test/setup.ts"]
+# unit テストは Vitest へ移行済み（bunfig の preload は不要）
 dom = true
 # Exclude non-unit test directories
 # Test environment (jsdom for React components)

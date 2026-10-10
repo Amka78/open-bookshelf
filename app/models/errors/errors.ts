@@ -44,10 +44,10 @@ export class ApiError {
   private _descriptionTx: MessageKey
 
   constructor(args: ApiErrorConstructoArgs) {
-    this._error = args.error
-    this._errorTx = args.errorTx
-    this._description = args.description
-    this._descriptionTx = args.descriptionTx
+    this._error = args.error ?? ""
+    this._errorTx = args.errorTx!
+    this._description = args.description ?? ""
+    this._descriptionTx = args.descriptionTx!
   }
 
   public get error(): string {

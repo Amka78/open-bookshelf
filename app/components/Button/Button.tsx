@@ -19,7 +19,7 @@ export function Button({ variant = "outline", ...restProps }: ButtonProps) {
       onPress={(e) => {
         if (props.onPress) {
           startTransition(async () => {
-            await props.onPress(e)
+            await props.onPress!(e)
           })
         }
       }}

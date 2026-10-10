@@ -71,7 +71,7 @@ export const InputField = ({ ref, ...props }: InputFieldProps) => {
   return (
     <Template
       {...templateProps}
-      placeholder={placeholderTx ? translate(placeholderTx) : placeholder}
+      placeholder={placeholderTx ? translate(placeholderTx) ?? undefined : placeholder}
     />
   )
 }

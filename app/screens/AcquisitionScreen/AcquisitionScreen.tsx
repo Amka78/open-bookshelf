@@ -24,7 +24,7 @@ export const AcquisitionScreen: FC = observer(() => {
   const palette = usePalette()
 
   const route = useRoute<AcquisitionScreenRouteProp>()
-  const linkHref = route.params.link.href
+  const linkHref = route.params!.link.href
 
   const navigation = useNavigation<ApppNavigationProp>()
 
@@ -40,7 +40,7 @@ export const AcquisitionScreen: FC = observer(() => {
       /* if (childOPDS) {
         setCurrentOPDS(childOPDS.opds)
       } else { */
-      const linkOopds = await loadOpdsFromLink(linkHref)
+      const linkOopds = await loadOpdsFromLink(linkHref ?? "")
       if (canceled) return
 
       setCurrentOPDS(linkOopds)
@@ -82,11 +82,11 @@ export const AcquisitionScreen: FC = observer(() => {
       let bottomText = ""
 
       if (item.contentType === "text") {
-        bottomText = item.content
+        bottomText = item.content ?? ""
       } else {
         item.author.forEach((value) => {
           if (bottomText === "") {
-            bottomText = value.name
+            bottomText = value.name ?? ""
           } else {
             bottomText += `,${value.name}`
           }
@@ -136,17 +136,17 @@ export const AcquisitionScreen: FC = observer(() => {
   )
 
   const onRefresh = useCallback(async () => {
-    const linkOopds = await loadOpdsFromLink(linkHref)
+    const linkOopds = await loadOpdsFromLink(linkHref ?? "")
     setCurrentOPDS(linkOopds)
   }, [linkHref])
 
   const onEndReached = useCallback(async () => {
-    const link = currentOpds.link.find((value) => {
+    const link = currentOpds?.link.find((value) => {
       return value.rel === "next"
     })
 
     if (link) {
-      currentOpds.load(link.href, false)
+      currentOpds!.load(link.href ?? undefined, false)
     }
   }, [currentOpds])
 

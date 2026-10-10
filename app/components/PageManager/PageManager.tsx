@@ -35,18 +35,18 @@ function PageManagerCore({
 
   const onPageFastMoveButtonPress = (forward: boolean) => {
     if (forward) {
-      props.onPageChange(lastPageIndex)
+      props.onPageChange!(lastPageIndex)
     } else {
-      props.onPageChange(0)
+      props.onPageChange!(0)
     }
   }
 
   const onPageMoveButtonPress = (forward: boolean) => {
     const forwardStep = props.facingPage ? 2 : 1
     if (forward) {
-      props.onPageChange(goToNextPage(props.currentPage, props.totalPage, forwardStep))
+      props.onPageChange!(goToNextPage(props.currentPage, props.totalPage, forwardStep))
     } else {
-      props.onPageChange(goToPreviousPage(props.currentPage, forwardStep))
+      props.onPageChange!(goToPreviousPage(props.currentPage, forwardStep))
     }
   }
 
@@ -91,7 +91,7 @@ function PageManagerCore({
           maxValue={lastPageIndex}
           step={1}
           onChange={(v) => {
-            props.onPageChange(v)
+            props.onPageChange!(v)
           }}
           isReversed={props.reverse}
         >

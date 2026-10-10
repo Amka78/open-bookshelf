@@ -47,10 +47,10 @@ export const IconButton = ({
         if (props.onPress) {
           if (loading) {
             startTransition(async () => {
-              await props.onPress(event)
+              await props.onPress!(event)
             })
           } else {
-            props.onPress(event)
+            props.onPress!(event)
           }
         }
       }}

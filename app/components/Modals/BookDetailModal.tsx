@@ -28,22 +28,21 @@ export const BookDetailModal = observer((props: BookDetailModalProps) => {
   const deleteBookHook = useDeleteBook()
   const downloadBookHook = useDownloadBook()
 
-  const selectedLibrary = calibreRootStore.selectedLibrary
-
-  const selectedBook = selectedLibrary.selectedBook
+  const selectedLibrary = calibreRootStore.selectedLibrary!
+  const selectedBook = selectedLibrary.selectedBook!
 
   const onOpenBook = async () => {
-    await openViewerHook.execute(props.modal)
+    await openViewerHook.execute(props.modal as any)
     props.modal.closeModal()
   }
 
   const onDownloadBook = async () => {
-    await downloadBookHook.execute(props.modal)
+    await downloadBookHook.execute(props.modal as any)
   }
 
   const onEditBook = () => {
     props.modal.openModal("BookEditModal", {
-      imageUrl: props.modal.params.imageUrl,
+      imageUrl: props.modal.params!.imageUrl ?? "",
     })
   }
 
@@ -54,7 +53,7 @@ export const BookDetailModal = observer((props: BookDetailModalProps) => {
   }
 
   const onDeleteBook = async () => {
-    await deleteBookHook.execute(props.modal)
+    await deleteBookHook.execute(props.modal as any)
   }
   return (
     <BookDetailModalTemplate
@@ -62,6 +61,7 @@ export const BookDetailModal = observer((props: BookDetailModalProps) => {
         ...props.modal,
         params: {
           ...props.modal.params,
+          imageUrl: props.modal.params?.imageUrl ?? "",
           selectedBook: selectedBook,
           fieldNameList: selectedLibrary.bookDisplayFields,
           fieldMetadataList: selectedLibrary.fieldMetadataList,
@@ -70,7 +70,7 @@ export const BookDetailModal = observer((props: BookDetailModalProps) => {
           onDeleteBook,
           onEditBook,
           onRunCoverOcr,
-        },
+        } as any,
       }}
     />
   )
@@ -87,7 +87,7 @@ export function BookDetailModalTemplate(props: BookDetailModalTemplateProps) {
   return (
     <Root>
       <Header>
-        <Heading isTruncated={true}>{props.modal.params.selectedBook.metaData.title}</Heading>
+        <Heading isTruncated={true}>{props.modal.params!.selectedBook!.metaData!.title}</Heading>
         <CloseButton
           onPress={() => {
             props.modal.closeModal()
@@ -97,25 +97,25 @@ export function BookDetailModalTemplate(props: BookDetailModalTemplateProps) {
       <Body>
         <HStack space="md">
           <Box>
-            <BookImageItem source={props.modal.params.imageUrl} />
+            <BookImageItem source={props.modal.params!.imageUrl ?? ""} />
           </Box>
           <VStack flex={1}>
             <BookDetailMenu
-              onOpenBook={props.modal.params.onOpenBook}
-              onDownloadBook={props.modal.params.onDownloadBook}
+              onOpenBook={props.modal.params!.onOpenBook!}
+              onDownloadBook={props.modal.params!.onDownloadBook!}
               onOpenBookDetail={() => {}}
-              onConvertBook={props.modal.params.onConvertBook}
-              onEditBook={props.modal.params.onEditBook}
-              onRunCoverOcr={props.modal.params.onRunCoverOcr}
-              onDeleteBook={props.modal.params.onDeleteBook}
+              onConvertBook={props.modal.params!.onConvertBook!}
+              onEditBook={props.modal.params!.onEditBook!}
+              onRunCoverOcr={props.modal.params!.onRunCoverOcr!}
+              onDeleteBook={props.modal.params!.onDeleteBook!}
             />
             <BookDetailFieldList
-              book={props.modal.params.selectedBook}
-              fieldNameList={props.modal.params.fieldNameList}
-              fieldMetadataList={props.modal.params.fieldMetadataList}
+              book={props.modal.params!.selectedBook!}
+              fieldNameList={props.modal.params!.fieldNameList!}
+              fieldMetadataList={props.modal.params!.fieldMetadataList!}
               onFieldPress={(query) => {
-                if (props.modal.params.onLinkPress) {
-                  props.modal.params.onLinkPress(query)
+                if (props.modal.params!.onLinkPress) {
+                  props.modal.params!.onLinkPress(query)
                   props.modal.closeModal()
                 }
               }}

@@ -1,7 +1,7 @@
 import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import type { MessageKey } from "@/i18n"
 import { useStores } from "@/models"
-import type { AppStackParamList, ApppNavigationProp } from "@/navigators/types"
+import type { AppStackParamList, ApppNavigationProp, ViewerOpenRequest } from "@/navigators/types"
 import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { useEffect, useRef, useState } from "react"
 import { getViewerPreparationLabel, prepareViewerSession } from "./prepareViewerSession"
@@ -15,7 +15,7 @@ export function useViewerPreparation<RouteName extends ViewerRouteName>(routeNam
   const route = useRoute<RouteProp<AppStackParamList, RouteName>>()
   const modal = useElectrobunModal()
   const { calibreRootStore, settingStore } = useStores()
-  const request = route.params?.request
+  const request = (route.params as { request?: ViewerOpenRequest } | undefined)?.request
   const requestKey = request ? `${request.libraryId}:${request.bookId}:${request.format}` : undefined
   const completedRequestKeyRef = useRef<string | undefined>(undefined)
   const [phase, setPhase] = useState<ViewerPreparationPhase>(request ? "preparing" : "ready")

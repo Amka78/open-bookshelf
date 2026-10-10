@@ -8,7 +8,7 @@ export function toLanguageNamesForDisplay(
 ): MetadataFormValues {
   const nameSet = new Set(Object.values(langNames))
 
-  const languages = value.languages
+  const languages = (value.languages ?? [])
     .map((entry) => String(entry ?? "").trim())
     .filter(Boolean)
     .map((entry) => {
@@ -30,7 +30,7 @@ export function toLanguageNamesForUpdate(
     Object.entries(langNames).map(([code, name]) => [String(name).trim(), code]),
   )
 
-  const languages = value.languages
+  const languages = (value.languages ?? [])
     .map((entry) => String(entry ?? "").trim())
     .filter(Boolean)
     .map((entry) => nameToCode[entry] ?? entry)

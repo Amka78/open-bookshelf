@@ -11,8 +11,8 @@ import { useForm } from "react-hook-form"
 export function useBookConvert() {
   const { calibreRootStore } = useStores()
 
-  const selectedLibrary = calibreRootStore.selectedLibrary
-  const selectedBook = selectedLibrary.selectedBook
+  const selectedLibrary = calibreRootStore.selectedLibrary!
+  const selectedBook = selectedLibrary.selectedBook!
 
   const inputFormats: string[] = selectedBook?.metaData?.formats ?? []
   const [outputFormats, setOutputFormats] = useState<string[]>(inputFormats)

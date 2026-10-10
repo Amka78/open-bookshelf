@@ -15,10 +15,10 @@ import type { ModalStackParams } from "./Types"
 export type FormatSelectModalProps = ModalComponentProp<ModalStackParams, void, "FormatSelectModal">
 
 export function FormatSelectModal(props: FormatSelectModalProps) {
-  const titleTx = props.modal.params.titleTx ?? "modal.formatSelectModal.title"
-  const title = props.modal.params.title
-  const messageTx = props.modal.params.messageTx
-  const message = props.modal.params.message
+  const titleTx = props.modal.params!.titleTx ?? "modal.formatSelectModal.title"
+  const title = props.modal.params!.title
+  const messageTx = props.modal.params!.messageTx
+  const message = props.modal.params!.message
 
   return (
     <Root>
@@ -33,12 +33,12 @@ export function FormatSelectModal(props: FormatSelectModalProps) {
       <Body>
         <ScrollView>
           {messageTx || message ? <Text tx={messageTx}>{message}</Text> : null}
-          {props.modal.params.formats.map((format) => {
+          {props.modal.params!.formats.map((format) => {
             return (
               <Button
                 key={format}
                 onPress={() => {
-                  props.modal.params.onSelectFormat(format)
+                  props.modal.params!.onSelectFormat(format)
                   props.modal.closeModal()
                 }}
                 marginBottom={"$1"}

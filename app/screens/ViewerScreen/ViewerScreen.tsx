@@ -29,7 +29,7 @@ const ViewerScreenContent: FC = observer(() => {
 
   // Derive source list before hooks so all hooks are called unconditionally.
   const isHtmlViewerFormat = selectedBook
-    ? isCalibreHtmlViewerFormat(selectedBook.metaData.selectedFormat)
+    ? isCalibreHtmlViewerFormat(selectedBook.metaData!.selectedFormat)
     : false
   const sourcePathList = useMemo(
     (): string[] =>
@@ -58,7 +58,7 @@ const ViewerScreenContent: FC = observer(() => {
     if (!viewerReady || !selectedBook) return
     logger.debug("ViewerScreen: Rendering viewer with", {
       bookId: selectedBook.id,
-      format: selectedBook.metaData.selectedFormat,
+      format: selectedBook.metaData!.selectedFormat,
       initialPage,
       totalPages,
     })
@@ -80,14 +80,14 @@ const ViewerScreenContent: FC = observer(() => {
             availableHeight={renderProps.availableHeight}
             pageType={renderProps.pageType}
             bookId={selectedBook.id}
-            format={selectedBook.metaData.selectedFormat ?? "AZW3"}
+            format={selectedBook.metaData!.selectedFormat ?? "AZW3"}
             hash={selectedBook.hash ?? 0}
             headers={authenticationStore.getHeader(sourcePagePath)}
             libraryId={selectedLibrary.id}
             onPress={renderProps.onPress}
             onLongPress={renderProps.onLongPress}
             pagePath={sourcePagePath}
-            size={selectedBook.metaData.formatSizes.get(selectedBook.metaData.selectedFormat) ?? 0}
+            size={selectedBook.metaData!.formatSizes.get(selectedBook.metaData!.selectedFormat ?? "") ?? 0}
             annotations={renderProps.annotations}
             onTextSelect={renderProps.onTextSelect}
           />
@@ -130,7 +130,7 @@ const ViewerScreenContent: FC = observer(() => {
 
   return (
     <BookViewer
-      bookTitle={selectedBook.metaData.title}
+      bookTitle={selectedBook.metaData!.title ?? ""}
       renderPage={renderPage}
       totalPage={totalPages}
       initialPage={initialPage}

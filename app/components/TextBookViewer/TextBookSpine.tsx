@@ -90,7 +90,7 @@ export const TextBookSpine = observer(function TextBookSpine(props: TextBookSpin
       return
     }
 
-    webViewRef.current?.injectJavaScript(
+    webViewRef.current?.injectJavaScript?.(
       `window.dispatchEvent(new MessageEvent("message", { data: ${JSON.stringify(commandPayload)} })); true;`,
     )
   }, [
@@ -167,7 +167,7 @@ export const TextBookSpine = observer(function TextBookSpine(props: TextBookSpin
   const contentKey = `${documentKey}-${viewerFontSizePt}-${viewerTheme}`
   const NativeWebView =
     Platform.OS === "web"
-      ? null
+      ? null!
       : (require("react-native-webview").WebView as React.ComponentType<Record<string, unknown>>)
 
   if (Platform.OS === "web") {

@@ -42,8 +42,8 @@ export function BookConvertModalTemplate(props: BookConvertModalProps) {
   const handleConvertAndNotify = async () => {
     const success = await handleStartConvert()
     if (success) {
-      if (props.modal.params.onConvertComplete) {
-        props.modal.params.onConvertComplete()
+      if (props.modal.params!.onConvertComplete) {
+        props.modal.params!.onConvertComplete()
       }
       modal.openModal("ErrorModal", {
         titleTx: "modal.bookConvertModal.title",

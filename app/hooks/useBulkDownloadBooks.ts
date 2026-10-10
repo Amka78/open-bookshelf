@@ -21,11 +21,11 @@ export function useBulkDownloadBooks() {
     modal: UsableModalProp<ModalStackParams>,
   ) => {
     for (const book of books) {
-      const format = book.metaData.formats[0]
+      const format = book!.metaData!.formats[0]
       if (!format) continue
 
       try {
-        const fileName = `${book.metaData.title}.${format}`
+        const fileName = `${book!.metaData!.title}.${format}`
         const downloadUrl = api.getBookDownloadUrl(format, book.id, libraryId)
 
         if (Platform.OS === "web") {
@@ -54,8 +54,8 @@ export function useBulkDownloadBooks() {
         }
       } catch (e) {
         modal.openModal("ErrorModal", {
-          message: e.message,
-          title: e.name,
+          message: (e as Error).message,
+          title: (e as Error).name,
         })
       }
     }

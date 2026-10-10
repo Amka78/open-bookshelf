@@ -32,8 +32,8 @@ type BookEditModalTemplateProps = ModalComponentProp<ModalStackParams, object, "
 export const BookEditModal = observer((props: BookEditModalProps) => {
   const { calibreRootStore } = useStores()
 
-  const selectedLibrary = calibreRootStore.selectedLibrary
-  const selectedBook = selectedLibrary.selectedBook
+  const selectedLibrary = calibreRootStore.selectedLibrary!
+  const selectedBook = selectedLibrary.selectedBook!
 
   const normalizeFormat = (value: string | undefined | null) => {
     return String(value ?? "")
@@ -99,7 +99,7 @@ export const BookEditModal = observer((props: BookEditModalProps) => {
   }
 
   const originalFormats = selectedBook.metaData
-    ? [...(getSnapshot(selectedBook.metaData) as MetadataSnapshotIn).formats]
+    ? [...((getSnapshot(selectedBook.metaData) as MetadataSnapshotIn).formats ?? [])]
     : []
 
   return (
@@ -109,6 +109,7 @@ export const BookEditModal = observer((props: BookEditModalProps) => {
         ...props.modal,
         params: {
           ...props.modal.params,
+          imageUrl: props.modal.params?.imageUrl ?? "",
           selectedBook: selectedBook,
           fieldMetadataList: selectedLibrary.fieldMetadataList,
           tagBrowser: selectedLibrary.tagBrowser,
@@ -141,8 +142,8 @@ export const BookEditModal = observer((props: BookEditModalProps) => {
   )
 })
 export function BookEditModalTemplate(props: BookEditModalTemplateProps) {
-  const rawSnapshot = props.modal.params.selectedBook.metaData
-    ? (getSnapshot(props.modal.params.selectedBook.metaData) as MetadataSnapshotIn)
+  const rawSnapshot = props.modal.params!.selectedBook!.metaData
+    ? (getSnapshot(props.modal.params!.selectedBook!.metaData) as MetadataSnapshotIn)
     : undefined
   const langNames = rawSnapshot?.langNames ?? {}
   const hasLangNames = Object.keys(langNames).length > 0
@@ -150,7 +151,7 @@ export function BookEditModalTemplate(props: BookEditModalTemplateProps) {
     rawSnapshot && hasLangNames
       ? {
           ...rawSnapshot,
-          languages: rawSnapshot.languages
+          languages: (rawSnapshot.languages ?? [])
             .map((entry) => String(entry ?? "").trim())
             .filter(Boolean)
             .map((entry) => {
@@ -179,13 +180,13 @@ export function BookEditModalTemplate(props: BookEditModalTemplateProps) {
           <FormImageUploader
             control={form.control}
             name={"cover"}
-            defaultValue={props.modal.params.imageUrl}
+            defaultValue={props.modal.params!.imageUrl ?? ""}
           />
           <BookEditFieldList
-            book={props.modal.params.selectedBook}
+            book={props.modal.params!.selectedBook!}
             control={form.control}
-            fieldMetadataList={props.modal.params.fieldMetadataList}
-            tagBrowser={props.modal.params.tagBrowser}
+            fieldMetadataList={props.modal.params!.fieldMetadataList!}
+            tagBrowser={props.modal.params!.tagBrowser}
             onUploadFormat={props.onUploadFormat}
             height={320}
             width={240}
@@ -196,8 +197,8 @@ export function BookEditModalTemplate(props: BookEditModalTemplateProps) {
         <Button
           onPress={form.handleSubmit((value) => {
             logger.debug("BookEditModal dirty fields", form.formState.dirtyFields)
-            if (props.modal.params.onOKPress) {
-              props.modal.params.onOKPress(value, Object.keys(form.formState.dirtyFields))
+            if (props.modal.params!.onOKPress) {
+              props.modal.params!.onOKPress(value, Object.keys(form.formState.dirtyFields))
             }
             //props.modal.closeModal()
           })}

@@ -256,30 +256,30 @@ export const LibraryTableItem = observer(function LibraryTableItem({
   onPress,
   onLongPress,
 }: LibraryTableItemProps) {
-  const [title, setTitle] = useState(book.metaData.title ?? "")
-  const [authors, setAuthors] = useState<string[]>(book.metaData.authors ?? [])
-  const [series, setSeries] = useState(book.metaData.series ?? "")
-  const [seriesIndex, setSeriesIndex] = useState<number | null>(book.metaData.seriesIndex ?? null)
-  const [tags, setTags] = useState<string[]>(book.metaData.tags ?? [])
-  const [publisher, setPublisher] = useState(book.metaData.publisher ?? "")
+  const [title, setTitle] = useState(book.metaData!.title ?? "")
+  const [authors, setAuthors] = useState<string[]>(book.metaData!.authors ?? [])
+  const [series, setSeries] = useState(book.metaData!.series ?? "")
+  const [seriesIndex, setSeriesIndex] = useState<number | null>(book.metaData!.seriesIndex ?? null)
+  const [tags, setTags] = useState<string[]>(book.metaData!.tags ?? [])
+  const [publisher, setPublisher] = useState(book.metaData!.publisher ?? "")
   const [isSaving, setIsSaving] = useState(false)
   const [copiedField, setCopiedField] = useState<"authors" | "tags" | null>(null)
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    setTitle(book.metaData.title ?? "")
-    setAuthors(book.metaData.authors ?? [])
-    setSeries(book.metaData.series ?? "")
-    setSeriesIndex(book.metaData.seriesIndex ?? null)
-    setTags(book.metaData.tags ?? [])
-    setPublisher(book.metaData.publisher ?? "")
+    setTitle(book.metaData!.title ?? "")
+    setAuthors(book.metaData!.authors ?? [])
+    setSeries(book.metaData!.series ?? "")
+    setSeriesIndex(book.metaData!.seriesIndex ?? null)
+    setTags(book.metaData!.tags ?? [])
+    setPublisher(book.metaData!.publisher ?? "")
   }, [
-    book.metaData.authors,
-    book.metaData.publisher,
-    book.metaData.series,
-    book.metaData.seriesIndex,
-    book.metaData.tags,
-    book.metaData.title,
+    book.metaData!.authors,
+    book.metaData!.publisher,
+    book.metaData!.series,
+    book.metaData!.seriesIndex,
+    book.metaData!.tags,
+    book.metaData!.title,
   ])
 
   useEffect(() => {
@@ -304,22 +304,22 @@ export const LibraryTableItem = observer(function LibraryTableItem({
 
   const originalValue = useMemo(
     () => ({
-      title: String(book.metaData.title ?? "").trim(),
-      authors: (book.metaData.authors ?? [])
+      title: String(book.metaData!.title ?? "").trim(),
+      authors: (book.metaData!.authors ?? [])
         .map((entry) => String(entry ?? "").trim())
         .filter(Boolean),
-      publisher: book.metaData.publisher ? String(book.metaData.publisher).trim() : null,
-      series: book.metaData.series ? String(book.metaData.series).trim() : null,
-      seriesIndex: book.metaData.seriesIndex ?? null,
-      tags: (book.metaData.tags ?? []).map((entry) => String(entry ?? "").trim()).filter(Boolean),
+      publisher: book.metaData!.publisher ? String(book.metaData!.publisher).trim() : null,
+      series: book.metaData!.series ? String(book.metaData!.series).trim() : null,
+      seriesIndex: book.metaData!.seriesIndex ?? null,
+      tags: (book.metaData!.tags ?? []).map((entry) => String(entry ?? "").trim()).filter(Boolean),
     }),
     [
-      book.metaData.authors,
-      book.metaData.publisher,
-      book.metaData.series,
-      book.metaData.seriesIndex,
-      book.metaData.tags,
-      book.metaData.title,
+      book.metaData!.authors,
+      book.metaData!.publisher,
+      book.metaData!.series,
+      book.metaData!.seriesIndex,
+      book.metaData!.tags,
+      book.metaData!.title,
     ],
   )
 

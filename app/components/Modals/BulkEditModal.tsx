@@ -37,7 +37,7 @@ function assignSnapshotKey<T, K extends keyof T>(target: Partial<T>, key: K, val
 }
 
 function computeCommonValues(
-  books: BulkEditModalProps["modal"]["params"]["books"],
+  books: NonNullable<BulkEditModalProps["modal"]["params"]>["books"],
 ): Partial<MetadataSnapshotIn> {
   if (books.length === 0) return {}
 
@@ -63,9 +63,9 @@ function computeCommonValues(
 
 export const BulkEditModal = observer((props: BulkEditModalProps) => {
   const { calibreRootStore } = useStores()
-  const { books, libraryId, onComplete } = props.modal.params
+  const { books, libraryId, onComplete } = props.modal.params!
 
-  const selectedLibrary = calibreRootStore.selectedLibrary
+  const selectedLibrary = calibreRootStore.selectedLibrary!
 
   const commonValues = computeCommonValues(books)
   const form = useForm<MetadataSnapshotIn, unknown, MetadataSnapshotIn>({

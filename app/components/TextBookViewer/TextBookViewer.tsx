@@ -338,7 +338,7 @@ export function TextBookViewer({ getAuthHeader, viewerHook }: TextBookViewerProp
           style={styles.viewerGradient}
         >
           <ViewerHeader
-            title={selectedBook.metaData.title}
+            title={selectedBook.metaData!.title ?? ""}
             visible={viewerHook.showMenu}
             autoPageTurning={autoPageTurning}
             onToggleAutoPageTurning={() => {
@@ -385,16 +385,16 @@ export function TextBookViewer({ getAuthHeader, viewerHook }: TextBookViewerProp
               key={currentSpinePath}
               libraryId={selectedLibrary.id}
               bookId={selectedBook.id}
-              format={selectedBook.metaData.selectedFormat ?? "AZW3"}
+              format={selectedBook.metaData!.selectedFormat ?? "AZW3"}
               hash={selectedBook.hash ?? 0}
               headers={getAuthHeader?.(currentSpinePath)}
               pagePath={currentSpinePath}
-              size={selectedBook.metaData.formatSizes.get(selectedBook.metaData.selectedFormat ?? "") ?? 0}
+              size={selectedBook.metaData!.formatSizes.get(selectedBook.metaData!.selectedFormat ?? "") ?? 0}
               currentPage={currentPageInSpine}
               readingStyle={viewerHook.readingStyle}
               pageDirection={viewerHook.pageDirection}
               leadingBlankPage={currentSpineIndex === 0 && viewerHook.readingStyle === "facingPageWithTitle"}
-              preferredWritingMode={selectedBook.primaryWritingMode}
+              preferredWritingMode={selectedBook.primaryWritingMode ?? "horizontal-tb"}
               anchor={pendingAnchorSpineIndex === currentSpineIndex ? pendingAnchor : null}
               annotations={currentSpineAnnotations}
               onPaginationChange={handlePaginationChange}
@@ -425,7 +425,7 @@ export function TextBookViewer({ getAuthHeader, viewerHook }: TextBookViewerProp
             onExport={
               Platform.OS !== "web"
                 ? async () => {
-                    const message = exportAnnotationsAsMarkdown(selectedBook.metaData.title)
+                    const message = exportAnnotationsAsMarkdown(selectedBook.metaData!.title ?? "") ?? ""
                     await Share.share({ message })
                   }
                 : undefined

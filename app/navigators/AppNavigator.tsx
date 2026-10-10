@@ -95,7 +95,7 @@ const AppStack = observer(function AppStack() {
       api.setCredentials(
         authenticationStore.userId,
         authenticationStore.password,
-        authenticationStore.token,
+        authenticationStore.token ?? "",
       )
     }
   }, [authenticationStore.isAuthenticated, authenticationStore.token, settingStore.api.baseUrl])
@@ -367,7 +367,7 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
                     bookId: selectedBook.id,
                     format,
                     libraryId: selectedLibrary.id,
-                    baseUrl: settingStore.api.baseUrl,
+                    baseUrl: settingStore.api.baseUrl ?? "",
                     size,
                     hash,
                     pathList: selectedBook.path.slice(),

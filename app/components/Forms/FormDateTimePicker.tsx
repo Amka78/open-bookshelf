@@ -1,7 +1,7 @@
 import { Controller, type ControllerProps, type FieldValues } from "react-hook-form"
 import { DateTimePicker, type DateTimePickerProps } from "../DateTimePicker/DateTimePicker"
 
-export type FormDateTimePickerProps<T> = Omit<DateTimePickerProps, "value" | "onChange"> &
+export type FormDateTimePickerProps<T extends FieldValues> = Omit<DateTimePickerProps, "value" | "onChange"> &
   Omit<ControllerProps<T>, "render">
 export function FormDateTimePicker<T extends FieldValues>(props: FormDateTimePickerProps<T>) {
   return (

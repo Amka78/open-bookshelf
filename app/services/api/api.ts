@@ -54,7 +54,7 @@ export const DEFAULT_API_CONFIG: ApiConfig = {
 export class Api {
   apisauce: ApisauceInstance
   config: ApiConfig
-  authenticaion: Record<string, string>
+  authenticaion!: Record<string, string>
   private credentials: { username: string; password: string; basicToken: string } | null = null
   private authMethod: "basic" | "digest" | null = null
   private digestChallenge: DigestChallenge | null = null
@@ -566,14 +566,14 @@ export class Api {
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   async loadOPDS(path?: string): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
     // make the api call
-    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get(path)
+    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get(path ?? "")
 
     if (!response.ok) {
       const problem = getGeneralApiProblem(response)
       if (problem) return problem
     }
 
-    return { kind: "ok", data: response.data }
+    return { kind: "ok", data: response.data! }
   }
 
   /**
@@ -594,7 +594,7 @@ export class Api {
       if (problem) return problem
     }
 
-    return { kind: "ok", data: response.data }
+    return { kind: "ok", data: response.data! }
   }
 
   /**
@@ -626,7 +626,7 @@ export class Api {
       if (problem) return problem
     }
 
-    return { kind: "ok", data: response.data }
+    return { kind: "ok", data: response.data! }
   }
 
   /**
@@ -650,7 +650,7 @@ export class Api {
       if (problem) return problem
     }
 
-    return { kind: "ok", data: response.data }
+    return { kind: "ok", data: response.data! }
   }
 
   /**
@@ -671,7 +671,7 @@ export class Api {
       if (problem) return problem
     }
 
-    return { kind: "ok", data: response.data }
+    return { kind: "ok", data: response.data! }
   }
 
   /**
@@ -709,7 +709,7 @@ export class Api {
       if (problem) return problem
     }
 
-    return { kind: "ok", data: response.data }
+    return { kind: "ok", data: response.data! }
   }
 
   /**
@@ -743,7 +743,7 @@ export class Api {
       if (problem) return problem
     }
 
-    return { kind: "ok", data: response.data }
+    return { kind: "ok", data: response.data! }
   }
 
   async getConversionStatus(
@@ -759,7 +759,7 @@ export class Api {
       if (problem) return problem
     }
 
-    return { kind: "ok", data: response.data }
+    return { kind: "ok", data: response.data! }
   }
 
   async getConversionBookData(
@@ -785,7 +785,7 @@ export class Api {
       if (problem) return problem
     }
 
-    return { kind: "ok", data: response.data }
+    return { kind: "ok", data: response.data! }
   }
 
   /**
@@ -811,7 +811,7 @@ export class Api {
       if (problem) return problem
     }
 
-    return { kind: "ok", data: response.data }
+    return { kind: "ok", data: response.data! }
   }
 
   /**
@@ -877,7 +877,7 @@ export class Api {
       if (problem) return problem
     }
 
-    return { kind: "ok", data: response.data }
+    return { kind: "ok", data: response.data! }
   }
 
   async uploadFile(

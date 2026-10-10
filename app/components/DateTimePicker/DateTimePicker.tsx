@@ -33,7 +33,7 @@ export function DateTimePicker(props: DateTimePickerProps) {
           mode={"date"}
           is24Hour={true}
           onChange={(_, selectedDate) => {
-            if (props.onChange) {
+            if (props.onChange && selectedDate) {
               props.onChange(selectedDate.toISOString())
             }
           }}

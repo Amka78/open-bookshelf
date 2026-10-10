@@ -19,7 +19,7 @@ export type ViewerAutoPageTurnSettingModalProps = ModalComponentProp<
 >
 
 export function ViewerAutoPageTurnSettingModal(props: ViewerAutoPageTurnSettingModalProps) {
-  const [intervalInput, setIntervalInput] = useState(String(props.modal.params.intervalMs))
+  const [intervalInput, setIntervalInput] = useState(String(props.modal.params!.intervalMs))
   const intervalMs = Number(intervalInput)
   const isInvalidInterval = !Number.isFinite(intervalMs) || intervalMs < 100
 
@@ -53,7 +53,7 @@ export function ViewerAutoPageTurnSettingModal(props: ViewerAutoPageTurnSettingM
           isDisabled={isInvalidInterval}
           onPress={() => {
             if (isInvalidInterval) return
-            props.modal.params.onSave(Math.floor(intervalMs))
+            props.modal.params!.onSave(Math.floor(intervalMs))
             props.modal.closeModal()
           }}
         />

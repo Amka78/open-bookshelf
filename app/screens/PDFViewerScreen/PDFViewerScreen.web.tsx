@@ -142,7 +142,7 @@ const PDFViewerScreenContent = observer(() => {
         ))}
       </View>
       <BookViewer
-        bookTitle={selectedBook.metaData.title}
+        bookTitle={selectedBook.metaData!.title ?? ""}
         renderPage={renderPage}
         totalPage={totalPages ?? 1}
         initialPage={initialPage}

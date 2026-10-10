@@ -53,8 +53,8 @@ export const BookDetailScreen: FC = observer(() => {
       />
       <BookDetailFieldList
         book={selectedBook}
-        fieldMetadataList={selectedLibrary.fieldMetadataList}
-        fieldNameList={selectedLibrary.bookDisplayFields}
+        fieldMetadataList={selectedLibrary!.fieldMetadataList}
+        fieldNameList={selectedLibrary!.bookDisplayFields}
         onFieldPress={handleFieldPress}
         marginTop={"$3"}
       />

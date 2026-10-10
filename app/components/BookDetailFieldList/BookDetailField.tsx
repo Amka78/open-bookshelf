@@ -36,12 +36,12 @@ export function BookDetailField(props: BookDetailFieldProps) {
         field = (
           <LinkButton
             onPress={(linkName) => {
-              onLinkPress(linkName, props.fieldMetadata, props.onLinkPress)
+              onLinkPress(linkName, props.fieldMetadata, props.onLinkPress!)
             }}
           >
             {{
-              value: props.value.split("T")[0],
-              label: formatDate(parseISO(props.value), props.fieldMetadata.display.dateFormat),
+              value: props.value.split("T")[0] ?? undefined,
+              label: formatDate(parseISO(props.value), props.fieldMetadata.display!.dateFormat),
             }}
           </LinkButton>
         )
@@ -66,9 +66,9 @@ export function BookDetailField(props: BookDetailFieldProps) {
         field = (
           <LinkButton
             onPress={(linkName) => {
-              onLinkPress(linkName, props.fieldMetadata, props.onLinkPress)
+              onLinkPress(linkName, props.fieldMetadata, props.onLinkPress!)
             }}
-            conjunction={props.fieldMetadata.isMultiple?.listToUi}
+            conjunction={props.fieldMetadata.isMultiple?.listToUi ?? undefined}
           >
             {linkInfo}
           </LinkButton>

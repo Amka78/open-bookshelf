@@ -182,7 +182,7 @@ export function setupReactotron(customConfig: ReactotronConfig = {}) {
     Reactotron.onCustomCommand({
       command: "navigateTo",
       handler: (args) => {
-        const { route } = args
+        const { route } = args!
         if (typeof route === "string" && isAppRoute(route)) {
           logger.debug("Navigating to", route)
           navigate(route)

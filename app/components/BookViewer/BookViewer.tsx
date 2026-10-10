@@ -255,7 +255,7 @@ export function BookViewer(props: BookViewerProps) {
         const targetIndex =
           renderProps.direction === "previous"
             ? goToPreviousPage(renderProps.scrollIndex, 1)
-            : goToNextPage(renderProps.scrollIndex, pages[viewerReadingStyle].length, 1)
+            : goToNextPage(renderProps.scrollIndex, pages![viewerReadingStyle].length, 1)
 
         scrollToIndex(targetIndex, true, isHorizontalReading ? undefined : 0.5)
       }
@@ -306,7 +306,7 @@ export function BookViewer(props: BookViewerProps) {
             console.tron.log(`page pressed next page:${page}`)
             scrollToIndex(page, true, isHorizontalReading ? undefined : 0.5)
           }}
-          totalPages={pages[viewerReadingStyle].length}
+          totalPages={pages![viewerReadingStyle].length}
           transitionPages={1}
           style={{
             ...(isHorizontalReading ? styles.pageRoot : styles.verticalPageRoot),
@@ -341,10 +341,10 @@ export function BookViewer(props: BookViewerProps) {
           <Box
             width={listViewportWidth}
             height={isHorizontalReading ? dimension.height : undefined}
-            style={useTransformInvert ? styles.scaleXInverted : undefined}
+            style={useTransformInvert ? styles.scaleXInverted : {}}
           >
             {renderPage({
-              page: num,
+              page: num ?? 0,
               direction: "next",
               pageType: "singlePage",
               scrollIndex: index,
@@ -355,7 +355,7 @@ export function BookViewer(props: BookViewerProps) {
         )
       } else {
         const leftPage = renderPage({
-          page: viewerHook.pageDirection === "left" ? item.page2 : item.page1,
+          page: viewerHook.pageDirection === "left" ? item.page2 ?? 0 : item.page1 ?? 0,
           direction: viewerHook.pageDirection === "left" ? "next" : "previous",
           pageType: "leftPage",
           scrollIndex: index,
@@ -363,7 +363,7 @@ export function BookViewer(props: BookViewerProps) {
           availableHeight: dimension.height,
         })
         const rightPage = renderPage({
-          page: viewerHook.pageDirection === "left" ? item.page1 : item.page2,
+          page: viewerHook.pageDirection === "left" ? item.page1 ?? 0 : item.page2 ?? 0,
           direction: viewerHook.pageDirection === "left" ? "previous" : "next",
           pageType: "rightPage",
           scrollIndex: index,
@@ -374,7 +374,7 @@ export function BookViewer(props: BookViewerProps) {
           <HStack
             width={listViewportWidth}
             height={dimension.height}
-            style={useTransformInvert ? styles.scaleXInverted : undefined}
+            style={useTransformInvert ? styles.scaleXInverted : {}}
           >
             {leftPage}
             {rightPage}
@@ -587,7 +587,7 @@ export function BookViewer(props: BookViewerProps) {
         colors={palette.gradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={[styles.viewerGradient, webViewportStyle]}
+        style={[styles.viewerGradient, webViewportStyle ?? {}]}
       >
         <ViewerHeader
           title={props.bookTitle}
@@ -766,7 +766,7 @@ export function BookViewer(props: BookViewerProps) {
           </Box>
         ) : null}
         <PageManager
-          currentPage={currentPage}
+          currentPage={currentPage ?? 0}
           variant="fix"
           facingPage={
             viewerHook.readingStyle === "facingPage" ||
@@ -774,7 +774,7 @@ export function BookViewer(props: BookViewerProps) {
           }
           facingSecondPageExists={
             pages !== undefined &&
-            (pages[viewerHook.readingStyle][scrollIndex] as FacingPageType | undefined)?.page2 !==
+            (pages![viewerHook.readingStyle][scrollIndex] as FacingPageType | undefined)?.page2 !==
               undefined
           }
           totalPage={props.totalPage}

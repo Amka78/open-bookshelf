@@ -3,7 +3,6 @@
   "compilerOptions": {
     "allowJs": false,
     "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
     "jsx": "react-native",
     "module": "esnext",
     "moduleResolution": "bundler",
@@ -17,9 +16,8 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "resolveJsonModule": true,
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["app/*"]
+      "@/*": ["./app/*"]
     }
   }
 }

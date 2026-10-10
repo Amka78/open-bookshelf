@@ -84,7 +84,7 @@ function buildHoverSearchSections(metadata?: BookImageHoverSearchMetadata): Hove
     label: author,
     query: `authors:=${author}`,
   }))
-  const series = uniqNonEmpty([metadata.series]).map((value) => ({
+  const series = uniqNonEmpty([metadata.series ?? undefined]).map((value) => ({
     label: value,
     query: `series:=${value}`,
   }))
@@ -189,7 +189,7 @@ export const BookImageItem = memo(function BookImageItem({
                         event?.stopPropagation?.()
                         event?.preventDefault?.()
                         if (props.onHoverSearchPress) {
-                          await props.onHoverSearchPress(link.query)
+                          await props.onHoverSearchPress!(link.query)
                         }
                       }}
                     >
@@ -206,6 +206,12 @@ export const BookImageItem = memo(function BookImageItem({
         <Box style={styles.detailMenuOverlay} testID="book-image-detail-menu-overlay">
           <BookDetailMenu
             {...props.detailMenuProps}
+            onOpenBook={props.detailMenuProps!.onOpenBook!}
+            onDownloadBook={props.detailMenuProps!.onDownloadBook!}
+            onConvertBook={props.detailMenuProps!.onConvertBook!}
+            onEditBook={props.detailMenuProps!.onEditBook!}
+            onRunCoverOcr={props.detailMenuProps!.onRunCoverOcr!}
+            onDeleteBook={props.detailMenuProps!.onDeleteBook!}
             onOpenBookDetail={props.onOpenBookDetail ?? (() => {})}
             wrap
             iconOpacity={0.85}
@@ -226,7 +232,7 @@ export const BookImageItem = memo(function BookImageItem({
         props.onPress
           ? async () => {
               setLoadingState(true)
-              await props.onPress()
+              await props.onPress!()
               setLoadingState(false)
             }
           : undefined

@@ -156,7 +156,7 @@ export const BookEditScreen: FC = observer(() => {
                       <InputField
                         value={coverUrlInput}
                         onChangeText={setCoverUrlInput}
-                        placeholder={translate("bookEditScreen.fetchCoverUrlPlaceholder")}
+                        placeholder={translate("bookEditScreen.fetchCoverUrlPlaceholder") ?? undefined}
                         autoCapitalize="none"
                         keyboardType="url"
                       />
@@ -183,8 +183,8 @@ export const BookEditScreen: FC = observer(() => {
                 book={selectedBook}
                 // biome-ignore lint/suspicious/noExplicitAny: react-hook-form Control generic parameter mismatch between form and component expectations
                 control={form.control as any}
-                fieldMetadataList={selectedLibrary.fieldMetadataList}
-                tagBrowser={selectedLibrary.tagBrowser}
+                fieldMetadataList={selectedLibrary!.fieldMetadataList}
+                tagBrowser={selectedLibrary!.tagBrowser}
                 onUploadFormat={onUploadFormat}
                 onTextInputFocus={handleTextInputFocus}
                 marginTop={"$3"}

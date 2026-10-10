@@ -257,12 +257,12 @@ export function useLibrary() {
   }, [calibreRootStore])
 
   const onSelectVirtualLibrary = async (vl: string | null) => {
-    selectedLibrary.searchSetting.setProp("vl", vl)
+    selectedLibrary!.searchSetting!.setProp("vl", vl)
     await search()
   }
 
   const onSearch = async (searchCondition?: string) => {
-    selectedLibrary.searchSetting.setProp("query", searchCondition ?? "")
+    selectedLibrary!.searchSetting!.setProp("query", searchCondition ?? "")
     if (searchCondition) {
       settingStore.addRecentSearch(searchCondition)
     }
@@ -270,14 +270,14 @@ export function useLibrary() {
   }
 
   const onSort = (sortKey: string) => {
-    if (sortKey === selectedLibrary.searchSetting?.sort) {
-      selectedLibrary.searchSetting.setProp(
+    if (sortKey === selectedLibrary!.searchSetting!.sort) {
+      selectedLibrary!.searchSetting!.setProp(
         "sortOrder",
-        selectedLibrary.searchSetting.sortOrder === "desc" ? "asc" : "desc",
+        selectedLibrary!.searchSetting!.sortOrder === "desc" ? "asc" : "desc",
       )
     } else {
-      selectedLibrary.searchSetting.setProp("sort", sortKey)
-      selectedLibrary.searchSetting.setProp("sortOrder", "desc")
+      selectedLibrary!.searchSetting!.setProp("sort", sortKey)
+      selectedLibrary!.searchSetting!.setProp("sortOrder", "desc")
     }
     search()
   }
@@ -300,7 +300,7 @@ export function useLibrary() {
     try {
       const result = await api.uploadFile(
         assets[0].name,
-        selectedLibrary.id,
+        selectedLibrary!.id,
         assets[0].file ?? assets[0].uri,
       )
       if (result.kind !== "ok") {

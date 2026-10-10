@@ -15,16 +15,16 @@ import type { ModalStackParams } from "./Types"
 export type ConfirmModalProps = ModalComponentProp<ModalStackParams, void, "ConfirmModal">
 
 export function ConfirmModal(props: ConfirmModalProps) {
-  const titleTx = props.modal.params.titleTx
-  const title = props.modal.params.title
-  const messageTx = props.modal.params.messageTx
-  const message = props.modal.params.message
-  const okTx = props.modal.params.okTx ?? "common.ok"
-  const cancelTx = props.modal.params.cancelTx ?? "common.cancel"
+  const titleTx = props.modal.params!.titleTx
+  const title = props.modal.params!.title
+  const messageTx = props.modal.params!.messageTx
+  const message = props.modal.params!.message
+  const okTx = props.modal.params!.okTx ?? "common.ok"
+  const cancelTx = props.modal.params!.cancelTx ?? "common.cancel"
 
   const onCancelPress = () => {
-    if (props.modal.params.onCancelPress) {
-      props.modal.params.onCancelPress()
+    if (props.modal.params!.onCancelPress) {
+      props.modal.params!.onCancelPress()
     }
     props.modal.closeModal()
   }
@@ -49,8 +49,8 @@ export function ConfirmModal(props: ConfirmModalProps) {
       <Footer>
         <Button
           onPress={async () => {
-            if (props.modal.params.onOKPress) {
-              await props.modal.params.onOKPress()
+            if (props.modal.params!.onOKPress) {
+              await props.modal.params!.onOKPress()
             }
             props.modal.closeModal()
           }}

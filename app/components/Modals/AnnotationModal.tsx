@@ -25,7 +25,7 @@ const COLOR_MAP: Record<string, string> = {
 }
 
 export function AnnotationModal(props: AnnotationModalProps) {
-  const { selectedText, onSave } = props.modal.params
+  const { selectedText, onSave } = props.modal.params!
   const [notes, setNotes] = useState("")
   const [styleWhich, setStyleWhich] = useState<string>("yellow")
 
@@ -63,7 +63,7 @@ export function AnnotationModal(props: AnnotationModalProps) {
             <Text tx="modal.annotationModal.notesLabel" style={{ marginBottom: 4 }} />
             <Input>
               <InputField
-                placeholder={translate("modal.annotationModal.notesPlaceholder")}
+                placeholder={translate("modal.annotationModal.notesPlaceholder") ?? undefined}
                 value={notes}
                 onChangeText={setNotes}
                 multiline

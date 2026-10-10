@@ -40,7 +40,7 @@ export const OpdsModel = types
         }
         const xmlDom = new DOMParser().parseFromString(response.data, "text/xml")
 
-        const feedChildren = xmlDom.getElementsByTagName("feed").item(0).childNodes
+        const feedChildren = xmlDom.getElementsByTagName("feed").item(0)!.childNodes
         for (let index = 0; index < feedChildren.length; index++) {
           const node = feedChildren.item(index) as unknown as Element
           const nodeName = node.nodeName
@@ -64,9 +64,9 @@ function setState(nodeName: string, node: Element, opds: Record<string, unknown>
   } else if (nodeName === "entry") {
     setElements(node, opds.entry as { push(item: object): void }, EntryModel as any)
   } else if (nodeName === "updated" || nodeName === "published") {
-    opds[nodeName] = new Date(node.firstChild.nodeValue)
+    opds[nodeName] = new Date(node.firstChild!.nodeValue!)
   } else {
-    opds[nodeName] = node.firstChild.nodeValue
+    opds[nodeName] = node.firstChild!.nodeValue
   }
 
   if (node.attributes.length > 0) {
@@ -124,9 +124,9 @@ function setAttributes(
   const model = modelRef.create()
   list.push(model)
   for (let i = 0; i < attributes.length; i++) {
-    const nodeName = attributes.item(i).nodeName
+    const nodeName = attributes.item(i)!.nodeName
     if (model[nodeName] !== undefined) {
-      model[nodeName] = attributes.item(i).nodeValue
+      model[nodeName] = attributes.item(i)!.nodeValue
     }
   }
 }

@@ -11,7 +11,7 @@ type UploadResult = {
   format?: string
 }
 
-export type FormFormatFieldProps<T> = Omit<ControllerProps<T>, "render"> & {
+export type FormFormatFieldProps<T extends FieldValues> = Omit<ControllerProps<T>, "render"> & {
   testID?: string
   onUploadFormat?: (params: { targetFormat?: string }) => Promise<UploadResult>
 }

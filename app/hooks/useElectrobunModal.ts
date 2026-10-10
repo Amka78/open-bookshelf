@@ -20,10 +20,10 @@ export function useElectrobunModal() {
   const openModal: OpenModalFn = (name, params?) => {
     if (name === "ConfirmModal") {
       const p = params as ModalStackParams["ConfirmModal"]
-      const title = p?.title ?? (p?.titleTx ? translate(p.titleTx) : "")
-      const message = p?.message ?? (p?.messageTx ? translate(p.messageTx) : "")
-      const okLabel = p?.okTx ? translate(p.okTx) : translate("common.ok")
-      const cancelLabel = p?.cancelTx ? translate(p.cancelTx) : translate("common.cancel")
+      const title = p?.title ?? (p?.titleTx ? translate(p.titleTx) : "") ?? ""
+      const message = p?.message ?? (p?.messageTx ? translate(p.messageTx) : "") ?? ""
+      const okLabel = (p?.okTx ? translate(p.okTx) : translate("common.ok")) ?? ""
+      const cancelLabel = (p?.cancelTx ? translate(p.cancelTx) : translate("common.cancel")) ?? ""
 
       showNativeConfirm(title, message, okLabel, cancelLabel).then((confirmed) => {
         if (confirmed) {
@@ -37,8 +37,8 @@ export function useElectrobunModal() {
 
     if (name === "ErrorModal") {
       const p = params as ModalStackParams["ErrorModal"]
-      const title = p?.title ?? (p?.titleTx ? translate(p.titleTx) : "Error")
-      const message = p?.message ?? (p?.messageTx ? translate(p.messageTx) : "")
+      const title = p?.title ?? (p?.titleTx ? translate(p.titleTx) : "Error") ?? ""
+      const message = p?.message ?? (p?.messageTx ? translate(p.messageTx) : "") ?? ""
 
       showNativeError(title, message)
       return

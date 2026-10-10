@@ -23,7 +23,7 @@ export const FlatList = React.forwardRef(function FlatListInner<T>(
   return !preparing ? (
     <Origin
       {...props}
-      ref={ref}
+      ref={ref as any}
       onMomentumScrollBegin={() => {
         setLoading(true)
       }}
@@ -42,7 +42,7 @@ export const FlatList = React.forwardRef(function FlatListInner<T>(
         setRefreshing(false)
       }}
       refreshing={refreshing}
-      ListFooterComponent={loading && <Spinner />}
+      ListFooterComponent={loading ? <Spinner /> : null}
     />
   ) : (
     <Center flex={1}>

@@ -13,7 +13,7 @@ export function useODSRoot() {
 
   useEffect(() => {
     const initialize = async () => {
-      await opdsRootStore.root.load(settingStore.api.initialPath)
+      await opdsRootStore.root.load(settingStore.api.initialPath ?? undefined)
       navigation.setOptions({
         headerTitle() {
           return React.createElement(
@@ -27,7 +27,7 @@ export function useODSRoot() {
             React.createElement(
               Text,
               { color: palette.textPrimary, paddingLeft: "$2.5", fontSize: "$2xl" },
-              opdsRootStore.root.title,
+              opdsRootStore.root.title ?? "",
             ),
           )
         },

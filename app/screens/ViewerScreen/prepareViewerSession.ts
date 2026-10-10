@@ -79,7 +79,7 @@ export async function prepareViewerSession({
   )
   const { format } = request
 
-  selectedBook.metaData.setProp("selectedFormat", format)
+  selectedBook.metaData!.setProp("selectedFormat", format)
 
   const history = calibreRootStore.readingHistories.find((value) => {
     return (
@@ -96,7 +96,7 @@ export async function prepareViewerSession({
       bookId: selectedBook.id,
       format,
       libraryId: selectedLibrary.id,
-      baseUrl: settingStore.api.baseUrl,
+      baseUrl: settingStore.api.baseUrl ?? "",
     })
 
     if (history) {
@@ -160,7 +160,7 @@ export async function prepareViewerSession({
         bookId: selectedBook.id,
         format,
         libraryId: selectedLibrary.id,
-        baseUrl: settingStore.api.baseUrl,
+        baseUrl: settingStore.api.baseUrl ?? "",
         size,
         hash,
         pathList: selectedBook.path.slice(),
@@ -190,7 +190,7 @@ export async function prepareViewerSession({
           bookId: selectedBook.id,
           format,
           libraryId: selectedLibrary.id,
-          baseUrl: settingStore.api.baseUrl,
+          baseUrl: settingStore.api.baseUrl ?? "",
           size,
           hash,
           cachedPaths: history.cachedPath.slice(),
@@ -224,7 +224,7 @@ export async function prepareViewerSession({
               bookId: selectedBook.id,
               format,
               libraryId: selectedLibrary.id,
-              baseUrl: settingStore.api.baseUrl,
+              baseUrl: settingStore.api.baseUrl ?? "",
               size,
               hash,
               pathList: selectedBook.path.slice(),

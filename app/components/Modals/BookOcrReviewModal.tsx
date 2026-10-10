@@ -20,7 +20,7 @@ export type BookOcrReviewModalProps = ModalComponentProp<
 
 export const BookOcrReviewModal = observer((props: BookOcrReviewModalProps) => {
   const controller = useBookOcrReviewController({
-    imageUrl: props.modal.params.imageUrl,
+    imageUrl: props.modal.params!.imageUrl,
     onComplete: () => {
       props.modal.closeModal()
     },

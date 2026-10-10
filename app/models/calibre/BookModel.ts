@@ -285,11 +285,11 @@ export const BookModel = types
       while (!response || !isConvertManifestResponse(response)) {
         response = yield api.CheckBookConverting(libraryId, root.id, format)
 
-        if (response.kind !== "ok") {
-          if (response.kind === "not-found") {
-            throw new Error(response.message)
+        if (response!.kind !== "ok") {
+          if (response!.kind === "not-found") {
+            throw new Error((response as any).message ?? "API error")
           }
-          handleCommonApiError(response)
+          handleCommonApiError(response!)
         } else if (isConvertJobStatusResponse(response)) {
           if (response.data.job_status === "finished" && response.data.traceback) {
             throw new Error(response.data.traceback)

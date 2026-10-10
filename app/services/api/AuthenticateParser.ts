@@ -3,7 +3,7 @@ const token = /^[^\u0000-\u001F\u007F()<>@,;:\\"/?={}\[\]\u0020\u0009]+$/
 export const isToken = (str: string): boolean => typeof str === "string" && token.test(str)
 export const isScheme = isToken
 
-export const unquote = (str: string): string => str.substr(1, str.length - 2).replace(/\\"/g, '"')
+export const unquote = (str: string): string => str.substring(1, str.length - 1).replace(/\\"/g, '"')
 // lol dis
 const body =
   /((?:[a-zA-Z0-9._~+\/-]+=*(?:\s+|$))|[^\u0000-\u001F\u007F()<>@,;:\\"/?={}\[\]\u0020\u0009]+)(?:=([^\\"=\s,]+|"(?:[^"\\]|\\.)*"))?/g // eslint-disable-line
@@ -29,7 +29,7 @@ type Result = {
 }
 
 const parseProperties = (scheme: string, string: string): Result => {
-  let token = null
+  let token: string | string[] | null = null
   const params: Record<string, string | Array<string>> = {}
 
   // eslint-disable-next-line no-constant-condition
@@ -41,11 +41,11 @@ const parseProperties = (scheme: string, string: string): Result => {
     if (res[2]) {
       params[res[1]] = normalize(params[res[1]], res[2])
     } else {
-      token = normalize(token, res[1])
+      token = normalize(token ?? "", res[1] ?? "")
     }
   }
 
-  return { scheme, params, token }
+  return { scheme, params, token: token ?? undefined }
 }
 
 export default (str: string): Result => {
@@ -54,11 +54,11 @@ export default (str: string): Result => {
   }
 
   const start = str.indexOf(" ")
-  const scheme = str.substr(0, start)
+  const scheme = str.substring(0, start)
 
   if (!isScheme(scheme)) {
     throw new TypeError(`Invalid scheme ${scheme}`)
   }
 
-  return parseProperties(scheme, str.substr(start))
+  return parseProperties(scheme, str.substring(start))
 }

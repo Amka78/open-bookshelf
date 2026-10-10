@@ -3,7 +3,7 @@ import { Controller, type ControllerProps, type FieldValues } from "react-hook-f
 
 import { RatingGroup, type RatingGroupProps } from "../RatingGroup/RatingGroup"
 
-export type FormRatingGroupProps<T> = Omit<RatingGroupProps, "onSelectRating" | "selectedValue"> &
+export type FormRatingGroupProps<T extends FieldValues> = Omit<RatingGroupProps, "onSelectRating" | "selectedValue"> &
   Omit<ControllerProps<T>, "render">
 export function FormRatingGroup<T extends FieldValues>(props: FormRatingGroupProps<T>) {
   return (

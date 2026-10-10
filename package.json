@@ -159,7 +159,7 @@
     "reactotron-react-native": "^5.1.18",
     "storybook": "^8.6.18",
     "storybook-dark-mode": "4.0.1",
-    "typescript": "^5.9.3",
+    "typescript": "^7.0.2",
     "vite": "6",
     "vite-plugin-rnw": "^0.0.12",
     "vite-tsconfig-paths": "^6.1.1",

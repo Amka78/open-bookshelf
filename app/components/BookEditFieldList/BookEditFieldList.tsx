@@ -51,7 +51,7 @@ export function BookEditFieldList(props: BookEditFieldListProps) {
   const { scrollViewProps, ...boxProps } = props
   const { suggestionMap, languageCodeSuggestions } = useEditFieldSuggestions({
     tagBrowser: props.tagBrowser,
-    metaData: props.book.metaData,
+    metaData: props.book.metaData ?? undefined,
   })
 
   // --- フォーカスチェーン管理 ---
@@ -87,7 +87,7 @@ export function BookEditFieldList(props: BookEditFieldListProps) {
     const suggestions =
       label === "languages" &&
       (value.linkColumn === "lamg_code" || value.linkColumn === "lang_code")
-        ? languageCodeSuggestions
+        ? languageCodeSuggestions ?? undefined
         : suggestionMap.get(value.label)
     if (label === "series") {
       const seriesIndexName = "seriesIndex" as Path<MetadataSnapshotIn>

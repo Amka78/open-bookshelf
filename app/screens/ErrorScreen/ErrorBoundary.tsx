@@ -45,7 +45,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   // To avoid unnecessary re-renders
-  shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>): boolean {
+  shouldComponentUpdate(_nextProps: Readonly<Props>, nextState: Readonly<State>): boolean {
     return nextState.error !== this.state.error
   }
 
@@ -64,7 +64,7 @@ export class ErrorBoundary extends Component<Props, State> {
       <ErrorDetails
         onReset={this.resetError}
         error={this.state.error}
-        errorInfo={this.state.errorInfo}
+        errorInfo={this.state.errorInfo!}
       />
     ) : (
       this.props.children

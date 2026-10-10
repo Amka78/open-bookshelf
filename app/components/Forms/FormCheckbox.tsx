@@ -3,7 +3,7 @@ import { Controller, type ControllerProps, type FieldValues } from "react-hook-f
 
 import { Checkbox, type ICheckboxProps } from "../Checkbox/Checkbox"
 
-export type FormCheckboxProps<T> = Omit<ICheckboxProps, "onChangeText" | "value"> &
+export type FormCheckboxProps<T extends FieldValues> = Omit<ICheckboxProps, "onChangeText" | "value"> &
   Omit<ControllerProps<T>, "render">
 export function FormCheckbox<T extends FieldValues>(props: FormCheckboxProps<T>) {
   return (

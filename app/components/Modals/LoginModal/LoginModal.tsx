@@ -75,7 +75,7 @@ export function LoginModalTemplate(props: LoginModalTemplateProps) {
       <Footer>
         <Button
           onPress={form.handleSubmit(async (data) => {
-            await props.modal.params.onLoginPress(data)
+            await props.modal.params!.onLoginPress!(data)
             props.modal.closeModal()
           })}
           tx={"common.login"}

@@ -106,7 +106,7 @@ export function useViewer() {
   const selectedBook = selectedLibrary?.selectedBook
 
   // Reading history and format management
-  const selectedFormat = selectedBook?.metaData.selectedFormat
+  const selectedFormat = selectedBook?.metaData?.selectedFormat
   const isHtmlViewerFormat = isCalibreHtmlViewerFormat(selectedFormat)
   const normalizedSelectedFormat = selectedFormat?.toUpperCase()
   const histories = useMemo(
@@ -134,7 +134,7 @@ export function useViewer() {
   // Update selected format if needed
   useEffect(() => {
     if (selectedBook && !selectedFormat && history?.format) {
-      selectedBook.metaData.setProp("selectedFormat", history.format)
+      selectedBook.metaData?.setProp("selectedFormat", history.format)
     }
   }, [history?.format, selectedBook, selectedFormat])
 
@@ -474,7 +474,7 @@ export function useViewer() {
 
     handledRatingPromptKeyRef.current = promptKey
     modal.openModal("ViewerRatingModal", {
-      initialRating: selectedBook.metaData.rating ?? 0,
+      initialRating: selectedBook.metaData?.rating ?? 0,
       onSubmit: async (rating: number) => {
         const result = await selectedBook.update(
           selectedLibrary.id,

@@ -38,13 +38,13 @@ export function BookFormatList({ formats, onDownload, onDelete, onUpload }: Book
               name="download-outline"
               testID={`download-${format}`}
               onPress={() => onDownload(format)}
-              accessibilityLabel={translate("bookFormatList.downloadTooltip")}
+              accessibilityLabel={translate("bookFormatList.downloadTooltip") ?? undefined}
             />
             <IconButton
               name="trash-can-outline"
               testID={`delete-${format}`}
               onPress={() => handleDelete(format)}
-              accessibilityLabel={translate("bookFormatList.deleteTooltip")}
+              accessibilityLabel={translate("bookFormatList.deleteTooltip") ?? undefined}
             />
           </HStack>
         </HStack>
