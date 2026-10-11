@@ -321,8 +321,10 @@ export const LibraryScreen: FC = observer(() => {
             onPress={() => {
               if (selectedLibrary?.searchSetting?.query !== "") {
                 libraryHook.onSearch("")
-              } else {
+              } else if (navigation.canGoBack()) {
                 navigation.goBack()
+              } else {
+                navigation.navigate("CalibreRoot")
               }
             }}
             iconSize="md-"

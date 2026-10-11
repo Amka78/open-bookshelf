@@ -14,8 +14,21 @@ import { setupRootStore } from "./setupRootStore"
  * If your RootStore has a _ton_ of sub-stores and properties (the tree is
  * very large), you may want to use a different strategy than immediately
  * instantiating it, although that should be rare.
+ *
+ * HMR対応: globalThisにストアインスタンスを保持し、HMR発火時にも同じインスタンスを再利用する。
+ * これにより、HMR時にコンポーネントが古いストアインスタンスを参照して
+ * 「no longer part of a state tree」エラーが発生するのを防ぐ。
+ * globalThisはExpoのReloadではリセットされないが、アプリの完全再起動ではリセットされる。
  */
-const _rootStore = RootStoreModel.create({})
+const globalForRootStore = globalThis as unknown as {
+  rootStore: RootStore | undefined
+}
+
+const _rootStore = globalForRootStore.rootStore ?? RootStoreModel.create({})
+
+if (__DEV__) {
+  globalForRootStore.rootStore = _rootStore
+}
 
 /**
  * The RootStoreContext provides a way to access

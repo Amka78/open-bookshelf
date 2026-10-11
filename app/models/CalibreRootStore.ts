@@ -24,6 +24,7 @@ import {
   SearchSettingModel,
   SortFieldModel,
   SubCategoryModel,
+  VirtualLibraryModel,
 } from "./calibre"
 import { handleCommonApiError } from "./errors/errors"
 import { withSetPropAction } from "./helpers/withSetPropAction"
@@ -60,6 +61,10 @@ export const CalibreRootStore = types
         root.defaultLibraryId = data.default_library_id ?? null
         root.numPerPage = data.num_per_page ?? null
 
+        // selectedLibraryをクリアしてからlibraryMapをクリアする。
+        // libraryMap.clear()で参照先が削除されると、selectedLibraryが無効な参照を保持し、
+        // その後にselectedLibraryにアクセスすると「no longer part of a state tree」エラーが発生する。
+        root.selectedLibrary = undefined
         root.libraryMap.clear()
         Object.keys(data.library_map).forEach((keyName: string) => {
           root.libraryMap.set(keyName, { id: keyName })
@@ -173,7 +178,9 @@ export const CalibreRootStore = types
       )
 
       if (response.kind === "ok") {
-        root.selectedLibrary!.books.clear()
+        // books.clear() は使わない。convertSearchResult 内で古い books を個別に削除する。
+        // React 19 の concurrent mode では、clear() による一括削除が中間 render を引き起こし、
+        // 削除済みノードへの参照エラーが発生するため。
         convertLibraryInformation(response.data, root.selectedLibrary!)
         convertSearchResult(response.data, root.selectedLibrary!)
 
@@ -337,6 +344,18 @@ function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap)
       : selectedLibrary.searchSetting!.totalNum,
     vl: selectedLibrary.searchSetting?.vl ?? null,
   })
+
+  // React 19 の concurrent mode では、books.clear() の後に React の再 render が実行され、
+  // 削除された BookModel の参照にアクセスしてエラーになる。
+  // books.clear() を使わず、新しい book_ids に含まれない古い books を個別に削除する。
+  const newBookIds = new Set(data.search_result.book_ids.map((id: number) => id.toString()))
+  const existingKeys = Array.from(selectedLibrary.books.keys())
+  for (const key of existingKeys) {
+    if (!newBookIds.has(key)) {
+      selectedLibrary.books.delete(key)
+    }
+  }
+
   data.search_result.book_ids.forEach((bookId: number) => {
     const metadata = (data.metadata as unknown as Record<string, MetadataType>)[bookId]
 
@@ -376,33 +395,47 @@ function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap)
   })
 
   if (data.sortable_fields) {
-    selectedLibrary.sortField.clear()
-    data.sortable_fields.forEach((value) => {
-      const sortField = SortFieldModel.create({
+    // sortField: clear + push → replace
+    const newSortFields = data.sortable_fields.map((value) =>
+      SortFieldModel.create({
         id: value[0],
         name: value[1],
-      })
-
-      selectedLibrary.sortField.push(sortField)
-    })
+      }),
+    )
+    selectedLibrary.sortField.replace(newSortFields)
   }
 }
 
 function convertLibraryInformation(bookInfo: ApiBookInfo, libraryInfo: LibraryMap) {
-  libraryInfo.bookDisplayFields.clear()
-  libraryInfo.fieldMetadataList.clear()
-  libraryInfo.virtualLibraries.clear()
+  // React 19 の concurrent mode では、clear() の後に React の再 render が実行され、
+  // 削除されたノードの参照にアクセスしてエラーになる。
+  // array は replace() でアトミックに置き換え、map は個別に delete してから set する。
   libraryInfo.setProp("ftsEnabled", bookInfo.fts_enabled ?? false)
 
-  Object.keys(bookInfo.virtual_libraries).forEach((key) => {
-    libraryInfo.virtualLibraries.push({ name: key, path: bookInfo.virtual_libraries[key] })
-  })
+  // virtualLibraries: clear + push → replace
+  const newVirtualLibraries = Object.keys(bookInfo.virtual_libraries).map((key) =>
+    VirtualLibraryModel.create({
+      name: key,
+      path: bookInfo.virtual_libraries[key],
+    }),
+  )
+  libraryInfo.virtualLibraries.replace(newVirtualLibraries)
 
-  bookInfo.book_display_fields.forEach((value) => {
-    libraryInfo.bookDisplayFields.push(value)
-  })
+  // bookDisplayFields: clear + push → replace
+  libraryInfo.bookDisplayFields.replace(bookInfo.book_display_fields)
 
+  // fieldMetadataList: map なので個別に delete してから set
   const fieldMetadataRecord = bookInfo.field_metadata as unknown as Record<string, FieldMetadata>
+  const newFieldKeys = new Set(
+    Object.keys(fieldMetadataRecord).map((key) => lowerCaseToCamelCase(key)),
+  )
+  const existingFieldKeys = Array.from(libraryInfo.fieldMetadataList.keys())
+  for (const key of existingFieldKeys) {
+    if (!newFieldKeys.has(key)) {
+      libraryInfo.fieldMetadataList.delete(key)
+    }
+  }
+
   Object.keys(fieldMetadataRecord).forEach((key) => {
     const fm = fieldMetadataRecord[key]
     let display = undefined

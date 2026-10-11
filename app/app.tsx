@@ -14,7 +14,7 @@ import "./utils/ignoreWarnings"
 
 import { useFonts } from "expo-font"
 import React from "react"
-import { View, useColorScheme } from "react-native"
+import { Platform, View, useColorScheme } from "react-native"
 import { SafeAreaProvider, initialWindowMetrics } from "react-native-safe-area-context"
 
 import { config } from "@gluestack-ui/config"
@@ -110,7 +110,8 @@ function App(props: AppProps) {
   // You can replace with your own loading component if you wish.
   if (!rehydrated || !isNavigationStateRestored || !areFontsLoaded) return null
 
-  if (IS_STORYBOOK_ENABLED) {
+  // webモードではStorybookを無効化（ネイティブモジュールが存在しないため）
+  if (IS_STORYBOOK_ENABLED && Platform.OS !== "web") {
     const StorybookUI = require("../.storybook/native").default
     return (
       <View style={{ flex: 1 }}>
