@@ -6,6 +6,7 @@ import { type RouteProp, useNavigation, useRoute } from "@react-navigation/nativ
 import { observer } from "mobx-react-lite"
 import type { FC } from "react"
 import { useLayoutEffect } from "react"
+import { SafeAreaView } from "react-native-safe-area-context"
 import { useDetailSearch } from "./useDetailSearch"
 
 type DetailSearchScreenRouteProp = RouteProp<AppStackParamList, "DetailSearch">
@@ -41,16 +42,18 @@ export const DetailSearchScreen: FC = observer(() => {
   }, [navigation, pendingQuery, route.params])
 
   return (
-    <Box flex={1} testID="detail-search-screen">
-      <LeftSideMenu
-        tagBrowser={tagBrowser}
-        selectedNames={selectedNames}
-        itemOperators={itemOperators}
-        itemCalibreOperators={itemCalibreOperators}
-        onNodePress={onNodePress}
-        onItemOperatorChange={onItemOperatorChange}
-        onItemCalibreOperatorChange={onItemCalibreOperatorChange}
-      />
-    </Box>
+    <SafeAreaView style={{ flex: 1 }}>
+      <Box flex={1} testID="detail-search-screen">
+        <LeftSideMenu
+          tagBrowser={tagBrowser}
+          selectedNames={selectedNames}
+          itemOperators={itemOperators}
+          itemCalibreOperators={itemCalibreOperators}
+          onNodePress={onNodePress}
+          onItemOperatorChange={onItemOperatorChange}
+          onItemCalibreOperatorChange={onItemCalibreOperatorChange}
+        />
+      </Box>
+    </SafeAreaView>
   )
 })

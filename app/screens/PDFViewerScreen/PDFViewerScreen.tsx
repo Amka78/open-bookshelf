@@ -9,6 +9,7 @@ import { File } from "expo-file-system"
 import { observer } from "mobx-react-lite"
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { type FlexAlignType, StyleSheet, View, type ViewStyle } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 const PDFViewerScreenContent = observer(() => {
   const pdfHook = usePDFViewer()
@@ -223,11 +224,13 @@ export const PDFViewerScreen = observer(() => {
 
   if (phase === "preparing") {
     return (
-      <LabeledSpinner
-        labelDirection="vertical"
-        labelTx={messageTx}
-        containerStyle={styles.loadingRoot}
-      />
+      <SafeAreaView style={styles.loadingRoot}>
+        <LabeledSpinner
+          labelDirection="vertical"
+          labelTx={messageTx}
+          containerStyle={styles.loadingRoot}
+        />
+      </SafeAreaView>
     )
   }
 
@@ -235,7 +238,11 @@ export const PDFViewerScreen = observer(() => {
     return null
   }
 
-  return <PDFViewerScreenContent />
+  return (
+    <SafeAreaView style={styles.fullscreen}>
+      <PDFViewerScreenContent />
+    </SafeAreaView>
+  )
 })
 
 const styles = StyleSheet.create({

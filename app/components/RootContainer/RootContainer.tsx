@@ -3,6 +3,7 @@ import { usePalette } from "@/theme"
 import { Box, useBreakpointValue } from "@gluestack-ui/themed"
 import React, { type ComponentProps } from "react"
 import { StyleSheet } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 export type ContainerProps = ComponentProps<typeof Box>
 
@@ -39,15 +40,17 @@ export function RootContainer(props: ContainerProps) {
       end={{ x: 1, y: 1 }}
       style={styles.gradient}
     >
-      <Box
-        justifyContent={"center"}
-        alignItems={"center"}
-        alignSelf={"center"}
-        flex={1}
-        paddingHorizontal={"$0"}
-      >
-        {Inner}
-      </Box>
+      <SafeAreaView style={styles.gradient}>
+        <Box
+          justifyContent={"center"}
+          alignItems={"center"}
+          alignSelf={"center"}
+          flex={1}
+          paddingHorizontal={"$0"}
+        >
+          {Inner}
+        </Box>
+      </SafeAreaView>
     </GradientBackground>
   ) : (
     <GradientBackground
@@ -56,7 +59,7 @@ export function RootContainer(props: ContainerProps) {
       end={{ x: 1, y: 1 }}
       style={styles.gradient}
     >
-      {Inner}
+      <SafeAreaView style={styles.gradient}>{Inner}</SafeAreaView>
     </GradientBackground>
   )
 

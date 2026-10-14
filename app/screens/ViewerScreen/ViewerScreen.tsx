@@ -12,6 +12,7 @@ import { Image } from "expo-image"
 import { observer } from "mobx-react-lite"
 import React, { type FC, useCallback, useEffect, useLayoutEffect, useMemo } from "react"
 import { StyleSheet } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import { useViewerPreparation } from "./useViewerPreparation"
 
 const ViewerScreenContent: FC = observer(() => {
@@ -188,11 +189,13 @@ export const ViewerScreen: FC = observer(() => {
 
   if (phase === "preparing") {
     return (
-      <LabeledSpinner
-        labelDirection="vertical"
-        labelTx={messageTx}
-        containerStyle={styles.loadingRoot}
-      />
+      <SafeAreaView style={styles.loadingRoot}>
+        <LabeledSpinner
+          labelDirection="vertical"
+          labelTx={messageTx}
+          containerStyle={styles.loadingRoot}
+        />
+      </SafeAreaView>
     )
   }
 
@@ -200,7 +203,11 @@ export const ViewerScreen: FC = observer(() => {
     return null
   }
 
-  return <ViewerScreenContent />
+  return (
+    <SafeAreaView style={styles.loadingRoot}>
+      <ViewerScreenContent />
+    </SafeAreaView>
+  )
 })
 
 const styles = StyleSheet.create({
