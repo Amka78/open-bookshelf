@@ -10,6 +10,7 @@
     "ios": "bunx react-native run-ios",
     "android": "bunx react-native run-android --active-arch-only",
     "compile": "tsc --noEmit -p tsconfig.compile.json --pretty",
+    "check": "bun run compile && bun run lint && biome format app test && bun run test:unit && bun run test:story",
     "format": "biome format --write app test",
     "lint": "biome lint app test",
     "patch": "bunx patch-package",
