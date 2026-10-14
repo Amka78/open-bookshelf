@@ -31,16 +31,24 @@ const ViewerScreenContent: FC = observer(() => {
   const isHtmlViewerFormat = selectedBook
     ? isCalibreHtmlViewerFormat(selectedBook.metaData!.selectedFormat)
     : false
+  // selectedBook.path is an MST observable array whose object reference stays
+  // stable while items are appended. Reading only `selectedBook` /
+  // `cachedPathList` as deps therefore freezes the memo at the first render —
+  // for AZW3 books whose spine paths arrive asynchronously after mount, the
+  // list would stay empty and usesTextBookViewer would stay false forever,
+  // routing the book to BookHtmlPage (blank/black). Depend on the path count
+  // and return a plain snapshot so downstream memos see a fresh reference.
+  const selectedBookPathLength = selectedBook?.path.length ?? 0
   const sourcePathList = useMemo(
     (): string[] =>
       selectedBook
-        ? selectedBook.path.length > 0
-          ? selectedBook.path
+        ? selectedBookPathLength > 0
+          ? selectedBook.path.slice()
           : isHtmlViewerFormat
-            ? selectedBook.path
-            : cachedPathList ?? selectedBook.path
+            ? selectedBook.path.slice()
+            : cachedPathList ?? selectedBook.path.slice()
         : [],
-    [selectedBook, isHtmlViewerFormat, cachedPathList],
+    [selectedBook, selectedBookPathLength, isHtmlViewerFormat, cachedPathList],
   )
   const totalPages = sourcePathList.length
   const usesTextBookViewer = useMemo(
@@ -56,13 +64,21 @@ const ViewerScreenContent: FC = observer(() => {
 
   useEffect(() => {
     if (!viewerReady || !selectedBook) return
+    // TEMP DIAGNOSTIC: AZW3 真っ黒画面の原因を特定するため、ビューア切り替えの判定値をログに出す。確認後に削除予定。
+    logger.debug("[tb-diag] ViewerScreen: sourcePathList and usesTextBookViewer", {
+      sourcePathListLength: sourcePathList.length,
+      usesTextBookViewer,
+      pathSample: sourcePathList.slice(0, 3),
+      selectedBookPathLength: selectedBook.path.length,
+      isHtmlViewerFormat,
+    })
     logger.debug("ViewerScreen: Rendering viewer with", {
       bookId: selectedBook.id,
       format: selectedBook.metaData!.selectedFormat,
       initialPage,
       totalPages,
     })
-  }, [viewerReady, selectedBook, initialPage, totalPages])
+  }, [viewerReady, selectedBook, initialPage, totalPages, sourcePathList, usesTextBookViewer, isHtmlViewerFormat])
 
   const renderPage = useCallback(
     (renderProps: RenderPageProps) => {

@@ -394,6 +394,7 @@ export function TextBookViewer({ getAuthHeader, viewerHook }: TextBookViewerProp
               readingStyle={viewerHook.readingStyle}
               pageDirection={viewerHook.pageDirection}
               leadingBlankPage={currentSpineIndex === 0 && viewerHook.readingStyle === "facingPageWithTitle"}
+              isCoverPage={currentSpineIndex === 0}
               preferredWritingMode={selectedBook.primaryWritingMode ?? "horizontal-tb"}
               anchor={pendingAnchorSpineIndex === currentSpineIndex ? pendingAnchor : null}
               annotations={currentSpineAnnotations}

@@ -229,6 +229,7 @@ const webContainerStyle: CSSProperties = {
   flex: 1,
   overflow: "hidden",
   width: "100%",
+  height: "100%",
 }
 
 const iframeStyle: CSSProperties = {

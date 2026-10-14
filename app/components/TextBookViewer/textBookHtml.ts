@@ -25,6 +25,8 @@ type BuildTextBookHtmlDocumentInput = {
   initialPage: number
   leadingBlankPage: boolean
   preferredWritingMode?: string | null
+  /** spine 0（Calibre が非EPUB形式に挿入する表紙 titlepage）のとき true */
+  coverPage?: boolean
 }
 
 const serializeForScriptTag = (value: unknown) => {
@@ -39,6 +41,7 @@ const serializeForScriptTag = (value: unknown) => {
 export const buildTextBookHtmlDocument = ({
   annotations,
   appearance,
+  coverPage,
   documentData,
   documentKey,
   initialPage,
@@ -59,6 +62,7 @@ export const buildTextBookHtmlDocument = ({
   const escapedInitialPage = serializeForScriptTag(initialPage)
   const escapedLeadingBlankPage = serializeForScriptTag(leadingBlankPage)
   const escapedPreferredWritingMode = serializeForScriptTag(preferredWritingMode ?? null)
+  const escapedCoverPage = serializeForScriptTag(coverPage ?? false)
   const fontSizePt = appearance.viewerFontSizePt ?? 16
   const fontSizeCss = `body, p, div, span, li, td, th { font-size: ${fontSizePt}pt !important; }`
   const sepiaCss =
@@ -149,6 +153,7 @@ export const buildTextBookHtmlDocument = ({
         const themeLinkColor = ${escapedLinkColor}
         const initialThemeFallbackBackgroundColor = ${escapedFallbackBackgroundColor}
         const preferredWritingMode = ${escapedPreferredWritingMode}
+        const coverPage = ${escapedCoverPage}
         const longPressDelayMs = 450
         const longPressMoveThresholdPx = 10
         const defaultViewerState = {
@@ -165,11 +170,14 @@ export const buildTextBookHtmlDocument = ({
           isVerticalWriting: false,
           isPaginated: false,
           spreadPageCount: 1,
+          logicalPagesPerUnit: 1,
         }
         let currentAnchor = null
         let scheduledLayoutFrame = 0
         let initialLayoutDone = false
         let pendingCommandPayload = null
+        // doLayout() が実際に使ったビューポート寸法。resize 追従の判定に使う。
+        let lastLayoutViewport = null
 
         const postPayload = (payload) => {
           const message = JSON.stringify(payload)
@@ -297,15 +305,21 @@ export const buildTextBookHtmlDocument = ({
         }
 
         const getPrimaryLayoutElements = () => {
-          const bodyChildren = Array.from(document.querySelectorAll("body > *")).filter(
+          // Calibre applies its "body > *" normalization to the children of the
+          // multicol container. Here that container is #obs-page-wrapper, so the
+          // wrapper itself must never be normalized: giving it height:auto removes
+          // the definite block size that column-fill:auto requires, which collapses
+          // the whole spine into a single column.
+          const layoutRoot = getPageWrapper() ?? document.body
+          const contentChildren = Array.from(layoutRoot.children).filter(
             (element) => !element.matches(helperSelector),
           )
-          const primary = bodyChildren[0] ?? null
+          const primary = contentChildren[0] ?? null
           const nestedPrimary =
             primary && primary.tagName.toLowerCase() === "div" && !hasStartText(primary)
               ? firstElementChild(primary)
               : null
-          return { bodyChildren, nestedPrimary, primary }
+          return { contentChildren, nestedPrimary, primary }
         }
 
         const getWritingModeState = (writingMode, direction) => {
@@ -326,6 +340,24 @@ export const buildTextBookHtmlDocument = ({
             ltr: verticalLr || !rtl,
             rtl,
             writingMode: normalizedWritingMode,
+          }
+        }
+
+        // writing-mode を body だけに掛けると、body が html の中の orthogonal flow になり、
+        // Chromium >= 134 では複数ページのコンテンツが重なって描画される。Calibre が
+        // 9.16.0 の resources/pdf-preprint.js で「body の vertical writing mode を root へ
+        // 伝播させる」対策を入れたのと同じ理由で、html と body の両方に設定する。
+        // direction は従来通り body のみ（html に rtl を渡すと溢れの起点が変わるため）。
+        const applyRootWritingMode = (writingMode, direction) => {
+          if (writingMode) {
+            for (const element of [document.documentElement, document.body]) {
+              element.style.setProperty("writing-mode", writingMode, "important")
+              element.style.setProperty("-webkit-writing-mode", writingMode, "important")
+            }
+          }
+
+          if (direction) {
+            document.body.style.setProperty("direction", direction, "important")
           }
         }
 
@@ -359,17 +391,10 @@ export const buildTextBookHtmlDocument = ({
               continue
             }
 
-            if (candidateState.writingMode) {
-              document.body.style.setProperty("writing-mode", candidateState.writingMode, "important")
-              document.body.style.setProperty(
-                "-webkit-writing-mode",
-                candidateState.writingMode,
-                "important",
-              )
-            }
-            if (candidateStyle.direction) {
-              document.body.style.setProperty("direction", candidateStyle.direction, "important")
-            }
+            applyRootWritingMode(
+              candidateState.writingMode || null,
+              candidateStyle.direction || null,
+            )
             return
           }
 
@@ -405,16 +430,8 @@ export const buildTextBookHtmlDocument = ({
           const bodyRoot = document.body
           if (bodyRoot) {
             const found = scanFirstChildChain(bodyRoot, 0)
-            if (found && found.writingMode) {
-              document.body.style.setProperty("writing-mode", found.writingMode, "important")
-              document.body.style.setProperty(
-                "-webkit-writing-mode",
-                found.writingMode,
-                "important",
-              )
-            }
-            if (found && found.direction) {
-              document.body.style.setProperty("direction", found.direction, "important")
+            if (found) {
+              applyRootWritingMode(found.writingMode, found.direction)
             }
           }
         }
@@ -424,33 +441,31 @@ export const buildTextBookHtmlDocument = ({
             return
           }
 
-          if (preferredWritingMode === "horizontal-tb") {
+          // Calibre surfaces the Kindle EXTH primary-writing-mode, whose horizontal
+          // value is "horizontal-lr" — not a valid CSS writing-mode. Only vertical
+          // values are applied.
+          const normalized = preferredWritingMode.trim().toLowerCase()
+          if (
+            normalized !== "vertical-rl" &&
+            normalized !== "vertical-lr" &&
+            normalized !== "sideways-rl" &&
+            normalized !== "sideways-lr"
+          ) {
             return
           }
 
-          document.documentElement.style.setProperty("writing-mode", preferredWritingMode, "important")
-          document.documentElement.style.setProperty(
-            "-webkit-writing-mode",
-            preferredWritingMode,
-            "important",
-          )
-          document.body.style.setProperty("writing-mode", preferredWritingMode, "important")
-          document.body.style.setProperty(
-            "-webkit-writing-mode",
-            preferredWritingMode,
-            "important",
-          )
+          applyRootWritingMode(normalized, null)
         }
 
         const normalizeFirstColumnElements = () => {
-          const { bodyChildren, nestedPrimary, primary } = getPrimaryLayoutElements()
+          const { contentChildren, nestedPrimary, primary } = getPrimaryLayoutElements()
 
-          if (bodyChildren.length === 1) {
-            bodyChildren[0].style.setProperty("height", "auto", "important")
-            bodyChildren[0].style.setProperty("min-height", "0", "important")
-            bodyChildren[0].style.setProperty("max-height", "none", "important")
-            bodyChildren[0].style.setProperty("break-inside", "auto", "important")
-            bodyChildren[0].style.setProperty("overflow", "visible", "important")
+          if (contentChildren.length === 1) {
+            contentChildren[0].style.setProperty("height", "auto", "important")
+            contentChildren[0].style.setProperty("min-height", "0", "important")
+            contentChildren[0].style.setProperty("max-height", "none", "important")
+            contentChildren[0].style.setProperty("break-inside", "auto", "important")
+            contentChildren[0].style.setProperty("overflow", "visible", "important")
           }
 
           const first = primary
@@ -475,11 +490,9 @@ export const buildTextBookHtmlDocument = ({
             return
           }
 
-          const rootChildren = Array.from(document.body.children).filter(
-            (element) => !element.matches(helperSelector),
-          )
+          const { contentChildren } = getPrimaryLayoutElements()
 
-          for (const child of rootChildren) {
+          for (const child of contentChildren) {
             child.style.setProperty("height", "auto", "important")
             child.style.setProperty("min-height", "0", "important")
             child.style.setProperty("max-height", "none", "important")
@@ -721,18 +734,85 @@ export const buildTextBookHtmlDocument = ({
             pw.style.removeProperty("-webkit-column-width")
             pw.style.removeProperty("height")
             pw.style.removeProperty("width")
+            // 縦書きの中央寄せで付けた margin を残すと、横書きへ切り替えた時に
+            // wrapper がずれたままになるのでここで戻す。
+            pw.style.removeProperty("margin-right")
+            pw.style.removeProperty("margin-left")
           }
         }
 
+        // 表紙 spine（Calibre が非EPUB形式に挿入する titlepage）は画像1枚だけで
+        // 本文テキストを持たない。表紙の無い本では spine 0 が本文になるので、
+        // prop だけでなく実体も確認する（本文ページの分页を壊さないため）。
+        const isCoverOnlyDocument = () => {
+          if (!coverPage) {
+            return false
+          }
+
+          const pw = getPageWrapper()
+          if (!pw || pw.querySelectorAll("img, svg, video, canvas, iframe").length !== 1) {
+            return false
+          }
+
+          return (pw.textContent || "").replace(/\\s+/g, "").length === 0
+        }
+
+        // 見開き+表紙モードの表紙は「見開きの左ページ」ではなく画面いっぱいの1枚として
+        // 扱う。縦書きは 1ユニット＝見開き（右半ページが先のページ）という箱の作りが
+        // 異なるため対象外。
+        const isFullScreenCoverPage = () => {
+          return (
+            isCoverOnlyDocument() &&
+            viewerState.readingStyle === "facingPageWithTitle" &&
+            !getLayoutDirectionState().isVerticalWriting
+          )
+        }
+
         const getSpreadPageCount = () => {
+          if (isFullScreenCoverPage()) {
+            return 1
+          }
+
           return viewerState.readingStyle === "facingPage" ||
             viewerState.readingStyle === "facingPageWithTitle"
             ? 2
             : 1
         }
 
-        const getPageInlineSize = (inlineViewportSize, spreadPageCount) => {
+        const getPageInlineSize = (inlineViewportSize, spreadPageCount, isVerticalWriting) => {
+          // 横書きでは inline 軸＝幅なので、見開きは列幅を分割する（1ユニット=論理1ページ）。
+          // 縦書きでは inline 軸＝高さなので、ここで分割するとページ高さが半分になり、
+          // 画面幅いっぱいの横長い帯が下方向に積み上がって1画面に複数ページ分が入る。
+          // 縦書きの1ユニット（画面いっぱいの列）は右半分が論理Nページ・左半分がN+1ページ
+          // という見開きそのものなので、inline サイズは分割せず spread を
+          // 「ユニットあたりの論理ページ数」として扱う。
+          if (isVerticalWriting) {
+            return Math.max(1, Math.floor(inlineViewportSize))
+          }
+
           return Math.max(1, Math.floor(inlineViewportSize / Math.max(1, spreadPageCount)))
+        }
+
+        const getLogicalPagesPerUnit = (isVerticalWriting, spreadPageCount) => {
+          return isVerticalWriting ? Math.max(1, spreadPageCount) : 1
+        }
+
+        // 縦書きの論理ページ箱の幅。Calibre の PDF 出力は Portrait 固定の用紙箱を
+        // 1枚ずつ出力し（見開き/2-up のオプションは存在しない）、このアプリの PDF
+        // ビューアはそのページ固有のアスペクト比を画面にフィットさせて 1枚/2枚を
+        // 表示する。同じく「表示モードに依存しない固定のページ箱」を使うことで、
+        // 単一ページ=1箱・見開き=2箱 となり総ページ数がモードで変わらない。
+        // 比率は A4 縦の外形 210:297。画面幅の半分を上限にする（見開きが画面に収まる）。
+        const VERTICAL_PAGE_ASPECT_RATIO = 210 / 297
+
+        const getVerticalPageWidth = (viewportWidth, viewportHeight) => {
+          return Math.max(
+            1,
+            Math.min(
+              Math.floor(viewportWidth / 2),
+              Math.floor(viewportHeight * VERTICAL_PAGE_ASPECT_RATIO),
+            ),
+          )
         }
 
         const getLayoutDirectionState = () => {
@@ -876,83 +956,40 @@ export const buildTextBookHtmlDocument = ({
               inlinePageSize: inlineViewportSize,
               isPaginated,
               isVerticalWriting,
+              logicalPagesPerUnit: 1,
               physicalPageCount: totalPages,
               spreadPageCount: 1,
             }
           }
 
-          const pageInlineSize = getPageInlineSize(inlineViewportSize, spreadPageCount)
+          const pageInlineSize = getPageInlineSize(
+            inlineViewportSize,
+            spreadPageCount,
+            isVerticalWriting,
+          )
+          const logicalPagesPerUnit = getLogicalPagesPerUnit(isVerticalWriting, spreadPageCount)
 
-          // Measure total column extent. CSS column overflow may not be
-          // reflected in the wrapper's scrollHeight/scrollWidth in all
-          // browsers. As a reliable fallback, temporarily set column-width
-          // to 'auto' to unconstrain columns and measure the natural
-          // content extent, then restore the column constraint.
+          // Total inline extent of the fragmented columns, read from the multicol
+          // container itself. Paginated mode puts overflow:clip on body, so the
+          // column overflow never reaches documentElement — Calibre measures
+          // documentElement only because it leaves body unclipped.
           const pw = getPageWrapper()
           const measureAxis = isVerticalWriting ? 'scrollHeight' : 'scrollWidth'
-          let effectiveExtent = 0
+          const effectiveExtent = pw ? pw[measureAxis] || 0 : 0
 
-          if (pw) {
-            // First try direct read (works in most browsers for horizontal)
-            effectiveExtent = pw[measureAxis] || 0
-
-            // Measure without column-width AND without body overflow:hidden.
-            // body's overflow:hidden may clamp child scrollHeight in Chrome
-            // (observed: wrapper.scrollHeight = body.clientHeight always).
-            // We briefly unclamp body overflow to measure the true extent.
-            const savedColumnWidth = pw.style.columnWidth || ''
-            pw.style.removeProperty('column-width')
-            const savedBodyOverflow = document.body.style.overflow || ''
-            const savedBodyOverflowX = document.body.style.overflowX || ''
-            const savedBodyOverflowY = document.body.style.overflowY || ''
-            document.body.style.removeProperty('overflow')
-            document.body.style.removeProperty('overflow-x')
-            document.body.style.removeProperty('overflow-y')
-            // Force reflow
-            window.getComputedStyle(pw).columnWidth
-            const naturalExtent = pw[measureAxis] || 0
-            // Restore column-width and body overflow
-            if (savedColumnWidth) {
-              pw.style.columnWidth = savedColumnWidth
-            } else {
-              pw.style.setProperty('column-width', pageInlineSize + 'px', 'important')
-            }
-            if (savedBodyOverflow) {
-              document.body.style.overflow = savedBodyOverflow
-            } else {
-              document.body.style.removeProperty('overflow')
-            }
-            if (savedBodyOverflowX) {
-              document.body.style.overflowX = savedBodyOverflowX
-            } else {
-              document.body.style.removeProperty('overflow-x')
-            }
-            if (savedBodyOverflowY) {
-              document.body.style.overflowY = savedBodyOverflowY
-            } else {
-              document.body.style.removeProperty('overflow-y')
-            }
-            const columnedExtent = effectiveExtent
-            effectiveExtent = Math.max(effectiveExtent, naturalExtent)
-            debugLog(
-              'measure_fallback: axis=' + measureAxis +
-              ' columned=' + columnedExtent +
-              ' natural=' + naturalExtent +
-              ' pageInlineSize=' + pageInlineSize +
-              ' pages=' + Math.ceil(effectiveExtent / pageInlineSize)
-            )
-          }
+          const unitCount = Math.max(1, Math.ceil(effectiveExtent / pageInlineSize))
+          const physicalPageCount = Math.max(
+            1,
+            unitCount * logicalPagesPerUnit - (viewerState.leadingBlankPage ? 1 : 0),
+          )
 
           debugLog(
             'measure: axis=' + measureAxis + ' val=' + effectiveExtent +
             ' pageInlineSize=' + pageInlineSize +
-            ' pages=' + Math.max(1, Math.ceil(effectiveExtent / Math.max(1, pageInlineSize)))
-          )
-
-          const internalPageCount = Math.max(1, Math.ceil(effectiveExtent / pageInlineSize))
-          const physicalPageCount = Math.max(
-            1,
-            internalPageCount - (viewerState.leadingBlankPage ? 1 : 0),
+            ' units=' + unitCount +
+            ' perUnit=' + logicalPagesPerUnit +
+            ' pages=' + physicalPageCount +
+            ' cover=' + isCoverOnlyDocument()
           )
 
           return {
@@ -960,6 +997,7 @@ export const buildTextBookHtmlDocument = ({
             inlinePageSize: pageInlineSize,
             isPaginated,
             isVerticalWriting,
+            logicalPagesPerUnit,
             physicalPageCount,
             spreadPageCount,
           }
@@ -980,11 +1018,12 @@ export const buildTextBookHtmlDocument = ({
         const getCurrentPhysicalPage = () => {
           if (layoutState.isPaginated) {
             const offset = getPageOffset()
-            const internalPage = Math.max(0, Math.round(offset / layoutState.inlinePageSize))
+            const unit = Math.max(0, Math.round(offset / layoutState.inlinePageSize))
+            const logicalPage = unit * Math.max(1, layoutState.logicalPagesPerUnit || 1)
             if (viewerState.leadingBlankPage) {
-              return internalPage === 0 ? 0 : Math.max(0, internalPage - 1)
+              return logicalPage === 0 ? 0 : Math.max(0, logicalPage - 1)
             }
-            return internalPage
+            return logicalPage
           }
 
           return Math.max(
@@ -1037,18 +1076,7 @@ export const buildTextBookHtmlDocument = ({
           clearLayoutOverrides()
           applyPreferredWritingMode()
           applyDerivedRootWritingMode()
-          let { isVerticalWriting, rtl } = getLayoutDirectionState()
-
-          // Fallback: if no vertical writing was detected but pageDirection is "right",
-          // the book is likely vertical-rl (common for Japanese books whose external CSS
-          // is blocked by X-Content-Type-Options: nosniff or not loaded).
-          if (!isVerticalWriting && viewerState.pageDirection === "right") {
-            isVerticalWriting = true
-            rtl = true
-            document.body.style.setProperty("writing-mode", "vertical-rl", "important")
-            document.body.style.setProperty("-webkit-writing-mode", "vertical-rl", "important")
-            document.body.style.setProperty("direction", "rtl", "important")
-          }
+          const { isVerticalWriting, rtl } = getLayoutDirectionState()
 
           const viewportWidth = Math.max(1, window.innerWidth || 1)
           const viewportHeight = Math.max(1, window.innerHeight || 1)
@@ -1056,7 +1084,26 @@ export const buildTextBookHtmlDocument = ({
             1,
             isVerticalWriting ? viewportHeight : viewportWidth,
           )
-          const pageInlineSize = getPageInlineSize(inlineViewportSize, spreadPageCount)
+          const pageInlineSize = getPageInlineSize(
+            inlineViewportSize,
+            spreadPageCount,
+            isVerticalWriting,
+          )
+          // 縦書きの論理ページ箱の幅。単一ページ=1箱、見開き=2箱をこの幅から作る。
+          const verticalPageWidth = isVerticalWriting
+            ? getVerticalPageWidth(viewportWidth, viewportHeight)
+            : 0
+
+          // 実際にレイアウトへ渡したビューポート寸法を控えておく。resize 時に
+          // documentElement の実寸とこれを比べ、食い違っていれば doLayout() を回す。
+          lastLayoutViewport = [
+            viewportWidth,
+            viewportHeight,
+            pageInlineSize,
+            spreadPageCount,
+            isVerticalWriting,
+            verticalPageWidth,
+          ]
 
           document.documentElement.style.height = "100%"
           document.documentElement.style.width = "100%"
@@ -1094,9 +1141,26 @@ export const buildTextBookHtmlDocument = ({
               // Wrapper is exactly one page's inline size. No overflow
               // setting — default visible lets columns overflow naturally.
               // Body's overflow:hidden clips the viewport boundary.
+              // 表紙 spine では画像が column-width より小さい場合に空き領域が
+              // 次の列に折り返され、scrollHeight が viewportHeight を超える。
+              // overflow:hidden で見えない列をクリップする。
+              // ※ coverOnlyPage は下の 1185行目で宣言されるため、ここでは使えない。
+              //    表紙 spine の overflow は下の coverOnlyPage 宣言後に設定する。
               if (isVerticalWriting) {
+                // 1ユニット = 論理ページ箱 × spread。単一ページは1箱、見開きは2箱が
+                // 横に並ぶ（vertical-rl の行は右→左へ進むので右半分が先のページ）。
+                const contentWidth = verticalPageWidth * spreadPageCount
                 applyImportantStyle(pw, "height", pageInlineSize + "px")
-                applyImportantStyle(pw, "width", "100%")
+                applyImportantStyle(pw, "width", contentWidth + "px")
+                // vertical-rl では block-start が右なので、既定では右端に立つ。
+                // margin-left と margin-inline-* は over-constrained で無視されるため、
+                // 中央寄せは物理プロパティの margin-right を px 指定する。
+                applyImportantStyle(
+                  pw,
+                  "margin-right",
+                  Math.max(0, Math.floor((viewportWidth - contentWidth) / 2)) + "px",
+                )
+                applyImportantStyle(pw, "margin-left", "0px")
               } else {
                 applyImportantStyle(pw, "width", pageInlineSize + "px")
                 applyImportantStyle(pw, "height", "100%")
@@ -1115,16 +1179,82 @@ export const buildTextBookHtmlDocument = ({
             applyImportantStyle(document.body, "overflow-y", "auto")
           }
 
-          if (isPaginated) {
-            const mediaElements = document.querySelectorAll("img, svg, video, canvas, iframe")
-            for (const element of mediaElements) {
+          // 表紙 spine は縦スクロール（isPaginated=false）でも画面高さに揃える。
+          // ページ箱が画面いっぱいになるモード（単一ページ・縦スクロール・全画面化した
+          // 見開き+表紙）では中央へ。見開きの半ページ箱では箱内の位置を変えない。
+          // 縦書きは 1ユニット＝見開きで表紙が右半ページに来るのが正なので中央にしない。
+          const centerCoverImage = isCoverOnlyDocument() && !isVerticalWriting && spreadPageCount === 1
+          const mediaElements = document.querySelectorAll("img, svg, video, canvas, iframe")
+          for (const element of mediaElements) {
+            if (isPaginated) {
               if (isVerticalWriting) {
                 applyImportantStyle(element, "max-height", pageInlineSize + "px")
-                applyImportantStyle(element, "max-width", viewportWidth + "px")
+                // 見開きでも画像は論理1ページ分に収める（2ページをまたがせない）。
+                applyImportantStyle(element, "max-width", verticalPageWidth + "px")
               } else {
                 applyImportantStyle(element, "max-width", pageInlineSize + "px")
                 applyImportantStyle(element, "max-height", viewportHeight + "px")
               }
+            }
+
+            if (!isCoverOnlyDocument()) {
+              continue
+            }
+
+            // max-* は上限指定なので、元の表紙が画面より小さいと小さいまま左詰めで残る。
+            // 表紙は縦幅を画面高さに固定し、width:auto でアスペクト比を保つ。
+            // display:block は inline 画像のベースライン隙間（数pxの縦溢出）も消す。
+            applyImportantStyle(element, "display", "block")
+            applyImportantStyle(element, "height", viewportHeight + "px")
+            applyImportantStyle(element, "width", "auto")
+            applyImportantStyle(element, "margin-left", centerCoverImage ? "auto" : "0px")
+            applyImportantStyle(element, "margin-right", centerCoverImage ? "auto" : "0px")
+          }
+
+          // TEMP DIAGNOSTIC: 表紙の縦溢出を診断するため、実測値をログに出す。確認後に削除予定。
+          if (isCoverOnlyDocument()) {
+            const diagImg = document.querySelector("img, svg")
+            if (diagImg) {
+              const r = diagImg.getBoundingClientRect()
+              const pw = document.getElementById("obs-page-wrapper")
+              const pwRect = pw ? pw.getBoundingClientRect() : null
+              debugLog(
+                "cover-diag: " +
+                  JSON.stringify({
+                    vh: viewportHeight,
+                    iw: window.innerWidth,
+                    ih: window.innerHeight,
+                    imgTop: Math.round(r.top),
+                    imgH: Math.round(r.height),
+                    imgBottom: Math.round(r.bottom),
+                    bodySH: document.body.scrollHeight,
+                    wrapperH: pwRect ? Math.round(pwRect.height) : null,
+                    wrapperTop: pwRect ? Math.round(pwRect.top) : null,
+                    initialDone: initialLayoutDone,
+                  }),
+              )
+            }
+            // TEMP DIAGNOSTIC: wrapper 内の子要素の詳細を記録。確認後に削除予定。
+            const pw = document.getElementById("obs-page-wrapper")
+            if (pw) {
+              const children = Array.from(pw.children)
+              const childInfo = children.map((child) => {
+                const rect = child.getBoundingClientRect()
+                const style = window.getComputedStyle(child)
+                return {
+                  tag: child.tagName.toLowerCase(),
+                  text: (child.textContent || "").slice(0, 50).replace(/\\s+/g, " "),
+                  h: Math.round(rect.height),
+                  w: Math.round(rect.width),
+                  top: Math.round(rect.top),
+                  bottom: Math.round(rect.bottom),
+                  marginTop: style.marginTop,
+                  marginBottom: style.marginBottom,
+                  paddingTop: style.paddingTop,
+                  paddingBottom: style.paddingBottom,
+                }
+              })
+              debugLog("cover-children: " + JSON.stringify({ childCount: children.length, children: childInfo }))
             }
           }
 
@@ -1176,7 +1306,12 @@ export const buildTextBookHtmlDocument = ({
           if (layoutState.isPaginated) {
             const internalPage =
               viewerState.leadingBlankPage && safePage > 0 ? safePage + 1 : safePage
-            const offset = internalPage * layoutState.inlinePageSize
+            // 縦書きの見開きは1ユニット（画面いっぱいの列）に論理2ページが入るので、
+            // 論理ページをユニット番号へ換算してからオフセットを出す。横書きは
+            // logicalPagesPerUnit=1 なので従来通り internalPage がそのままユニットになる。
+            const perUnit = Math.max(1, layoutState.logicalPagesPerUnit || 1)
+            const unit = Math.floor(internalPage / perUnit)
+            const offset = unit * layoutState.inlinePageSize
             const pw = getPageWrapper()
             if (pw) {
               if (layoutState.isVerticalWriting) {
@@ -1193,6 +1328,7 @@ export const buildTextBookHtmlDocument = ({
             setPageOffset(offset)
             debugLog(
               'scrollPage: page=' + safePage + ' internal=' + internalPage +
+              ' unit=' + unit + ' perUnit=' + perUnit +
               ' offset=' + offset +
               ' isVert=' + layoutState.isVerticalWriting
             )
@@ -1616,12 +1752,38 @@ export const buildTextBookHtmlDocument = ({
             })
           }
 
+          // column-width / wrapper 幅 / body 幅は doLayout() がビューポート寸法から
+          // 明示設定する。notifyPagination() だけを呼ぶと実レイアウトは古い寸法のまま
+          // 残り、列境界とページオフセットがずれるので、寸法が変わっていたら再レイアウトする。
+          const hasViewportChangedSinceLayout = () => {
+            if (!Array.isArray(lastLayoutViewport)) {
+              return false
+            }
+
+            return (
+              document.documentElement.clientWidth !== lastLayoutViewport[0] ||
+              document.documentElement.clientHeight !== lastLayoutViewport[1]
+            )
+          }
+
+          const refreshForViewport = () => {
+            if (hasViewportChangedSinceLayout()) {
+              scheduleLayout()
+              return
+            }
+
+            schedulePaginationUpdate()
+          }
+
           window.addEventListener("scroll", schedulePaginationUpdate, { passive: true })
           document.addEventListener("scroll", schedulePaginationUpdate, true)
-          window.addEventListener("resize", schedulePaginationUpdate)
+          window.addEventListener("resize", refreshForViewport)
 
           if (window.ResizeObserver) {
-            const observer = new ResizeObserver(() => schedulePaginationUpdate())
+            // body のサイズは doLayout() が書き換えるので、同じ値の再設定では発火しない。
+            // 実ビューポートと食い違っているときだけ再レイアウトへ切り替えることで
+            // scheduleLayout → doLayout → ResizeObserver の無限ループを避ける。
+            const observer = new ResizeObserver(refreshForViewport)
             observer.observe(document.body)
           }
 

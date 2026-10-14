@@ -197,4 +197,43 @@ describe("ViewerScreen", () => {
 
     expect(navigate).toHaveBeenCalledWith("Library")
   })
+
+  test("switches to TextBookViewer when spine paths arrive after the first render", () => {
+    // MST keeps the same observable array object reference and appends items in
+    // place. If the memo only depended on `selectedBook` (a stable reference),
+    // usesTextBookViewer would freeze at its first-render value (false, because
+    // path was still empty) and the AZW3 book would be routed to BookHtmlPage —
+    // rendering black. The path count must drive re-derivation.
+    const spinePaths: string[] = []
+    const selectedBook = {
+      id: 7133,
+      path: spinePaths,
+      hash: 16770463050,
+      metaData: {
+        selectedFormat: "AZW3",
+        title: "Async Spine Book",
+        formatSizes: new Map([["AZW3", 456137]]),
+      },
+    }
+    useViewerMock.mockReturnValue({
+      selectedLibrary: { id: "config" },
+      selectedBook,
+      initialPage: 0,
+      viewerReady: true,
+      cachedPathList: undefined,
+      onPageChange: vi.fn(),
+      onLastPage: vi.fn(),
+    })
+
+    const { rerender } = render(<ViewerScreen />)
+
+    // First render: spine paths not resolved yet → image viewer, no crash.
+    expect(screen.queryByTestId("viewer-screen-text-book-viewer")).toBeNull()
+
+    // Spine paths arrive on the SAME array reference (as MST does).
+    spinePaths.push("text/part0000.html", "text/part0001.html")
+    rerender(<ViewerScreen />)
+
+    expect(screen.getByTestId("viewer-screen-text-book-viewer")).toBeTruthy()
+  })
 })

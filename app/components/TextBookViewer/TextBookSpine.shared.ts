@@ -21,6 +21,8 @@ export type TextBookSpineProps = {
   readingStyle: BookReadingStyleType
   pageDirection: "left" | "right"
   leadingBlankPage: boolean
+  /** spine 0（Calibre が非EPUB形式に挿入する表紙 titlepage）のとき true */
+  isCoverPage?: boolean
   preferredWritingMode?: string | null
   anchor?: string | null
   annotations?: Array<{ uuid: string; highlightedText: string | null; styleWhich: string | null }>
@@ -125,6 +127,7 @@ export const useTextBookSpineDocument = (props: TextBookSpineProps) => {
       initialPage: initialViewerStateRef.current.currentPage,
       leadingBlankPage: initialViewerStateRef.current.leadingBlankPage,
       preferredWritingMode: props.preferredWritingMode ?? null,
+      coverPage: props.isCoverPage ?? false,
     })
   }, [
     computedThemeMode,
@@ -133,6 +136,7 @@ export const useTextBookSpineDocument = (props: TextBookSpineProps) => {
     palette.textPrimary,
     preparedDocument,
     props.annotations,
+    props.isCoverPage,
     props.sourceHtml,
     props.preferredWritingMode,
     settingStore.viewerFontSizePt,

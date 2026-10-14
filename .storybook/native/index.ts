@@ -1,30 +1,22 @@
-import { view } from "./storybook.requires"
-import AsyncStorage from "@react-native-async-storage/async-storage"
+import { Platform } from "react-native"
 
-const StorybookUIRoot = view.getStorybookUI({
-  shouldPersistSelection: true,
-  storage: {
-    getItem: AsyncStorage.getItem,
-    setItem: AsyncStorage.setItem,
-  },
-  enableWebsockets: true,
+// web モードでは Storybook を初期化しない（setImmediate が存在しないため）
+// getStorybookUI() はモジュールトップレベルで呼ぶと setImmediate を要求するため、
+// ネイティブモードでのみ遅延実行する
+let StorybookUIRoot: (() => React.ReactElement) | null = null
 
-  // initialSelection: { kind: 'TextInput', name: 'Basic' },
-  // isUIHidden: true,
-  // isSplitPanelVisible: true,
-  // onDeviceUI: false,
-  // host: '192.168.1.69',
-  // theme: {
-  //   storyList: {
-  //     search: {
-  //       borderColor: 'red',
-  //       borderWidth: 3,
-  //     },
-  //   },
-  //   tabs: {
-  //     activeBackgroundColor: 'yellow',
-  //   },
-  // },
-})
+if (Platform.OS !== "web") {
+  const { view } = require("./storybook.requires")
+  const AsyncStorage = require("@react-native-async-storage/async-storage").default
+
+  StorybookUIRoot = view.getStorybookUI({
+    shouldPersistSelection: true,
+    storage: {
+      getItem: AsyncStorage.getItem,
+      setItem: AsyncStorage.setItem,
+    },
+    enableWebsockets: true,
+  })
+}
 
 export default StorybookUIRoot
