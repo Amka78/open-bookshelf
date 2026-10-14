@@ -1,4 +1,4 @@
-import { type Instance, type SnapshotIn, type SnapshotOut, flow, types } from "mobx-state-tree"
+import { detach, type Instance, type SnapshotIn, type SnapshotOut, flow, types } from "mobx-state-tree"
 
 import { lowerCaseToCamelCase } from "@/utils/convert"
 import {
@@ -112,6 +112,10 @@ export const CalibreRootStore = types
     getTagBrowser: flow(function* () {
       const response = yield api.getTagBrowser(root.defaultLibraryId ?? "")
       if (response.kind === "ok") {
+        const oldTbSnapshot = [...root.selectedLibrary!.tagBrowser]
+        for (const cat of oldTbSnapshot) {
+          detach(cat)
+        }
         root.selectedLibrary!.tagBrowser.clear()
 
         const rootChildren = Object.values((response.data as any).root.children) as any[]
@@ -334,6 +338,10 @@ export type CalibreRootSnapshotIn = SnapshotIn<typeof CalibreRootStore>
 function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap) {
   const previousQuery = selectedLibrary.searchSetting?.query ?? ""
 
+  // searchSetting: detach してから置換（HMR reaction が古いノードを参照するのを防ぐ）
+  const oldSearchSetting = selectedLibrary.searchSetting
+  if (oldSearchSetting) detach(oldSearchSetting)
+
   selectedLibrary.searchSetting = SearchSettingModel.create({
     offset: data.search_result.num + data.search_result.offset,
     query: data.search_result.query ? data.search_result.query : previousQuery,
@@ -352,6 +360,9 @@ function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap)
   const existingKeys = Array.from(selectedLibrary.books.keys())
   for (const key of existingKeys) {
     if (!newBookIds.has(key)) {
+      // detach でノードを生存させたままツリーから切り離す（HMR reaction 対策）
+      const node = selectedLibrary.books.get(key)
+      if (node) detach(node)
       selectedLibrary.books.delete(key)
     }
   }
@@ -388,20 +399,32 @@ function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap)
       ),
     })
 
-    selectedLibrary.books.set(bookId.toString(), {
+    const bookKey = bookId.toString()
+    // MST の map.set() は identifier が既存エントリと一致するとリコンサイル（同一ノードを返す）し、
+    // MobX の reportChanged() が発火しない。detach → delete → set で新規ノード作成を強制する。
+    if (selectedLibrary.books.has(bookKey)) {
+      const existing = selectedLibrary.books.get(bookKey)
+      if (existing) detach(existing)
+      selectedLibrary.books.delete(bookKey)
+    }
+    selectedLibrary.books.set(bookKey, {
       id: bookId,
       metaData: metaDataModel as any,
     })
   })
 
   if (data.sortable_fields) {
-    // sortField: clear + push → replace
+    // sortField: detach してから replace
     const newSortFields = data.sortable_fields.map((value) =>
       SortFieldModel.create({
         id: value[0],
         name: value[1],
       }),
     )
+    const oldSfSnapshot = [...selectedLibrary.sortField]
+    for (const sf of oldSfSnapshot) {
+      detach(sf)
+    }
     selectedLibrary.sortField.replace(newSortFields)
   }
 }
@@ -412,17 +435,37 @@ function convertLibraryInformation(bookInfo: ApiBookInfo, libraryInfo: LibraryMa
   // array は replace() でアトミックに置き換え、map は個別に delete してから set する。
   libraryInfo.setProp("ftsEnabled", bookInfo.fts_enabled ?? false)
 
-  // virtualLibraries: clear + push → replace
-  const newVirtualLibraries = Object.keys(bookInfo.virtual_libraries).map((key) =>
-    VirtualLibraryModel.create({
-      name: key,
-      path: bookInfo.virtual_libraries[key],
-    }),
-  )
-  libraryInfo.virtualLibraries.replace(newVirtualLibraries)
+  // virtualLibraries: 内容が変わっていない場合は replace をスキップ（HMR reaction 対策）
+  const vlKeys = Object.keys(bookInfo.virtual_libraries)
+  const oldVl = libraryInfo.virtualLibraries
+  const vlChanged =
+    vlKeys.length !== oldVl.length ||
+    vlKeys.some((key, i) => oldVl[i]?.name !== key || oldVl[i]?.path !== bookInfo.virtual_libraries[key])
 
-  // bookDisplayFields: clear + push → replace
-  libraryInfo.bookDisplayFields.replace(bookInfo.book_display_fields)
+  if (vlChanged) {
+    const newVirtualLibraries = vlKeys.map((key) =>
+      VirtualLibraryModel.create({
+        name: key,
+        path: bookInfo.virtual_libraries[key],
+      }),
+    )
+    // for...of で MST array を反復中に detach すると配列が縮んで要素がスキップされるため、
+    // 先にスナップショットを撮る
+    const oldVlSnapshot = [...oldVl]
+    for (const vl of oldVlSnapshot) {
+      detach(vl)
+    }
+    libraryInfo.virtualLibraries.replace(newVirtualLibraries)
+  }
+
+  // bookDisplayFields: 内容が変わっていない場合は replace をスキップ
+  const newBdf = bookInfo.book_display_fields
+  const oldBdf = libraryInfo.bookDisplayFields
+  const bdfChanged =
+    newBdf.length !== oldBdf.length || newBdf.some((v, i) => oldBdf[i] !== v)
+  if (bdfChanged) {
+    libraryInfo.bookDisplayFields.replace(newBdf)
+  }
 
   // fieldMetadataList: map なので個別に delete してから set
   const fieldMetadataRecord = bookInfo.field_metadata as unknown as Record<string, FieldMetadata>
@@ -432,6 +475,8 @@ function convertLibraryInformation(bookInfo: ApiBookInfo, libraryInfo: LibraryMa
   const existingFieldKeys = Array.from(libraryInfo.fieldMetadataList.keys())
   for (const key of existingFieldKeys) {
     if (!newFieldKeys.has(key)) {
+      const node = libraryInfo.fieldMetadataList.get(key)
+      if (node) detach(node)
       libraryInfo.fieldMetadataList.delete(key)
     }
   }
