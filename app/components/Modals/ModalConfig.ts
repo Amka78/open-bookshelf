@@ -5,6 +5,7 @@ import { BookDetailModal } from "./BookDetailModal"
 import { BookEditModal } from "./BookEditModal"
 import { BookOcrReviewModal } from "./BookOcrReviewModal"
 import { BulkEditModal } from "./BulkEditModal"
+import { ColumnVisibilityModal } from "./ColumnVisibilityModal"
 import { ConfirmModal } from "./ConfirmModal"
 import { ErrorModal } from "./ErrorModal"
 import { FormatSelectModal } from "./FormatSelectModal"
@@ -24,6 +25,7 @@ export const modalConfig: ModalStackConfig = {
   BookEditModal,
   BookOcrReviewModal,
   BulkEditModal,
+  ColumnVisibilityModal,
   ConfirmModal,
   ErrorModal,
   FormatSelectModal,

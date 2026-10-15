@@ -35,6 +35,7 @@ export const SettingStoreModel = types
       "list",
     ),
     libraryTableColumnWidths: types.optional(types.map(types.number), {}),
+    libraryTableColumnVisibility: types.optional(types.map(types.boolean), {}),
     bulkEditAutoRefresh: types.optional(types.boolean, true),
   })
   .views((store) => ({
@@ -46,6 +47,9 @@ export const SettingStoreModel = types
     },
     getLibraryTableColumnWidths(): Record<string, number> {
       return getSnapshot(store.libraryTableColumnWidths)
+    },
+    getLibraryTableColumnVisibility(): Record<string, boolean> {
+      return getSnapshot(store.libraryTableColumnVisibility)
     },
   }))
   .actions((store) => ({
@@ -107,6 +111,9 @@ export const SettingStoreModel = types
     setLibraryTableColumnWidth(column: string, width: number) {
       if (!Number.isFinite(width)) return
       store.libraryTableColumnWidths.set(column, Math.round(width))
+    },
+    setLibraryTableColumnVisibility(column: string, visible: boolean) {
+      store.libraryTableColumnVisibility.set(column, visible)
     },
     setBulkEditAutoRefresh(enabled: boolean) {
       store.bulkEditAutoRefresh = enabled

@@ -93,4 +93,9 @@ export type ModalStackParams = {
     toc: TocItem
     onNavigate: (dest: string) => void
   }
+  ColumnVisibilityModal: {
+    columns: Array<{ key: string; label: string }>
+    visibility: Record<string, boolean>
+    onToggle: (key: string, visible: boolean) => void
+  }
 }

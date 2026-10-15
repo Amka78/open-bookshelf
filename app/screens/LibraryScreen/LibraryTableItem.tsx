@@ -2,6 +2,7 @@ import {
   BookDetailMenu,
   type BookDetailMenuProps,
   Box,
+  Checkbox,
   HStack,
   IconButton,
   Image,
@@ -13,7 +14,9 @@ import {
   Text,
   VStack,
 } from "@/components"
+import { RatingGroup } from "@/components/RatingGroup/RatingGroup"
 import type { Book, FieldMetadataMap, MetadataSnapshotIn } from "@/models/calibre"
+import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import { Pressable } from "@gluestack-ui/themed"
 import { observer } from "mobx-react-lite"
 import { useEffect, useMemo, useRef, useState } from "react"
@@ -40,6 +43,8 @@ export type LibraryTableColumnKey =
   | "publisher"
 
 export type LibraryTableColumnWidths = Record<LibraryTableColumnKey, number>
+
+export type LibraryTableColumnVisibility = Record<string, boolean>
 
 export const LIBRARY_TABLE_COLUMN_MIN_WIDTH = 60
 export const LIBRARY_TABLE_COLUMN_MAX_WIDTH = 600
@@ -90,10 +95,20 @@ type LibraryTableFieldLabels = {
   publisher: string
 }
 
+type CustomColumn = {
+  key: string
+  label: string
+  datatype: string
+  isMultiple: boolean
+}
+
 type LibraryTableHeaderProps = {
   labels: LibraryTableFieldLabels
   columnWidths?: LibraryTableColumnWidths
+  columnVisibility?: LibraryTableColumnVisibility
   onColumnResize?: (column: LibraryTableColumnKey, width: number) => void
+  onColumnVisibilityChange?: (column: string, visible: boolean) => void
+  customColumns?: CustomColumn[]
 }
 
 type ResizeHandleProps = {
@@ -150,9 +165,11 @@ type LibraryTableItemProps = {
   libraryId: string
   isSelected: boolean
   columnWidths?: LibraryTableColumnWidths
+  columnVisibility?: LibraryTableColumnVisibility
   showSelectionActions?: boolean
   detailMenuProps?: BookDetailMenuProps
   fieldMetadataList?: FieldMetadataMap
+  customColumns?: CustomColumn[]
   onPress?: () => void
   onLongPress?: () => void
 }
@@ -193,25 +210,58 @@ export function createLibraryTableFieldLabels(
   }
 }
 
-export function LibraryTableHeader({
+export const LibraryTableHeader = observer(function LibraryTableHeader({
   labels,
   columnWidths = DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS,
+  columnVisibility,
   onColumnResize,
+  onColumnVisibilityChange,
+  customColumns,
 }: LibraryTableHeaderProps) {
+  const modal = useElectrobunModal()
+
+  const isVisible = (key: string): boolean => {
+    if (!columnVisibility) return true
+    return columnVisibility[key] !== false
+  }
+
+  const handleOpenColumnVisibility = () => {
+    if (!onColumnVisibilityChange) return
+    const columns = (
+      [
+        { key: "title", label: labels.title },
+        { key: "authors", label: labels.authors },
+        { key: "seriesName", label: labels.seriesName },
+        { key: "seriesIndex", label: labels.seriesIndex },
+        { key: "tags", label: labels.tags },
+        { key: "publisher", label: labels.publisher },
+      ] as Array<{ key: string; label: string }>
+    ).concat(customColumns ?? [])
+    modal.openModal("ColumnVisibilityModal", {
+      columns,
+      visibility: columnVisibility ?? {},
+      onToggle: onColumnVisibilityChange,
+    })
+  }
+
   const renderResizableHeaderCell = (
     column: LibraryTableColumnKey,
     label: string,
     cellStyle: ViewStyle,
-  ) => (
-    <Box style={[styles.headerCell, cellStyle, { width: columnWidths[column] }]}>
-      <Text fontWeight="$bold">{label}</Text>
-      {onColumnResize ? (
-        <ResizeHandle column={column} width={columnWidths[column]} onResize={onColumnResize} />
-      ) : null}
-    </Box>
-  )
+  ) => {
+    if (!isVisible(column)) return null
+    return (
+      <Box style={[styles.headerCell, cellStyle, { width: columnWidths[column] }]}>
+        <Text fontWeight="$bold">{label}</Text>
+        {onColumnResize ? (
+          <ResizeHandle column={column} width={columnWidths[column]} onResize={onColumnResize} />
+        ) : null}
+      </Box>
+    )
+  }
 
   const seriesGroupWidth = columnWidths.seriesName + columnWidths.seriesIndex
+  const showSeriesGroup = isVisible("seriesName") || isVisible("seriesIndex")
 
   return (
     <HStack style={styles.headerRow}>
@@ -220,29 +270,58 @@ export function LibraryTableHeader({
       </Box>
       {renderResizableHeaderCell("title", labels.title, styles.titleCell)}
       {renderResizableHeaderCell("authors", labels.authors, styles.authorsCell)}
-      <Box style={[styles.headerCell, styles.seriesGroupCell, { width: seriesGroupWidth }]}>
-        <Text fontWeight="$bold">{labels.seriesName}</Text>
-        {onColumnResize ? (
-          <>
-            <ResizeHandle
-              column="seriesName"
-              width={columnWidths.seriesName}
-              onResize={onColumnResize}
-              offsetRight={columnWidths.seriesIndex - 6}
-            />
-            <ResizeHandle
-              column="seriesIndex"
-              width={columnWidths.seriesIndex}
-              onResize={onColumnResize}
-            />
-          </>
-        ) : null}
-      </Box>
+      {showSeriesGroup ? (
+        <Box
+          style={[
+            styles.headerCell,
+            styles.seriesGroupCell,
+            { width: seriesGroupWidth },
+          ]}
+        >
+          <Text fontWeight="$bold">{labels.seriesName}</Text>
+          {onColumnResize ? (
+            <>
+              {isVisible("seriesName") && (
+                <ResizeHandle
+                  column="seriesName"
+                  width={columnWidths.seriesName}
+                  onResize={onColumnResize}
+                  offsetRight={columnWidths.seriesIndex - 6}
+                />
+              )}
+              {isVisible("seriesIndex") && (
+                <ResizeHandle
+                  column="seriesIndex"
+                  width={columnWidths.seriesIndex}
+                  onResize={onColumnResize}
+                />
+              )}
+            </>
+          ) : null}
+        </Box>
+      ) : null}
       {renderResizableHeaderCell("tags", labels.tags, styles.tagsCell)}
       {renderResizableHeaderCell("publisher", labels.publisher, styles.publisherCell)}
+      {customColumns?.map((col) =>
+        isVisible(col.key) ? (
+          <Box key={col.key} style={[styles.headerCell, styles.customColumnCell]}>
+            <Text fontWeight="$bold">{col.label}</Text>
+          </Box>
+        ) : null,
+      )}
+      {onColumnVisibilityChange ? (
+        <Box style={[styles.headerCell, styles.columnMenuCell]}>
+          <IconButton
+            name="cog"
+            iconSize="sm"
+            onPress={handleOpenColumnVisibility}
+            testID="library-table-column-settings"
+          />
+        </Box>
+      ) : null}
     </HStack>
   )
-}
+})
 
 export const LibraryTableItem = observer(function LibraryTableItem({
   book,
@@ -250,9 +329,11 @@ export const LibraryTableItem = observer(function LibraryTableItem({
   libraryId,
   isSelected,
   columnWidths = DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS,
+  columnVisibility,
   showSelectionActions = false,
   detailMenuProps,
   fieldMetadataList,
+  customColumns,
   onPress,
   onLongPress,
 }: LibraryTableItemProps) {
@@ -262,9 +343,21 @@ export const LibraryTableItem = observer(function LibraryTableItem({
   const [seriesIndex, setSeriesIndex] = useState<number | null>(book.metaData!.seriesIndex ?? null)
   const [tags, setTags] = useState<string[]>(book.metaData!.tags ?? [])
   const [publisher, setPublisher] = useState(book.metaData!.publisher ?? "")
+  const [customColumnValues, setCustomColumnValues] = useState<Map<string, unknown>>(() => {
+    const map = new Map<string, unknown>()
+    customColumns?.forEach((col) => {
+      map.set(col.key, book.metaData?.customColumns?.get(col.key) ?? null)
+    })
+    return map
+  })
   const [isSaving, setIsSaving] = useState(false)
   const [copiedField, setCopiedField] = useState<"authors" | "tags" | null>(null)
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const isVisible = (key: string): boolean => {
+    if (!columnVisibility) return true
+    return columnVisibility[key] !== false
+  }
 
   useEffect(() => {
     setTitle(book.metaData!.title ?? "")
@@ -273,6 +366,13 @@ export const LibraryTableItem = observer(function LibraryTableItem({
     setSeriesIndex(book.metaData!.seriesIndex ?? null)
     setTags(book.metaData!.tags ?? [])
     setPublisher(book.metaData!.publisher ?? "")
+    setCustomColumnValues((prev) => {
+      const next = new Map(prev)
+      customColumns?.forEach((col) => {
+        next.set(col.key, book.metaData?.customColumns?.get(col.key) ?? null)
+      })
+      return next
+    })
   }, [
     book.metaData!.authors,
     book.metaData!.publisher,
@@ -280,6 +380,8 @@ export const LibraryTableItem = observer(function LibraryTableItem({
     book.metaData!.seriesIndex,
     book.metaData!.tags,
     book.metaData!.title,
+    book.metaData!.customColumns,
+    customColumns,
   ])
 
   useEffect(() => {
@@ -365,6 +467,31 @@ export const LibraryTableItem = observer(function LibraryTableItem({
     }
   }
 
+  const handleCustomColumnSave = async (columnKey: string) => {
+    if (isSaving) return
+    const value = customColumnValues.get(columnKey)
+    const originalValue = book.metaData?.customColumns?.get(columnKey) ?? null
+    if (value === originalValue) return
+
+    setIsSaving(true)
+    try {
+      const updateInfo: Partial<MetadataSnapshotIn> = {
+        customColumns: { [columnKey]: value },
+      }
+      const metadataMap = fieldMetadataList
+        ? new Map(
+            Array.from(fieldMetadataList.entries()).map(([key, value]) => [
+              key,
+              { isMultiple: value.isMultiple },
+            ]),
+          )
+        : undefined
+      await book.update(libraryId, updateInfo, ["customColumns"], undefined, metadataMap)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   const handleFieldCopy = (field: "authors" | "tags") => {
     if (copyTimeoutRef.current) {
       clearTimeout(copyTimeoutRef.current)
@@ -394,135 +521,259 @@ export const LibraryTableItem = observer(function LibraryTableItem({
             <Box style={styles.coverPlaceholder} />
           )}
         </Pressable>
-        <Box style={[styles.titleCell, { width: columnWidths.title }]}>
-          <HStack alignItems="center" space="xs">
-            <Box flex={1}>
-              <Input size="sm">
-                <InputField
-                  value={title}
-                  onChangeText={setTitle}
-                  onBlur={handleSave}
-                  onSubmitEditing={handleSave}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleSave()
+        {isVisible("title") ? (
+          <Box style={[styles.titleCell, { width: columnWidths.title }]}>
+            <HStack alignItems="center" space="xs">
+              <Box flex={1}>
+                <Input size="sm">
+                  <InputField
+                    value={title}
+                    onChangeText={setTitle}
+                    onBlur={handleSave}
+                    onSubmitEditing={handleSave}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleSave()
+                      }
+                    }}
+                    testID={`library-table-title-${book.id}`}
+                  />
+                </Input>
+              </Box>
+              {extractSeriesFromTitle(title) && !series && (
+                <IconButton
+                  name="arrow-right"
+                  iconSize="sm"
+                  onPress={() => {
+                    const extracted = extractSeriesFromTitle(title)
+                    if (extracted) {
+                      setSeries(extracted.series)
+                      // Extract number from the extracted.number (e.g., "1", "Vol.2", "第1巻")
+                      const numMatch = extracted.number.match(/(\d+)/)
+                      if (numMatch) {
+                        setSeriesIndex(Number(numMatch[1]))
+                      }
                     }
                   }}
-                  testID={`library-table-title-${book.id}`}
+                  testID={`library-table-extract-series-${book.id}`}
                 />
-              </Input>
-            </Box>
-            {extractSeriesFromTitle(title) && !series && (
-              <IconButton
-                name="arrow-right"
-                iconSize="sm"
-                onPress={() => {
-                  const extracted = extractSeriesFromTitle(title)
-                  if (extracted) {
-                    setSeries(extracted.series)
-                    // Extract number from the extracted.number (e.g., "1", "Vol.2", "第1巻")
-                    const numMatch = extracted.number.match(/(\d+)/)
-                    if (numMatch) {
-                      setSeriesIndex(Number(numMatch[1]))
+              )}
+            </HStack>
+          </Box>
+        ) : null}
+        {isVisible("authors") ? (
+          <Box
+            style={[
+              styles.authorsCell,
+              { width: columnWidths.authors },
+              copiedField === "authors" ? { backgroundColor: COPIED_BACKGROUND_COLOR } : undefined,
+            ]}
+          >
+            <TagInput
+              value={authors}
+              onChange={setAuthors}
+              placeholder="Add author..."
+              testID={`library-table-authors-${book.id}`}
+              showCopyPaste
+              onBlur={handleSave}
+              onCopy={() => handleFieldCopy("authors")}
+            />
+          </Box>
+        ) : null}
+        {isVisible("seriesName") ? (
+          <Box style={[styles.seriesNameCell, { width: columnWidths.seriesName }]}>
+            <Input size="sm">
+              <InputField
+                value={series}
+                onChangeText={setSeries}
+                onBlur={handleSave}
+                onSubmitEditing={handleSave}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleSave()
+                  }
+                }}
+                testID={`library-table-series-name-${book.id}`}
+              />
+            </Input>
+          </Box>
+        ) : null}
+        {isVisible("seriesIndex") ? (
+          <Box style={[styles.seriesIndexCell, { width: columnWidths.seriesIndex }]}>
+            <Input size="sm">
+              <InputField
+                value={seriesIndex !== null ? String(seriesIndex) : ""}
+                onChangeText={(text) => {
+                  if (text === "") {
+                    setSeriesIndex(null)
+                  } else {
+                    const num = Number(text)
+                    if (!Number.isNaN(num)) {
+                      setSeriesIndex(num)
                     }
                   }
                 }}
-                testID={`library-table-extract-series-${book.id}`}
-              />
-            )}
-          </HStack>
-        </Box>
-        <Box
-          style={[
-            styles.authorsCell,
-            { width: columnWidths.authors },
-            copiedField === "authors" ? { backgroundColor: COPIED_BACKGROUND_COLOR } : undefined,
-          ]}
-        >
-          <TagInput
-            value={authors}
-            onChange={setAuthors}
-            placeholder="Add author..."
-            testID={`library-table-authors-${book.id}`}
-            showCopyPaste
-            onBlur={handleSave}
-            onCopy={() => handleFieldCopy("authors")}
-          />
-        </Box>
-        <Box style={[styles.seriesNameCell, { width: columnWidths.seriesName }]}>
-          <Input size="sm">
-            <InputField
-              value={series}
-              onChangeText={setSeries}
-              onBlur={handleSave}
-              onSubmitEditing={handleSave}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleSave()
-                }
-              }}
-              testID={`library-table-series-name-${book.id}`}
-            />
-          </Input>
-        </Box>
-        <Box style={[styles.seriesIndexCell, { width: columnWidths.seriesIndex }]}>
-          <Input size="sm">
-            <InputField
-              value={seriesIndex !== null ? String(seriesIndex) : ""}
-              onChangeText={(text) => {
-                if (text === "") {
-                  setSeriesIndex(null)
-                } else {
-                  const num = Number(text)
-                  if (!Number.isNaN(num)) {
-                    setSeriesIndex(num)
+                onBlur={handleSave}
+                onSubmitEditing={handleSave}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleSave()
                   }
-                }
-              }}
+                }}
+                testID={`library-table-series-index-${book.id}`}
+              />
+            </Input>
+          </Box>
+        ) : null}
+        {isVisible("tags") ? (
+          <Box
+            style={[
+              styles.tagsCell,
+              { width: columnWidths.tags },
+              copiedField === "tags" ? { backgroundColor: COPIED_BACKGROUND_COLOR } : undefined,
+            ]}
+          >
+            <TagInput
+              value={tags}
+              onChange={setTags}
+              placeholder="Add tag..."
+              testID={`library-table-tags-${book.id}`}
+              showCopyPaste
               onBlur={handleSave}
-              onSubmitEditing={handleSave}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleSave()
-                }
-              }}
-              testID={`library-table-series-index-${book.id}`}
+              onCopy={() => handleFieldCopy("tags")}
             />
-          </Input>
-        </Box>
-        <Box
-          style={[
-            styles.tagsCell,
-            { width: columnWidths.tags },
-            copiedField === "tags" ? { backgroundColor: COPIED_BACKGROUND_COLOR } : undefined,
-          ]}
-        >
-          <TagInput
-            value={tags}
-            onChange={setTags}
-            placeholder="Add tag..."
-            testID={`library-table-tags-${book.id}`}
-            showCopyPaste
-            onBlur={handleSave}
-            onCopy={() => handleFieldCopy("tags")}
-          />
-        </Box>
-        <Box style={[styles.publisherCell, { width: columnWidths.publisher }]}>
-          <Input size="sm">
-            <InputField
-              value={publisher}
-              onChangeText={setPublisher}
-              onBlur={handleSave}
-              onSubmitEditing={handleSave}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleSave()
-                }
-              }}
-              testID={`library-table-publisher-${book.id}`}
-            />
-          </Input>
-        </Box>
+          </Box>
+        ) : null}
+        {isVisible("publisher") ? (
+          <Box style={[styles.publisherCell, { width: columnWidths.publisher }]}>
+            <Input size="sm">
+              <InputField
+                value={publisher}
+                onChangeText={setPublisher}
+                onBlur={handleSave}
+                onSubmitEditing={handleSave}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleSave()
+                  }
+                }}
+                testID={`library-table-publisher-${book.id}`}
+              />
+            </Input>
+          </Box>
+        ) : null}
+        {customColumns?.map((col) => {
+          if (!isVisible(col.key)) return null
+          const value = customColumnValues.get(col.key)
+          const handleChange = (newValue: unknown) => {
+            setCustomColumnValues((prev) => {
+              const next = new Map(prev)
+              next.set(col.key, newValue)
+              return next
+            })
+          }
+          const handleBlur = () => {
+            handleCustomColumnSave(col.key)
+          }
+          const handleKeyDown = (e: { key: string }) => {
+            if (e.key === "Enter") {
+              handleCustomColumnSave(col.key)
+            }
+          }
+
+          let content: React.ReactNode = null
+          switch (col.datatype) {
+            case "bool":
+              content = (
+                <Checkbox
+                  isChecked={value === true}
+                  onChange={(checked: boolean) => {
+                    handleChange(checked)
+                    handleCustomColumnSave(col.key)
+                  }}
+                  value={col.key}
+                >
+                  {value === true ? "Yes" : "No"}
+                </Checkbox>
+              )
+              break
+            case "rating":
+              content = (
+                <RatingGroup
+                  max={10}
+                  ticks={2}
+                  selectedValue={typeof value === "number" ? value : 0}
+                  onSelectRating={(rating: number) => {
+                    handleChange(rating)
+                    handleCustomColumnSave(col.key)
+                  }}
+                />
+              )
+              break
+            case "int":
+            case "float":
+              content = (
+                <Input size="sm">
+                  <InputField
+                    value={value !== null && value !== undefined ? String(value) : ""}
+                    onChangeText={(text) => {
+                      if (text === "") {
+                        handleChange(null)
+                      } else {
+                        const num = col.datatype === "int" ? Number.parseInt(text, 10) : Number.parseFloat(text)
+                        if (!Number.isNaN(num)) {
+                          handleChange(num)
+                        }
+                      }
+                    }}
+                    onBlur={handleBlur}
+                    onKeyDown={handleKeyDown}
+                    testID={`library-table-custom-${col.key}-${book.id}`}
+                  />
+                </Input>
+              )
+              break
+            case "datetime":
+              content = (
+                <Input size="sm">
+                  <InputField
+                    value={value !== null && value !== undefined ? String(value) : ""}
+                    onChangeText={(text) => {
+                      handleChange(text === "" ? null : text)
+                    }}
+                    onBlur={handleBlur}
+                    onKeyDown={handleKeyDown}
+                    testID={`library-table-custom-${col.key}-${book.id}`}
+                  />
+                </Input>
+              )
+              break
+            case "composite":
+              content = <Text>{String(value ?? "")}</Text>
+              break
+            default:
+              content = (
+                <Input size="sm">
+                  <InputField
+                    value={value !== null && value !== undefined ? String(value) : ""}
+                    onChangeText={(text) => {
+                      handleChange(text === "" ? null : text)
+                    }}
+                    onBlur={handleBlur}
+                    onKeyDown={handleKeyDown}
+                    testID={`library-table-custom-${col.key}-${book.id}`}
+                  />
+                </Input>
+              )
+              break
+          }
+
+          return (
+            <Box key={col.key} style={[styles.customColumnCell]}>
+              {content}
+            </Box>
+          )
+        })}
       </HStack>
       {showSelectionActions && detailMenuProps ? (
         <Box style={styles.selectionActions}>
@@ -615,6 +866,14 @@ const styles = StyleSheet.create({
   publisherCell: {
     paddingHorizontal: 6,
     width: PUBLISHER_COLUMN_WIDTH,
+  },
+  customColumnCell: {
+    paddingHorizontal: 6,
+    minWidth: 120,
+  },
+  columnMenuCell: {
+    paddingHorizontal: 6,
+    width: 40,
   },
   cover: {
     borderRadius: 2,

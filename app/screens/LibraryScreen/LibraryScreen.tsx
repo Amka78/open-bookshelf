@@ -226,6 +226,28 @@ export const LibraryScreen: FC = observer(() => {
     },
     [settingStore],
   )
+  const tableColumnVisibility = settingStore.getLibraryTableColumnVisibility()
+  const handleColumnVisibilityChange = useCallback(
+    (column: string, visible: boolean) => {
+      settingStore.setLibraryTableColumnVisibility(column, visible)
+    },
+    [settingStore],
+  )
+  const customColumns = useMemo(() => {
+    if (!selectedLibrary?.fieldMetadataList) return []
+    const result: Array<{ key: string; label: string; datatype: string; isMultiple: boolean }> = []
+    selectedLibrary.fieldMetadataList.forEach((meta, key) => {
+      if (meta.isCustom) {
+        result.push({
+          key,
+          label: meta.name ?? key,
+          datatype: meta.datatype ?? "text",
+          isMultiple: !!meta.isMultiple,
+        })
+      }
+    })
+    return result
+  }, [selectedLibrary?.fieldMetadataList])
   const visibleBookIds = useMemo(() => bookList.map((book) => book.id), [bookList])
   const allVisibleBooksSelected = libraryHook.areAllBooksSelected(visibleBookIds)
   const restoreListScrollOffset = useCallback((offset: number) => {
@@ -530,9 +552,11 @@ export const LibraryScreen: FC = observer(() => {
             libraryId={selectedLibrary!.id}
             isSelected={isSelected}
             columnWidths={tableColumnWidths}
+            columnVisibility={tableColumnVisibility}
             showSelectionActions={showSingleSelectionDetails}
             detailMenuProps={detailMenuProps}
             fieldMetadataList={selectedLibrary!.fieldMetadataList}
+            customColumns={customColumns}
             onPress={() => libraryHook.handleBookPress(item.id)}
             onLongPress={() => {
               libraryHook.enterMultiSelection(item.id)
@@ -776,7 +800,10 @@ export const LibraryScreen: FC = observer(() => {
               <LibraryTableHeader
                 labels={tableFieldLabels}
                 columnWidths={tableColumnWidths}
+                columnVisibility={tableColumnVisibility}
                 onColumnResize={handleColumnResize}
+                onColumnVisibilityChange={handleColumnVisibilityChange}
+                customColumns={customColumns}
               />
             ) : undefined
           }
