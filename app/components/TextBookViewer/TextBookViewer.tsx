@@ -28,9 +28,18 @@ const isFacingReadingStyle = (readingStyle: BookReadingStyleType) => {
 type TextBookViewerProps = {
   viewerHook: ReturnType<typeof useViewer>
   getAuthHeader?: (path: string) => Record<string, string> | undefined
+  seriesInfo?: import("@/components/ViewerHeader/ViewerHeader").SeriesNavigationInfo | null
+  onPreviousSeriesBook?: () => void
+  onNextSeriesBook?: () => void
 }
 
-export function TextBookViewer({ getAuthHeader, viewerHook }: TextBookViewerProps) {
+export function TextBookViewer({
+  getAuthHeader,
+  viewerHook,
+  seriesInfo,
+  onPreviousSeriesBook,
+  onNextSeriesBook,
+}: TextBookViewerProps) {
   const palette = usePalette()
   const navigation = useNavigation<ApppNavigationProp>()
   const modal = useElectrobunModal()
@@ -412,6 +421,9 @@ export function TextBookViewer({ getAuthHeader, viewerHook }: TextBookViewerProp
             facingPage={facingPage}
             facingSecondPageExists={facingSecondPageExists}
             visible={viewerHook.showMenu}
+            seriesInfo={seriesInfo}
+            onPreviousSeriesBook={onPreviousSeriesBook}
+            onNextSeriesBook={onNextSeriesBook}
           />
         </GradientBackground>
       </View>

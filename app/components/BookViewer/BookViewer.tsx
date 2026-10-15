@@ -74,6 +74,9 @@ export type BookViewerProps = {
   initialPage?: number
   performanceMode?: "default" | "android-pdf" | "web-pdf" | "pdf-single-page"
   disableNavigation?: boolean
+  seriesInfo?: import("@/components/ViewerHeader/ViewerHeader").SeriesNavigationInfo | null
+  onPreviousSeriesBook?: () => void
+  onNextSeriesBook?: () => void
 }
 
 type FlashListCompatProps = {
@@ -786,6 +789,9 @@ export function BookViewer(props: BookViewerProps) {
             viewerHook.pageDirection === "left" && viewerHook.readingStyle !== "verticalScroll"
           }
           visible={viewerHook.showMenu}
+          seriesInfo={props.seriesInfo}
+          onPreviousSeriesBook={props.onPreviousSeriesBook}
+          onNextSeriesBook={props.onNextSeriesBook}
         />
       </GradientBackground>
       {showAnnotationPanel ? (

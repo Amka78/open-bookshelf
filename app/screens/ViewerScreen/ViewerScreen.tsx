@@ -2,6 +2,7 @@ import { BookPage, BookViewer, LabeledSpinner, TextBookViewer, type RenderPagePr
 import { BookHtmlPage } from "@/components/BookHtmlPage"
 import { useStores } from "@/models"
 import type { ApppNavigationProp } from "@/navigators/types"
+import { useSeriesNavigation } from "@/screens/ViewerScreen/useSeriesNavigation"
 import { useViewer } from "@/screens/ViewerScreen/useViewer"
 import { isRemoteBookImagePath } from "@/utils/bookImageCache"
 import { isCalibreHtmlViewerFormat, isCalibreSerializedHtmlPath } from "@/utils/calibreHtmlViewer"
@@ -18,6 +19,7 @@ const ViewerScreenContent: FC = observer(() => {
   const navigation = useNavigation<ApppNavigationProp>()
 
   const viewerHook = useViewer()
+  const { seriesInfo, onPreviousBook, onNextBook } = useSeriesNavigation()
   const {
     selectedLibrary,
     selectedBook,
@@ -155,7 +157,15 @@ const ViewerScreenContent: FC = observer(() => {
   }
 
   if (usesTextBookViewer) {
-    return <TextBookViewer viewerHook={viewerHook} getAuthHeader={authenticationStore.getHeader} />
+    return (
+      <TextBookViewer
+        viewerHook={viewerHook}
+        getAuthHeader={authenticationStore.getHeader}
+        seriesInfo={seriesInfo}
+        onPreviousSeriesBook={onPreviousBook}
+        onNextSeriesBook={onNextBook}
+      />
+    )
   }
 
   return (
@@ -166,6 +176,9 @@ const ViewerScreenContent: FC = observer(() => {
       initialPage={initialPage}
       onPageChange={handlePageChange}
       onLastPage={onLastPage}
+      seriesInfo={seriesInfo}
+      onPreviousSeriesBook={onPreviousBook}
+      onNextSeriesBook={onNextBook}
     />
   )
 })

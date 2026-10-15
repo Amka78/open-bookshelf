@@ -1,4 +1,5 @@
 import { HStack, IconButton, Text, VStack } from "@/components"
+import type { SeriesNavigationInfo } from "@/components/ViewerHeader/ViewerHeader"
 import { usePalette } from "@/theme"
 import { goToNextPage, goToPreviousPage } from "@/utils/pageTurnning"
 import { Slider, SliderFilledTrack, SliderThumb, SliderTrack, styled } from "@gluestack-ui/themed"
@@ -14,6 +15,9 @@ export type PageManagerProps = {
   variant?: "fix" | "free"
   facingPage: boolean
   facingSecondPageExists?: boolean
+  seriesInfo?: SeriesNavigationInfo | null
+  onPreviousSeriesBook?: () => void
+  onNextSeriesBook?: () => void
 } & ComponentProps<typeof VStack>
 
 function PageManagerCore({
@@ -50,10 +54,13 @@ function PageManagerCore({
     }
   }
 
+  const hasSeries = !!props.seriesInfo
+  const footerHeight = hasSeries ? "15%" : "10%"
+
   return props.visible ? (
     <VStack
       {...props}
-      height={"10%"}
+      height={footerHeight}
       alignItems={"center"}
       justifyContent={"center"}
       backgroundColor={props.variant === "fix" ? palette.surfaceStrong : "transparent"}
@@ -120,6 +127,28 @@ function PageManagerCore({
       <Text textAlign="center" marginBottom={"$4"} testID="page-indicator">
         {pageIndicator}
       </Text>
+      {props.seriesInfo ? (
+        <HStack alignItems="center" marginBottom={"$2"}>
+          <IconButton
+            name="chevron-left"
+            iconSize="sm"
+            onPress={props.onPreviousSeriesBook}
+            disabled={!props.seriesInfo.hasPrevious}
+            opacity={props.seriesInfo.hasPrevious ? 1 : 0.4}
+          />
+          <Text fontSize={"$sm"} color={palette.textSecondary} isTruncated={true}>
+            {props.seriesInfo.seriesName} ({props.seriesInfo.currentIndex + 1}/
+            {props.seriesInfo.totalCount})
+          </Text>
+          <IconButton
+            name="chevron-right"
+            iconSize="sm"
+            onPress={props.onNextSeriesBook}
+            disabled={!props.seriesInfo.hasNext}
+            opacity={props.seriesInfo.hasNext ? 1 : 0.4}
+          />
+        </HStack>
+      ) : null}
     </VStack>
   ) : undefined
 }
