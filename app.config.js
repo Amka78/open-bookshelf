@@ -23,7 +23,7 @@ switch (process.env.APP_VARIANT) {
 
 const isPreviewVariant = process.env.APP_VARIANT === "preview"
 
-export default {
+module.exports = {
   name: "OpenBookShelf",
   displayName: "OpenBookShelf",
   expo: {
