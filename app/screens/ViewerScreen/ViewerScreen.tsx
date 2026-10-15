@@ -7,6 +7,7 @@ import { isRemoteBookImagePath } from "@/utils/bookImageCache"
 import { isCalibreHtmlViewerFormat, isCalibreSerializedHtmlPath } from "@/utils/calibreHtmlViewer"
 import { logger } from "@/utils/logger"
 import { useNavigation } from "@react-navigation/native"
+import { Image } from "expo-image"
 import { observer } from "mobx-react-lite"
 import React, { type FC, useCallback, useEffect, useLayoutEffect, useMemo } from "react"
 import { StyleSheet } from "react-native"
@@ -132,6 +133,19 @@ const ViewerScreenContent: FC = observer(() => {
     [sourcePathList, cachedPathList, selectedBook, selectedLibrary, authenticationStore],
   )
 
+  const handlePageChange = useCallback(
+    (page: number) => {
+      onPageChange?.(page)
+      const nextPages = [page + 1, page + 2, page + 3]
+        .filter((p) => p < sourcePathList.length)
+        .map((p) => cachedPathList?.[p] ?? sourcePathList[p])
+      if (nextPages.length > 0) {
+        Image.prefetch(nextPages)
+      }
+    },
+    [onPageChange, sourcePathList, cachedPathList],
+  )
+
   if (!selectedLibrary || !selectedBook) {
     return null
   }
@@ -150,7 +164,7 @@ const ViewerScreenContent: FC = observer(() => {
       renderPage={renderPage}
       totalPage={totalPages}
       initialPage={initialPage}
-      onPageChange={onPageChange}
+      onPageChange={handlePageChange}
       onLastPage={onLastPage}
     />
   )
