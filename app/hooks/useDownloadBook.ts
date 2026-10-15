@@ -23,15 +23,19 @@ export function useDownloadBook() {
     const selectedBook = selectedLibrary?.selectedBook
     if (!selectedLibrary || !selectedBook) return
     try {
-      if (selectedBook!.metaData!.formats.length > 1) {
+      const metaData = selectedBook.metaData
+      if (!metaData) {
+        throw new Error("Book metadata is unavailable")
+      }
+      if (metaData.formats.length > 1) {
         modal.openModal("FormatSelectModal", {
-          formats: selectedBook!.metaData!.formats,
+          formats: metaData.formats,
           onSelectFormat: async (format) => {
             await executeSharing(selectedLibrary, format)
           },
         })
       } else {
-        const format = selectedBook!.metaData!.formats[0]
+        const format = metaData.formats[0]
         await executeSharing(selectedLibrary, format)
       }
     } catch (e) {
@@ -49,8 +53,12 @@ export function useDownloadBook() {
 
 async function executeSharing(selectedLibrary: LibraryMap, format: string) {
   const selectedBook = selectedLibrary.selectedBook
-  const fileName = `${selectedBook!.metaData!.title}.${format}`
-  const downloadUrl = api.getBookDownloadUrl(format, selectedBook!.id, selectedLibrary.id)
+  if (!selectedBook) {
+    throw new Error("No book selected")
+  }
+  const metaData = selectedBook.metaData
+  const fileName = `${metaData?.title ?? ""}.${format}`
+  const downloadUrl = api.getBookDownloadUrl(format, selectedBook.id, selectedLibrary.id)
 
   if (Platform.OS === "web") {
     const link = document.createElement("a")

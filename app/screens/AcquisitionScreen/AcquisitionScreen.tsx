@@ -24,7 +24,7 @@ export const AcquisitionScreen: FC = observer(() => {
   const palette = usePalette()
 
   const route = useRoute<AcquisitionScreenRouteProp>()
-  const linkHref = route.params!.link.href
+  const linkHref = route.params?.link.href
 
   const navigation = useNavigation<ApppNavigationProp>()
 
@@ -146,7 +146,7 @@ export const AcquisitionScreen: FC = observer(() => {
     })
 
     if (link) {
-      currentOpds!.load(link.href ?? undefined, false)
+      currentOpds?.load(link.href ?? undefined, false)
     }
   }, [currentOpds])
 

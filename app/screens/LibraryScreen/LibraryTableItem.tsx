@@ -544,14 +544,49 @@ export const LibraryTableItem = observer(function LibraryTableItem({
                 <IconButton
                   name="arrow-right"
                   iconSize="sm"
-                  onPress={() => {
+                  onPress={async () => {
                     const extracted = extractSeriesFromTitle(title)
                     if (extracted) {
-                      setSeries(extracted.series)
                       // Extract number from the extracted.number (e.g., "1", "Vol.2", "第1巻")
                       const numMatch = extracted.number.match(/(\d+)/)
-                      if (numMatch) {
-                        setSeriesIndex(Number(numMatch[1]))
+                      const newSeriesIndex = numMatch ? Number(numMatch[1]) : null
+
+                      setSeries(extracted.series)
+                      if (newSeriesIndex !== null) {
+                        setSeriesIndex(newSeriesIndex)
+                      }
+
+                      // Directly save with the new values since state hasn't updated yet
+                      if (isSaving) return
+                      setIsSaving(true)
+                      try {
+                        const updateInfo: Partial<MetadataSnapshotIn> = {
+                          authors: currentValue.authors,
+                          publisher: currentValue.publisher,
+                          series: extracted.series,
+                          seriesIndex: newSeriesIndex,
+                          tags: currentValue.tags,
+                          title: currentValue.title,
+                        }
+
+                        const metadataMap = fieldMetadataList
+                          ? new Map(
+                              Array.from(fieldMetadataList.entries()).map(([key, value]) => [
+                                key,
+                                { isMultiple: value.isMultiple },
+                              ]),
+                            )
+                          : undefined
+
+                        await book.update(
+                          libraryId,
+                          updateInfo,
+                          ["title", "authors", "series", "seriesIndex", "tags", "publisher"],
+                          undefined,
+                          metadataMap,
+                        )
+                      } finally {
+                        setIsSaving(false)
                       }
                     }
                   }}

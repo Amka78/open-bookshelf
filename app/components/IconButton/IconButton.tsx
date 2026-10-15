@@ -44,13 +44,14 @@ export const IconButton = ({
     <Pressable
       {...props}
       onPress={(event) => {
-        if (props.onPress) {
+        const onPress = props.onPress
+        if (onPress) {
           if (loading) {
             startTransition(async () => {
-              await props.onPress!(event)
+              await onPress(event)
             })
           } else {
-            props.onPress!(event)
+            onPress(event)
           }
         }
       }}

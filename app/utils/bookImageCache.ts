@@ -192,7 +192,7 @@ export async function cacheComicImages(
   )
 
   // Return in original order (not priority order)
-  const cachedList = input.pathList.map((path) => cachedMap.get(path)!)
+  const cachedList = input.pathList.map((path) => cachedMap.get(path) ?? "")
 
   return { cachedList, coverPath }
 }

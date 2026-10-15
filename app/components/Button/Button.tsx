@@ -17,9 +17,10 @@ export function Button({ variant = "outline", ...restProps }: ButtonProps) {
       borderColor={palette.borderStrong}
       backgroundColor={variant === "solid" ? palette.surfaceStrong : "transparent"}
       onPress={(e) => {
-        if (props.onPress) {
+        const onPress = props.onPress
+        if (onPress) {
           startTransition(async () => {
-            await props.onPress!(e)
+            await onPress(e)
           })
         }
       }}

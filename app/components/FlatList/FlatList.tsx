@@ -1,5 +1,5 @@
 import { Center, Spinner } from "@gluestack-ui/themed"
-import { type FlashListProps, FlashList as Origin } from "@shopify/flash-list"
+import { type FlashListProps, type FlashListRef, FlashList as Origin } from "@shopify/flash-list"
 import React, { useState } from "react"
 import { LabeledSpinner } from "../LabeledSpinner/LabeledSpinner"
 
@@ -23,7 +23,7 @@ export const FlatList = React.forwardRef(function FlatListInner<T>(
   return !preparing ? (
     <Origin
       {...props}
-      ref={ref as any}
+      ref={ref as React.Ref<FlashListRef<T>>}
       onMomentumScrollBegin={() => {
         setLoading(true)
       }}

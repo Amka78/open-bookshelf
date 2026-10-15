@@ -819,7 +819,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   annotationPanelOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     top: 50,
     backgroundColor: "rgba(255,255,255,0.97)",
     zIndex: 10,
@@ -843,7 +843,7 @@ const styles = StyleSheet.create({
     transform: [{ scaleX: -1 }],
   },
   singlePageOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     zIndex: 2,
   },
   scaleXInverted: {

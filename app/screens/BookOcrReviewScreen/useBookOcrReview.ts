@@ -1,7 +1,7 @@
 import { useConvergence } from "@/hooks/useConvergence"
 import { translate } from "@/i18n"
 import { useStores } from "@/models"
-import type { MetadataSnapshotIn } from "@/models/calibre"
+import type { Book, LibraryMap, Metadata, MetadataSnapshotIn } from "@/models/calibre"
 import type { AppStackParamList, ApppNavigationProp } from "@/navigators/types"
 import { ExpoGoOcrUnavailableError, type OcrFieldEntry, recognizeCover } from "@/services/ocr"
 import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
@@ -73,8 +73,8 @@ export function useBookOcrReviewController({
   const navigation = useNavigation<ApppNavigationProp>()
   const convergenceHook = useConvergence()
 
-  const selectedLibrary = calibreRootStore.selectedLibrary!
-  const selectedBook = selectedLibrary.selectedBook!
+  const selectedLibrary = calibreRootStore.selectedLibrary as LibraryMap
+  const selectedBook = selectedLibrary.selectedBook as Book
   const bookMetaDataSnapshot = selectedBook.metaData
     ? (getSnapshot(selectedBook.metaData) as MetadataFormValues)
     : undefined
@@ -105,7 +105,7 @@ export function useBookOcrReviewController({
       try {
         const result = await recognizeCover({
           imageUrl,
-          languages: selectedBook.metaData!.languages.slice(),
+          languages: (selectedBook.metaData as Metadata).languages.slice(),
         })
 
         if (!isActive) return
@@ -153,7 +153,7 @@ export function useBookOcrReviewController({
     hasLangNames,
     imageUrl,
     langNames,
-    selectedBook.metaData!.languages,
+    selectedBook.metaData,
   ])
 
   const applyFieldEntry = (entry: OcrFieldEntry) => {

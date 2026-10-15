@@ -4,6 +4,7 @@ import {
   DEFAULT_CONVERT_OPTIONS,
 } from "@/components/BookConvertForm/ConvertOptions"
 import { useStores } from "@/models"
+import type { Book, LibraryMap } from "@/models/calibre"
 import { api } from "@/services/api"
 import { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
@@ -11,8 +12,8 @@ import { useForm } from "react-hook-form"
 export function useBookConvert() {
   const { calibreRootStore } = useStores()
 
-  const selectedLibrary = calibreRootStore.selectedLibrary!
-  const selectedBook = selectedLibrary.selectedBook!
+  const selectedLibrary = calibreRootStore.selectedLibrary as LibraryMap
+  const selectedBook = selectedLibrary.selectedBook as Book
 
   const inputFormats: string[] = selectedBook?.metaData?.formats ?? []
   const [outputFormats, setOutputFormats] = useState<string[]>(inputFormats)

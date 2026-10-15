@@ -9,7 +9,7 @@ const test = localizeTestRegistrar(baseTest)
 function normalizeStyle(style: unknown): React.CSSProperties | undefined {
   if (Array.isArray(style)) {
     return style.reduce<React.CSSProperties>(
-      (acc, value) => (value && typeof value === "object" ? { ...acc, ...value } : acc),
+      (acc, value) => (value && typeof value === "object" ? Object.assign(acc, value) : acc),
       {},
     )
   }
@@ -62,7 +62,7 @@ const componentsMock = {
     testID?: string
     onPress?: () => void
   }) => (
-    <div data-testid={testID} onClick={onPress} style={normalizeStyle(style)}>
+    <div data-testid={testID} onClick={onPress} onKeyDown={onPress} style={normalizeStyle(style)}>
       {children}
     </div>
   ),
@@ -121,6 +121,7 @@ vi.doMock("@gluestack-ui/themed", () => ({
     <div
       data-testid={testID}
       onClick={onPress}
+      onKeyDown={onPress}
       style={normalizeStyle(style)}
       role="button"
       tabIndex={0}

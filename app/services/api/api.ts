@@ -573,7 +573,7 @@ export class Api {
       if (problem) return problem
     }
 
-    return { kind: "ok", data: response.data! }
+    return { kind: "ok", data: response.data }
   }
 
   /**
@@ -594,7 +594,7 @@ export class Api {
       if (problem) return problem
     }
 
-    return { kind: "ok", data: response.data! }
+    return { kind: "ok", data: response.data as ApiCalibreInterfaceType }
   }
 
   /**
@@ -626,7 +626,7 @@ export class Api {
       if (problem) return problem
     }
 
-    return { kind: "ok", data: response.data! }
+    return { kind: "ok", data: response.data as ApiBookInfo }
   }
 
   /**
@@ -650,7 +650,7 @@ export class Api {
       if (problem) return problem
     }
 
-    return { kind: "ok", data: response.data! }
+    return { kind: "ok", data: response.data as ApiBookInfoCore }
   }
 
   /**
@@ -671,7 +671,7 @@ export class Api {
       if (problem) return problem
     }
 
-    return { kind: "ok", data: response.data! }
+    return { kind: "ok", data: response.data as ApiTagBrowser }
   }
 
   /**
@@ -709,7 +709,7 @@ export class Api {
       if (problem) return problem
     }
 
-    return { kind: "ok", data: response.data! }
+    return { kind: "ok", data: response.data as ApiBookManifestStatusType | ApiBookManifestResultType }
   }
 
   /**
@@ -743,7 +743,7 @@ export class Api {
       if (problem) return problem
     }
 
-    return { kind: "ok", data: response.data! }
+    return { kind: "ok", data: response.data as ApiConversionStart }
   }
 
   async getConversionStatus(
@@ -759,7 +759,7 @@ export class Api {
       if (problem) return problem
     }
 
-    return { kind: "ok", data: response.data! }
+    return { kind: "ok", data: response.data as ApiConversionStatus }
   }
 
   async getConversionBookData(
@@ -785,7 +785,7 @@ export class Api {
       if (problem) return problem
     }
 
-    return { kind: "ok", data: response.data! }
+    return { kind: "ok", data: response.data as ApiConversionBookData }
   }
 
   /**
@@ -811,7 +811,7 @@ export class Api {
       if (problem) return problem
     }
 
-    return { kind: "ok", data: response.data! }
+    return { kind: "ok", data: response.data as ApiBookFile }
   }
 
   /**
@@ -877,7 +877,7 @@ export class Api {
       if (problem) return problem
     }
 
-    return { kind: "ok", data: response.data! }
+    return { kind: "ok", data: response.data as SetBookResult }
   }
 
   async uploadFile(
