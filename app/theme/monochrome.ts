@@ -6,6 +6,7 @@ export type MonochromePalette = {
   surface: string
   surfaceMuted: string
   surfaceStrong: string
+  surfaceOverlay: string
   textPrimary: string
   textSecondary: string
   borderSubtle: string
@@ -19,6 +20,7 @@ export const lightPalette: MonochromePalette = {
   surface: "#f7f9fc",
   surfaceMuted: "#eef1f6",
   surfaceStrong: "#e6eaf1",
+  surfaceOverlay: "rgba(247, 249, 252, 0.85)",
   textPrimary: "#111318",
   textSecondary: "#3a3f48",
   borderSubtle: "#d6dbe4",
@@ -32,6 +34,7 @@ export const darkPalette: MonochromePalette = {
   surface: "rgba(15, 18, 24, 0.92)",
   surfaceMuted: "rgba(15, 18, 24, 0.75)",
   surfaceStrong: "#151a22",
+  surfaceOverlay: "rgba(15, 18, 24, 0.85)",
   textPrimary: "#e6e8ee",
   textSecondary: "#b7bcc7",
   borderSubtle: "#2a2f3a",

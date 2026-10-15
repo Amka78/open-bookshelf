@@ -63,7 +63,7 @@ function PageManagerCore({
       height={footerHeight}
       alignItems={"center"}
       justifyContent={"center"}
-      backgroundColor={props.variant === "fix" ? palette.surfaceStrong : "transparent"}
+      backgroundColor={props.variant === "fix" ? palette.surfaceOverlay : "transparent"}
       style={
         props.variant === "fix"
           ? { borderTopWidth: 1, borderTopColor: palette.borderSubtle }

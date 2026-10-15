@@ -17,7 +17,7 @@ export function ViewerHeader(props: ViewerHeaderProps) {
     <>
       <HStack
         height={50}
-        backgroundColor={palette.surfaceStrong}
+        backgroundColor={palette.surfaceOverlay}
         position={"absolute"}
         top={0}
         left={0}
