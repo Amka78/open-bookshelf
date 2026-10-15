@@ -1,6 +1,6 @@
 # Github Pages デプロイガイド
 
-このアプリの Web 版を Github Pages にリリースするための手順です。
+Storybook を Github Pages にデプロイするための手順です。
 
 ## セットアップ手順
 
@@ -13,24 +13,22 @@
    - Folder: `/ (root)`
 4. **Save** をクリック
 
-### 2. 自動デプロイの有効化
+### 2. 自動デプロイ
 
-Github Actions ワークフロー（`.github/workflows/deploy-web.yml`）が既に設定されています。
+Github Actions ワークフロー（`.github/workflows/deploy-web.yml`）が設定されています。
 
-main ブランチに push されると自動的に以下が実行されます：
+`v*` タグを push すると自動的に以下が実行されます：
 
-1. Web 版をビルド
-2. dist ディレクトリの内容を gh-pages ブランチにデプロイ
-3. Github Pages でホスト
+1. Storybook をビルド（`bun run build-storybook`）
+2. `storybook-static` ディレクトリの内容を GitHub Pages にデプロイ
 
 ### 3. デプロイする
 
-main ブランチに commit して push します：
+バージョンタグを付けて push します：
 
 ```bash
-git add .
-git commit -m "Deploy to Github Pages"
-git push origin main
+git tag v0.0.4
+git push origin v0.0.4
 ```
 
 ## ローカルでのビルド確認
@@ -38,15 +36,25 @@ git push origin main
 デプロイ前にローカルでビルドを確認できます：
 
 ```bash
-# ビルド
-GITHUB_PAGES=true bun run build:web
+# Storybook をビルド
+bun run build-storybook
 
-# 出力は dist/ ディレクトリに生成されます
+# 出力は storybook-static/ ディレクトリに生成されます
+
+# ローカルで確認する場合
+bun run storybook:web
+# → http://localhost:6006 で確認
+```
+
+## ローカルから手動デプロイ
+
+```bash
+bun run deploy:pages
 ```
 
 ## アクセス URL
 
-デプロイ後、以下の URL でアプリにアクセスできます：
+デプロイ後、以下の URL で Storybook にアクセスできます：
 
 ```
 https://<your-username>.github.io/open-bookshelf/
@@ -56,23 +64,16 @@ https://<your-username>.github.io/open-bookshelf/
 
 ### ビルドが失敗する場合
 
-1. Node.js のバージョンを確認：
-
-   ```bash
-   node --version  # v18以上推奨
-   ```
-
-2. 依存関係を再インストール：
+1. 依存関係を再インストール：
 
    ```bash
    bun install
    ```
 
-3. キャッシュをクリア：
+2. Storybook のキャッシュをクリア：
    ```bash
-   bun run clean
-   bun install
-   GITHUB_PAGES=true bun run build:web
+   rm -rf storybook-static node_modules/.cache
+   bun run build-storybook
    ```
 
 ### ページが表示されない場合
@@ -87,12 +88,8 @@ https://<your-username>.github.io/open-bookshelf/
 3. デプロイが完了しているか確認：
    - リポジトリの **Actions** タブでワークフローの実行状況を確認
 
-## 環境変数
-
-- `GITHUB_PAGES=true` - ビルド時に自動設定され、ホームページパスが`/open-bookshelf/`に設定されます
-
 ## その他の注意事項
 
-- Web 版のビルド時は、React Native の一部機能（ネイティブモジュール）は使用できません
-- プロダクション環境での動作確認を推奨します
+- Storybook は `@storybook/react-vite` でビルドされます
+- `.storybook/web/` に設定ファイルがあります
 - カスタムドメインを使用する場合は、Repository Settings → Pages で設定してください

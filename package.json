@@ -41,7 +41,7 @@
     "storybook:web": "sb dev --config-dir .storybook/web -p 6006",
     "build-storybook": "storybook build --config-dir .storybook/web --output-dir storybook-static",
     "build:web": "bunx expo export --platform web --output-dir dist",
-    "deploy:pages": "gh-pages -d dist -b gh-pages",
+    "deploy:pages": "bun run build-storybook && gh-pages -d storybook-static -b gh-pages",
     "bundle-pdfjs": "bun run scripts/bundle-pdfjs.ts",
     "release:tag": "./bin/release-tag.sh"
   },
