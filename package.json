@@ -13,6 +13,7 @@
     "check": "bun run compile && bun run lint && biome format app test && bun run test:unit && bun run test:story",
     "format": "biome format --write app test",
     "lint": "biome lint app test",
+    "version": "bash scripts/version.sh",
     "patch": "bunx patch-package",
     "test": "bun run test:unit",
     "test:watch": "bun test --watch app test",
