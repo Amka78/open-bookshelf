@@ -17,6 +17,7 @@ import {
 import { RatingGroup } from "@/components/RatingGroup/RatingGroup"
 import type { Book, FieldMetadataMap, MetadataSnapshotIn } from "@/models/calibre"
 import { useElectrobunModal } from "@/hooks/useElectrobunModal"
+import { usePalette } from "@/theme"
 import { Pressable } from "@gluestack-ui/themed"
 import { observer } from "mobx-react-lite"
 import { useEffect, useMemo, useRef, useState } from "react"
@@ -337,6 +338,7 @@ export const LibraryTableItem = observer(function LibraryTableItem({
   onPress,
   onLongPress,
 }: LibraryTableItemProps) {
+  const palette = usePalette()
   const [title, setTitle] = useState(book.metaData!.title ?? "")
   const [authors, setAuthors] = useState<string[]>(book.metaData!.authors ?? [])
   const [series, setSeries] = useState(book.metaData!.series ?? "")
@@ -512,7 +514,10 @@ export const LibraryTableItem = observer(function LibraryTableItem({
         <Pressable
           onPress={onPress}
           onLongPress={onLongPress}
-          style={styles.bookCell}
+          style={[
+            styles.bookCell,
+            { backgroundColor: isSelected ? SELECTED_OVERLAY_COLOR : palette.bg0 },
+          ]}
           testID={`library-table-select-${book.id}`}
         >
           {source ? (
@@ -522,7 +527,13 @@ export const LibraryTableItem = observer(function LibraryTableItem({
           )}
         </Pressable>
         {isVisible("title") ? (
-          <Box style={[styles.titleCell, { width: columnWidths.title }]}>
+          <Box
+            style={[
+              styles.titleCell,
+              { width: columnWidths.title },
+              { backgroundColor: isSelected ? SELECTED_OVERLAY_COLOR : palette.bg0 },
+            ]}
+          >
             <HStack alignItems="center" space="xs">
               <Box flex={1}>
                 <Input size="sm">
@@ -874,10 +885,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 6,
     width: BOOK_COLUMN_WIDTH,
+    position: "sticky" as unknown as "relative",
+    left: 0,
+    zIndex: 10,
   },
   titleCell: {
     paddingHorizontal: 6,
     width: TITLE_COLUMN_WIDTH,
+    position: "sticky" as unknown as "relative",
+    left: BOOK_COLUMN_WIDTH,
+    zIndex: 10,
   },
   authorsCell: {
     paddingHorizontal: 6,

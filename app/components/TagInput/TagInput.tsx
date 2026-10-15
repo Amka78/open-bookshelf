@@ -105,6 +105,12 @@ export function TagInput({
     if (Platform.OS === "web" && navigator.clipboard) {
       await navigator.clipboard.writeText(text)
       onCopy?.()
+    } else {
+      console.warn("TagInput: clipboard API not available", {
+        platform: Platform.OS,
+        hasClipboard: typeof navigator !== "undefined" && !!navigator.clipboard,
+        isSecureContext: typeof window !== "undefined" && window.isSecureContext,
+      })
     }
   }
 
@@ -120,9 +126,15 @@ export function TagInput({
         if (newTags.length > 0) {
           onChange([...value, ...newTags])
         }
-      } catch {
-        // Clipboard access denied
+      } catch (e) {
+        console.warn("TagInput: clipboard read failed", { error: String(e) })
       }
+    } else {
+      console.warn("TagInput: clipboard API not available for paste", {
+        platform: Platform.OS,
+        hasClipboard: typeof navigator !== "undefined" && !!navigator.clipboard,
+        isSecureContext: typeof window !== "undefined" && window.isSecureContext,
+      })
     }
   }
 

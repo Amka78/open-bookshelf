@@ -1,6 +1,6 @@
 import { Box, FlatList, type FlatListProps, ScrollView } from "@/components"
 import type { Book } from "@/models/calibre"
-import type React from "react"
+import { Fragment, type ReactElement, type ComponentType } from "react"
 import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
@@ -64,9 +64,30 @@ export function LibraryBookList({
   )
 
   if (wrapInHorizontalScroll && horizontalContentWidth) {
+    // FlatList は内部で縦 ScrollView を生成する。
+    // position: sticky は最も近いスクロール祖先を参照するため、
+    // 横 ScrollView の中に FlatList を入れると sticky が縦 ScrollView を向いてしまい横スクロールで固定されない。
+    // 縦 ScrollView > 横 ScrollView > .map() の構造にすることで、
+    // sticky の参照先は内側の横 ScrollView になり、縦スクロールも維持される。
+    const header =
+      ListHeaderComponent != null
+        ? typeof ListHeaderComponent === "function"
+          ? <ListHeaderComponent />
+          : ListHeaderComponent
+        : null
+
     return (
-      <ScrollView horizontal showsHorizontalScrollIndicator={true}>
-        <Box width={Math.max(window.width, horizontalContentWidth)}>{list}</Box>
+      <ScrollView>
+        {header}
+        <ScrollView horizontal showsHorizontalScrollIndicator={true}>
+          <Box width={Math.max(window.width, horizontalContentWidth)}>
+            {bookList.map((item, index) => (
+              <Fragment key={item.id}>
+                {renderItem({ item, index, separators: null as any })}
+              </Fragment>
+            ))}
+          </Box>
+        </ScrollView>
       </ScrollView>
     )
   }
