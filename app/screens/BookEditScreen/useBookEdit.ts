@@ -32,8 +32,7 @@ export function useBookEdit() {
   const pendingAddedFormats = useRef<AddedFormatEntry[]>([])
 
   const onSubmit = form.handleSubmit(async (value: MetadataFormValues) => {
-    const updatedValue =
-      hasLangNames && bookMetaDataSnapshot ? toLanguageNamesForUpdate(value, langNames) : value
+    const updatedValue = hasLangNames ? toLanguageNamesForUpdate(value, langNames) : toLanguageNamesForUpdate(value, {})
 
     // Compute removed formats by comparing original with current form value
     const originalFormats = (bookMetaDataSnapshot?.formats ?? []).map((f) =>

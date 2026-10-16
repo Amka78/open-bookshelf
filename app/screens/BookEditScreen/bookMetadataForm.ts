@@ -22,6 +22,12 @@ export function toLanguageNamesForDisplay(
   }
 }
 
+const UNKNOWN_LANGUAGE_VALUES = new Set(["unknown", "und", "不明"])
+
+function isUnknownLanguage(value: string): boolean {
+  return UNKNOWN_LANGUAGE_VALUES.has(value.toLowerCase())
+}
+
 export function toLanguageNamesForUpdate(
   value: MetadataFormValues,
   langNames: Record<string, string>,
@@ -34,6 +40,7 @@ export function toLanguageNamesForUpdate(
     .map((entry) => String(entry ?? "").trim())
     .filter(Boolean)
     .map((entry) => nameToCode[entry] ?? entry)
+    .filter((entry) => !isUnknownLanguage(entry))
 
   return {
     ...value,

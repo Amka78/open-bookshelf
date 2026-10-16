@@ -2,6 +2,14 @@ import { HStack, IconButton, Text, TooltipIconButton } from "@/components"
 import { usePalette } from "@/theme"
 import { ViewerMenu, type ViewerMenuProps } from "../ViewerMenu/ViewerMenu"
 
+export type SeriesNavigationInfo = {
+  seriesName: string
+  currentIndex: number
+  totalCount: number
+  hasPrevious: boolean
+  hasNext: boolean
+}
+
 export type ViewerHeaderProps = ViewerMenuProps & {
   visible: boolean
   onLeftArrowPress?: () => void
