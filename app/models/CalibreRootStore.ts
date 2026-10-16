@@ -214,7 +214,7 @@ export const CalibreRootStore = types
         })
 
         if (response.kind === "ok") {
-          convertSearchResult(response.data, selectedLibrary)
+          convertSearchResult(response.data, selectedLibrary, true)
           return true
         }
         handleCommonApiError(response)
@@ -335,7 +335,7 @@ export type CalibreRoot = Instance<typeof CalibreRootStore>
 export type CalibreRootSnapshotOut = SnapshotOut<typeof CalibreRootStore>
 export type CalibreRootSnapshotIn = SnapshotIn<typeof CalibreRootStore>
 
-function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap) {
+function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap, isAppend: boolean = false) {
   const previousQuery = selectedLibrary.searchSetting?.query ?? ""
 
   // searchSetting: detach してから置換（HMR reaction が古いノードを参照するのを防ぐ）
@@ -353,17 +353,20 @@ function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap)
     vl: selectedLibrary.searchSetting?.vl ?? null,
   })
 
-  // React 19 の concurrent mode では、books.clear() の後に React の再 render が実行され、
-  // 削除された BookModel の参照にアクセスしてエラーになる。
-  // books.clear() を使わず、新しい book_ids に含まれない古い books を個別に削除する。
-  const newBookIds = new Set(data.search_result.book_ids.map((id: number) => id.toString()))
-  const existingKeys = Array.from(selectedLibrary.books.keys())
-  for (const key of existingKeys) {
-    if (!newBookIds.has(key)) {
-      // detach でノードを生存させたままツリーから切り離す（HMR reaction 対策）
-      const node = selectedLibrary.books.get(key)
-      if (node) detach(node)
-      selectedLibrary.books.delete(key)
+  // 追加モードでない場合のみ、古い書籍を削除する
+  if (!isAppend) {
+    // React 19 の concurrent mode では、books.clear() の後に React の再 render が実行され、
+    // 削除された BookModel の参照にアクセスしてエラーになる。
+    // books.clear() を使わず、新しい book_ids に含まれない古い books を個別に削除する。
+    const newBookIds = new Set(data.search_result.book_ids.map((id: number) => id.toString()))
+    const existingKeys = Array.from(selectedLibrary.books.keys())
+    for (const key of existingKeys) {
+      if (!newBookIds.has(key)) {
+        // detach でノードを生存させたままツリーから切り離す（HMR reaction 対策）
+        const node = selectedLibrary.books.get(key)
+        if (node) detach(node)
+        selectedLibrary.books.delete(key)
+      }
     }
   }
 

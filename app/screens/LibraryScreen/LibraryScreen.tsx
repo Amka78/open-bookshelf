@@ -784,6 +784,16 @@ export const LibraryScreen: FC = observer(() => {
           handleListScroll={handleListScroll}
           restoreScrollOffset={restoreScrollOffset}
           onEndReached={async () => {
+            // TEMP DIAGNOSTIC: Track onEndReached calls
+            console.log(
+              JSON.stringify({
+                tag: "LibraryScreen-onEndReached",
+                isFetchingMore: calibreRootStore.isFetchingMore,
+                totalNum: calibreRootStore.selectedLibrary?.searchSetting?.totalNum,
+                offset: calibreRootStore.selectedLibrary?.searchSetting?.offset,
+                bookListLength: bookList.length,
+              })
+            )
             if (calibreRootStore.isFetchingMore) return
             await calibreRootStore.searchMoreLibrary()
           }}
