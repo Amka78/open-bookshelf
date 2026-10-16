@@ -1,6 +1,6 @@
 import { Box, FlatList, type FlatListProps, ScrollView } from "@/components"
 import type { Book } from "@/models/calibre"
-import { Fragment, type ReactElement, type ComponentType } from "react"
+import { Fragment, type ReactElement, type ComponentType, useEffect, useRef } from "react"
 import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
@@ -41,8 +41,26 @@ export function LibraryBookList({
 }: LibraryBookListProps) {
   const window = useWindowDimensions()
 
+  // TEMP DIAGNOSTIC: Track numColumns changes to identify layout gaps
+  const prevNumColumnsRef = useRef(numColumns)
+  useEffect(() => {
+    if (prevNumColumnsRef.current !== numColumns) {
+      console.log(
+        JSON.stringify({
+          tag: "LibraryBookList-numColumns-change",
+          from: prevNumColumnsRef.current,
+          to: numColumns,
+          bookListLength: bookList.length,
+          windowWidth: window.width,
+        })
+      )
+      prevNumColumnsRef.current = numColumns
+    }
+  }, [numColumns, bookList.length, window.width])
+
   const list = (
     <FlatList<Book>
+      key={`flatlist-${numColumns}`}
       ref={listRef}
       data={bookList}
       renderItem={renderItem}
