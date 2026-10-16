@@ -30,8 +30,25 @@ function shouldLog(level: LogLevel) {
 
 function sendToReactotron(level: LogLevel, args: unknown[]) {
   if (typeof console === "undefined" || !console.tron) return
+  // Web 環境では Reactotron が動作しないためスキップ（巨大オブジェクトのシリアライズでメモリーオーバーフロー防止）
+  if (typeof document !== "undefined") return
   if (console.tron.log) {
-    console.tron.log(`[${level.toUpperCase()}]`, ...args)
+    // 巨大なオブジェクトや循環参照を避けるため、安全にシリアライズ可能な引数のみ渡す
+    const safeArgs = args.map((arg) => {
+      if (arg === null || arg === undefined) return arg
+      if (typeof arg === "string" || typeof arg === "number" || typeof arg === "boolean") return arg
+      // ファイルオブジェクトや巨大な配列は除外
+      if (typeof arg === "object" && arg !== null) {
+        try {
+          const size = JSON.stringify(arg).length
+          if (size > 10000) return `[Object too large: ${size} chars]`
+        } catch {
+          return "[Circular or non-serializable]"
+        }
+      }
+      return String(arg)
+    })
+    console.tron.log(`[${level.toUpperCase()}]`, ...safeArgs)
   }
 }
 
