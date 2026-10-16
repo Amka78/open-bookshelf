@@ -195,7 +195,7 @@ export function useBookOcrReviewController({
   }, [langNames, ocrFieldEntries, selectedLibrary.fieldMetadataList])
 
   const onSubmit = form.handleSubmit(async (value) => {
-    const updatedValue = hasLangNames ? toLanguageNamesForUpdate(value, langNames) : value
+    const updatedValue = hasLangNames ? toLanguageNamesForUpdate(value, langNames) : toLanguageNamesForUpdate(value, {})
     await selectedBook.update(selectedLibrary.id, updatedValue, Object.keys(updatedValue))
     await onComplete()
   })

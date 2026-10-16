@@ -1,16 +1,9 @@
+import type { SeriesNavigationInfo } from "@/components/ViewerHeader/ViewerHeader"
 import { useStores } from "@/models"
 import type { ApppNavigationProp } from "@/navigators/types"
 import { useViewer } from "@/screens/ViewerScreen/useViewer"
 import { useNavigation } from "@react-navigation/native"
 import { useMemo } from "react"
-
-export type SeriesNavigationInfo = {
-  seriesName: string
-  currentIndex: number
-  totalCount: number
-  hasPrevious: boolean
-  hasNext: boolean
-}
 
 export type UseSeriesNavigationResult = {
   seriesInfo: SeriesNavigationInfo | null

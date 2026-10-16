@@ -1,6 +1,6 @@
 import { Box, FlatList, type FlatListProps, ScrollView } from "@/components"
 import type { Book } from "@/models/calibre"
-import { Fragment, type ReactElement, type ComponentType, useEffect, useRef } from "react"
+import { Fragment, useEffect, useRef } from "react"
 import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
@@ -101,7 +101,7 @@ export function LibraryBookList({
           <Box width={Math.max(window.width, horizontalContentWidth)}>
             {bookList.map((item, index) => (
               <Fragment key={item.id}>
-                {renderItem({ item, index, separators: null as any })}
+                {renderItem?.({ item, index, target: "Cell" })}
               </Fragment>
             ))}
           </Box>
