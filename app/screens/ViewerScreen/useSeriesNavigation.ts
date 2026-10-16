@@ -1,5 +1,6 @@
 import { useStores } from "@/models"
 import type { ApppNavigationProp } from "@/navigators/types"
+import { useViewer } from "@/screens/ViewerScreen/useViewer"
 import { useNavigation } from "@react-navigation/native"
 import { useMemo } from "react"
 
@@ -20,6 +21,7 @@ export type UseSeriesNavigationResult = {
 export function useSeriesNavigation(): UseSeriesNavigationResult {
   const { calibreRootStore } = useStores()
   const navigation = useNavigation<ApppNavigationProp>()
+  const { pageDirection } = useViewer()
 
   const selectedLibrary = calibreRootStore.selectedLibrary
   const selectedBook = selectedLibrary?.selectedBook
@@ -83,9 +85,12 @@ export function useSeriesNavigation(): UseSeriesNavigationResult {
     }
   }
 
+  // pageDirection === "left"（右開き）の場合、ボタンの方向を入れ替える
+  const isRightToLeft = pageDirection === "left"
+
   return {
     seriesInfo,
-    onPreviousBook,
-    onNextBook,
+    onPreviousBook: isRightToLeft ? onNextBook : onPreviousBook,
+    onNextBook: isRightToLeft ? onPreviousBook : onNextBook,
   }
 }
