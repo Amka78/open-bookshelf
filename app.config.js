@@ -29,7 +29,7 @@ module.exports = {
   expo: {
     name: `OpenBookShelf${appNameSuffix}`,
     slug: "OpenBookShelf",
-    version: "0.0.7",
+    version: "0.0.8",
     orientation: "default",
     icon: "./assets/images/app-icon.png",
     experiments: {
