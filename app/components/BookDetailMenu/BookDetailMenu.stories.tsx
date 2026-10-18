@@ -1,6 +1,6 @@
 import { act, fireEvent } from "@testing-library/react"
 import type { Meta, StoryObj } from "@storybook/react"
-import { fn } from "@storybook/test"
+import { expect, fn, waitFor } from "@storybook/test"
 import { BookDetailMenu } from "./BookDetailMenu"
 
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
@@ -13,6 +13,10 @@ function findByTestId(canvasElement: HTMLElement, testId: string): HTMLElement {
   }
 
   return found
+}
+
+function hasTestId(canvasElement: HTMLElement, testId: string): boolean {
+  return canvasElement.querySelector(`[data-testid="${testId}"]`) !== null
 }
 
 async function playBookDetailMenuEditDoesNotBubble({
@@ -33,6 +37,17 @@ async function playBookDetailMenuOcrDoesNotBubble({
   await act(async () => {
     fireEvent.click(findByTestId(canvasElement, "book-detail-ocr-button"))
   })
+}
+
+// 「詳細を表示」ボタンは onOpenBookDetail を渡したときだけ描画される。
+// 必ず描画される open ボタンを起点に待つことで、メニュー未描画による空振り検証を防ぐ。
+async function playDetailInfoButtonIsHidden({ canvasElement }: { canvasElement: HTMLElement }) {
+  await waitFor(() => expect(hasTestId(canvasElement, "book-detail-open-button")).toBe(true))
+  expect(hasTestId(canvasElement, "book-detail-info-button")).toBe(false)
+}
+
+async function playDetailInfoButtonIsShown({ canvasElement }: { canvasElement: HTMLElement }) {
+  await waitFor(() => expect(hasTestId(canvasElement, "book-detail-info-button")).toBe(true))
 }
 
 export default {
@@ -76,4 +91,17 @@ export const EditDoesNotBubble: StoryProps = {
 
 export const OcrDoesNotBubble: StoryProps = {
   play: playBookDetailMenuOcrDoesNotBubble,
+}
+
+// リスト／グリッド側：詳細画面へ遷移できるのでボタンが出る。
+export const InfoButtonShownOnList: StoryProps = {
+  args: {
+    onOpenBookDetail: fn(),
+  },
+  play: playDetailInfoButtonIsShown,
+}
+
+// 詳細画面・詳細モーダル側：既に詳細なので遷移ボタンを出さない。
+export const InfoButtonHiddenWithoutDetailHandler: StoryProps = {
+  play: playDetailInfoButtonIsHidden,
 }

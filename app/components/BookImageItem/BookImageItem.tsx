@@ -212,7 +212,7 @@ export const BookImageItem = memo(function BookImageItem({
             onEditBook={props.detailMenuProps!.onEditBook!}
             onRunCoverOcr={props.detailMenuProps!.onRunCoverOcr!}
             onDeleteBook={props.detailMenuProps!.onDeleteBook!}
-            onOpenBookDetail={props.onOpenBookDetail ?? (() => {})}
+            onOpenBookDetail={props.onOpenBookDetail ?? props.detailMenuProps?.onOpenBookDetail}
             wrap
             iconOpacity={0.85}
             containerProps={{

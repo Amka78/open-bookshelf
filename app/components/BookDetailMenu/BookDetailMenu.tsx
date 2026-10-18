@@ -23,7 +23,8 @@ export type BookDetailMenuProps = {
   onEditBook: () => void
   onRunCoverOcr?: () => void
   onDeleteBook: () => void
-  onOpenBookDetail: () => void
+  /** 未指定なら「詳細を表示」ボタン自体を描画しない（詳細画面・詳細モーダルでは渡さない）。 */
+  onOpenBookDetail?: () => void
   onShareLink?: () => void
   onSendByEmail?: () => void
   readStatus?: ReadStatusValue | null
@@ -99,14 +100,16 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
         testID="book-detail-download-button"
         tooltipTx="bookDetailMenu.downloadTooltip"
       />
-      <TooltipIconButton
-        {...sharedIconButtonProps}
-        name={"information-outline"}
-        iconSize={iconSize}
-        onPress={wrapMenuAction(props.onOpenBookDetail)}
-        testID="book-detail-info-button"
-        tooltipTx="bookDetailMenu.bookDetailTooltip"
-      />
+      {props.onOpenBookDetail != null && (
+        <TooltipIconButton
+          {...sharedIconButtonProps}
+          name={"information-outline"}
+          iconSize={iconSize}
+          onPress={wrapMenuAction(props.onOpenBookDetail)}
+          testID="book-detail-info-button"
+          tooltipTx="bookDetailMenu.bookDetailTooltip"
+        />
+      )}
       {props.onShareLink != null && (
         <TooltipIconButton
           {...sharedIconButtonProps}

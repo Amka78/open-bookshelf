@@ -41,7 +41,6 @@ export const BookDetailScreen: FC = observer(() => {
       <BookDetailMenu
         onOpenBook={handleOpenBook}
         onDownloadBook={handleDownloadBook}
-        onOpenBookDetail={() => {}}
         onConvertBook={handleConvertBook}
         onEditBook={handleEditBook}
         onRunCoverOcr={handleRunCoverOcr}
