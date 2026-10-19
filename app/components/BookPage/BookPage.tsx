@@ -74,6 +74,7 @@ export function BookPage(props: BookImageProps) {
       source={stableSource}
       style={dimension}
       contentFit={"contain"}
+      pointerEvents="none"
       onLoad={(e) => {
         if (!e?.source?.height || !e?.source?.width) {
           // Web can omit source dimensions; fall back to window size.
