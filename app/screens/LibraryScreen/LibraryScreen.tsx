@@ -377,15 +377,7 @@ export const LibraryScreen: FC = observer(() => {
       const readingProgress = readingProgressById.get(item.id) ?? null
       const isSelected = libraryHook.isBookSelected(item.id)
       const showSingleSelectionDetails = isSelected && libraryHook.selectedBookIds.size === 1
-      const readStatus = settingStore.getReadStatus(selectedLibrary!.id, item.id) as
-        | "want-to-read"
-        | "reading"
-        | "finished"
-        | undefined
-
-      const handleSetStatus = (status: "want-to-read" | "reading" | "finished" | null) => {
-        settingStore.setReadStatus(selectedLibrary!.id, item.id, status)
-      }
+      const readStatus = calibreRootStore.getReadingStatus(selectedLibrary!.id, item.id)
 
       const thumbnailUri = encodeURI(api.getBookThumbnailUrl(item.id, selectedLibrary!.id))
       const imageSource = thumbnailSourceById.get(item.id)?.source ?? {
@@ -516,8 +508,6 @@ export const LibraryScreen: FC = observer(() => {
         onEditBook: onEditBook,
         onRunCoverOcr: onRunCoverOcr,
         onDeleteBook: onDeleteBook,
-        readStatus: readStatus ?? null,
-        onSetStatus: handleSetStatus,
       }
 
       if (viewMode === "list") {

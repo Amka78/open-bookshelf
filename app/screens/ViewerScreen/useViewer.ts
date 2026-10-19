@@ -370,6 +370,14 @@ export function useViewer() {
     // Always update local currentPage
     history.setCurrentPage(page)
 
+    // Track visited pages for reading status derivation
+    const totalPagesForHistory =
+      (totalPagesForFraction ?? availablePageCount ?? selectedBook.path.length) || 1
+    if (history.totalPages === 0 || history.totalPages !== totalPagesForHistory) {
+      history.setTotalPages(totalPagesForHistory)
+    }
+    history.addVisitedPage(page)
+
     // Compute position fraction and schedule server sync
     // For TextBook formats, use spine-length-aware fraction and spine-anchored CFI.
     const totalPages =

@@ -34,7 +34,7 @@ type BookListItemProps = {
   showSelectionActions?: boolean
 }
 
-type ReadStatusValue = "want-to-read" | "reading" | "finished"
+type ReadStatusValue = "reading" | "finished"
 const SELECTED_OUTLINE_COLOR = "#3B82F6"
 const SELECTED_OVERLAY_COLOR = "rgba(59, 130, 246, 0.08)"
 
@@ -42,7 +42,6 @@ const STATUS_ICON: Record<
   ReadStatusValue,
   { name: NonNullable<MaterialCommunityIconProps["name"]>; color: string }
 > = {
-  "want-to-read": { name: "bookmark-outline", color: "#3B82F6" },
   reading: { name: "book-open-outline", color: "#F97316" },
   finished: { name: "check-circle-outline", color: "#22C55E" },
 }

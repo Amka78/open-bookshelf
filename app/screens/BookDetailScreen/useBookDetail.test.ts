@@ -88,13 +88,7 @@ describe("useBookDetail", () => {
     },
   }
 
-  const mockGetReadStatus = vi.fn().mockReturnValue(null)
-  const mockSetReadStatus = vi.fn()
-
-  const mockSettingStore = {
-    getReadStatus: mockGetReadStatus,
-    setReadStatus: mockSetReadStatus,
-  }
+  const mockGetReadingStatus = vi.fn().mockReturnValue(null)
 
   const mockFieldMetadataList = {}
   const mockBookDisplayFields = ["title", "authors"]
@@ -108,6 +102,7 @@ describe("useBookDetail", () => {
 
   const mockCalibreRootStore = {
     selectedLibrary: mockSelectedLibrary,
+    getReadingStatus: mockGetReadingStatus,
   }
 
   const mockRoute = {
@@ -127,7 +122,6 @@ describe("useBookDetail", () => {
     // Setup mocks
     ;(useStores as vi.Mock).mockReturnValue({
       calibreRootStore: mockCalibreRootStore,
-      settingStore: mockSettingStore,
     })
     ;(useNavigation as vi.Mock).mockReturnValue({
       navigate: mockNavigate,
@@ -421,8 +415,8 @@ describe("useBookDetail", () => {
             ...mockSelectedLibrary,
             selectedBook: singleFormatBook,
           },
+          getReadingStatus: mockGetReadingStatus,
         },
-        settingStore: mockSettingStore,
       })
 
       const { result } = renderHook(() => useBookDetail())
@@ -448,8 +442,8 @@ describe("useBookDetail", () => {
             ...mockSelectedLibrary,
             selectedBook: noFormatsBook,
           },
+          getReadingStatus: mockGetReadingStatus,
         },
-        settingStore: mockSettingStore,
       })
 
       const { result } = renderHook(() => useBookDetail())
@@ -475,8 +469,8 @@ describe("useBookDetail", () => {
             ...mockSelectedLibrary,
             selectedBook: noFormatsBook,
           },
+          getReadingStatus: mockGetReadingStatus,
         },
-        settingStore: mockSettingStore,
       })
 
       const { result } = renderHook(() => useBookDetail())

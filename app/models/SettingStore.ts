@@ -21,7 +21,6 @@ export const SettingStoreModel = types
       types.union(types.literal("default"), types.literal("sepia"), types.literal("dark")),
       "default",
     ),
-    readStatuses: types.optional(types.map(types.string), {}),
     libraryViewMode: types.optional(
       types.union(types.literal("grid"), types.literal("list"), types.literal("table")),
       "grid",
@@ -39,9 +38,6 @@ export const SettingStoreModel = types
     bulkEditAutoRefresh: types.optional(types.boolean, true),
   })
   .views((store) => ({
-    getReadStatus(libraryId: string, bookId: number): string | undefined {
-      return store.readStatuses.get(`${libraryId}:${bookId}`)
-    },
     getLibraryViewMode(isLargeScreen: boolean): "grid" | "list" | "table" {
       return isLargeScreen ? store.libraryViewModeDesktop : store.libraryViewModeMobile
     },
@@ -87,18 +83,6 @@ export const SettingStoreModel = types
     },
     setViewerTheme(theme: "default" | "sepia" | "dark") {
       store.viewerTheme = theme
-    },
-    setReadStatus(
-      libraryId: string,
-      bookId: number,
-      status: "want-to-read" | "reading" | "finished" | null,
-    ) {
-      const key = `${libraryId}:${bookId}`
-      if (status === null) {
-        store.readStatuses.delete(key)
-      } else {
-        store.readStatuses.set(key, status)
-      }
     },
     setLibraryViewMode(mode: "grid" | "list" | "table", isLargeScreen: boolean) {
       store.libraryViewMode = mode

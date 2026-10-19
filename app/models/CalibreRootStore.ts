@@ -51,6 +51,18 @@ export const CalibreRootStore = types
     getConversionJobsForLibrary(libraryId: string) {
       return root.conversionJobs.filter((job) => job.libraryId === libraryId)
     },
+    getReadingStatus(libraryId: string, bookId: number): "reading" | "finished" | null {
+      const histories = root.readingHistories.filter(
+        (h) => h.libraryId === libraryId && h.bookId === bookId,
+      )
+      if (histories.length === 0) return null
+
+      const allFinished = histories.every(
+        (h) => h.totalPages > 0 && h.visitedPages.length >= h.totalPages,
+      )
+
+      return allFinished ? "finished" : "reading"
+    },
   }))
   .actions(withSetPropAction)
   .actions((root) => ({

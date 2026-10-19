@@ -337,6 +337,7 @@ function renderLibraryScreen({
   useStoresMock.mockReturnValue({
     calibreRootStore: {
       getBookThumbnailRevision: () => 0,
+      getReadingStatus: () => null,
       getTagBrowser: vi.fn(),
       isFetchingMore: false,
       readingHistories: [],
@@ -348,8 +349,8 @@ function renderLibraryScreen({
       addRecentSearch: vi.fn(),
       booksPerPage: 20,
       getLibraryTableColumnWidths: () => ({}),
+      getLibraryTableColumnVisibility: () => ({}),
       getLibraryViewMode: () => viewMode,
-      getReadStatus: () => undefined,
       recentSearches: [],
       setLibraryTableColumnWidth: vi.fn(),
       setLibraryViewMode: vi.fn(),

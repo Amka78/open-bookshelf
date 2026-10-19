@@ -17,7 +17,7 @@ import { Pressable } from "@gluestack-ui/themed"
 
 type IconName = MaterialCommunityIconProps["name"]
 
-export type ReadStatusValue = "want-to-read" | "reading" | "finished"
+export type ReadStatusValue = "reading" | "finished"
 export type BookImageHoverSearchMetadata = {
   authors?: string[]
   series?: string | null
@@ -53,7 +53,6 @@ export type BookImageprops = Pick<ImageProps, "source"> & {
 }
 
 const STATUS_ICON: Record<ReadStatusValue, { name: IconName; color: string }> = {
-  "want-to-read": { name: "bookmark-outline", color: "#3B82F6" },
   reading: { name: "book-open-outline", color: "#F97316" },
   finished: { name: "check-circle-outline", color: "#22C55E" },
 }

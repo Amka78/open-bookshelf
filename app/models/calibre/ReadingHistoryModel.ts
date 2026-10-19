@@ -33,6 +33,10 @@ export const ReadingHistoryModel = types
     cacheVerified: types.maybeNull(types.boolean),
     /** Timestamp of last cache verification (Unix epoch seconds) */
     cacheVerifiedAt: types.maybeNull(types.number),
+    /** Pages that have been visited/displayed by the user */
+    visitedPages: types.optional(types.array(types.number), []),
+    /** Total number of pages in this book */
+    totalPages: types.optional(types.number, 0),
   })
   .actions((root) => ({
     setCachePath: (bookImagePathList: string[]) => {
@@ -56,6 +60,17 @@ export const ReadingHistoryModel = types
     setCacheVerified: (verified: boolean) => {
       root.cacheVerified = verified
       root.cacheVerifiedAt = Math.floor(Date.now() / 1000)
+    },
+    addVisitedPage: (page: number) => {
+      if (!root.visitedPages.includes(page)) {
+        root.visitedPages.push(page)
+      }
+    },
+    setTotalPages: (pages: number) => {
+      root.totalPages = pages
+    },
+    clearVisitedPages: () => {
+      root.visitedPages.clear()
     },
   }))
 export type ReadingHistory = Instance<typeof ReadingHistoryModel>

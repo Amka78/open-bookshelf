@@ -163,9 +163,14 @@ describe("useViewer", () => {
     currentPage: 2,
     cachedPath: ["cached1.png", "cached2.png", "cached3.png"],
     textSpinePageCounts: [],
+    visitedPages: [],
+    totalPages: 0,
     setCurrentPage: mockSetCurrentPage,
     setTextSpinePageCounts: vi.fn(),
     setServerPosition: mockSetServerPosition,
+    addVisitedPage: vi.fn(),
+    setTotalPages: vi.fn(),
+    clearVisitedPages: vi.fn(),
   }
 
   const mockSelectedLibrary = {

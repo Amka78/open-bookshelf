@@ -6,15 +6,6 @@ import { TooltipIconButton } from "../TooltipIconButton/TooltipIconButton"
 import { StyleSheet } from "react-native"
 
 type IconName = MaterialCommunityIconProps["name"]
-type ReadStatusValue = "want-to-read" | "reading" | "finished"
-
-const STATUS_CYCLE: (ReadStatusValue | null)[] = [null, "want-to-read", "reading", "finished"]
-
-const STATUS_ICON_MAP: Record<ReadStatusValue, IconName> = {
-  "want-to-read": "bookmark-outline",
-  reading: "book-open-outline",
-  finished: "check-circle-outline",
-}
 
 export type BookDetailMenuProps = {
   onOpenBook: () => Promise<void>
@@ -27,8 +18,6 @@ export type BookDetailMenuProps = {
   onOpenBookDetail?: () => void
   onShareLink?: () => void
   onSendByEmail?: () => void
-  readStatus?: ReadStatusValue | null
-  onSetStatus?: (status: ReadStatusValue | null) => void
   iconOpacity?: number
   containerProps?: HStackProps
   iconButtonProps?: Partial<IconButtonProps>
@@ -55,17 +44,6 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
     ...props.iconButtonProps,
     style: iconButtonStyle,
   }
-
-  const handleCycleStatus = () => {
-    if (!props.onSetStatus) return
-    const currentIdx = STATUS_CYCLE.indexOf(props.readStatus ?? null)
-    const nextIdx = (currentIdx + 1) % STATUS_CYCLE.length
-    props.onSetStatus(STATUS_CYCLE[nextIdx])
-  }
-
-  const statusIconName: IconName = props.readStatus
-    ? STATUS_ICON_MAP[props.readStatus]
-    : "bookmark-plus-outline"
 
   const iconSize = props.wrap ? "md" : "md-"
   const wrapMenuAction = (action: () => void | Promise<void>) => {
