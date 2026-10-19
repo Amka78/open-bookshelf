@@ -38,6 +38,7 @@ export function ViewerHeader(props: ViewerHeaderProps) {
           <Text
             testID="viewer-header-title"
             marginLeft={"$3"}
+            flex={1}
             fontSize={"$lg"}
             isTruncated={true}
             color={palette.textPrimary}
@@ -75,6 +76,7 @@ export function ViewerHeader(props: ViewerHeaderProps) {
             autoPageTurning={props.autoPageTurning}
             onToggleAutoPageTurning={props.onToggleAutoPageTurning}
             onToggleAnnotationPanel={props.onToggleAnnotationPanel}
+            supportsHighlight={props.supportsHighlight}
             onShowReadingSettings={props.onShowReadingSettings}
           />
         </HStack>
