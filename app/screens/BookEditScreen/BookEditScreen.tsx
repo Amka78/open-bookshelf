@@ -59,11 +59,6 @@ export const BookEditScreen: FC = observer(() => {
     focusScrollTimerRef.current = setTimeout(() => {
       focusScrollTimerRef.current = null
 
-      if (Platform.OS === "web") {
-        scrollViewRef.current?.scrollToEnd?.({ animated: true })
-        return
-      }
-
       // biome-ignore lint/suspicious/noExplicitAny: react-native findNodeHandle requires a component instance that ScrollView ref doesn't satisfy without this cast
       const scrollNode = findNodeHandle(scrollViewRef.current as any)
 
@@ -73,12 +68,10 @@ export const BookEditScreen: FC = observer(() => {
         UIManager.measureLayout(
           containerHandle,
           scrollNode,
-          () => {
-            scrollViewRef.current?.scrollToEnd?.({ animated: true })
-          },
+          () => {},
           (_x: number, y: number) => {
-            const scrollOffset = isKeyboardVisible ? SUGGESTION_AREA_CLEARANCE : 50
-            // 候補ポップオーバーが重ならないよう、キーボード表示中は十分な余白を確保する
+            // キーボード表示中はサジェスト領域 + キーボード高さ分の余白を確保
+            const scrollOffset = isKeyboardVisible ? SUGGESTION_AREA_CLEARANCE + keyboardHeight : 50
             const scrollY = Math.max(0, y - scrollOffset)
             scrollViewRef.current?.scrollTo?.({ y: scrollY, animated: true })
           },
@@ -101,10 +94,8 @@ export const BookEditScreen: FC = observer(() => {
             scrollViewRef.current?.scrollToEnd?.({ animated: true })
           },
         )
-      } else {
-        scrollViewRef.current?.scrollToEnd?.({ animated: true })
       }
-    }, 80)
+    }, 50)
   }
 
   useEffect(() => {
