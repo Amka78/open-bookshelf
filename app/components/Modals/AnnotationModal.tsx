@@ -1,15 +1,8 @@
-import { Button } from "@/components/Button/Button"
-import { Heading } from "@/components/Heading/Heading"
-import { Text } from "@/components/Text/Text"
+import { Body, Button, CloseButton, Footer, Header, Heading, Root, Text } from "@/components"
 import { translate } from "@/i18n"
 import { HStack, Input, InputField, ScrollView, VStack } from "@gluestack-ui/themed"
 import React, { useState } from "react"
 import type { ModalComponentProp } from "react-native-modalfy"
-import { Body } from "./Body"
-import { CloseButton } from "./CloseButton"
-import { Header } from "./Header"
-import { Footer } from "./ModalFooter"
-import { Root } from "./Root"
 import type { ModalStackParams } from "./Types"
 
 export type AnnotationModalProps = ModalComponentProp<ModalStackParams, void, "AnnotationModal">
@@ -25,14 +18,21 @@ const COLOR_MAP: Record<string, string> = {
 }
 
 export function AnnotationModal(props: AnnotationModalProps) {
-  const { selectedText, onSave } = props.modal.params!
+  const { selectedText, supportsHighlight, onSave } = props.modal.params!
   const [notes, setNotes] = useState("")
   const [styleWhich, setStyleWhich] = useState<string>("yellow")
 
   return (
     <Root>
       <Header>
-        <Heading tx="modal.annotationModal.title" isTruncated={true} />
+        <Heading
+          tx={
+            supportsHighlight === false
+              ? "modal.annotationModal.bookmarkTitle"
+              : "modal.annotationModal.title"
+          }
+          isTruncated={true}
+        />
         <CloseButton onPress={() => props.modal.closeModal()} />
       </Header>
       <Body>
@@ -41,25 +41,29 @@ export function AnnotationModal(props: AnnotationModalProps) {
             {selectedText ? (
               <Text style={{ fontStyle: "italic", marginBottom: 8 }}>"{selectedText}"</Text>
             ) : null}
-            <Text tx="modal.annotationModal.colorLabel" style={{ marginBottom: 4 }} />
-            <HStack space="sm" style={{ marginBottom: 12 }}>
-              {HIGHLIGHT_COLORS.map((c) => (
-                <Button
-                  key={c}
-                  onPress={() => setStyleWhich(c)}
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 16,
-                    backgroundColor: COLOR_MAP[c],
-                    borderWidth: styleWhich === c ? 3 : 0,
-                    borderColor: "#000",
-                    minWidth: undefined,
-                    padding: 0,
-                  }}
-                />
-              ))}
-            </HStack>
+            {supportsHighlight !== false ? (
+              <>
+                <Text tx="modal.annotationModal.colorLabel" style={{ marginBottom: 4 }} />
+                <HStack space="sm" style={{ marginBottom: 12 }}>
+                  {HIGHLIGHT_COLORS.map((c) => (
+                    <Button
+                      key={c}
+                      onPress={() => setStyleWhich(c)}
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 16,
+                        backgroundColor: COLOR_MAP[c],
+                        borderWidth: styleWhich === c ? 3 : 0,
+                        borderColor: "#000",
+                        minWidth: undefined,
+                        padding: 0,
+                      }}
+                    />
+                  ))}
+                </HStack>
+              </>
+            ) : null}
             <Text tx="modal.annotationModal.notesLabel" style={{ marginBottom: 4 }} />
             <Input>
               <InputField

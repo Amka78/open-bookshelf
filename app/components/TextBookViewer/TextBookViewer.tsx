@@ -386,6 +386,7 @@ export function TextBookViewer({
               })
             }}
             onToggleAnnotationPanel={() => setShowAnnotationPanel((prev) => !prev)}
+            supportsHighlight={true}
             onShowToc={viewerHook.toc ? handleShowToc : undefined}
             onShowReadingSettings={handleShowReadingSettings}
           />
@@ -431,6 +432,7 @@ export function TextBookViewer({
         <View style={styles.annotationPanelOverlay}>
           <AnnotationPanel
             annotations={annotations.slice()}
+            supportsHighlight={true}
             onAnnotationPress={handleAnnotationJump}
             onDeleteAnnotation={(uuid) => {
               void deleteAnnotation(uuid)

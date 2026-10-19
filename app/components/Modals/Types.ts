@@ -80,6 +80,7 @@ export type ModalStackParams = {
   }
   AnnotationModal: {
     selectedText?: string
+    supportsHighlight?: boolean
     onSave: (params: { text?: string; notes: string; styleWhich: string }) => void
   }
   ReadingStatsModal: Record<string, never>

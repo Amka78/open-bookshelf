@@ -9,6 +9,7 @@ type Props = {
   onAnnotationPress: (annotation: Annotation) => void
   onDeleteAnnotation: (uuid: string) => void
   onExport?: () => void
+  supportsHighlight?: boolean
 }
 
 const COLOR_MAP: Record<string, string> = {
@@ -24,12 +25,16 @@ export function AnnotationPanel({
   onAnnotationPress,
   onDeleteAnnotation,
   onExport,
+  supportsHighlight,
 }: Props) {
   const palette = usePalette()
 
   const header = (
     <View style={[styles.header, { borderBottomColor: palette.borderSubtle }]}>
-      <Text tx="annotationPanel.title" style={[styles.headerTitle, { color: palette.textPrimary }]} />
+      <Text
+        tx={supportsHighlight === false ? "annotationPanel.bookmarkTitle" : "annotationPanel.title"}
+        style={[styles.headerTitle, { color: palette.textPrimary }]}
+      />
       {onExport != null && (
         <Pressable onPress={onExport} style={styles.exportBtn} accessibilityRole="button">
           <Text tx="annotationPanel.export" style={[styles.exportBtnText, { color: palette.textSecondary }]} />

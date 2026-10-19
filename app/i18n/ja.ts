@@ -117,6 +117,7 @@ const ja: Translations = {
     failedToUpdateCover: "表紙の更新に失敗しました。",
     addBookmark: "ブックマークを追加",
     showAnnotations: "アノテーション",
+    showBookmarks: "ブックマーク",
   },
   bookImage: {
     loading: "書籍を開く準備中です。",
@@ -176,6 +177,7 @@ const ja: Translations = {
     },
     annotationModal: {
       title: "アノテーションを追加",
+      bookmarkTitle: "ブックマークを追加",
       colorLabel: "ハイライトカラー",
       notesLabel: "メモ（任意）",
       notesPlaceholder: "メモを入力...",
@@ -184,6 +186,7 @@ const ja: Translations = {
   annotationPanel: {
     empty: "アノテーションはまだありません。",
     title: "アノテーション",
+    bookmarkTitle: "ブックマーク",
     export: "アノテーションをエクスポート",
   },
   readStatus: {

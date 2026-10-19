@@ -114,6 +114,7 @@ const en = {
     failedToUpdateCover: "Failed to update cover.",
     addBookmark: "Add bookmark",
     showAnnotations: "Annotations",
+    showBookmarks: "Bookmarks",
   },
   bookImage: {
     loading: "Preparing to read the book.",
@@ -172,6 +173,7 @@ const en = {
     },
     annotationModal: {
       title: "Add annotation",
+      bookmarkTitle: "Add bookmark",
       colorLabel: "Highlight color",
       notesLabel: "Note (optional)",
       notesPlaceholder: "Enter a note...",
@@ -180,6 +182,7 @@ const en = {
   annotationPanel: {
     empty: "No annotations yet.",
     title: "Annotations",
+    bookmarkTitle: "Bookmarks",
     export: "Export annotations",
   },
   readStatus: {

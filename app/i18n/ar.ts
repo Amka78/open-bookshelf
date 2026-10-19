@@ -104,6 +104,7 @@ const ar: Translations = {
     failedToUpdateCover: "فشل تحديث الغلاف.",
     addBookmark: "إضافة إشارة مرجعية",
     showAnnotations: "التعليقات",
+    showBookmarks: "الإشارات المرجعية",
   },
   bookImage: {
     loading: "يتم تجهيز الكتاب للقراءة.",
@@ -162,6 +163,7 @@ const ar: Translations = {
     },
     annotationModal: {
       title: "إضافة تعليق",
+      bookmarkTitle: "إضافة إشارة مرجعية",
       colorLabel: "لون التمييز",
       notesLabel: "ملاحظة (اختياري)",
       notesPlaceholder: "أدخل ملاحظة...",
@@ -170,6 +172,7 @@ const ar: Translations = {
   annotationPanel: {
     empty: "لا توجد تعليقات بعد.",
     title: "التعليقات",
+    bookmarkTitle: "الإشارات المرجعية",
     export: "تصدير التعليقات",
   },
   readStatus: {

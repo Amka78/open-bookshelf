@@ -637,12 +637,14 @@ export function BookViewer(props: BookViewerProps) {
           }
           onAddBookmark={() => {
             modal.openModal("AnnotationModal", {
+              supportsHighlight: false,
               onSave: async ({ notes }) => {
                 await addBookmark(currentPage, notes || undefined)
               },
             })
           }}
           onToggleAnnotationPanel={() => setShowAnnotationPanel((prev) => !prev)}
+          supportsHighlight={false}
           onShowToc={viewerHook.toc ? handleShowToc : undefined}
           onShowReadingSettings={handleShowReadingSettings}
         />
@@ -798,6 +800,7 @@ export function BookViewer(props: BookViewerProps) {
         <View style={styles.annotationPanelOverlay}>
           <AnnotationPanel
             annotations={annotations.slice()}
+            supportsHighlight={false}
             onAnnotationPress={(annotation) => {
               setShowAnnotationPanel(false)
               const targetIndex = getScrollIndexForPage(annotation.spineIndex)

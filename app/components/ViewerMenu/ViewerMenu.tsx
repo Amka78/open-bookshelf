@@ -26,6 +26,7 @@ export type ViewerMenuProps = {
   onToggleAutoPageTurning?: () => void
   onAddBookmark?: () => void
   onToggleAnnotationPanel?: () => void
+  supportsHighlight?: boolean
   onShowToc?: () => void
   onShowReadingSettings?: () => void
 }
@@ -154,7 +155,13 @@ export function ViewerMenu(props: ViewerMenuProps) {
 
       {props.onToggleAnnotationPanel ? (
         <MenuItem textValue="toggleAnnotationPanel" onPress={props.onToggleAnnotationPanel}>
-          <MenuItemLabel tx="viewerMenu.showAnnotations" />
+          <MenuItemLabel
+            tx={
+              props.supportsHighlight === false
+                ? "viewerMenu.showBookmarks"
+                : "viewerMenu.showAnnotations"
+            }
+          />
         </MenuItem>
       ) : null}
 

@@ -104,6 +104,7 @@ const ko: Translations = {
     failedToUpdateCover: "표지 업데이트에 실패했습니다.",
     addBookmark: "책갈피 추가",
     showAnnotations: "주석",
+    showBookmarks: "책갈피",
   },
   bookImage: {
     loading: "책을 읽을 준비 중입니다.",
@@ -162,6 +163,7 @@ const ko: Translations = {
     },
     annotationModal: {
       title: "주석 추가",
+      bookmarkTitle: "책갈피 추가",
       colorLabel: "하이라이트 색상",
       notesLabel: "메모 (선택)",
       notesPlaceholder: "메모를 입력하세요...",
@@ -170,6 +172,7 @@ const ko: Translations = {
   annotationPanel: {
     empty: "주석이 없습니다.",
     title: "주석",
+    bookmarkTitle: "책갈피",
     export: "주석 내보내기",
   },
   readStatus: {
