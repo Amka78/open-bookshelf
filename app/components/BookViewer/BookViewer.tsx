@@ -13,6 +13,7 @@ import type { ApppNavigationProp } from "@/navigators/types"
 import { useAnnotations } from "@/screens/ViewerScreen/useAnnotations"
 import { useViewer } from "@/screens/ViewerScreen/useViewer"
 import { usePalette } from "@/theme"
+import { logger } from "@/utils/logger"
 import { goToNextPage, goToPreviousPage } from "@/utils/pageTurnning"
 import { useNavigation } from "@react-navigation/native"
 import { FlashList, type FlashListRef, type ListRenderItem } from "@shopify/flash-list"
@@ -305,8 +306,8 @@ export function BookViewer(props: BookViewerProps) {
           onLongPress={viewerHookRef.current.onManageMenu}
           disabled={props.disableNavigation}
           onPageChanging={(page) => {
-            console.tron.log(`current scroll index ${scrollIndexRef.current}`)
-            console.tron.log(`page pressed next page:${page}`)
+            logger.debug(`current scroll index ${scrollIndexRef.current}`)
+            logger.debug(`page pressed next page:${page}`)
             scrollToIndex(page, true, isHorizontalReading ? undefined : 0.5)
           }}
           totalPages={pages![viewerReadingStyle].length}

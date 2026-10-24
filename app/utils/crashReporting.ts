@@ -59,7 +59,6 @@ export const reportCrash = (error: unknown, type: ErrorType = ErrorType.FATAL) =
     const message = error instanceof Error ? error.message : "Unknown"
     logger.error(error)
     logger.debug(message, type)
-    console.tron.log(error)
   } else {
     // In production, utilize crash reporting service of choice below:
     // RN

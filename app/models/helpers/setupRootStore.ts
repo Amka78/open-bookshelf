@@ -10,6 +10,7 @@
  * @refresh reset
  */
 import { api } from "@/services/api"
+import { logger } from "@/utils/logger"
 import * as storage from "@/utils/storage"
 import { type IDisposer, applySnapshot, onSnapshot } from "mobx-state-tree"
 
@@ -53,9 +54,7 @@ export async function setupRootStore(rootStore: RootStore): Promise<{
     }
   } catch (e) {
     // if there's any problems loading, then inform the dev what happened
-    if (__DEV__) {
-      console.tron.error((e as Error).message, null)
-    }
+    logger.error((e as Error).message)
   }
 
   // stop tracking state changes if we've already setup

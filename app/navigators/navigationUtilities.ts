@@ -10,6 +10,7 @@ import { BackHandler, Platform } from "react-native"
 import Config from "../config"
 import type { PersistNavigationConfig } from "../config/config.base"
 import { useIsMounted } from "../utils/isMounted"
+import { logger } from "../utils/logger"
 import type { AppStackParamList } from "./types"
 
 type StorageLike = {
@@ -152,9 +153,7 @@ export function useNavigationPersistence(storage: StorageLike, persistenceKey: s
 
     if (previousRouteName !== currentRouteName) {
       // track screens.
-      if (__DEV__) {
-        console.tron.log(currentRouteName)
-      }
+      logger.debug(currentRouteName)
     }
 
     // Save the current route name for later comparision
