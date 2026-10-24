@@ -1,16 +1,42 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
+
 usage() {
-  echo "使い方: bun run version <patch|minor|major|x.y.z>"
-  echo ""
-  echo "  package.json と app.config.js の version を更新し、コミット + タグを作成します。"
-  echo "  タグの push は行いません（push 時に3ワークフローが同時起動します）。"
-  exit 1
+  cat <<'EOF'
+使い方: bun run version <patch|minor|major|x.y.z> [--push]
+
+  package.json と app.config.ts の version を更新し、コミット + annotated タグを作成します。
+  既定では push しません。--push 指定時のみ、確認の上でブランチとタグを push します。
+
+注意:
+  タグ v* の push で3ワークフローが同時起動します:
+    - GHCR への Docker イメージ配布（本番 Web の更新）
+    - EAS preview build + GitHub Release 作成
+    - Storybook の GitHub Pages デプロイ
+EOF
 }
 
-[ $# -lt 1 ] && usage
+PUSH="false"
+ARGS=()
+for arg in "$@"; do
+  case "$arg" in
+    --push) PUSH="true" ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    *) ARGS+=("$arg") ;;
+  esac
+done
+set -- "${ARGS[@]}"
 
+if [ $# -ne 1 ]; then
+  usage
+  exit 1
+fi
 bump=$1
 
 # --- 現在のバージョンを取得 ---
@@ -37,32 +63,109 @@ if [ "$OLD_VERSION" = "$NEW_VERSION" ]; then
   exit 1
 fi
 
+# --- 事前チェック: 作業ツリー ---
+DIRTY=$(git status --porcelain | grep -v '^??' || true)
+if [ -n "$DIRTY" ]; then
+  echo "エラー: 変更された tracked ファイルがあります。先にコミットまたはスタッシュしてください。"
+  echo "$DIRTY" | head -n 10
+  exit 1
+fi
+UNTRACKED=$(git status --porcelain | grep '^??' || true)
+if [ -n "$UNTRACKED" ]; then
+  echo "注意: untracked ファイルが存在します（コミットには含めません）。"
+  echo "$UNTRACKED" | head -n 5
+fi
+
+# --- 事前チェック: リモート同期・タグ重複 ---
+REMOTE_OK="false"
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if git fetch origin --quiet 2>/dev/null && git rev-parse --verify "origin/$BRANCH" >/dev/null 2>&1; then
+  REMOTE_OK="true"
+  AHEAD=$(git rev-list --count "origin/$BRANCH..HEAD")
+  BEHIND=$(git rev-list --count "HEAD..origin/$BRANCH")
+  if [ "$AHEAD" -ne 0 ] || [ "$BEHIND" -ne 0 ]; then
+    echo "エラー: HEAD が origin/$BRANCH と同期していません（ahead $AHEAD / behind $BEHIND）。先に push / pull してください。"
+    exit 1
+  fi
+else
+  echo "注意: origin との通信に失敗したため、同期とリモートタグの確認を省略しました。必要なら先に git fetch してください。"
+fi
+
 if git tag --list "v$NEW_VERSION" | grep -q .; then
-  echo "エラー: タグ v$NEW_VERSION は既に存在します"
+  echo "エラー: タグ v$NEW_VERSION はローカルに既に存在します"
+  exit 1
+fi
+if [ "$REMOTE_OK" = "true" ] && git ls-remote --exit-code --tags origin "refs/tags/v$NEW_VERSION" >/dev/null 2>&1; then
+  echo "エラー: タグ v$NEW_VERSION はリモートに既に存在します"
   exit 1
 fi
 
-# --- ファイル更新 ---
+# --- ファイル更新（置換を検証しながら） ---
 node -e "
   const fs = require('fs');
+  const NEW = '$NEW_VERSION';
+
   const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-  pkg.version = '$NEW_VERSION';
+  if (pkg.version === NEW) {
+    console.error('エラー: package.json の version が既に ' + NEW + ' です');
+    process.exit(1);
+  }
+  pkg.version = NEW;
   fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
 
-  let cfg = fs.readFileSync('app.config.js', 'utf8');
-  cfg = cfg.replace(/(version:\s*\")[^\"]*(\")/, '\$1$NEW_VERSION\$2');
-  fs.writeFileSync('app.config.js', cfg);
+  let cfg = fs.readFileSync('app.config.ts', 'utf8');
+  const re = /(version:\s*\")[^\"]*(\")/;
+  const m = cfg.match(re);
+  if (!m) {
+    console.error('エラー: app.config.ts に version が見つかりません');
+    process.exit(1);
+  }
+  if (m[2] === NEW) {
+    console.error('エラー: app.config.ts の version が既に ' + NEW + ' です');
+    process.exit(1);
+  }
+  fs.writeFileSync('app.config.ts', cfg.replace(re, '\$1' + NEW + '\$2'));
 "
 
-echo "  package.json:    $OLD_VERSION → $NEW_VERSION"
-echo "  app.config.js:   $OLD_VERSION → $NEW_VERSION"
+# --- 更新の検証（両ファイルの version が一致しているか） ---
+VERIFY_PKG=$(node -e "console.log(require('./package.json').version)")
+VERIFY_CFG=$(node -e "
+  const m = require('fs').readFileSync('app.config.ts', 'utf8').match(/version:\s*\"([^\"]*)\"/);
+  process.stdout.write(m ? m[1] : '');
+")
+if [ "$VERIFY_PKG" != "$NEW_VERSION" ] || [ "$VERIFY_CFG" != "$NEW_VERSION" ]; then
+  echo "エラー: バージョン更新の検証に失敗しました（pkg=$VERIFY_PKG / cfg=$VERIFY_CFG）。変更を元に戻します。"
+  git checkout -- package.json app.config.ts
+  exit 1
+fi
 
-# --- コミット + タグ ---
-git add package.json app.config.js
+echo "  package.json:    $OLD_VERSION → $NEW_VERSION"
+echo "  app.config.ts:   $OLD_VERSION → $NEW_VERSION"
+
+# --- コミット + annotated タグ ---
+git add package.json app.config.ts
 git commit -m "v$NEW_VERSION にバージョンアップ"
-git tag "v$NEW_VERSION"
+git tag -a "v$NEW_VERSION" -m "v$NEW_VERSION をリリース"
 
 echo ""
 echo "✓ v$NEW_VERSION を作成しました。"
-echo "  push する場合は: git push && git push origin v$NEW_VERSION"
-echo "  ⚠ v* タグ push で3ワークフローが同時起動します（Docker / EAS preview / Storybook Pages）"
+
+if [ "$PUSH" = "true" ]; then
+  echo ""
+  echo "⚠ タグ push で3ワークフローが同時起動します:"
+  echo "  - GHCR への Docker イメージ配布（本番 Web の更新）"
+  echo "  - EAS preview build + GitHub Release 作成"
+  echo "  - Storybook の GitHub Pages デプロイ"
+  read -r -p "ブランチとタグを origin に push しますか? [y/N]: " confirmed
+  if [[ "$confirmed" =~ ^[Yy]$ ]]; then
+    git push origin HEAD
+    git push origin "v$NEW_VERSION"
+    echo "✓ push 完了: origin/$BRANCH と v$NEW_VERSION"
+  else
+    echo "push をスキップしました。手動で実行:"
+    echo "  git push origin HEAD && git push origin v$NEW_VERSION"
+  fi
+else
+  echo "  push する場合は: git push origin HEAD && git push origin v$NEW_VERSION"
+  echo "  → push すると3ワークフロー（Docker 配布 / EAS preview / Storybook Pages）が同時起動します"
+fi
