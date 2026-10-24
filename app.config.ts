@@ -103,7 +103,9 @@ module.exports = {
             enableBundleCompression: true,
             ...(isPreviewVariant
               ? {
-                  buildArchs: ["arm64-v8a"],
+                  // x86/x86_64 はエミュレータ（x86）で Preview を確認するために含める。
+                  // 実機配布のみなら arm64-v8a に絞ると APK が小さくなる（軽量化 63ddff2 の意図）。
+                  buildArchs: ["arm64-v8a", "x86_64", "x86"],
                 }
               : {}),
           },
