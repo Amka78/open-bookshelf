@@ -2,6 +2,15 @@
 
 Android/iOS のビルドは EAS Build が主力（ビルド方針・リリース手順は [RELEASE.md](./RELEASE.md) 参照）。
 
+## ビルド後の wsl-avd インストール
+
+`bun run eas:android:<profile>` はビルド成功後に、生成された APK を wsl-avd でエミュレータにインストールするかを確認する（`scripts/eas-build.sh`）。iOS は .ipa のためプロンプトなし。
+
+```sh
+bun run eas:android:preview
+# → ビルド成功後「wsl-avd でエミュレータにインストールしますか? [y/N]」→ y で wsl-avd --install <apk>
+```
+
 ## Gradle キャッシュ破損（metadata.bin 読み込みエラー）
 
 **症状:** Gradle フェーズが `Could not read workspace metadata from .../transforms/<hash>/metadata.bin` で失敗する（実測例: `:react-native-webview:generateReleaseLintModel`、2026-10-23）。
