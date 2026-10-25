@@ -11,7 +11,7 @@ import {
   VStack,
 } from "@/components"
 import { FormIdentifierField } from "@/components/Forms/FormIdentifierField"
-import { useRomajiText } from "@/hooks/useRomajiText"
+import { useBookEditAutoActions } from "@/hooks"
 import type { Book, FieldMetadata, MetadataSnapshotIn } from "@/models/calibre"
 import { Switch, Textarea, TextareaInput } from "@gluestack-ui/themed"
 import type { ComponentProps } from "react"
@@ -80,7 +80,9 @@ function BookEditCommentsField({
 export function BookEditField(props: BookEditFieldProps) {
   let field: React.ReactNode
   const containerRef = useRef<View | null>(null)
-  const { toAuthorSortValue, toSortValue } = useRomajiText()
+  const { onAuthorSortAuto, onTitleSortAuto, onTitleSeriesAuto } = useBookEditAutoActions(
+    props.control,
+  )
 
   const getContainerHandle = () => findNodeHandle(containerRef.current)
 
@@ -88,52 +90,7 @@ export function BookEditField(props: BookEditFieldProps) {
     props.onTextInputFocus?.(getContainerHandle)
   }
 
-  const toSeriesValues = (value: unknown) => {
-    const title = String(value ?? "")
-      .replace(/\s+/g, " ")
-      .trim()
-    const match = title.match(/^(.*)\s(\d+(?:\.\d+)?)$/)
-
-    if (match) {
-      const seriesName = match[1].trim()
-      const seriesIndex = Number(match[2])
-      return {
-        series: seriesName.length > 0 ? seriesName : "",
-        seriesIndex,
-      }
-    }
-
-    return {
-      series: title.length > 0 ? title : "",
-      seriesIndex: null,
-    }
-  }
-
   const label = (props.formPath ?? props.fieldMetadata.label) as Path<MetadataSnapshotIn>
-  const authorsController = useController({
-    control: props.control,
-    name: "authors" as Path<MetadataSnapshotIn>,
-  })
-  const authorSortController = useController({
-    control: props.control,
-    name: "authorSort" as Path<MetadataSnapshotIn>,
-  })
-  const titleController = useController({
-    control: props.control,
-    name: "title" as Path<MetadataSnapshotIn>,
-  })
-  const sortController = useController({
-    control: props.control,
-    name: "sort" as Path<MetadataSnapshotIn>,
-  })
-  const seriesController = useController({
-    control: props.control,
-    name: "series" as Path<MetadataSnapshotIn>,
-  })
-  const seriesIndexController = useController({
-    control: props.control,
-    name: "seriesIndex" as Path<MetadataSnapshotIn>,
-  })
 
   // Special label-based cases that don't follow standard datatype routing
   if (props.fieldMetadata.label === "identifiers") {
@@ -240,10 +197,7 @@ export function BookEditField(props: BookEditFieldProps) {
               name="sort-alphabetical-ascending"
               iconSize="sm"
               tooltipTx="bookEditScreen.authorSortAutoTooltip"
-              onPress={() => {
-                const converted = toAuthorSortValue(authorsController.field.value)
-                authorSortController.field.onChange(converted)
-              }}
+              onPress={onAuthorSortAuto}
             />
           </HStack>
         ) : props.fieldMetadata.label === "title" ? (
@@ -255,20 +209,13 @@ export function BookEditField(props: BookEditFieldProps) {
               name="sort-alphabetical-ascending"
               iconSize="sm"
               tooltipTx="bookEditScreen.titleSortAutoTooltip"
-              onPress={() => {
-                const converted = toSortValue(titleController.field.value)
-                sortController.field.onChange(converted)
-              }}
+              onPress={onTitleSortAuto}
             />
             <TooltipIconButton
               name="format-list-numbered"
               iconSize="sm"
               tooltipTx="bookEditScreen.titleSeriesAutoTooltip"
-              onPress={() => {
-                const converted = toSeriesValues(titleController.field.value)
-                seriesController.field.onChange(converted.series)
-                seriesIndexController.field.onChange(converted.seriesIndex)
-              }}
+              onPress={onTitleSeriesAuto}
             />
           </HStack>
         ) : (

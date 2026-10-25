@@ -1,4 +1,4 @@
-import { BookEditFieldList } from "@/components/BookEditFieldList/BookEditFieldList"
+import { BookEditFieldNavList } from "@/components/BookEditFieldNavList/BookEditFieldNavList"
 import { Button } from "@/components/Button/Button"
 import { FormImageUploader } from "@/components/Forms/FormImageUploader"
 import { HStack } from "@/components/HStack/HStack"
@@ -7,28 +7,23 @@ import { ScrollView } from "@/components/ScrollView/ScrollView"
 import { Text } from "@/components/Text/Text"
 import { VStack } from "@/components/VStack/VStack"
 import { useConvergence } from "@/hooks/useConvergence"
-import { useKeyboardVisibility } from "@/hooks/useKeyboardVisibility"
 import { translate } from "@/i18n"
-import type { AppStackParamList, ApppNavigationProp } from "@/navigators/types"
+import type { MetadataSnapshotIn } from "@/models/calibre"
+import type { AppStackParamList, ApppNavigationProp, BookFieldEditNavRequest } from "@/navigators/types"
 import { Input, InputField } from "@gluestack-ui/themed"
 import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import type { FC } from "react"
-import { useEffect, useLayoutEffect, useRef } from "react"
-import { KeyboardAvoidingView, Platform, TextInput, UIManager, findNodeHandle } from "react-native"
+import { useLayoutEffect } from "react"
+import type { Path } from "react-hook-form"
 import { useBookEdit } from "./useBookEdit"
 
 type BookEditScreenRouteProp = RouteProp<AppStackParamList, "BookEdit">
-
-// Height clearance above the focused field for the suggestion dropdown.
-// MAX_SUGGESTIONS=5 items (~32px each) + container padding → ~220px
-const SUGGESTION_AREA_CLEARANCE = 220
 
 export const BookEditScreen: FC = observer(() => {
   const route = useRoute<BookEditScreenRouteProp>()
   const navigation = useNavigation<ApppNavigationProp>()
   const convergenceHook = useConvergence()
-  const { isKeyboardVisible, keyboardHeight } = useKeyboardVisibility()
   const {
     form,
     selectedBook,
@@ -41,71 +36,23 @@ export const BookEditScreen: FC = observer(() => {
     fetchCoverError,
     fetchCoverFromUrl,
   } = useBookEdit()
-  const scrollViewRef = useRef<{
-    scrollTo?: (options: { x?: number; y?: number; animated?: boolean }) => void
-    scrollToEnd?: (options?: { animated?: boolean }) => void
-  } | null>(null)
-  const focusScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const clearFocusScrollTimer = () => {
-    if (focusScrollTimerRef.current != null) {
-      clearTimeout(focusScrollTimerRef.current)
-      focusScrollTimerRef.current = null
-    }
+  const handleOpenField = (request: BookFieldEditNavRequest) => {
+    const formPath = request.formPath as Path<MetadataSnapshotIn>
+    navigation.navigate("BookFieldEdit", {
+      title: request.title,
+      formPath: request.formPath,
+      datatype: request.datatype,
+      initialValue: form.getValues(formPath),
+      suggestions: request.suggestions,
+      textToValue: request.textToValue,
+      valueToText: request.valueToText,
+      onSave: (value) => {
+        // biome-ignore lint/suspicious/noExplicitAny: react-hook-form setValue accepts the resolved field value type
+        form.setValue(formPath as Path<MetadataSnapshotIn>, value as any, { shouldDirty: true })
+      },
+    })
   }
-
-  const handleTextInputFocus = (getContainerHandle?: () => number | null) => {
-    clearFocusScrollTimer()
-    focusScrollTimerRef.current = setTimeout(() => {
-      focusScrollTimerRef.current = null
-
-      // biome-ignore lint/suspicious/noExplicitAny: react-native findNodeHandle requires a component instance that ScrollView ref doesn't satisfy without this cast
-      const scrollNode = findNodeHandle(scrollViewRef.current as any)
-
-      // コンテナハンドルがある場合はラベルの先頭（container top）を基準にスクロール
-      const containerHandle = getContainerHandle?.() ?? null
-      if (containerHandle != null && scrollNode != null) {
-        UIManager.measureLayout(
-          containerHandle,
-          scrollNode,
-          () => {},
-          (_x: number, y: number) => {
-            // キーボード表示中はサジェスト領域 + キーボード高さ分の余白を確保
-            const scrollOffset = isKeyboardVisible ? SUGGESTION_AREA_CLEARANCE + keyboardHeight : 50
-            const scrollY = Math.max(0, y - scrollOffset)
-            scrollViewRef.current?.scrollTo?.({ y: scrollY, animated: true })
-          },
-        )
-        return
-      }
-
-      // コンテナなし: フォーカス中の TextInput から位置を測定
-      const focusedInput = TextInput.State.currentlyFocusedInput?.()
-      if (focusedInput != null && scrollNode != null) {
-        focusedInput.measureLayout(
-          // biome-ignore lint/suspicious/noExplicitAny: measureLayout NodeHandle type requires cast for the scroll node returned by findNodeHandle
-          scrollNode as any,
-          (_x: number, y: number) => {
-            // ドロップダウンがある場合は上に SUGGESTION_AREA_CLEARANCE 分スペースを確保
-            const scrollY = Math.max(0, y - SUGGESTION_AREA_CLEARANCE)
-            scrollViewRef.current?.scrollTo?.({ y: scrollY, animated: true })
-          },
-          () => {
-            scrollViewRef.current?.scrollToEnd?.({ animated: true })
-          },
-        )
-      }
-    }, 50)
-  }
-
-  useEffect(() => {
-    return () => {
-      if (focusScrollTimerRef.current != null) {
-        clearTimeout(focusScrollTimerRef.current)
-        focusScrollTimerRef.current = null
-      }
-    }
-  }, [])
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -117,78 +64,62 @@ export const BookEditScreen: FC = observer(() => {
 
   return (
     <RootContainer alignItems="center">
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1, width: "100%" }}
-        testID="book-edit-screen-keyboard-avoiding"
-      >
-        <ScrollView
-          // biome-ignore lint/suspicious/noExplicitAny: react-native ScrollView ref type doesn't satisfy the expected ref type for this component wrapper
-          ref={scrollViewRef as any}
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{
-            paddingBottom: isKeyboardVisible ? keyboardHeight + 24 : 24,
-          }}
-          testID="book-edit-screen-scroll"
-        >
-          <VStack justifyContent="flex-start" flex={1}>
-            {!isKeyboardVisible ? (
-              <VStack testID="book-edit-screen-cover-container">
-                <FormImageUploader
-                  // biome-ignore lint/suspicious/noExplicitAny: react-hook-form Control generic parameter mismatch between form and component expectations
-                  control={form.control as any}
-                  name={"cover"}
-                  defaultValue={route.params.imageUrl}
+      <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
+        <VStack justifyContent="flex-start" flex={1}>
+          <VStack testID="book-edit-screen-cover-container">
+            <FormImageUploader
+              // biome-ignore lint/suspicious/noExplicitAny: react-hook-form Control generic parameter mismatch between form and component expectations
+              control={form.control as any}
+              name={"cover"}
+              defaultValue={route.params.imageUrl}
+            />
+            <VStack paddingHorizontal="$3" paddingTop="$2" space="xs">
+              <Text tx="bookEditScreen.fetchCoverFromUrl" fontSize="$sm" fontWeight="$medium" />
+              <HStack space="sm" alignItems="center">
+                <Input flex={1} size="sm">
+                  <InputField
+                    value={coverUrlInput}
+                    onChangeText={setCoverUrlInput}
+                    placeholder={translate("bookEditScreen.fetchCoverUrlPlaceholder") ?? undefined}
+                    autoCapitalize="none"
+                    keyboardType="url"
+                  />
+                </Input>
+                <Button
+                  tx={
+                    isFetchingCover
+                      ? "bookEditScreen.fetchingCover"
+                      : "bookEditScreen.fetchCoverFromUrl"
+                  }
+                  onPress={fetchCoverFromUrl}
+                  isDisabled={isFetchingCover || !coverUrlInput.trim()}
+                  size="sm"
                 />
-                <VStack paddingHorizontal="$3" paddingTop="$2" space="xs">
-                  <Text tx="bookEditScreen.fetchCoverFromUrl" fontSize="$sm" fontWeight="$medium" />
-                  <HStack space="sm" alignItems="center">
-                    <Input flex={1} size="sm">
-                      <InputField
-                        value={coverUrlInput}
-                        onChangeText={setCoverUrlInput}
-                        placeholder={translate("bookEditScreen.fetchCoverUrlPlaceholder") ?? undefined}
-                        autoCapitalize="none"
-                        keyboardType="url"
-                      />
-                    </Input>
-                    <Button
-                      tx={
-                        isFetchingCover
-                          ? "bookEditScreen.fetchingCover"
-                          : "bookEditScreen.fetchCoverFromUrl"
-                      }
-                      onPress={fetchCoverFromUrl}
-                      isDisabled={isFetchingCover || !coverUrlInput.trim()}
-                      size="sm"
-                    />
-                  </HStack>
-                  {fetchCoverError ? (
-                    <Text tx="bookEditScreen.fetchCoverError" color="$red500" fontSize="$xs" />
-                  ) : null}
-                </VStack>
-              </VStack>
-            ) : null}
-            <VStack testID="book-edit-screen-fields-container">
-              <BookEditFieldList
-                book={selectedBook}
-                // biome-ignore lint/suspicious/noExplicitAny: react-hook-form Control generic parameter mismatch between form and component expectations
-                control={form.control as any}
-                fieldMetadataList={selectedLibrary!.fieldMetadataList}
-                tagBrowser={selectedLibrary!.tagBrowser}
-                onUploadFormat={onUploadFormat}
-                onTextInputFocus={handleTextInputFocus}
-                marginTop={"$3"}
-              />
+              </HStack>
+              {fetchCoverError ? (
+                <Text tx="bookEditScreen.fetchCoverError" color="$red500" fontSize="$xs" />
+              ) : null}
             </VStack>
           </VStack>
-        </ScrollView>
-        {convergenceHook.isLarge ? (
-          <VStack justifyContent={"flex-end"} flex={1}>
-            <Button tx={"bookEditScreen.save"} onPress={onSubmit} />
+          <VStack testID="book-edit-screen-fields-container">
+            <BookEditFieldNavList
+              book={selectedBook}
+              // biome-ignore lint/suspicious/noExplicitAny: react-hook-form Control generic parameter mismatch between form and component expectations
+              control={form.control as any}
+              fieldMetadataList={selectedLibrary.fieldMetadataList}
+              tagBrowser={selectedLibrary.tagBrowser}
+              onUploadFormat={onUploadFormat}
+              onOpenField={handleOpenField}
+              marginTop={"$3"}
+            />
           </VStack>
-        ) : null}
-      </KeyboardAvoidingView>
+        </VStack>
+      </ScrollView>
+      {convergenceHook.isLarge ? (
+        <VStack justifyContent={"flex-end"} flex={1}>
+          <Button tx={"bookEditScreen.save"} onPress={onSubmit} />
+        </VStack>
+      ) : null}
     </RootContainer>
   )
 })

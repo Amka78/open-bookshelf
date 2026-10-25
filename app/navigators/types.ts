@@ -11,6 +11,24 @@ export type ViewerOpenRequest = {
   format: string
 }
 
+export type BookFieldEditDatatype =
+  | "text"
+  | "int"
+  | "float"
+  | "comments"
+  | "identifiers"
+  | "multiple"
+
+/** フィールド行タップで BookFieldEdit に渡す情報（onSave/initialValue は EditScreen 側で付与） */
+export type BookFieldEditNavRequest = {
+  title: string
+  formPath: string
+  datatype: BookFieldEditDatatype
+  suggestions?: string[]
+  textToValue?: string
+  valueToText?: string
+}
+
 export type AppStackParamList = {
   Welcome: undefined
   Connect: undefined
@@ -34,6 +52,16 @@ export type AppStackParamList = {
   }
   BookEdit: {
     imageUrl: string
+  }
+  BookFieldEdit: {
+    title: string
+    formPath: string
+    datatype: BookFieldEditDatatype
+    initialValue: unknown
+    suggestions?: string[]
+    textToValue?: string
+    valueToText?: string
+    onSave: (value: unknown) => void
   }
   BookOcrReview: {
     imageUrl: string

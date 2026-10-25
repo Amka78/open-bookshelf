@@ -30,6 +30,7 @@ const ko: Translations = {
     standardFieldsTab: "기본",
     customFieldsTab: "커스텀",
     noCustomFields: "이 라이브러리에 커스텀 필드가 없습니다.",
+    seriesIndex: "시리즈 번호",
   },
   identifierField: {
     typeLabel: "유형",

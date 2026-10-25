@@ -30,6 +30,7 @@ const ja: Translations = {
     standardFieldsTab: "標準",
     customFieldsTab: "カスタム",
     noCustomFields: "このライブラリにはカスタムフィールドが定義されていません。",
+    seriesIndex: "シリーズ番号",
   },
   bookOcrReviewScreen: {
     title: "表紙OCR",

@@ -30,6 +30,7 @@ const ar: Translations = {
     standardFieldsTab: "قياسي",
     customFieldsTab: "مخصص",
     noCustomFields: "لا توجد حقول مخصصة في هذه المكتبة.",
+    seriesIndex: "رقم السلسلة",
   },
   identifierField: {
     typeLabel: "النوع",

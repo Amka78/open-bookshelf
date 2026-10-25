@@ -28,6 +28,7 @@ const en = {
     standardFieldsTab: "Standard",
     customFieldsTab: "Custom",
     noCustomFields: "No custom fields defined in this library.",
+    seriesIndex: "Series Number",
   },
   bookOcrReviewScreen: {
     title: "Cover OCR",

@@ -1,6 +1,7 @@
 import { Box, FormInputField, HStack, Input, ScrollView, Text, VStack } from "@/components"
-import type { Book, Category, FieldMetadataMap, MetadataSnapshotIn } from "@/models/calibre"
+import { useBookEditFields } from "@/hooks"
 import { translate } from "@/i18n"
+import type { Book, Category, FieldMetadataMap, MetadataSnapshotIn } from "@/models/calibre"
 import {
   Tabs,
   TabsTab,
@@ -14,9 +15,6 @@ import { useRef } from "react"
 import type { Control, Path } from "react-hook-form"
 import { Keyboard, View, findNodeHandle } from "react-native"
 import { BookEditField } from "./BookEditField"
-import { useEditFieldSuggestions } from "./useEditFieldSuggestions"
-
-/** Standard field labels shown in the fixed sorted order */
 
 export type BookEditFieldListProps = {
   fieldMetadataList: FieldMetadataMap
@@ -32,24 +30,10 @@ export type BookEditFieldListProps = {
   scrollViewProps?: ComponentProps<typeof ScrollView>
 } & ComponentProps<typeof Box>
 
-const EditFieldSort = [
-  "authors",
-  "authorSort",
-  "title",
-  "sort",
-  "series",
-  "tags",
-  "languages",
-  "publisher",
-  "pubdate",
-  "formats",
-  "identifiers",
-  "rating",
-  "comments",
-]
 export function BookEditFieldList(props: BookEditFieldListProps) {
   const { scrollViewProps, ...boxProps } = props
-  const { suggestionMap, languageCodeSuggestions } = useEditFieldSuggestions({
+  const { standardFields, customFields } = useBookEditFields({
+    fieldMetadataList: props.fieldMetadataList,
     tagBrowser: props.tagBrowser,
     metaData: props.book.metaData ?? undefined,
   })
@@ -78,23 +62,13 @@ export function BookEditFieldList(props: BookEditFieldListProps) {
   const seriesContainerRef = useRef<View | null>(null)
   const getSeriesContainerHandle = () => findNodeHandle(seriesContainerRef.current)
 
-  const fields = EditFieldSort.map((label) => {
-    const value = props.fieldMetadataList.get(label)
-    if (!value || !value.isEditable || !value.name) {
-      return null
-    }
-
-    const suggestions =
-      label === "languages" &&
-      (value.linkColumn === "lamg_code" || value.linkColumn === "lang_code")
-        ? languageCodeSuggestions ?? undefined
-        : suggestionMap.get(value.label)
-    if (label === "series") {
+  const fields = standardFields.map((entry) => {
+    if (entry.label === "series") {
       const seriesIndexName = "seriesIndex" as Path<MetadataSnapshotIn>
-      const seriesName = value.label as Path<MetadataSnapshotIn>
+      const seriesName = entry.formPath
 
       return (
-        <View key={`${value.label}-seriesIndex`} ref={seriesContainerRef}>
+        <View key={`${entry.label}-seriesIndex`} ref={seriesContainerRef}>
           <HStack space="sm" alignItems="flex-start" width="$full">
             <VStack
               alignItems="flex-start"
@@ -104,13 +78,13 @@ export function BookEditFieldList(props: BookEditFieldListProps) {
               width="$full"
             >
               <Text isTruncated={true} fontWeight="$bold">
-                {value.name}
+                {entry.metadata.name}
               </Text>
               <Input>
                 <FormInputField
                   control={props.control}
                   name={seriesName}
-                  suggestions={suggestions}
+                  suggestions={entry.suggestions}
                   onInputFocus={() => props.onTextInputFocus?.(getSeriesContainerHandle)}
                   onRegisterFocusChain={registerFocusChain}
                   onSubmitEditing={() => focusNext(String(seriesName))}
@@ -140,34 +114,33 @@ export function BookEditFieldList(props: BookEditFieldListProps) {
 
     return (
       <BookEditField
-        key={value.label}
+        key={entry.label}
         book={props.book}
         control={props.control}
-        fieldMetadata={value}
-        suggestions={suggestions}
+        fieldMetadata={entry.metadata}
+        suggestions={entry.suggestions}
         onUploadFormat={props.onUploadFormat}
         onTextInputFocus={props.onTextInputFocus}
         onRegisterFocusChain={registerFocusChain}
-        onSubmitEditing={() => focusNext(value.label)}
+        onSubmitEditing={() => focusNext(entry.label)}
       />
     )
   })
 
-  const customFields = Array.from(props.fieldMetadataList.values())
-    .filter((f) => f.isCustom && f.isEditable && f.name)
-    .map((f) => (
-      <BookEditField
-        key={f.label}
-        book={props.book}
-        control={props.control}
-        fieldMetadata={f}
-        formPath={`customColumns.${f.label}` as Path<MetadataSnapshotIn>}
-        suggestions={suggestionMap.get(f.label)}
-        onTextInputFocus={props.onTextInputFocus}
-        onRegisterFocusChain={registerFocusChain}
-        onSubmitEditing={() => focusNext(f.label)}
-      />
-    ))
+  const customFieldElements = customFields.map((entry) => (
+    <BookEditField
+      key={entry.label}
+      book={props.book}
+      control={props.control}
+      fieldMetadata={entry.metadata}
+      formPath={entry.formPath}
+      suggestions={entry.suggestions}
+      onUploadFormat={props.onUploadFormat}
+      onTextInputFocus={props.onTextInputFocus}
+      onRegisterFocusChain={registerFocusChain}
+      onSubmitEditing={() => focusNext(String(entry.formPath))}
+    />
+  ))
 
   return (
     <Box {...boxProps}>
@@ -188,8 +161,8 @@ export function BookEditFieldList(props: BookEditFieldListProps) {
           </TabsTabPanel>
           <TabsTabPanel value="custom">
             <ScrollView {...scrollViewProps}>
-              {customFields.length > 0 ? (
-                customFields
+              {customFieldElements.length > 0 ? (
+                customFieldElements
               ) : (
                 <Text color="$textLight500" fontSize="$sm">
                   {translate("bookEditScreen.noCustomFields")}
