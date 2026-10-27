@@ -1,9 +1,8 @@
-import { Button } from "@/components/Button/Button"
-import { Heading } from "@/components/Heading/Heading"
-import { Text } from "@/components/Text/Text"
+import { Button, Heading, Text } from "@/components"
 import { usePalette } from "@/theme"
-import { Pressable, ScrollView, VStack } from "@gluestack-ui/themed"
+import { ScrollView, VStack } from "@gluestack-ui/themed"
 import type { ModalComponentProp } from "react-native-modalfy"
+import { Pressable } from "react-native"
 import { Body } from "./Body"
 import { CloseButton } from "./CloseButton"
 import { Header } from "./Header"
@@ -36,10 +35,9 @@ function TocEntry({ item, depth, onSelect }: TocEntryProps) {
             borderBottomColor: palette.borderSubtle,
           }}
         >
-          <Text
-            numberOfLines={1}
-            color={palette.textPrimary}
-          >{item.title ?? item.dest ?? ""}</Text>
+          <Text numberOfLines={1} color={palette.textPrimary}>
+            {item.title ?? item.dest ?? ""}
+          </Text>
         </Pressable>
       ) : null}
       {item.children.map((child, idx) => (

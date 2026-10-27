@@ -1,12 +1,23 @@
-import { detach, type Instance, type SnapshotIn, type SnapshotOut, flow, types } from "mobx-state-tree"
+import {
+  detach,
+  getSnapshot,
+  type Instance,
+  type SnapshotIn,
+  type SnapshotOut,
+  flow,
+  types,
+} from "mobx-state-tree"
 
 import { lowerCaseToCamelCase } from "@/utils/convert"
 import {
   type ApiBookInfo,
   type ApiBookInfoCore,
   type ApiCalibreInterfaceType,
+  type CategoryItemMap,
+  type Children,
   type FieldMetadata,
   type MetadataType,
+  type NodeItemMap,
   api,
 } from "../services/api"
 import {
@@ -130,53 +141,51 @@ export const CalibreRootStore = types
         }
         root.selectedLibrary!.tagBrowser.clear()
 
-        const rootChildren = Object.values((response.data as any).root.children) as any[]
-        rootChildren.forEach(
-          (value: any) => {
-            const category = response.data.item_map[value.id]
+        const rootChildren = response.data.root.children
+        rootChildren.forEach((value: Children) => {
+          const category = response.data.item_map[value.id] as CategoryItemMap
 
-            const categoryModel = CategoryModel.create({
-              category: category.category,
-              count: category.count,
-              isCategory: category.is_category,
-              isEditable: category.is_editable,
-              isSearchable: category.is_searchable,
-              name: category.name,
-              tooltip: category.tooltip,
+          const categoryModel = CategoryModel.create({
+            category: category.category as string,
+            count: category.count,
+            isCategory: category.is_category,
+            isEditable: category.is_editable,
+            isSearchable: category.is_searchable,
+            name: category.name,
+            tooltip: category.tooltip,
+          })
+
+          const subCategoryArray: Instance<typeof SubCategoryModel>[] = []
+          value.children.forEach((subValue: Children) => {
+            const subCateogy = response.data.item_map[subValue.id] as CategoryItemMap
+            const subCategoryModel = SubCategoryModel.create({
+              category: subCateogy.category as string,
+              count: subCateogy.count,
+              isCategory: subCateogy.is_category,
+              isSearchable: subCateogy.is_searchable,
+              name: subCateogy.name,
             })
 
-            const subCategoryArray: Instance<typeof SubCategoryModel>[] = []
-            Object.values(value.children).forEach((subValue: any) => {
-              const subCateogy = response.data.item_map[subValue.id]
-              const subCategoryModel = SubCategoryModel.create({
-                category: subCateogy.category,
-                count: subCateogy.count,
-                isCategory: subCateogy.is_category,
-                isSearchable: subCateogy.is_searchable,
-                name: subCateogy.name,
+            const nodeArray: Instance<typeof NodeModel>[] = []
+            subValue.children.forEach((nodeValue: Children) => {
+              const node = response.data.item_map[nodeValue.id] as NodeItemMap
+
+              const nodeModel = NodeModel.create({
+                avgRating: node.avg_rating,
+                count: node.count,
+                id: node.id,
+                name: node.name,
               })
 
-              const nodeArray: Instance<typeof NodeModel>[] = []
-              Object.values(subValue.children).forEach((nodeValue: any) => {
-                const node = response.data.item_map[nodeValue.id]
-
-                const nodeModel = NodeModel.create({
-                  avgRating: node.avg_rating,
-                  count: node.count,
-                  id: node.id,
-                  name: node.name,
-                })
-
-                nodeArray.push(nodeModel)
-              })
-              subCategoryModel.setProp("children", nodeArray)
-              subCategoryArray.push(subCategoryModel)
+              nodeArray.push(nodeModel)
             })
+            subCategoryModel.setProp("children", nodeArray)
+            subCategoryArray.push(subCategoryModel)
+          })
 
-            categoryModel.setProp("subCategory", subCategoryArray)
-            root.selectedLibrary!.tagBrowser.push(categoryModel)
-          },
-        )
+          categoryModel.setProp("subCategory", subCategoryArray)
+          root.selectedLibrary!.tagBrowser.push(categoryModel)
+        })
         return true
       }
       handleCommonApiError(response)
@@ -187,8 +196,12 @@ export const CalibreRootStore = types
       const response = yield api.getLibrary(
         root.selectedLibrary!.id,
         root.selectedLibrary!.searchSetting ? root.selectedLibrary!.searchSetting.query ?? "" : "",
-        root.selectedLibrary!.searchSetting ? (root.selectedLibrary!.searchSetting.sort ?? "timestamp") : "timestamp",
-        root.selectedLibrary!.searchSetting ? (root.selectedLibrary!.searchSetting.sortOrder ?? "desc") : "desc",
+        root.selectedLibrary!.searchSetting
+          ? root.selectedLibrary!.searchSetting.sort ?? "timestamp"
+          : "timestamp",
+        root.selectedLibrary!.searchSetting
+          ? root.selectedLibrary!.searchSetting.sortOrder ?? "desc"
+          : "desc",
         root.selectedLibrary!.searchSetting?.vl,
         num,
       )
@@ -309,7 +322,9 @@ export const CalibreRootStore = types
       size?: number | null
       format?: string | null
     }) => {
-      const job = root.conversionJobs.find((item) => item.id === `${params.libraryId}:${params.jobId}`)
+      const job = root.conversionJobs.find(
+        (item) => item.id === `${params.libraryId}:${params.jobId}`,
+      )
       if (!job) return
 
       if (params.ok) {
@@ -347,7 +362,7 @@ export type CalibreRoot = Instance<typeof CalibreRootStore>
 export type CalibreRootSnapshotOut = SnapshotOut<typeof CalibreRootStore>
 export type CalibreRootSnapshotIn = SnapshotIn<typeof CalibreRootStore>
 
-function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap, isAppend: boolean = false) {
+function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap, isAppend = false) {
   const previousQuery = selectedLibrary.searchSetting?.query ?? ""
 
   // searchSetting: detach してから置換（HMR reaction が古いノードを参照するのを防ぐ）
@@ -424,7 +439,7 @@ function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap,
     }
     selectedLibrary.books.set(bookKey, {
       id: bookId,
-      metaData: metaDataModel as any,
+      metaData: getSnapshot(metaDataModel),
     })
   })
 
@@ -455,7 +470,9 @@ function convertLibraryInformation(bookInfo: ApiBookInfo, libraryInfo: LibraryMa
   const oldVl = libraryInfo.virtualLibraries
   const vlChanged =
     vlKeys.length !== oldVl.length ||
-    vlKeys.some((key, i) => oldVl[i]?.name !== key || oldVl[i]?.path !== bookInfo.virtual_libraries[key])
+    vlKeys.some(
+      (key, i) => oldVl[i]?.name !== key || oldVl[i]?.path !== bookInfo.virtual_libraries[key],
+    )
 
   if (vlChanged) {
     const newVirtualLibraries = vlKeys.map((key) =>
@@ -476,8 +493,7 @@ function convertLibraryInformation(bookInfo: ApiBookInfo, libraryInfo: LibraryMa
   // bookDisplayFields: 内容が変わっていない場合は replace をスキップ
   const newBdf = bookInfo.book_display_fields
   const oldBdf = libraryInfo.bookDisplayFields
-  const bdfChanged =
-    newBdf.length !== oldBdf.length || newBdf.some((v, i) => oldBdf[i] !== v)
+  const bdfChanged = newBdf.length !== oldBdf.length || newBdf.some((v, i) => oldBdf[i] !== v)
   if (bdfChanged) {
     libraryInfo.bookDisplayFields.replace(newBdf)
   }

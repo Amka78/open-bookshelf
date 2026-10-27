@@ -55,9 +55,9 @@ describe("CalibreRootStore test", () => {
 
   test("searchLibrary loads custom column values into customColumns map", async () => {
     const initResp = { kind: "ok" as const, data: initializeData }
-    vi
-      .spyOn(api, "initializeCalibre")
-      .mockResolvedValue(initResp as Awaited<ReturnType<typeof api.initializeCalibre>>)
+    vi.spyOn(api, "initializeCalibre").mockResolvedValue(
+      initResp as Awaited<ReturnType<typeof api.initializeCalibre>>,
+    )
 
     const model = CalibreRootStore.create({})
     await model.initialize()
@@ -116,9 +116,9 @@ describe("CalibreRootStore test", () => {
       },
     }
 
-    vi
-      .spyOn(api, "getLibrary")
-      .mockResolvedValue(libraryResp as Awaited<ReturnType<typeof api.getLibrary>>)
+    vi.spyOn(api, "getLibrary").mockResolvedValue(
+      libraryResp as Awaited<ReturnType<typeof api.getLibrary>>,
+    )
 
     const result = await model.searchLibrary()
     expect(result).toBe(true)

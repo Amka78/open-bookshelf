@@ -1,8 +1,8 @@
 import { HStack, MaterialCommunityIcon, Text } from "@/components"
 import type { MessageKey } from "@/i18n"
 import { usePalette } from "@/theme"
-import { ButtonSpinner, Pressable } from "@gluestack-ui/themed"
 import { type ComponentProps, useTransition } from "react"
+import { ActivityIndicator, Pressable } from "react-native"
 
 export type IconButtonProps = ComponentProps<typeof Pressable> & {
   iconSize?: "md" | "md-" | "sm" | "sm-"
@@ -57,7 +57,7 @@ export const IconButton = ({
       }}
       disabled={isPending}
     >
-      {isPending ? <ButtonSpinner color={palette.textSecondary} size={35} /> : content}
+      {isPending ? <ActivityIndicator color={palette.textSecondary} size={35} /> : content}
     </Pressable>
   ) : (
     content

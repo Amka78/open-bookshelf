@@ -1,4 +1,10 @@
-import { BookPage, BookViewer, LabeledSpinner, TextBookViewer, type RenderPageProps } from "@/components"
+import {
+  BookPage,
+  BookViewer,
+  LabeledSpinner,
+  TextBookViewer,
+  type RenderPageProps,
+} from "@/components"
 import { BookHtmlPage } from "@/components/BookHtmlPage"
 import { useStores } from "@/models"
 import type { ApppNavigationProp } from "@/navigators/types"
@@ -82,7 +88,15 @@ const ViewerScreenContent: FC = observer(() => {
       initialPage,
       totalPages,
     })
-  }, [viewerReady, selectedBook, initialPage, totalPages, sourcePathList, usesTextBookViewer, isHtmlViewerFormat])
+  }, [
+    viewerReady,
+    selectedBook,
+    initialPage,
+    totalPages,
+    sourcePathList,
+    usesTextBookViewer,
+    isHtmlViewerFormat,
+  ])
 
   const renderPage = useCallback(
     (renderProps: RenderPageProps) => {
@@ -107,7 +121,10 @@ const ViewerScreenContent: FC = observer(() => {
             onPress={renderProps.onPress}
             onLongPress={renderProps.onLongPress}
             pagePath={sourcePagePath}
-            size={selectedBook.metaData!.formatSizes.get(selectedBook.metaData!.selectedFormat ?? "") ?? 0}
+            size={
+              selectedBook.metaData!.formatSizes.get(selectedBook.metaData!.selectedFormat ?? "") ??
+              0
+            }
             annotations={renderProps.annotations}
             onTextSelect={renderProps.onTextSelect}
           />

@@ -4,10 +4,7 @@ import { usePalette } from "@/theme"
 import { useMemo, useRef } from "react"
 import { useColorScheme } from "react-native"
 import { usePreparedCalibreHtmlDocument } from "../BookHtmlPage/shared"
-import {
-  buildTextBookHtmlDocument,
-  textBookViewerCommandMessageType,
-} from "./textBookHtml"
+import { buildTextBookHtmlDocument, textBookViewerCommandMessageType } from "./textBookHtml"
 
 export type TextBookSpineProps = {
   libraryId: string
@@ -111,11 +108,7 @@ export const useTextBookSpineDocument = (props: TextBookSpineProps) => {
       annotations: props.annotations ?? [],
       appearance: {
         themeMode:
-          viewerTheme === "dark"
-            ? "dark"
-            : viewerTheme === "sepia"
-              ? "light"
-              : computedThemeMode,
+          viewerTheme === "dark" ? "dark" : viewerTheme === "sepia" ? "light" : computedThemeMode,
         textColor: palette.textPrimary,
         linkColor: palette.textPrimary,
         fallbackBackgroundColor: palette.bg0,

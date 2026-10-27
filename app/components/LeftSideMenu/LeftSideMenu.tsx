@@ -4,8 +4,7 @@ import { usePalette } from "@/theme"
 import { ScrollView } from "@gluestack-ui/themed"
 import { observer } from "mobx-react-lite"
 
-import { Box } from "../Box/Box"
-import { LeftSideMenuItem } from "../LeftSideMenuItem/LeftSideMenuItem"
+import { Box, LeftSideMenuItem } from "@/components"
 
 export type QueryOperator = "AND" | "OR"
 export type CalibreFieldOperator = "=" | "~" | "!=" | "!~"

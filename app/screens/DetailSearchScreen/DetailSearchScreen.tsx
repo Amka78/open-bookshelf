@@ -1,6 +1,4 @@
-import { Box } from "@/components/Box/Box"
-import { IconButton } from "@/components/IconButton/IconButton"
-import { LeftSideMenu } from "@/components/LeftSideMenu/LeftSideMenu"
+import { Box, IconButton, LeftSideMenu } from "@/components"
 import type { AppStackParamList, ApppNavigationProp } from "@/navigators/types"
 import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"

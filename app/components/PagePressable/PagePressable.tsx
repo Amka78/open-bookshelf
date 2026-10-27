@@ -1,6 +1,5 @@
 import { goToNextPage, goToPreviousPage } from "@/utils/pageTurnning"
-import { Pressable } from "@gluestack-ui/themed"
-import type { ViewStyle } from "react-native"
+import { Pressable, type ViewStyle } from "react-native"
 
 export type PagePressableProps = {
   children: React.ReactNode

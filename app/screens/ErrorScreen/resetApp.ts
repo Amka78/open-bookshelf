@@ -15,8 +15,8 @@ export async function resetAppToConnect(options: ResetAppToConnectOptions = {}) 
   return await new Promise<void>((resolve) => {
     let attempts = 0
 
-      const tryReset = () => {
-        if (isNavigationReady()) {
+    const tryReset = () => {
+      if (isNavigationReady()) {
         resetRoot({ index: 0, routes: [{ key: "connect-reset", name: "Connect" }] })
         resolve()
         return

@@ -1,7 +1,12 @@
-import { Box } from "@/components/Box/Box"
-import { Popover, PopoverBackdrop, PopoverBody, PopoverContent } from "@/components/Popover/Popover"
-import { Pressable } from "@/components/Pressable/Pressable"
-import { Text } from "@/components/Text/Text"
+import {
+  Box,
+  Popover,
+  PopoverBackdrop,
+  PopoverBody,
+  PopoverContent,
+  Pressable,
+  Text,
+} from "@/components"
 import { useKeyboardVisibility } from "@/hooks/useKeyboardVisibility"
 import { usePalette } from "@/theme"
 import { type ReactNode, useEffect, useRef, useState } from "react"
@@ -55,9 +60,7 @@ export function FormSuggestionPopover(props: FormSuggestionPopoverProps) {
 
   useEffect(() => {
     if (Platform.OS !== "web" || !isOpen) {
-      if (webAnchorRect !== null) {
-        setWebAnchorRect(null)
-      }
+      setWebAnchorRect(null)
       return undefined
     }
 

@@ -1,8 +1,6 @@
-import { Box, HStack, IconButton, Input, VStack } from "@/components"
-import { Text } from "@/components/Text/Text"
+import { Box, HStack, IconButton, Input, InputField, Text, VStack } from "@/components"
 import { translate } from "@/i18n"
 import { Controller, type ControllerProps, type FieldValues, type Path } from "react-hook-form"
-import { InputField } from "../InputField/InputField"
 
 /** Known Calibre identifier types for quick-add chips */
 const KNOWN_IDENTIFIER_TYPES = ["isbn", "amazon", "google", "kobo", "uri", "asin", "douban"]
@@ -101,8 +99,8 @@ export function FormIdentifierField<T extends FieldValues>({
             </HStack>
 
             {rows.map((row, index) => (
-      // biome-ignore lint/suspicious/noArrayIndexKey: identifier rows have no stable IDs; index is the only available key
-      <HStack key={`identifier-row-${index}`} alignItems="center" space="xs">
+              // biome-ignore lint/suspicious/noArrayIndexKey: identifier rows have no stable IDs; index is the only available key
+              <HStack key={`identifier-row-${index}`} alignItems="center" space="xs">
                 {/* Type input */}
                 <Box flex={1}>
                   <Input size="sm">

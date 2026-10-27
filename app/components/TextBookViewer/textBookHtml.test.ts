@@ -661,7 +661,11 @@ describe("textBookHtml", () => {
     expect(html).toContain('applyImportantStyle(element, "height", viewportHeight + "px")')
     expect(html).toContain('applyImportantStyle(element, "width", "auto")')
     expect(html).toContain('applyImportantStyle(element, "display", "block")')
-    expect(html).toContain('const centerCoverImage = isCoverOnlyDocument() && !isVerticalWriting && spreadPageCount === 1')
-    expect(html).toContain('applyImportantStyle(element, "margin-left", centerCoverImage ? "auto" : "0px")')
+    expect(html).toContain(
+      "const centerCoverImage = isCoverOnlyDocument() && !isVerticalWriting && spreadPageCount === 1",
+    )
+    expect(html).toContain(
+      'applyImportantStyle(element, "margin-left", centerCoverImage ? "auto" : "0px")',
+    )
   })
 })

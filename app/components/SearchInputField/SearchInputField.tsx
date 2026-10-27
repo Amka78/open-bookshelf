@@ -1,7 +1,4 @@
-import { Box } from "@/components/Box/Box"
-import { FormSuggestionPopover } from "@/components/Forms/FormSuggestionPopover"
-import { IconButton } from "@/components/IconButton/IconButton"
-import { InputField } from "@/components/InputField/InputField"
+import { Box, FormSuggestionPopover, IconButton, InputField } from "@/components"
 import type { MessageKey } from "@/i18n"
 import { HStack, Input } from "@gluestack-ui/themed"
 import { useCallback, useEffect, useRef, useState } from "react"
@@ -125,13 +122,13 @@ export function SearchInputField({
         : recentSearchCandidates
   const isOpen = isSuggestionOpen && activeCandidates.length > 0
 
-  const getChangedText = (
-    event: unknown,
-  ): string | undefined => {
+  const getChangedText = (event: unknown): string | undefined => {
     if (!event || typeof event !== "object") return undefined
 
     const target =
-      "target" in event && event.target && typeof event.target === "object" ? event.target : undefined
+      "target" in event && event.target && typeof event.target === "object"
+        ? event.target
+        : undefined
     if (target && "value" in target && typeof target.value === "string") {
       return target.value
     }
@@ -229,8 +226,7 @@ export function SearchInputField({
             // Check if this is a metadata name (without operator suffix)
             // If so, append ":" to allow the user to choose an operator from suggestions
             const isMetadataName =
-              !candidate.includes(":") &&
-              !["AND", "OR", "NOT"].includes(candidate)
+              !candidate.includes(":") && !["AND", "OR", "NOT"].includes(candidate)
             const suffix = isMetadataName ? ":" : " "
             const newValue = `${prefix}${candidate}${suffix}`
             onChangeText(newValue)

@@ -1,4 +1,10 @@
-import type { Category, FieldMetadata, FieldMetadataMap, Metadata, MetadataSnapshotIn } from "@/models/calibre"
+import type {
+  Category,
+  FieldMetadata,
+  FieldMetadataMap,
+  Metadata,
+  MetadataSnapshotIn,
+} from "@/models/calibre"
 import type { Path } from "react-hook-form"
 import { useEditFieldSuggestions } from "./useEditFieldSuggestions"
 

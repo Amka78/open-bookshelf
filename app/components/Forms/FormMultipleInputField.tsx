@@ -1,12 +1,22 @@
-import { Box, HStack, IconButton, Input, VStack } from "@/components"
+import {
+  Box,
+  HStack,
+  IconButton,
+  Input,
+  InputField,
+  VStack,
+  type InputFieldProps,
+} from "@/components"
 import { useEffect, useRef, useState } from "react"
 import { Controller, type ControllerProps, type FieldValues } from "react-hook-form"
-import { InputField, type InputFieldProps } from "../InputField/InputField"
 import { FormSuggestionPopover } from "./FormSuggestionPopover"
 
 const MAX_SUGGESTIONS = 5
 
-export type FormMultipleInputFiledProps<T extends FieldValues> = Omit<InputFieldProps, "onChangeText"> &
+export type FormMultipleInputFiledProps<T extends FieldValues> = Omit<
+  InputFieldProps,
+  "onChangeText"
+> &
   Omit<ControllerProps<T>, "render"> & {
     textToValue: string
     valueToText: string
@@ -93,7 +103,9 @@ export function FormMultipleInputField<T extends FieldValues>(
       render={(renderProps) => {
         const parsedSeparator = textToValue ?? ","
         const values = Array.isArray(renderProps.field.value)
-          ? renderProps.field.value.map((entry: unknown) => (typeof entry === "string" ? entry : ""))
+          ? renderProps.field.value.map((entry: unknown) =>
+              typeof entry === "string" ? entry : "",
+            )
           : []
         const displayRows = values.length > 0 ? values : [""]
         const selectedValueSet = new Set(

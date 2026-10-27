@@ -1,4 +1,4 @@
-import type { ConvertStatus } from "@/components/BookConvertForm/BookConvertForm"
+import type { ConvertStatus } from "@/components"
 import {
   type ConvertOptions,
   DEFAULT_CONVERT_OPTIONS,

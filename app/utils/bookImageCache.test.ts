@@ -1,5 +1,9 @@
 import { vi, describe, expect, test, beforeAll, afterEach } from "vitest"
-import { detectCoverImagePath, verifyCachedBookImages, reCacheMissingImages } from "./bookImageCache"
+import {
+  detectCoverImagePath,
+  verifyCachedBookImages,
+  reCacheMissingImages,
+} from "./bookImageCache"
 
 describe("detectCoverImagePath", () => {
   test("returns null for empty path list", () => {
@@ -32,10 +36,18 @@ describe("detectCoverImagePath", () => {
   })
 
   test("detects cover with various extensions", () => {
-    expect(detectCoverImagePath(["page001.jpg", "cover.png", "page002.jpg"], null)).toBe("cover.png")
-    expect(detectCoverImagePath(["page001.jpg", "cover.gif", "page002.jpg"], null)).toBe("cover.gif")
-    expect(detectCoverImagePath(["page001.jpg", "cover.webp", "page002.jpg"], null)).toBe("cover.webp")
-    expect(detectCoverImagePath(["page001.jpg", "cover.bmp", "page002.jpg"], null)).toBe("cover.bmp")
+    expect(detectCoverImagePath(["page001.jpg", "cover.png", "page002.jpg"], null)).toBe(
+      "cover.png",
+    )
+    expect(detectCoverImagePath(["page001.jpg", "cover.gif", "page002.jpg"], null)).toBe(
+      "cover.gif",
+    )
+    expect(detectCoverImagePath(["page001.jpg", "cover.webp", "page002.jpg"], null)).toBe(
+      "cover.webp",
+    )
+    expect(detectCoverImagePath(["page001.jpg", "cover.bmp", "page002.jpg"], null)).toBe(
+      "cover.bmp",
+    )
   })
 
   test("returns first image if no cover detected", () => {

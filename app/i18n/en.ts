@@ -39,7 +39,8 @@ const en = {
     reviewAndEdit: "Review and edit metadata",
     applyDetectedValue: "Apply detected value",
     ocrFailed: "Failed to read text from the cover image.",
-    ocrUnavailableInExpoGo: "Cover OCR is not available in Expo Go. Use a development build to run OCR.",
+    ocrUnavailableInExpoGo:
+      "Cover OCR is not available in Expo Go. Use a development build to run OCR.",
   },
   identifierField: {
     typeLabel: "Type",

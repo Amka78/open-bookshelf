@@ -1,4 +1,12 @@
-import { vi, afterEach, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
+import {
+  vi,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe as baseDescribe,
+  expect,
+  test as baseTest,
+} from "vitest"
 import { act, render, screen } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
@@ -140,51 +148,54 @@ describe("TextBookViewer", () => {
   test("maps persisted text spine page counts back to the correct spine page", () => {
     render(
       <TextBookViewer
-        viewerHook={createViewerHook({
-          initialPage: 4,
-          textSpinePageCounts: [3, 2],
-        }) as never}
+        viewerHook={
+          createViewerHook({
+            initialPage: 4,
+            textSpinePageCounts: [3, 2],
+          }) as never
+        }
       />,
     )
 
     expect(latestTextBookSpineProps?.pagePath).toBe("text/chapter-2.xhtml")
     expect(latestTextBookSpineProps?.currentPage).toBe(1)
     expect(latestTextBookSpineProps?.preferredWritingMode).toBe("vertical-rl")
-    expect(screen.getByTestId("text-book-viewer-page-manager").getAttribute("data-total-page")).toBe("5")
+    expect(
+      screen.getByTestId("text-book-viewer-page-manager").getAttribute("data-total-page"),
+    ).toBe("5")
   })
 
   test("passes spine-local location details to onPageChange", () => {
     render(
       <TextBookViewer
-        viewerHook={createViewerHook({
-          initialPage: 4,
-          textSpinePageCounts: [3, 2],
-        }) as never}
+        viewerHook={
+          createViewerHook({
+            initialPage: 4,
+            textSpinePageCounts: [3, 2],
+          }) as never
+        }
       />,
     )
 
-    expect(onPageChange).toHaveBeenCalledWith(
-      4,
-      5,
-      [3, 2],
-      {
-        spineIndex: 1,
-        pageInSpine: 1,
-        estimatedSpinePageCounts: [3, 2],
-      },
-    )
+    expect(onPageChange).toHaveBeenCalledWith(4, 5, [3, 2], {
+      spineIndex: 1,
+      pageInSpine: 1,
+      estimatedSpinePageCounts: [3, 2],
+    })
   })
 
   test("applies server resume progress within the current spine after pagination is measured", async () => {
     render(
       <TextBookViewer
-        viewerHook={createViewerHook({
-          initialPage: 1,
-          resumeSpineLocation: {
-            spineIndex: 1,
-            progressInSpine: 0.75,
-          },
-        }) as never}
+        viewerHook={
+          createViewerHook({
+            initialPage: 1,
+            resumeSpineLocation: {
+              spineIndex: 1,
+              progressInSpine: 0.75,
+            },
+          }) as never
+        }
       />,
     )
 
@@ -192,7 +203,11 @@ describe("TextBookViewer", () => {
     expect(latestTextBookSpineProps?.currentPage).toBe(0)
 
     await act(async () => {
-      ;(latestTextBookSpineProps?.onPaginationChange as ((payload: { currentPage: number; totalPages: number }) => void) | undefined)?.({
+      ;(
+        latestTextBookSpineProps?.onPaginationChange as
+          | ((payload: { currentPage: number; totalPages: number }) => void)
+          | undefined
+      )?.({
         currentPage: 0,
         totalPages: 5,
       })

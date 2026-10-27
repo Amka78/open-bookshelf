@@ -1,4 +1,4 @@
-import { Text } from "@/components/Text/Text"
+import { Text } from "@/components"
 import type { Annotation } from "@/models/calibre"
 import { usePalette } from "@/theme"
 import React, { useCallback, useMemo } from "react"
@@ -37,7 +37,10 @@ export function AnnotationPanel({
       />
       {onExport != null && (
         <Pressable onPress={onExport} style={styles.exportBtn} accessibilityRole="button">
-          <Text tx="annotationPanel.export" style={[styles.exportBtnText, { color: palette.textSecondary }]} />
+          <Text
+            tx="annotationPanel.export"
+            style={[styles.exportBtnText, { color: palette.textSecondary }]}
+          />
         </Pressable>
       )}
     </View>
@@ -85,26 +88,17 @@ export function AnnotationPanel({
           </Pressable>
         </View>
         {item.highlightedText ? (
-          <Text
-            style={[styles.highlightText, { color: palette.textPrimary }]}
-            numberOfLines={2}
-          >
+          <Text style={[styles.highlightText, { color: palette.textPrimary }]} numberOfLines={2}>
             "{item.highlightedText}"
           </Text>
         ) : null}
         {item.title ? (
-          <Text
-            style={[styles.noteText, { color: palette.textSecondary }]}
-            numberOfLines={1}
-          >
+          <Text style={[styles.noteText, { color: palette.textSecondary }]} numberOfLines={1}>
             {item.title}
           </Text>
         ) : null}
         {item.notes ? (
-          <Text
-            style={[styles.noteText, { color: palette.textSecondary }]}
-            numberOfLines={2}
-          >
+          <Text style={[styles.noteText, { color: palette.textSecondary }]} numberOfLines={2}>
             {item.notes}
           </Text>
         ) : null}

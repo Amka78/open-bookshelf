@@ -137,13 +137,10 @@ describe("Api.fetchWithAuth", () => {
     })
 
     expect(result).toEqual({ kind: "ok", data: {} })
-    expect(postSpy).toHaveBeenCalledWith(
-      "cdb/set-fields/12/config",
-      {
-        changes: { removed_formats: ["EPUB"] },
-        loaded_book_ids: [12],
-      },
-    )
+    expect(postSpy).toHaveBeenCalledWith("cdb/set-fields/12/config", {
+      changes: { removed_formats: ["EPUB"] },
+      loaded_book_ids: [12],
+    })
   })
 
   test("editBook sends added_formats via cdb/set-fields", async () => {
@@ -169,13 +166,10 @@ describe("Api.fetchWithAuth", () => {
     })
 
     expect(result).toEqual({ kind: "ok", data: {} })
-    expect(postSpy).toHaveBeenCalledWith(
-      "cdb/set-fields/12/config",
-      {
-        changes: { added_formats: [addedFormat] },
-        loaded_book_ids: [12],
-      },
-    )
+    expect(postSpy).toHaveBeenCalledWith("cdb/set-fields/12/config", {
+      changes: { added_formats: [addedFormat] },
+      loaded_book_ids: [12],
+    })
   })
 
   test("setCoverBinary posts image blob via apisauce to cdb/set-cover", async () => {

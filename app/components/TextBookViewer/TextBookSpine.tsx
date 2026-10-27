@@ -1,6 +1,7 @@
 import { Text } from "@/components"
 import { observer } from "mobx-react-lite"
-import React, { useCallback, useEffect, useRef, useState, type CSSProperties } from "react"
+import type React from "react"
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react"
 import { ActivityIndicator, Platform, StyleSheet, View } from "react-native"
 import {
   textBookViewerInteractionMessageType,
@@ -91,7 +92,9 @@ export const TextBookSpine = observer(function TextBookSpine(props: TextBookSpin
     }
 
     webViewRef.current?.injectJavaScript?.(
-      `window.dispatchEvent(new MessageEvent("message", { data: ${JSON.stringify(commandPayload)} })); true;`,
+      `window.dispatchEvent(new MessageEvent("message", { data: ${JSON.stringify(
+        commandPayload,
+      )} })); true;`,
     )
   }, [
     documentKey,
@@ -103,9 +106,12 @@ export const TextBookSpine = observer(function TextBookSpine(props: TextBookSpin
     props.readingStyle,
   ])
 
-  useEffect(() => {
+  const frameResetKey = `${documentKey}:${viewerFontSizePt}:${viewerTheme}`
+  const prevFrameResetKeyRef = useRef(frameResetKey)
+  if (prevFrameResetKeyRef.current !== frameResetKey) {
+    prevFrameResetKeyRef.current = frameResetKey
     setFrameReady(false)
-  }, [documentKey, viewerFontSizePt, viewerTheme])
+  }
 
   useEffect(() => {
     if (Platform.OS !== "web") {

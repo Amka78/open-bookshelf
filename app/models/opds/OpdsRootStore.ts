@@ -1,5 +1,12 @@
 import { DOMParser } from "@xmldom/xmldom"
-import { type Instance, type SnapshotIn, type SnapshotOut, flow, types } from "mobx-state-tree"
+import {
+  type IAnyModelType,
+  type Instance,
+  type SnapshotIn,
+  type SnapshotOut,
+  flow,
+  types,
+} from "mobx-state-tree"
 
 import { api } from "@/services/api"
 import { withSetPropAction } from "../helpers/withSetPropAction"
@@ -58,11 +65,11 @@ export type OpdsRootSnapshotIn = SnapshotIn<typeof OpdsModel>
 
 function setState(nodeName: string, node: Element, opds: Record<string, unknown>) {
   if (nodeName === "link") {
-    setAttributes(node, opds.link as { push(item: object): void }, LinkModel as any)
+    setAttributes(node, opds.link as { push(item: object): void }, LinkModel)
   } else if (nodeName === "author") {
-    setElements(node, opds.author as { push(item: object): void }, AuthorModel as any)
+    setElements(node, opds.author as { push(item: object): void }, AuthorModel)
   } else if (nodeName === "entry") {
-    setElements(node, opds.entry as { push(item: object): void }, EntryModel as any)
+    setElements(node, opds.entry as { push(item: object): void }, EntryModel)
   } else if (nodeName === "updated" || nodeName === "published") {
     opds[nodeName] = new Date(node.firstChild!.nodeValue!)
   } else {
@@ -81,7 +88,7 @@ function setState(nodeName: string, node: Element, opds: Record<string, unknown>
 function setElements(
   xmlNode: Element,
   list: { push(item: object): void },
-  modelRef: { create(): Record<string, unknown> },
+  modelRef: IAnyModelType,
 ) {
   const elements = xmlNode.childNodes
 
@@ -117,7 +124,7 @@ export const OpdsRootStore = types
 function setAttributes(
   xmlNode: Element,
   list: { push(item: object): void },
-  modelRef: { create(): Record<string, unknown> },
+  modelRef: IAnyModelType,
 ) {
   const attributes = xmlNode.attributes
 

@@ -1,5 +1,12 @@
-import { vi, describe as baseDescribe, test as baseTest, beforeAll, beforeEach, expect } from "vitest"
 import { act, renderHook } from "@testing-library/react"
+import {
+  describe as baseDescribe,
+  test as baseTest,
+  beforeAll,
+  beforeEach,
+  expect,
+  vi,
+} from "vitest"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 const describe = localizeTestRegistrar(baseDescribe)

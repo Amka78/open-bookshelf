@@ -1,4 +1,11 @@
-import { vi, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
+import {
+  vi,
+  beforeAll,
+  beforeEach,
+  describe as baseDescribe,
+  expect,
+  test as baseTest,
+} from "vitest"
 import { renderHook } from "@testing-library/react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
@@ -22,16 +29,18 @@ const reactNativeMock = {
   ...((global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock ?? {}),
   Platform: {
     OS: "web",
-    select: <T,>(config: { web?: T; default?: T }) => config.web ?? config.default,
+    select: <T>(config: { web?: T; default?: T }) => config.web ?? config.default,
   },
-  StyleSheet: { create: <T,>(styles: T) => styles },
+  StyleSheet: { create: <T>(styles: T) => styles },
   useColorScheme: useColorSchemeMock,
 }
-
 ;(global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock = reactNativeMock
 
 vi.doMock("react-native", () => reactNativeMock)
-vi.doMock("/home/amka78/private/open-bookshelf/node_modules/react-native/index.js", () => reactNativeMock)
+vi.doMock(
+  "/home/amka78/private/open-bookshelf/node_modules/react-native/index.js",
+  () => reactNativeMock,
+)
 
 vi.doMock("../BookHtmlPage/shared", () => ({
   usePreparedCalibreHtmlDocument: usePreparedCalibreHtmlDocumentMock,

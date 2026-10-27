@@ -1,4 +1,11 @@
-import { vi, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
+import {
+  vi,
+  beforeAll,
+  beforeEach,
+  describe as baseDescribe,
+  expect,
+  test as baseTest,
+} from "vitest"
 import { fireEvent, render } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
@@ -9,11 +16,9 @@ const reactNativeMockFactory = () => ({
   ...((global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock ?? {}),
 })
 
-vi.doMock("@/components/BookConvertForm/BookConvertForm", () => ({
+vi.doMock("@/components", () => ({
+  ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
   BookConvertForm: () => <div data-testid="book-convert-form" />,
-}))
-
-vi.doMock("@/components/Button/Button", () => ({
   Button: ({
     children,
     onPress,
@@ -27,13 +32,15 @@ vi.doMock("@/components/Button/Button", () => ({
     tx?: string
     isDisabled?: boolean
   }) => (
-    <button data-testid={testID ?? tx} type="button" onClick={() => void onPress?.()} disabled={isDisabled}>
+    <button
+      data-testid={testID ?? tx}
+      type="button"
+      onClick={() => void onPress?.()}
+      disabled={isDisabled}
+    >
       {children ?? tx}
     </button>
   ),
-}))
-
-vi.doMock("@/components/Heading/Heading", () => ({
   Heading: ({ children, tx }: { children?: ReactNode; tx?: string }) => <div>{children ?? tx}</div>,
 }))
 
@@ -122,12 +129,14 @@ describe("BookConvertModal", () => {
 
     const { getByTestId } = render(
       <BookConvertModalTemplate
-        modal={{
-          params: {
-            onConvertComplete: mockOnConvertComplete,
-          },
-          closeModal: mockCloseModal,
-        } as never}
+        modal={
+          {
+            params: {
+              onConvertComplete: mockOnConvertComplete,
+            },
+            closeModal: mockCloseModal,
+          } as never
+        }
       />,
     )
 

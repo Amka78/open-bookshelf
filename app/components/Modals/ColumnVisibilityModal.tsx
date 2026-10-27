@@ -1,6 +1,4 @@
-import { Checkbox } from "@/components/Checkbox/Checkbox"
-import { Heading } from "@/components/Heading/Heading"
-import { VStack } from "@/components/VStack/VStack"
+import { Checkbox, Heading, VStack } from "@/components"
 import React from "react"
 import type { ModalComponentProp } from "react-native-modalfy"
 

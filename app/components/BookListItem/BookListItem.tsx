@@ -1,5 +1,6 @@
 import {
   BookDetailMenu,
+  type BookDetailMenuProps,
   Box,
   Button,
   HStack,
@@ -11,18 +12,16 @@ import {
   Text,
   VStack,
 } from "@/components"
-import type { BookDetailMenuProps } from "@/components"
 import type { Book } from "@/models/calibre/BookModel"
 import { usePalette } from "@/theme"
 import { typography } from "@/theme/typography"
-import { Pressable } from "@gluestack-ui/themed"
 import { memo } from "react"
-import { StyleSheet } from "react-native"
+import { Pressable, StyleSheet } from "react-native"
 
 type BookListItemProps = {
   book: Book
   source: ImageProps["source"]
-  readStatus?: string
+  readStatus?: ReadStatusValue | null
   readingProgress?: number
   isCached?: boolean
   isSelected?: boolean

@@ -9,8 +9,8 @@ import { getSnapshot } from "mobx-state-tree"
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import {
-  buildMetadataFormDefaults,
   type MetadataFormValues,
+  buildMetadataFormDefaults,
   toLanguageNamesForDisplay,
   toLanguageNamesForUpdate,
 } from "../BookEditScreen/bookMetadataForm"
@@ -134,10 +134,10 @@ export function useBookOcrReviewController({
           status: "error",
           errorMessage:
             error instanceof ExpoGoOcrUnavailableError
-              ? (translate("bookOcrReviewScreen.ocrUnavailableInExpoGo") ?? "")
+              ? translate("bookOcrReviewScreen.ocrUnavailableInExpoGo") ?? ""
               : error instanceof Error
                 ? error.message
-                : (translate("bookOcrReviewScreen.ocrFailed") ?? ""),
+                : translate("bookOcrReviewScreen.ocrFailed") ?? "",
         })
       }
     }
@@ -147,14 +147,7 @@ export function useBookOcrReviewController({
     return () => {
       isActive = false
     }
-  }, [
-    bookMetaDataSnapshot,
-    form,
-    hasLangNames,
-    imageUrl,
-    langNames,
-    selectedBook.metaData,
-  ])
+  }, [bookMetaDataSnapshot, form, hasLangNames, imageUrl, langNames, selectedBook.metaData])
 
   const applyFieldEntry = (entry: OcrFieldEntry) => {
     if (entry.field === "identifiers") {
@@ -195,7 +188,9 @@ export function useBookOcrReviewController({
   }, [langNames, ocrFieldEntries, selectedLibrary.fieldMetadataList])
 
   const onSubmit = form.handleSubmit(async (value) => {
-    const updatedValue = hasLangNames ? toLanguageNamesForUpdate(value, langNames) : toLanguageNamesForUpdate(value, {})
+    const updatedValue = hasLangNames
+      ? toLanguageNamesForUpdate(value, langNames)
+      : toLanguageNamesForUpdate(value, {})
     await selectedBook.update(selectedLibrary.id, updatedValue, Object.keys(updatedValue))
     await onComplete()
   })

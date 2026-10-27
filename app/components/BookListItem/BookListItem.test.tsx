@@ -1,11 +1,52 @@
-import { vi, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
-import { render } from "@testing-library/react"
 import type { Book } from "@/models/calibre/BookModel"
+import { render } from "@testing-library/react"
 import type { ReactNode } from "react"
+import {
+  describe as baseDescribe,
+  test as baseTest,
+  beforeAll,
+  beforeEach,
+  expect,
+  vi,
+} from "vitest"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 const reactNativeMock = {
   ...((global as { __reactNativeMock?: Record<string, unknown> }).__reactNativeMock ?? {}),
+  // BookListItem は gluestack ではなく react-native の Pressable を使うため、
+  // こちらのモックに role="button" + onClick→onPress 変換が必要。
+  Pressable: ({
+    children,
+    onPress,
+    onLongPress,
+    style,
+    testID,
+  }: {
+    children?: ReactNode
+    onPress?: () => void
+    onLongPress?: () => void
+    style?: unknown
+    testID?: string
+  }) => (
+    <div
+      data-testid={testID}
+      onClick={onPress}
+      onContextMenu={(event) => {
+        event.preventDefault()
+        onLongPress?.()
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          onPress?.()
+        }
+      }}
+      role="button"
+      style={normalizeStyle(style)}
+      tabIndex={0}
+    >
+      {children}
+    </div>
+  ),
   StyleSheet: {
     create: <T extends Record<string, unknown>>(value: T) => value,
     hairlineWidth: 1,
@@ -15,17 +56,22 @@ const reactNativeMock = {
 
 function normalizeStyle(style: unknown): React.CSSProperties | undefined {
   if (Array.isArray(style)) {
-    return style.reduce<React.CSSProperties>(
-      (acc, value) => (value && typeof value === "object" ? { ...acc, ...value } : acc),
-      {},
-    )
+    return style.reduce<React.CSSProperties>((acc, value) => {
+      if (value && typeof value === "object") {
+        return Object.assign(acc, value)
+      }
+      return acc
+    }, {})
   }
 
   return style && typeof style === "object" ? (style as React.CSSProperties) : undefined
 }
 
 vi.doMock("react-native", () => reactNativeMock)
-vi.doMock("/home/amka78/private/open-bookshelf/node_modules/react-native/index.js", () => reactNativeMock)
+vi.doMock(
+  "/home/amka78/private/open-bookshelf/node_modules/react-native/index.js",
+  () => reactNativeMock,
+)
 
 vi.doMock("@/theme", () => ({
   usePalette: () => ({
@@ -224,7 +270,9 @@ describe("BookListItem", () => {
       <BookListItem book={makeBook()} source={undefined} isSelected={true} onPress={() => {}} />,
     )
 
-    expect(container.querySelector('[data-testid="book-list-item-selected-outline"]')).not.toBeNull()
+    expect(
+      container.querySelector('[data-testid="book-list-item-selected-outline"]'),
+    ).not.toBeNull()
   })
 
   test("renders cover image when source is provided", () => {
@@ -237,12 +285,7 @@ describe("BookListItem", () => {
 
   test("renders a pressable row when onPress is provided", () => {
     const { container } = render(
-      <BookListItem
-        book={makeBook()}
-        source={undefined}
-        onPress={() => {}}
-        isSelected={false}
-      />,
+      <BookListItem book={makeBook()} source={undefined} onPress={() => {}} isSelected={false} />,
     )
     expect(container.querySelectorAll('[role="button"]').length).toBeGreaterThan(0)
   })
@@ -250,12 +293,7 @@ describe("BookListItem", () => {
   test("calls onPress when row is clicked", () => {
     const onPress = vi.fn(() => {})
     const { container } = render(
-      <BookListItem
-        book={makeBook()}
-        source={undefined}
-        onPress={onPress}
-        isSelected={false}
-      />,
+      <BookListItem book={makeBook()} source={undefined} onPress={onPress} isSelected={false} />,
     )
     const buttons = container.querySelectorAll('[role="button"]')
     expect(buttons.length).toBe(1)

@@ -1,16 +1,25 @@
-import { vi, describe, expect, test } from "vitest"
-import { normalizeTagQuery } from "@/components/LeftSideMenu/LeftSideMenu"
 import {
-  buildQueryFromParts,
-  getLeftSideMenuSelectedNames,
-  getNextLeftSideMenuSelectionState,
-  isMenuDrivenSearchText,
-  parseQueryParts,
-} from "./librarySearchState"
+  buildItemKey,
+  normalizeTagQuery,
+  parseTagQuery,
+} from "@/components/LeftSideMenu/LeftSideMenu"
+import { beforeAll, describe, expect, test, vi } from "vitest"
+
+vi.doMock("@/components", () => ({
+  buildItemKey,
+  normalizeTagQuery,
+  parseTagQuery,
+}))
+
+let librarySearchState: typeof import("./librarySearchState")
+
+beforeAll(async () => {
+  librarySearchState = await import("./librarySearchState")
+})
 
 describe("librarySearchState", () => {
   test("parseQueryParts splits boolean search queries", () => {
-    expect(parseQueryParts("authors:=Tolkien OR formats:=EPUB")).toEqual([
+    expect(librarySearchState.parseQueryParts("authors:=Tolkien OR formats:=EPUB")).toEqual([
       "authors:=Tolkien",
       "formats:=EPUB",
     ])
@@ -18,7 +27,7 @@ describe("librarySearchState", () => {
 
   test("buildQueryFromParts applies per-item operators", () => {
     expect(
-      buildQueryFromParts(["authors:=Tolkien", "formats:=EPUB", "rating:=5"], {
+      librarySearchState.buildQueryFromParts(["authors:=Tolkien", "formats:=EPUB", "rating:=5"], {
         "authors:tolkien": "OR",
         "formats:epub": "AND",
       }),
@@ -28,28 +37,30 @@ describe("librarySearchState", () => {
   test("edited search text clears the previous left menu selection", () => {
     const previouslySelected = normalizeTagQuery("authors:=Tolkien")
 
-    const initialSelectedNames = getLeftSideMenuSelectedNames("authors:=Tolkien")
+    const initialSelectedNames = librarySearchState.getLeftSideMenuSelectedNames("authors:=Tolkien")
     expect(
       initialSelectedNames.some((query) => normalizeTagQuery(query) === previouslySelected),
     ).toBe(true)
 
-    const editedSelectedNames = getLeftSideMenuSelectedNames("authors:=Tolk")
+    const editedSelectedNames = librarySearchState.getLeftSideMenuSelectedNames("authors:=Tolk")
     expect(
       editedSelectedNames.some((query) => normalizeTagQuery(query) === previouslySelected),
     ).toBe(false)
   })
 
   test("isMenuDrivenSearchText returns true for tag-query-only search text", () => {
-    expect(isMenuDrivenSearchText("authors:=Tolkien OR formats:=EPUB")).toBe(true)
+    expect(librarySearchState.isMenuDrivenSearchText("authors:=Tolkien OR formats:=EPUB")).toBe(
+      true,
+    )
   })
 
   test("isMenuDrivenSearchText returns false for free-text search text", () => {
-    expect(isMenuDrivenSearchText("tolkien")).toBe(false)
+    expect(librarySearchState.isMenuDrivenSearchText("tolkien")).toBe(false)
   })
 
   test("clicking left menu while free text is active resets to clicked query only", () => {
     expect(
-      getNextLeftSideMenuSelectionState({
+      librarySearchState.getNextLeftSideMenuSelectionState({
         currentSearchText: "tolkien",
         clickedQuery: "authors:=Tolkien",
         itemOperators: {
@@ -65,7 +76,7 @@ describe("librarySearchState", () => {
 
   test("clicking left menu while menu-driven query is active preserves multi-select behavior", () => {
     expect(
-      getNextLeftSideMenuSelectionState({
+      librarySearchState.getNextLeftSideMenuSelectionState({
         currentSearchText: "authors:=Tolkien",
         clickedQuery: "formats:=EPUB",
         itemOperators: {},

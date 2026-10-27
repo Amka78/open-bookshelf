@@ -1,4 +1,12 @@
-import { vi, afterEach, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
+import {
+  vi,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe as baseDescribe,
+  expect,
+  test as baseTest,
+} from "vitest"
 import { cleanup, render, screen } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
@@ -75,7 +83,6 @@ const componentsMock = {
   ),
   TextBookViewer: () => <div data-testid="viewer-screen-text-book-viewer" />,
 }
-
 ;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
 
 vi.doMock("@/components", () => componentsMock)
@@ -104,6 +111,11 @@ describe("ViewerScreen", () => {
     useStoresMock.mockReturnValue({
       authenticationStore: {
         getHeader: vi.fn().mockReturnValue({ Authorization: "Basic token" }),
+      },
+      // useSeriesNavigation が calibreRootStore.selectedLibrary を参照する。
+      // 選書データは useViewer モック側で提供されるため、ここでは null で足りる。
+      calibreRootStore: {
+        selectedLibrary: null,
       },
     })
     useViewerMock.mockReturnValue({

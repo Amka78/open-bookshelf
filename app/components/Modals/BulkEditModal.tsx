@@ -1,7 +1,4 @@
-import { BookEditFieldList } from "@/components/BookEditFieldList/BookEditFieldList"
-import { Button } from "@/components/Button/Button"
-import { Heading } from "@/components/Heading/Heading"
-import { Text } from "@/components/Text/Text"
+import { BookEditFieldList, Button, Heading, Text } from "@/components"
 import { translate } from "@/i18n"
 import { useStores } from "@/models"
 import type { MetadataSnapshotIn } from "@/models/calibre"

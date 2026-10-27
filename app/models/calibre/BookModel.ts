@@ -287,7 +287,7 @@ export const BookModel = types
 
         if (response!.kind !== "ok") {
           if (response!.kind === "not-found") {
-            throw new Error((response as any).message ?? "API error")
+            throw new Error((response as { message?: string }).message ?? "API error")
           }
           handleCommonApiError(response!)
         } else if (isConvertJobStatusResponse(response)) {
@@ -430,7 +430,7 @@ export const BookModel = types
         )
         // Set to local MST model (always as array for multi-value fields)
         ;(root.metaData as unknown as Record<string, unknown>)[field] = fieldValue
-        
+
         // For API, convert array to string with appropriate separator
         const apiField = camelCaseToLowerCase(field) as MetadataFieldKey
         if (Array.isArray(fieldValue)) {

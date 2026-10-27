@@ -1,4 +1,10 @@
-import type { OcrFieldEntry, OcrMappedMetadata, OcrResult, RawOcrLine, RawOcrResult } from "./ocr.types"
+import type {
+  OcrFieldEntry,
+  OcrMappedMetadata,
+  OcrResult,
+  RawOcrLine,
+  RawOcrResult,
+} from "./ocr.types"
 
 const PUBLISHER_PATTERN = /\b(press|publishing|publisher|books|editions?|media|house)\b/i
 const SERIES_PATTERN =
@@ -177,7 +183,9 @@ export function parseOcrToMetadata(rawResult: RawOcrResult): OcrResult {
     pushFieldEntry(fieldEntries, "identifiers", { isbn }, isbn)
   }
 
-  const languages = detectNonLatinLanguages([fullText, ...lines.map((line) => line.text)].join("\n"))
+  const languages = detectNonLatinLanguages(
+    [fullText, ...lines.map((line) => line.text)].join("\n"),
+  )
   if (languages.length > 0) {
     mappedMetadata.languages = languages
     pushFieldEntry(fieldEntries, "languages", languages, languages.join(", "))

@@ -1,9 +1,4 @@
-import type { QueryOperator } from "@/components/LeftSideMenu/LeftSideMenu"
-import {
-  buildItemKey,
-  normalizeTagQuery,
-  parseTagQuery,
-} from "@/components/LeftSideMenu/LeftSideMenu"
+import { type QueryOperator, buildItemKey, normalizeTagQuery, parseTagQuery } from "@/components"
 
 export function parseQueryParts(query: string): string[] {
   if (!query.trim()) return []

@@ -269,13 +269,13 @@ export type ApiCalibreInterfaceType = {
   }[]
 }
 
-type Children = {
+export type Children = {
   id: string
   children: Children[]
 }
 
-type CategoryItemMap = {
-  category: true
+export type CategoryItemMap = {
+  category: string
   name: string
   is_category: true
   count: number
@@ -284,7 +284,7 @@ type CategoryItemMap = {
   is_searchable: boolean
 }
 
-type NodeItemMap = {
+export type NodeItemMap = {
   category: string
   avg_rating: number
   id: number
@@ -437,5 +437,3 @@ export type SetBookMetadata = {
 }
 
 export type SetBookResult = Map<number, FieldMetadata>
-
-

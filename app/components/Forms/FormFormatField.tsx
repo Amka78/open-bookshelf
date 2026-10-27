@@ -1,9 +1,4 @@
-import { HStack } from "@/components/HStack/HStack"
-import { IconButton } from "@/components/IconButton/IconButton"
-import { Input } from "@/components/Input/Input"
-import { Pressable } from "@/components/Pressable/Pressable"
-import { Text } from "@/components/Text/Text"
-import { VStack } from "@/components/VStack/VStack"
+import { HStack, IconButton, Input, Pressable, Text, VStack } from "@/components"
 import { Controller, type ControllerProps, type FieldValues } from "react-hook-form"
 
 type UploadResult = {
@@ -25,16 +20,8 @@ const normalizeFormat = (value: string | undefined | null) => {
 }
 
 export function FormFormatField<T extends FieldValues>(props: FormFormatFieldProps<T>) {
-  const {
-    control,
-    name,
-    rules,
-    shouldUnregister,
-    defaultValue,
-    disabled,
-    testID,
-    onUploadFormat,
-  } = props
+  const { control, name, rules, shouldUnregister, defaultValue, disabled, testID, onUploadFormat } =
+    props
 
   return (
     <Controller

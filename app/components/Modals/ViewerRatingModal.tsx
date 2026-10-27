@@ -1,7 +1,4 @@
-import { Button } from "@/components/Button/Button"
-import { FormRatingGroup } from "@/components/Forms/FormRatingGroup"
-import { Heading } from "@/components/Heading/Heading"
-import { Text } from "@/components/Text/Text"
+import { Button, FormRatingGroup, Heading, Text } from "@/components"
 import { VStack } from "@gluestack-ui/themed"
 import { useForm } from "react-hook-form"
 import type { ModalComponentProp } from "react-native-modalfy"

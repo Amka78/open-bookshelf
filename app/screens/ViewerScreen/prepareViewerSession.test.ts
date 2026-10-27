@@ -1,4 +1,12 @@
-import { vi, afterEach, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
+import {
+  vi,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe as baseDescribe,
+  expect,
+  test as baseTest,
+} from "vitest"
 import * as bookImageCache from "@/utils/bookImageCache"
 import * as network from "@/utils/network"
 import { ReadingHistoryModel } from "@/models/calibre"
@@ -153,9 +161,10 @@ describe("prepareViewerSession", () => {
     const addReadingHistory = vi.fn()
     const stores = createStores({ selectedBook, addReadingHistory })
 
-    vi
-      .spyOn(bookImageCache, "cacheBookImages")
-      .mockResolvedValue(["file:///cache/page-1.jpg", "file:///cache/page-2.jpg"])
+    vi.spyOn(bookImageCache, "cacheBookImages").mockResolvedValue([
+      "file:///cache/page-1.jpg",
+      "file:///cache/page-2.jpg",
+    ])
     vi.spyOn(ReadingHistoryModel, "create").mockReturnValue({ history: true } as never)
 
     await prepareViewerSession({

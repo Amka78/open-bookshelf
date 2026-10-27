@@ -1,5 +1,4 @@
-import { IconButton } from "@/components/IconButton/IconButton"
-import { Text } from "@/components/Text/Text"
+import { IconButton, Text } from "@/components"
 import { translate } from "@/i18n"
 import type { Book } from "@/models/calibre"
 import { HStack, View } from "@gluestack-ui/themed"

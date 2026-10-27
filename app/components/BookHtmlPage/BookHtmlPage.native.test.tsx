@@ -29,7 +29,10 @@ const reactNativeMock = {
 }
 
 vi.doMock("react-native", () => reactNativeMock)
-vi.doMock("/home/amka78/private/open-bookshelf/node_modules/react-native/index.js", () => reactNativeMock)
+vi.doMock(
+  "/home/amka78/private/open-bookshelf/node_modules/react-native/index.js",
+  () => reactNativeMock,
+)
 
 vi.doMock("react-native-webview", () => ({
   WebView: (props: Record<string, unknown>) => {

@@ -280,13 +280,15 @@ export function useViewer() {
     return cleanup
   }, [
     availablePageCount,
-    promptKey,
-    htmlResumeLocation,
-    serverEstimatedPage,
+    history,
     history?.currentPage,
     history?.serverPosFrac,
-    history?.format,
+    htmlResumeLocation,
+    isHtmlViewerFormat,
     modal,
+    promptKey,
+    serverEstimatedPage,
+    viewerReady,
   ])
 
   // Client setting management

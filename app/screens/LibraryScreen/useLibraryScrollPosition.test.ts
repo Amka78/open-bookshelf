@@ -1,4 +1,11 @@
-import { vi, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
+import {
+  vi,
+  beforeAll,
+  beforeEach,
+  describe as baseDescribe,
+  expect,
+  test as baseTest,
+} from "vitest"
 import { act, renderHook } from "@testing-library/react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 

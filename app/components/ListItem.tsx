@@ -1,3 +1,4 @@
+import { Text, type TextProps } from "@/components"
 import { usePalette } from "@/theme"
 import { memo } from "react"
 import type { ReactElement, ReactNode } from "react"
@@ -9,7 +10,6 @@ import {
   View,
   type ViewStyle,
 } from "react-native"
-import { Text, type TextProps } from "../components/Text/Text"
 
 export interface ListItemProps extends TouchableOpacityProps {
   /**

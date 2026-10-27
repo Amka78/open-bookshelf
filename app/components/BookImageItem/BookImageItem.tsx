@@ -1,19 +1,20 @@
 import { memo, useMemo, useState } from "react"
-import { StyleSheet, View } from "react-native"
+import { Pressable, StyleSheet, View } from "react-native"
 
-import { BookDetailMenu, type BookDetailMenuProps } from "@/components/BookDetailMenu/BookDetailMenu"
-import { Box } from "@/components/Box/Box"
-import { HStack } from "@/components/HStack/HStack"
-import { Image, type ImageProps } from "@/components/Image/Image"
-import { LabeledSpinner } from "@/components/LabeledSpinner/LabeledSpinner"
 import {
+  BookDetailMenu,
+  type BookDetailMenuProps,
+  Box,
+  HStack,
+  Image,
+  type ImageProps,
+  LabeledSpinner,
   MaterialCommunityIcon,
   type MaterialCommunityIconProps,
-} from "@/components/MaterialCommunityIcon/MaterialCommunityIcon"
-import { Text } from "@/components/Text/Text"
-import { VStack } from "@/components/VStack/VStack"
+  Text,
+  VStack,
+} from "@/components"
 import type { MessageKey } from "@/i18n"
-import { Pressable } from "@gluestack-ui/themed"
 
 type IconName = MaterialCommunityIconProps["name"]
 

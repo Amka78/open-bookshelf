@@ -1,5 +1,13 @@
-import { vi, afterEach, describe as baseDescribe, test as baseTest, beforeAll, beforeEach, expect } from "vitest"
 import { act, renderHook } from "@testing-library/react"
+import {
+  afterEach,
+  describe as baseDescribe,
+  test as baseTest,
+  beforeAll,
+  beforeEach,
+  expect,
+  vi,
+} from "vitest"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 const describe = localizeTestRegistrar(baseDescribe)
@@ -11,7 +19,7 @@ vi.doMock("@/models", () => ({
   useStores: useStoresMock,
 }))
 
-vi.doMock("@/components/LeftSideMenu/LeftSideMenu", () => {
+vi.doMock("@/components", () => {
   const CATEGORY_ALIASES: Record<string, string> = {
     author: "authors",
     authors: "authors",

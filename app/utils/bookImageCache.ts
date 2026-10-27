@@ -113,12 +113,12 @@ export function detectCoverImagePath(
 
 /**
  * Cache comic images with size-based priority.
- * 
+ *
  * For large comics, we prioritize caching:
  * 1. Cover image first (for quick preview)
  * 2. First N images (for immediate reading)
  * 3. Remaining images in background
- * 
+ *
  * This improves perceived performance by showing the cover quickly.
  */
 export async function cacheComicImages(
@@ -146,7 +146,7 @@ export async function cacheComicImages(
   cacheDir.create({ idempotent: true, intermediates: true })
 
   const coverPath = detectCoverImagePath(input.pathList)
-  
+
   // Calculate file sizes for priority ordering if metadata is available
   const pathWithSize = input.pathList.map((path) => ({
     path,
@@ -377,4 +377,3 @@ export async function reCacheMissingImages(input: {
 
   return updatedPaths
 }
-

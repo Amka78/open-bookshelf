@@ -1,6 +1,7 @@
 import {
   FormDateTimePicker,
   FormFormatField,
+  FormIdentifierField,
   FormInputField,
   FormMultipleInputField,
   FormRatingGroup,
@@ -10,7 +11,6 @@ import {
   TooltipIconButton,
   VStack,
 } from "@/components"
-import { FormIdentifierField } from "@/components/Forms/FormIdentifierField"
 import { useBookEditAutoActions } from "@/hooks"
 import type { Book, FieldMetadata, MetadataSnapshotIn } from "@/models/calibre"
 import { Switch, Textarea, TextareaInput } from "@gluestack-ui/themed"

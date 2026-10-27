@@ -45,7 +45,6 @@ describe("Store models", () => {
       size: 1234,
       format: "AZW3",
     })
-
     ;[job] = store.calibreRootStore.getConversionJobsForLibrary("main")
     expect(job.status).toBe("done")
     expect(job.percent).toBe(1)

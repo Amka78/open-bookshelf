@@ -9,7 +9,7 @@ import {
 
 type LibraryBookListProps = {
   bookList: Book[]
-  listRef: React.RefObject<React.ElementRef<typeof FlatList>>
+  listRef: React.RefObject<React.ElementRef<typeof FlatList> | null>
   renderItem: FlatListProps<Book>["renderItem"]
   numColumns: number
   isFocused: boolean
@@ -52,7 +52,7 @@ export function LibraryBookList({
           to: numColumns,
           bookListLength: bookList.length,
           windowWidth: window.width,
-        })
+        }),
       )
       prevNumColumnsRef.current = numColumns
     }
@@ -88,11 +88,13 @@ export function LibraryBookList({
     // 縦 ScrollView > 横 ScrollView > .map() の構造にすることで、
     // sticky の参照先は内側の横 ScrollView になり、縦スクロールも維持される。
     const header =
-      ListHeaderComponent != null
-        ? typeof ListHeaderComponent === "function"
-          ? <ListHeaderComponent />
-          : ListHeaderComponent
-        : null
+      ListHeaderComponent != null ? (
+        typeof ListHeaderComponent === "function" ? (
+          <ListHeaderComponent />
+        ) : (
+          ListHeaderComponent
+        )
+      ) : null
 
     return (
       <ScrollView>
@@ -100,9 +102,7 @@ export function LibraryBookList({
         <ScrollView horizontal showsHorizontalScrollIndicator={true}>
           <Box width={Math.max(window.width, horizontalContentWidth)}>
             {bookList.map((item, index) => (
-              <Fragment key={item.id}>
-                {renderItem?.({ item, index, target: "Cell" })}
-              </Fragment>
+              <Fragment key={item.id}>{renderItem?.({ item, index, target: "Cell" })}</Fragment>
             ))}
           </Box>
         </ScrollView>

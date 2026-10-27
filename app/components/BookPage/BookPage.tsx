@@ -1,5 +1,5 @@
 import { Image, type ImageProps } from "@/components"
-import { useMemo, useState } from "react"
+import { useRef, useState } from "react"
 import { useWindowDimensions } from "react-native"
 
 export type BookImageProps = ImageProps & {
@@ -56,8 +56,13 @@ export function BookPage(props: BookImageProps) {
   // Keep a stable source reference that only updates when the URI changes.
   // When URI is unchanged, stableSource is the same object so expo-image
   // skips its loading transition.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const stableSource = useMemo(() => props.source, [sourceUri])
+  const stableSourceRef = useRef(props.source)
+  const lastSourceUriRef = useRef(sourceUri)
+  if (lastSourceUriRef.current !== sourceUri) {
+    lastSourceUriRef.current = sourceUri
+    stableSourceRef.current = props.source
+  }
+  const stableSource = stableSourceRef.current
 
   const dimension = sourceDimension
     ? getContainedDimension(sourceDimension, {

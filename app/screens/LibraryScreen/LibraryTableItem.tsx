@@ -9,19 +9,18 @@ import {
   type ImageProps,
   Input,
   InputField,
+  RatingGroup,
   ScrollView,
   TagInput,
   Text,
   VStack,
 } from "@/components"
-import { RatingGroup } from "@/components/RatingGroup/RatingGroup"
-import type { Book, FieldMetadataMap, MetadataSnapshotIn } from "@/models/calibre"
 import { useElectrobunModal } from "@/hooks/useElectrobunModal"
+import type { Book, FieldMetadataMap, MetadataSnapshotIn } from "@/models/calibre"
 import { usePalette } from "@/theme"
-import { Pressable } from "@gluestack-ui/themed"
 import { observer } from "mobx-react-lite"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { PanResponder, Platform, StyleSheet, View, type ViewStyle } from "react-native"
+import { PanResponder, Platform, Pressable, StyleSheet, View, type ViewStyle } from "react-native"
 
 const BOOK_COLUMN_WIDTH = 150
 const TITLE_COLUMN_WIDTH = 180
@@ -272,13 +271,7 @@ export const LibraryTableHeader = observer(function LibraryTableHeader({
       {renderResizableHeaderCell("title", labels.title, styles.titleCell)}
       {renderResizableHeaderCell("authors", labels.authors, styles.authorsCell)}
       {showSeriesGroup ? (
-        <Box
-          style={[
-            styles.headerCell,
-            styles.seriesGroupCell,
-            { width: seriesGroupWidth },
-          ]}
-        >
+        <Box style={[styles.headerCell, styles.seriesGroupCell, { width: seriesGroupWidth }]}>
           <Text fontWeight="$bold">{labels.seriesName}</Text>
           {onColumnResize ? (
             <>
@@ -356,33 +349,44 @@ export const LibraryTableItem = observer(function LibraryTableItem({
   const [copiedField, setCopiedField] = useState<"authors" | "tags" | null>(null)
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // book.metaData は MST observable。参照が安定しているため、deps には
+  // 「レンダー中に読んだ個別プロパティの値」を入れ、中身の後追い更新を検知する
+  // （MST observable array は参照が安定し useMemo deps にすると取りこぼす）。
+  const metaTitle = book.metaData?.title
+  const metaAuthors = book.metaData?.authors
+  const metaPublisher = book.metaData?.publisher
+  const metaSeries = book.metaData?.series
+  const metaSeriesIndex = book.metaData?.seriesIndex
+  const metaTags = book.metaData?.tags
+  const metaCustomColumns = book.metaData?.customColumns
+
   const isVisible = (key: string): boolean => {
     if (!columnVisibility) return true
     return columnVisibility[key] !== false
   }
 
   useEffect(() => {
-    setTitle(book.metaData!.title ?? "")
-    setAuthors(book.metaData!.authors ?? [])
-    setSeries(book.metaData!.series ?? "")
-    setSeriesIndex(book.metaData!.seriesIndex ?? null)
-    setTags(book.metaData!.tags ?? [])
-    setPublisher(book.metaData!.publisher ?? "")
+    setTitle(metaTitle ?? "")
+    setAuthors(metaAuthors ?? [])
+    setSeries(metaSeries ?? "")
+    setSeriesIndex(metaSeriesIndex ?? null)
+    setTags(metaTags ?? [])
+    setPublisher(metaPublisher ?? "")
     setCustomColumnValues((prev) => {
       const next = new Map(prev)
       customColumns?.forEach((col) => {
-        next.set(col.key, book.metaData?.customColumns?.get(col.key) ?? null)
+        next.set(col.key, metaCustomColumns?.get(col.key) ?? null)
       })
       return next
     })
   }, [
-    book.metaData!.authors,
-    book.metaData!.publisher,
-    book.metaData!.series,
-    book.metaData!.seriesIndex,
-    book.metaData!.tags,
-    book.metaData!.title,
-    book.metaData!.customColumns,
+    metaTitle,
+    metaAuthors,
+    metaPublisher,
+    metaSeries,
+    metaSeriesIndex,
+    metaTags,
+    metaCustomColumns,
     customColumns,
   ])
 
@@ -408,23 +412,14 @@ export const LibraryTableItem = observer(function LibraryTableItem({
 
   const originalValue = useMemo(
     () => ({
-      title: String(book.metaData!.title ?? "").trim(),
-      authors: (book.metaData!.authors ?? [])
-        .map((entry) => String(entry ?? "").trim())
-        .filter(Boolean),
-      publisher: book.metaData!.publisher ? String(book.metaData!.publisher).trim() : null,
-      series: book.metaData!.series ? String(book.metaData!.series).trim() : null,
-      seriesIndex: book.metaData!.seriesIndex ?? null,
-      tags: (book.metaData!.tags ?? []).map((entry) => String(entry ?? "").trim()).filter(Boolean),
+      title: String(metaTitle ?? "").trim(),
+      authors: (metaAuthors ?? []).map((entry) => String(entry ?? "").trim()).filter(Boolean),
+      publisher: metaPublisher ? String(metaPublisher).trim() : null,
+      series: metaSeries ? String(metaSeries).trim() : null,
+      seriesIndex: metaSeriesIndex ?? null,
+      tags: (metaTags ?? []).map((entry) => String(entry ?? "").trim()).filter(Boolean),
     }),
-    [
-      book.metaData!.authors,
-      book.metaData!.publisher,
-      book.metaData!.series,
-      book.metaData!.seriesIndex,
-      book.metaData!.tags,
-      book.metaData!.title,
-    ],
+    [metaTitle, metaAuthors, metaPublisher, metaSeries, metaSeriesIndex, metaTags],
   )
 
   const isDirty = useMemo(() => {
@@ -766,7 +761,10 @@ export const LibraryTableItem = observer(function LibraryTableItem({
                       if (text === "") {
                         handleChange(null)
                       } else {
-                        const num = col.datatype === "int" ? Number.parseInt(text, 10) : Number.parseFloat(text)
+                        const num =
+                          col.datatype === "int"
+                            ? Number.parseInt(text, 10)
+                            : Number.parseFloat(text)
                         if (!Number.isNaN(num)) {
                           handleChange(num)
                         }

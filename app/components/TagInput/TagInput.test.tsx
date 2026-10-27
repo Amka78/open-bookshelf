@@ -137,6 +137,30 @@ vi.doMock("react-native", () => ({
     create: <T extends Record<string, unknown>>(value: T) => value,
     hairlineWidth: 1,
   },
+  // TagInput は gluestack ではなく react-native の Pressable を使うため、
+  // こちらのモックに onClick→onPress 変換が必要 (gluestack 側のモックは届かない)。
+  Pressable: ({
+    children,
+    onPress,
+    style,
+    testID,
+  }: {
+    children?: ReactNode
+    onPress?: () => void
+    style?: unknown
+    testID?: string
+  }) => (
+    <div
+      data-testid={testID}
+      onClick={onPress}
+      onKeyDown={onPress}
+      style={normalizeStyle(style)}
+      role="button"
+      tabIndex={0}
+    >
+      {children}
+    </div>
+  ),
 }))
 
 let TagInput: typeof import("./TagInput").TagInput

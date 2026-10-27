@@ -1,7 +1,7 @@
+import { LabeledSpinner } from "@/components"
 import { Center, Spinner } from "@gluestack-ui/themed"
 import { type FlashListProps, type FlashListRef, FlashList as Origin } from "@shopify/flash-list"
 import React, { useState } from "react"
-import { LabeledSpinner } from "../LabeledSpinner/LabeledSpinner"
 
 export type FlatListProps<T> = FlashListProps<T> & {
   preparing?: boolean

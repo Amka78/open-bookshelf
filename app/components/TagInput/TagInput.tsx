@@ -8,9 +8,8 @@ import {
   Text,
 } from "@/components"
 import { usePalette } from "@/theme"
-import { Pressable } from "@gluestack-ui/themed"
 import { useState } from "react"
-import { Platform, StyleSheet } from "react-native"
+import { Platform, Pressable, StyleSheet } from "react-native"
 
 export type TagInputProps = {
   value: string[]

@@ -9,7 +9,11 @@ export type BookDetailFieldProps = {
   onLinkPress?: (link: string) => void
 }
 
-const onLinkPress = (linkName: string, metadata: FieldMetadata, postProcess: (query: string) => void) => {
+const onLinkPress = (
+  linkName: string,
+  metadata: FieldMetadata,
+  postProcess: (query: string) => void,
+) => {
   const link = `${metadata.searchTerms[0]}:=${linkName}`
 
   postProcess(link)

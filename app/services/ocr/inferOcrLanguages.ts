@@ -21,7 +21,14 @@ const OCR_LANGUAGE_ALIASES: Record<string, string> = {
 
 export function inferOcrLanguages(languages: string[]): string[] {
   const resolved = languages
-    .map((language) => OCR_LANGUAGE_ALIASES[String(language ?? "").trim().toLowerCase()])
+    .map(
+      (language) =>
+        OCR_LANGUAGE_ALIASES[
+          String(language ?? "")
+            .trim()
+            .toLowerCase()
+        ],
+    )
     .filter(Boolean)
 
   if (resolved.length > 0) {

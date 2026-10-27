@@ -1,9 +1,9 @@
 import { Box, HStack, MaterialCommunityIcon, Text } from "@/components"
 import { usePalette } from "@/theme"
 import { logger } from "@/utils/logger"
-import { Pressable } from "@gluestack-ui/themed"
 import { Children, useState } from "react"
 import type { ReactNode } from "react"
+import { Pressable } from "react-native"
 
 export type LeftSideMenuItemProps = {
   name: string
@@ -62,11 +62,13 @@ export function LeftSideMenuItem({ mode = "category", ...restProps }: LeftSideMe
           {props.onCalibreOperatorToggle && (
             <Pressable
               onPress={props.onCalibreOperatorToggle}
-              marginRight={"$1"}
-              paddingHorizontal={"$1"}
-              paddingVertical={"$0.5"}
-              backgroundColor={palette.surfaceStrong}
-              borderRadius={"$sm"}
+              style={{
+                marginRight: 4,
+                paddingHorizontal: 4,
+                paddingVertical: 2,
+                backgroundColor: palette.surfaceStrong,
+                borderRadius: 4,
+              }}
             >
               <Text fontSize={"$xs"} fontWeight="$bold" color={palette.textSecondary}>
                 {props.calibreOperator ?? "="}
@@ -85,11 +87,13 @@ export function LeftSideMenuItem({ mode = "category", ...restProps }: LeftSideMe
           {props.selected && props.onOperatorToggle && (
             <Pressable
               onPress={props.onOperatorToggle}
-              marginLeft={"$1"}
-              paddingHorizontal={"$1"}
-              paddingVertical={"$0.5"}
-              backgroundColor={palette.surfaceStrong}
-              borderRadius={"$sm"}
+              style={{
+                marginLeft: 4,
+                paddingHorizontal: 4,
+                paddingVertical: 2,
+                backgroundColor: palette.surfaceStrong,
+                borderRadius: 4,
+              }}
             >
               <Text fontSize={"$xs"} fontWeight="$bold" color={palette.accent}>
                 {props.operator ?? "AND"}

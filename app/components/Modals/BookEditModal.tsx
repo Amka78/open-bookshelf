@@ -1,8 +1,4 @@
-import { BookEditFieldList } from "@/components/BookEditFieldList/BookEditFieldList"
-import { Button } from "@/components/Button/Button"
-import { FormImageUploader } from "@/components/Forms/FormImageUploader"
-import { HStack } from "@/components/HStack/HStack"
-import { Heading } from "@/components/Heading/Heading"
+import { BookEditFieldList, Button, FormImageUploader, HStack, Heading } from "@/components"
 import type { ModalComponentProp } from "react-native-modalfy"
 
 import { useStores } from "@/models"
@@ -115,9 +111,7 @@ export const BookEditModal = observer((props: BookEditModalProps) => {
           tagBrowser: selectedLibrary.tagBrowser,
           onOKPress(value, updateFields) {
             // Compute removed formats
-            const currentFormats = (value.formats ?? []).map((f: string) =>
-              String(f).toUpperCase(),
-            )
+            const currentFormats = (value.formats ?? []).map((f: string) => String(f).toUpperCase())
             const removedFormats = originalFormats
               .map((f) => String(f).toUpperCase())
               .filter((f) => !currentFormats.includes(f))

@@ -16,12 +16,14 @@ export function useViewerPreparation<RouteName extends ViewerRouteName>(routeNam
   const modal = useElectrobunModal()
   const { calibreRootStore, settingStore } = useStores()
   const request = (route.params as { request?: ViewerOpenRequest } | undefined)?.request
-  const requestKey = request ? `${request.libraryId}:${request.bookId}:${request.format}` : undefined
+  const requestKey = request
+    ? `${request.libraryId}:${request.bookId}:${request.format}`
+    : undefined
   const completedRequestKeyRef = useRef<string | undefined>(undefined)
   const [phase, setPhase] = useState<ViewerPreparationPhase>(request ? "preparing" : "ready")
   const [messageTx, setMessageTx] = useState<MessageKey>("viewerPreparation.preparing")
 
-  useEffect((): void | (() => void) => {
+  useEffect(() => {
     if (!requestKey || !request) {
       setPhase("ready")
       setMessageTx("viewerPreparation.preparing")

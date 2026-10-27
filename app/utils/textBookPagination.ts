@@ -10,10 +10,7 @@ export type TextBookProgressLocation = {
   progressInSpine: number
 }
 
-export const getEffectiveSpinePageCount = (
-  pageCounts: readonly number[],
-  spineIndex: number,
-) => {
+export const getEffectiveSpinePageCount = (pageCounts: readonly number[], spineIndex: number) => {
   return Math.max(1, Math.floor(pageCounts[spineIndex] ?? 1))
 }
 
@@ -207,10 +204,7 @@ export const mapProgressFractionToSpineLocation = (
       const spineLength = getEffectiveSpineContentLength(contentLengths, spineIndex)
       return {
         spineIndex,
-        progressInSpine: Math.max(
-          0,
-          Math.min((targetOffset - spineOffset) / spineLength, 1),
-        ),
+        progressInSpine: Math.max(0, Math.min((targetOffset - spineOffset) / spineLength, 1)),
       }
     }
   }
@@ -228,9 +222,20 @@ export const mapProgressFractionToDisplayPage = (
     return 0
   }
 
-  const estimatedPageCounts = estimateSpinePageCounts(spineCount, measuredPageCounts, contentLengths)
-  const progressLocation = mapProgressFractionToSpineLocation(progressFraction, spineCount, contentLengths)
-  const spinePageCount = getEffectiveSpinePageCount(estimatedPageCounts, progressLocation.spineIndex)
+  const estimatedPageCounts = estimateSpinePageCounts(
+    spineCount,
+    measuredPageCounts,
+    contentLengths,
+  )
+  const progressLocation = mapProgressFractionToSpineLocation(
+    progressFraction,
+    spineCount,
+    contentLengths,
+  )
+  const spinePageCount = getEffectiveSpinePageCount(
+    estimatedPageCounts,
+    progressLocation.spineIndex,
+  )
   const pageInSpine =
     spinePageCount <= 1 ? 0 : Math.round(progressLocation.progressInSpine * (spinePageCount - 1))
 

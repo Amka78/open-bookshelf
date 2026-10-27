@@ -1,4 +1,11 @@
-import { vi, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
+import {
+  vi,
+  beforeAll,
+  beforeEach,
+  describe as baseDescribe,
+  expect,
+  test as baseTest,
+} from "vitest"
 import { fireEvent, render } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
@@ -31,35 +38,18 @@ vi.doMock("@/hooks/useDownloadBook", () => ({
   useDownloadBook: () => ({ execute: vi.fn() }),
 }))
 
-vi.doMock("@/components/BookDetailFieldList/BookDetailFieldList", () => ({
+vi.doMock("@/components", () => ({
+  ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
   BookDetailFieldList: () => <div data-testid="book-detail-field-list" />,
-}))
-
-vi.doMock("@/components/BookDetailMenu/BookDetailMenu", () => ({
   BookDetailMenu: ({ onRunCoverOcr }: { onRunCoverOcr?: () => void }) => (
     <button data-testid="book-detail-run-cover-ocr" type="button" onClick={onRunCoverOcr}>
       OCR
     </button>
   ),
-}))
-
-vi.doMock("@/components/BookImageItem/BookImageItem", () => ({
   BookImageItem: () => <div data-testid="book-detail-image" />,
-}))
-
-vi.doMock("@/components/Box/Box", () => ({
   Box: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-}))
-
-vi.doMock("@/components/HStack/HStack", () => ({
   HStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-}))
-
-vi.doMock("@/components/Heading/Heading", () => ({
   Heading: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-}))
-
-vi.doMock("@/components/VStack/VStack", () => ({
   VStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 

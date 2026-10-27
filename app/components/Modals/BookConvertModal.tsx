@@ -1,6 +1,4 @@
-import { BookConvertForm } from "@/components/BookConvertForm/BookConvertForm"
-import { Button } from "@/components/Button/Button"
-import { Heading } from "@/components/Heading/Heading"
+import { BookConvertForm, Button, Heading } from "@/components"
 import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import { useBookConvert } from "@/screens/BookConvertScreen/useBookConvert"
 import { observer } from "mobx-react-lite"

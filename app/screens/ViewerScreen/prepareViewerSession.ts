@@ -1,5 +1,5 @@
 import type { MessageKey } from "@/i18n"
-import { useStores } from "@/models"
+import type { useStores } from "@/models"
 import { ReadingHistoryModel } from "@/models/calibre"
 import type { ViewerOpenRequest } from "@/navigators/types"
 import {
@@ -73,10 +73,7 @@ export async function prepareViewerSession({
 }: PrepareViewerSessionParams) {
   reportProgress(onProgress, "viewerPreparation.preparing")
 
-  const { selectedBook, selectedLibrary } = resolveSelectedLibraryAndBook(
-    calibreRootStore,
-    request,
-  )
+  const { selectedBook, selectedLibrary } = resolveSelectedLibraryAndBook(calibreRootStore, request)
   const { format } = request
 
   selectedBook.metaData!.setProp("selectedFormat", format)
@@ -242,7 +239,9 @@ export async function prepareViewerSession({
       isComic: comicMetadata?.isComic ?? null,
       rasterCoverName: comicMetadata?.rasterCoverName ?? null,
       totalLength: comicMetadata?.totalLength ?? null,
-      fileMetadataJson: comicMetadata?.fileMetadata ? JSON.stringify(comicMetadata.fileMetadata) : null,
+      fileMetadataJson: comicMetadata?.fileMetadata
+        ? JSON.stringify(comicMetadata.fileMetadata)
+        : null,
       bookHash: hash,
       cacheVerified: true,
     })

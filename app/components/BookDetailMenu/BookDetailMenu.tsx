@@ -1,11 +1,5 @@
-import { HStack } from "../HStack/HStack"
-import type { HStackProps } from "../HStack/HStack"
-import type { IconButtonProps } from "../IconButton/IconButton"
-import type { MaterialCommunityIconProps } from "../MaterialCommunityIcon/MaterialCommunityIcon"
-import { TooltipIconButton } from "../TooltipIconButton/TooltipIconButton"
+import { HStack, type HStackProps, type IconButtonProps, TooltipIconButton } from "@/components"
 import { StyleSheet } from "react-native"
-
-type IconName = MaterialCommunityIconProps["name"]
 
 export type BookDetailMenuProps = {
   onOpenBook: () => Promise<void>
@@ -106,16 +100,6 @@ export function BookDetailMenu(props: BookDetailMenuProps) {
           onPress={wrapMenuAction(props.onSendByEmail)}
           testID="book-detail-send-email-button"
           tooltipTx="emailDelivery.buttonTooltip"
-        />
-      )}
-      {props.onSetStatus != null && (
-        <TooltipIconButton
-          {...sharedIconButtonProps}
-          name={statusIconName}
-          iconSize={iconSize}
-          onPress={wrapMenuAction(handleCycleStatus)}
-          testID="book-detail-status-button"
-          tooltipTx="bookDetailMenu.setStatusTooltip"
         />
       )}
       <TooltipIconButton

@@ -27,9 +27,7 @@ export function BookDetailFieldList(props: BookDetailFieldListProps) {
               (typeof value === "string" && value.length !== 0) ||
               (Array.isArray(value) && value.length !== 0))
 
-          return fieldMetadata?.name &&
-            isNonEmpty &&
-            !ExcludeFields.includes(fieldName) ? (
+          return fieldMetadata?.name && isNonEmpty && !ExcludeFields.includes(fieldName) ? (
             <BookDetailField
               key={fieldName}
               value={value as string | string[] | number | Date}

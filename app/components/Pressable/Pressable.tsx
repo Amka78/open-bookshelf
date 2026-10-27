@@ -1,3 +1,3 @@
-import { Pressable } from "@gluestack-ui/themed"
+import { Pressable } from "react-native"
 
 export { Pressable }

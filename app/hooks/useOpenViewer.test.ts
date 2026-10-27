@@ -51,7 +51,6 @@ describe("useOpenViewer", () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-
     ;(useNavigation as vi.Mock).mockReturnValue({ navigate })
     ;(useStores as vi.Mock).mockReturnValue({
       calibreRootStore: {

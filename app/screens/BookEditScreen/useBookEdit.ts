@@ -8,8 +8,8 @@ import { getSnapshot } from "mobx-state-tree"
 import { useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import {
-  buildMetadataFormDefaults,
   type MetadataFormValues,
+  buildMetadataFormDefaults,
   toLanguageNamesForUpdate,
 } from "./bookMetadataForm"
 
@@ -32,7 +32,9 @@ export function useBookEdit() {
   const pendingAddedFormats = useRef<AddedFormatEntry[]>([])
 
   const onSubmit = form.handleSubmit(async (value: MetadataFormValues) => {
-    const updatedValue = hasLangNames ? toLanguageNamesForUpdate(value, langNames) : toLanguageNamesForUpdate(value, {})
+    const updatedValue = hasLangNames
+      ? toLanguageNamesForUpdate(value, langNames)
+      : toLanguageNamesForUpdate(value, {})
 
     // Compute removed formats by comparing original with current form value
     const originalFormats = (bookMetaDataSnapshot?.formats ?? []).map((f) =>
@@ -46,9 +48,7 @@ export function useBookEdit() {
         ? {
             removed_formats: removedFormats.length > 0 ? removedFormats : undefined,
             added_formats:
-              pendingAddedFormats.current.length > 0
-                ? pendingAddedFormats.current
-                : undefined,
+              pendingAddedFormats.current.length > 0 ? pendingAddedFormats.current : undefined,
           }
         : undefined
 

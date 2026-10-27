@@ -1,6 +1,5 @@
 import { fireEvent } from "@testing-library/react"
-import { Box } from "@/components/Box/Box"
-import { Pressable } from "@/components/Pressable/Pressable"
+import { Box, Pressable } from "@/components"
 import type { Meta, StoryObj } from "@storybook/react"
 import { useState } from "react"
 import { SearchInputField } from "./SearchInputField"

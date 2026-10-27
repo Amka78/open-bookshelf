@@ -1,10 +1,8 @@
-import { BookEditModal } from "@/components/Modals/BookEditModal"
-import { useConvergence } from "@/hooks/useConvergence"
 import type { ApppNavigationProp } from "@/navigators/types"
 import { BookEditScreen } from "@/screens/BookEditScreen/BookEditScreen"
 import { useNavigation } from "@react-navigation/native"
 import type { Meta, StoryObj } from "@storybook/react"
-import { type ReactElement, useLayoutEffect } from "react"
+import { useLayoutEffect } from "react"
 
 import { defaultBookImageUrl } from "../../../.storybook/stories/defaultBookImageUrl"
 import { ScreenContainer } from "../../../.storybook/stories/screens/ScreenContainer"
@@ -74,33 +72,17 @@ async function playLargeScreenShowsSaveButton({
 
 const defaultImageUrl = defaultBookImageUrl
 
-const BookEditModalStoryComponent = BookEditModal as unknown as (props: {
-  modal: unknown
-}) => ReactElement
-
-function createBookEditModalProps(imageUrl: string) {
-  return {
-    params: {
-      imageUrl,
-    },
-    closeAllModals: () => {},
-    closeModal: () => {},
-    openModal: () => {},
-  }
-}
-
-function ResponsiveBookEditStory({ imageUrl }: { imageUrl: string }) {
-  const { isLarge } = useConvergence()
+function ResponsiveBookEditStory() {
   const navigation = useNavigation<ApppNavigationProp>()
-  const modalProp = createBookEditModalProps(imageUrl)
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerShown: !isLarge,
+      // ストーリーでは大画面でもスクリーン自体を検証するためヘッダーを表示したままにする。
+      headerShown: true,
     })
-  }, [isLarge, navigation])
+  }, [navigation])
 
-  return isLarge ? <BookEditModalStoryComponent modal={modalProp} /> : <BookEditScreen />
+  return <BookEditScreen />
 }
 
 export default {
@@ -123,7 +105,7 @@ export default {
             options: {
               headerShown: true,
             },
-            story: () => <ResponsiveBookEditStory imageUrl={imageUrl} />,
+            story: () => <ResponsiveBookEditStory />,
           }}
         />
       )

@@ -1,7 +1,4 @@
-import { Button } from "@/components/Button/Button"
-import { Heading } from "@/components/Heading/Heading"
-import { Input } from "@/components/Input/Input"
-import { Text } from "@/components/Text/Text"
+import { Button, Heading, Input, Text } from "@/components"
 import { InputField, VStack } from "@gluestack-ui/themed"
 import { useState } from "react"
 import type { ModalComponentProp } from "react-native-modalfy"

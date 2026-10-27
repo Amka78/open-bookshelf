@@ -1,4 +1,11 @@
-import { vi, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
+import {
+  vi,
+  beforeAll,
+  beforeEach,
+  describe as baseDescribe,
+  expect,
+  test as baseTest,
+} from "vitest"
 import { fireEvent, render } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
@@ -16,7 +23,8 @@ vi.doMock("/home/amka78/private/open-bookshelf/app/models/index.ts", () => ({
   useStores: useStoresMock,
 }))
 
-vi.doMock("@/components/Button/Button", () => ({
+vi.doMock("@/components", () => ({
+  ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
   Button: ({
     children,
     tx,
@@ -32,25 +40,13 @@ vi.doMock("@/components/Button/Button", () => ({
       {children ?? tx}
     </button>
   ),
-}))
-
-vi.doMock("@/components/Heading/Heading", () => ({
   Heading: ({ children, tx }: { children?: ReactNode; tx?: string }) => <div>{children ?? tx}</div>,
-}))
-
-vi.doMock("@/components/IconButton/IconButton", () => ({
   IconButton: ({ onPress, testID }: { onPress?: () => void; testID?: string }) => (
     <button data-testid={testID} type="button" onClick={onPress}>
       icon
     </button>
   ),
-}))
-
-vi.doMock("@/components/Input/Input", () => ({
   Input: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-}))
-
-vi.doMock("@/components/Text/Text", () => ({
   Text: ({ children, tx }: { children?: ReactNode; tx?: string }) => <div>{children ?? tx}</div>,
 }))
 

@@ -1,6 +1,4 @@
-import { Button } from "@/components/Button/Button"
-import { Heading } from "@/components/Heading/Heading"
-import { Text } from "@/components/Text/Text"
+import { Button, Heading, Text } from "@/components"
 import { ScrollView } from "@gluestack-ui/themed"
 import React from "react"
 import type { ModalComponentProp } from "react-native-modalfy"

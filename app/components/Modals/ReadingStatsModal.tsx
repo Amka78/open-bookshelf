@@ -1,6 +1,4 @@
-import { Button } from "@/components/Button/Button"
-import { Heading } from "@/components/Heading/Heading"
-import { Text } from "@/components/Text/Text"
+import { Button, Heading, Text } from "@/components"
 import { useStores } from "@/models"
 import { HStack, ScrollView, VStack } from "@gluestack-ui/themed"
 import { observer } from "mobx-react-lite"
@@ -50,10 +48,9 @@ export const ReadingStatsModal = observer((props: ReadingStatsModalProps) => {
                   const book = selectedLibrary?.books.get(h.bookId.toString())
                   const title = book?.metaData?.title ?? String(h.bookId)
                   return (
-                    <Text
-                      key={`${h.libraryId}-${h.bookId}-${h.format}`}
-                      numberOfLines={1}
-                    >{title}</Text>
+                    <Text key={`${h.libraryId}-${h.bookId}-${h.format}`} numberOfLines={1}>
+                      {title}
+                    </Text>
                   )
                 })}
               </VStack>

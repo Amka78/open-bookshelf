@@ -1,9 +1,4 @@
-import { Box } from "@/components/Box/Box"
-import { Button } from "@/components/Button/Button"
-import { Heading } from "@/components/Heading/Heading"
-import { RootContainer } from "@/components/RootContainer/RootContainer"
-import { Text } from "@/components/Text/Text"
-import { VStack } from "@/components/VStack/VStack"
+import { Box, Button, Heading, RootContainer, Text, VStack } from "@/components"
 import React, { type ErrorInfo } from "react"
 import { ScrollView, type TextStyle, type ViewStyle } from "react-native"
 
@@ -52,5 +47,3 @@ const $errorBacktrace: TextStyle = {
   //marginTop: spacing.medium,
   //color: colors.textDim,
 }
-
-

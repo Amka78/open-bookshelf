@@ -26,7 +26,6 @@ export const BookDetailScreen: FC = observer(() => {
     handleSendByEmail,
     handleFieldPress,
     readStatus,
-    handleSetStatus,
     handleDownloadFormat,
     handleDeleteFormat,
     handleUploadFormat,
@@ -47,8 +46,6 @@ export const BookDetailScreen: FC = observer(() => {
         onDeleteBook={handleDeleteBook}
         onShareLink={handleShareLink}
         onSendByEmail={handleSendByEmail}
-        readStatus={readStatus ?? null}
-        onSetStatus={handleSetStatus}
       />
       <BookDetailFieldList
         book={selectedBook}

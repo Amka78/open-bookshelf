@@ -33,7 +33,6 @@ import type {
   ApiFeedResponse,
   ApiTagBrowser,
   CalibreAnnotation,
-
   LastReadPosition,
   SetBookMetadata,
   SetBookResult,
@@ -709,7 +708,10 @@ export class Api {
       if (problem) return problem
     }
 
-    return { kind: "ok", data: response.data as ApiBookManifestStatusType | ApiBookManifestResultType }
+    return {
+      kind: "ok",
+      data: response.data as ApiBookManifestStatusType | ApiBookManifestResultType,
+    }
   }
 
   /**
@@ -1115,7 +1117,6 @@ export class Api {
     }
     return { kind: "ok" }
   }
-
 }
 
 // Singleton instance of the API for convenience

@@ -42,10 +42,7 @@ type AnnotationPageLocation =
       spineName?: string
     }
 
-function resolveAnnotationPosition(
-  location: AnnotationPageLocation,
-  spinePaths: string[],
-) {
+function resolveAnnotationPosition(location: AnnotationPageLocation, spinePaths: string[]) {
   if (typeof location === "number") {
     const totalPages = spinePaths.length || 1
     return {
@@ -76,10 +73,12 @@ export function useAnnotations() {
     async (location: AnnotationPageLocation, title?: string): Promise<boolean> => {
       if (!selectedBook || !selectedLibrary) return false
       const selectedFormat = selectedBook.metaData?.selectedFormat ?? ""
-      const { posFrac, spineIndex, spineName, title: defaultTitle } = resolveAnnotationPosition(
-        location,
-        selectedBook.path.slice(),
-      )
+      const {
+        posFrac,
+        spineIndex,
+        spineName,
+        title: defaultTitle,
+      } = resolveAnnotationPosition(location, selectedBook.path.slice())
       const uuid = generateUuid()
       const timestamp = new Date().toISOString()
 
@@ -173,9 +172,7 @@ export function useAnnotations() {
         ...annotationToApi(annToDelete),
         removed: true,
       }
-      const remaining = selectedBook.annotations
-        .filter((a) => a.uuid !== uuid)
-        .map(annotationToApi)
+      const remaining = selectedBook.annotations.filter((a) => a.uuid !== uuid).map(annotationToApi)
       const allAnnotations = [...remaining, removedAnnotation]
 
       const result = await api.saveAnnotations(

@@ -5,7 +5,7 @@ import type { Book } from "@/models/calibre"
 import { api } from "@/services/api"
 import { logger } from "@/utils/logger"
 import type { DocumentPickerAsset } from "expo-document-picker"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 export type LibraryViewStyle = "gridView" | "viewList"
 export type LibrarySelectionMode = "none" | "single" | "multi"
 
@@ -121,12 +121,12 @@ export function useLibrary() {
     })
   }
 
-  const clearSelection = () => {
+  const clearSelection = useCallback(() => {
     setSelectionState({
       mode: "none",
       selectedBookIds: new Set(),
     })
-  }
+  }, [])
 
   const isBookSelected = (bookId: number) => selectedBookIds.has(bookId)
 
@@ -230,15 +230,19 @@ export function useLibrary() {
     setHeaderSearchText(selectedLibrary?.searchSetting?.query ?? "")
   }, [selectedLibrary?.searchSetting?.query])
 
-  // Clear selection when search conditions change (query, virtual library, or sort)
-  useEffect(() => {
-    clearSelection()
-  }, [
+  // 検索条件（query / vl / sort / sortOrder）の変化で選択を解除する
+  const searchConditionsKey = [
     selectedLibrary?.searchSetting?.query,
     selectedLibrary?.searchSetting?.vl,
     selectedLibrary?.searchSetting?.sort,
     selectedLibrary?.searchSetting?.sortOrder,
-  ])
+  ].join(":")
+
+  useEffect(() => {
+    if (searchConditionsKey !== "") {
+      clearSelection()
+    }
+  }, [clearSelection, searchConditionsKey])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: MST observable (settingStore.booksPerPage) is tracked via observer(); adding it to deps would cause unnecessary re-fetches
   useEffect(() => {

@@ -1,4 +1,12 @@
-import { vi, afterEach, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
+import {
+  vi,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe as baseDescribe,
+  expect,
+  test as baseTest,
+} from "vitest"
 import { fireEvent, render, waitFor } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
@@ -42,7 +50,8 @@ vi.doMock("@/screens/BookOcrReviewScreen/BookOcrReviewContent", () => ({
   BookOcrReviewContent: () => <div data-testid="book-ocr-review-content" />,
 }))
 
-vi.doMock("@/components/Button/Button", () => ({
+vi.doMock("@/components", () => ({
+  ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
   Button: ({
     onPress,
     children,
@@ -56,13 +65,7 @@ vi.doMock("@/components/Button/Button", () => ({
       {children}
     </button>
   ),
-}))
-
-vi.doMock("@/components/Heading/Heading", () => ({
   Heading: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-}))
-
-vi.doMock("@/components/ScrollView/ScrollView", () => ({
   ScrollView: ({ children, ...props }: { children?: ReactNode }) => {
     scrollViewPropsSpy(props)
     return <div>{children}</div>

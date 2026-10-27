@@ -1,7 +1,4 @@
-import { Button } from "@/components/Button/Button"
-import { FormInputField } from "@/components/Forms/FormInputField"
-import { Heading } from "@/components/Heading/Heading"
-import { Input } from "@/components/Input/Input"
+import { Button, FormInputField, Heading, Input } from "@/components"
 import React from "react"
 import type { ModalComponentProp } from "react-native-modalfy"
 

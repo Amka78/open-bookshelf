@@ -1,6 +1,6 @@
-import { vi, describe as baseDescribe, test as baseTest, beforeEach, expect } from "vitest"
 import { render } from "@testing-library/react"
 import type { ReactNode } from "react"
+import { describe as baseDescribe, test as baseTest, beforeEach, expect, vi } from "vitest"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 const describe = localizeTestRegistrar(baseDescribe)
@@ -23,27 +23,7 @@ vi.doMock("@react-navigation/native", () => ({
   useRoute: useRouteMock,
 }))
 
-vi.doMock("@/components/Box/Box", () => ({
-  Box: ({ children, testID }: { children?: ReactNode; testID?: string }) => (
-    <div data-testid={testID}>{children}</div>
-  ),
-}))
-
-vi.doMock("@/components/IconButton/IconButton", () => ({
-  IconButton: ({
-    onPress,
-    testID,
-  }: {
-    onPress?: () => void
-    testID?: string
-  }) => (
-    <button type="button" data-testid={testID} onClick={onPress}>
-      Search
-    </button>
-  ),
-}))
-
-vi.doMock("@/components/LeftSideMenu/LeftSideMenu", () => {
+vi.doMock("@/components", () => {
   const CATEGORY_ALIASES: Record<string, string> = {
     author: "authors",
     authors: "authors",
@@ -100,6 +80,21 @@ vi.doMock("@/components/LeftSideMenu/LeftSideMenu", () => {
     return `${cat}:=${val}`
   }
   return {
+    ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
+    Box: ({ children, testID }: { children?: ReactNode; testID?: string }) => (
+      <div data-testid={testID}>{children}</div>
+    ),
+    IconButton: ({
+      onPress,
+      testID,
+    }: {
+      onPress?: () => void
+      testID?: string
+    }) => (
+      <button type="button" data-testid={testID} onClick={onPress}>
+        Search
+      </button>
+    ),
     LeftSideMenu: () => <div data-testid="left-side-menu" />,
     normalizeCategoryKey,
     buildItemKey,

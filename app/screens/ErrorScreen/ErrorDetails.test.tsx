@@ -1,6 +1,6 @@
-import { vi, describe as baseDescribe, test as baseTest, beforeEach, expect } from "vitest"
 import { fireEvent, render } from "@testing-library/react"
 import type { ErrorInfo, ReactNode } from "react"
+import { describe as baseDescribe, test as baseTest, beforeEach, expect, vi } from "vitest"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 async function findByTestId(canvasElement: HTMLElement, testId: string): Promise<HTMLElement> {
@@ -25,29 +25,18 @@ async function playPressResetButton({ canvasElement }: { canvasElement: HTMLElem
 
 const BoxMock = vi.fn(({ children }: { children?: ReactNode }) => <div>{children}</div>)
 
-vi.doMock("@/components/Box/Box", () => ({
+vi.doMock("@/components", () => ({
+  ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
   Box: (props: { children?: ReactNode; flex?: number; testID?: string }) => BoxMock(props),
-}))
-
-vi.doMock("@/components/Button/Button", () => ({
   Button: ({ onPress, testID }: { onPress?: () => void; testID?: string }) => (
-    <button type="button" data-testid={testID} onClick={onPress}>
+    <button data-testid={testID} type="button" onClick={onPress}>
       Reset
     </button>
   ),
-}))
-
-vi.doMock("@/components/Heading/Heading", () => ({
   Heading: ({ tx }: { tx?: string }) => <h1>{tx}</h1>,
-}))
-
-vi.doMock("@/components/RootContainer/RootContainer", () => ({
   RootContainer: ({ children, testID }: { children?: ReactNode; testID?: string }) => (
     <div data-testid={testID}>{children}</div>
   ),
-}))
-
-vi.doMock("@/components/Text/Text", () => ({
   Text: ({
     children,
     selectable: _,
@@ -56,9 +45,6 @@ vi.doMock("@/components/Text/Text", () => ({
     selectable?: boolean
     style?: unknown
   }) => <span>{children}</span>,
-}))
-
-vi.doMock("@/components/VStack/VStack", () => ({
   VStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 

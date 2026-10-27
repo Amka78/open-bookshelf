@@ -305,6 +305,7 @@ const componentsMockFactory = () => ({
   BookPage: "div",
   BookViewer: "div",
   Button: "button",
+  BookEditFieldNavList: "div",
   FlatList: ({
     data,
     renderItem,
@@ -313,6 +314,7 @@ const componentsMockFactory = () => ({
     renderItem?: (arg: { item: unknown; index: number }) => unknown
   }) => (data ?? []).map((item: unknown, i: number) => renderItem?.({ item, index: i })),
   FormCheckbox: "input",
+  FormIdentifierField: "input",
   FormInputField: "input",
   Heading: "h1",
   HStack: "div",
@@ -320,6 +322,7 @@ const componentsMockFactory = () => ({
   Image: "img",
   Input: "div",
   LabeledSpinner: "div",
+  LeftSideMenuItem: "div",
   ListItem: ({
     LeftComponent,
     children,
@@ -437,6 +440,26 @@ vi.doMock("react-native-webview", () => ({
   WebView: "WebView",
 }))
 
+// react-native-safe-area-context は外部化すると内部の require("react-native") が
+// 素の Node で Flow ソース (react-native/index.js) を読んで SyntaxError になるため、
+// 他の expo 系と同様にモックで置き換える。
+vi.doMock("react-native-safe-area-context", () => ({
+  SafeAreaView: "div",
+  SafeAreaProvider: ({ children }: { children?: unknown }) => children,
+  SafeAreaInsetsContext: { Consumer: ({ children }: { children?: unknown }) => children ?? null },
+  useSafeAreaInsets: vi.fn(() => ({ top: 0, bottom: 0, left: 0, right: 0 })),
+  useSafeAreaFrame: vi.fn(() => ({ x: 0, y: 0, width: 0, height: 0 })),
+  initialWindowMetrics: null,
+}))
+
+// expo-image は外部化すると内部の import { SharedRef } from "expo" が expo の
+// TS ソース (main: src/Expo.ts) を素の Node で読んで失敗するためモックする。
+vi.doMock("expo-image", () => ({
+  Image: "img",
+  prefetch: vi.fn(async () => true),
+  clearCache: vi.fn(async () => {}),
+}))
+
 vi.doMock("react-native/Libraries/Utilities/codegenNativeComponent", () => ({
   __esModule: true,
   default: () => "MockNativeComponent",
@@ -528,6 +551,15 @@ vi.doMock("@gluestack-ui/themed", () => {
     useBreakpointValue: vi.fn(),
   }
 })
+
+// @gluestack-style/react は未モックだと素の Node が内部の require("react-native")
+// (Flow ソース) を読んで SyntaxError になるため、styled だけ差し替える
+// (RatingGroup.tsx が直接 import している)。
+vi.doMock("@gluestack-style/react", () => ({
+  styled: vi.fn((component: unknown) => component),
+  useStyleResolver: vi.fn(),
+  createStyled: vi.fn(() => (component: unknown) => component),
+}))
 // Store base gluestack mock for test files that need to extend it without losing exports.
 ;(global as { __gluestackMock?: Record<string, unknown> }).__gluestackMock = {
   Box: "div",

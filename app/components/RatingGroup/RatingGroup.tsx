@@ -36,7 +36,9 @@ const RatingGroupCore = ({ ticks = 2, ref, ...restProps }: RatingGroupProps) => 
             key={`rating-option-${value ?? 0}`}
             rating={value}
             onPress={onSelectRating}
-            {...({ variant: value === props.selectedValue ? "selected" : "selectable" } as { variant: "selected" | "selectable" })}
+            {...({ variant: value === props.selectedValue ? "selected" : "selectable" } as {
+              variant: "selected" | "selectable"
+            })}
           />
         )
       })}

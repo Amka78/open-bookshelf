@@ -1,6 +1,4 @@
-import { Button } from "@/components/Button/Button"
-import { Heading } from "@/components/Heading/Heading"
-import { Text } from "@/components/Text/Text"
+import { Button, Heading, Text } from "@/components"
 import type { MessageKey } from "@/i18n"
 import { useStores } from "@/models"
 import type { ConversionJob } from "@/models/calibre"

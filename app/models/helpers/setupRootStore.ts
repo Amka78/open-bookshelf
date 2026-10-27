@@ -23,7 +23,7 @@ const ROOT_STATE_STORAGE_KEY = "root-v1"
 /**
  * Setup the root state.
  */
-let _disposer: IDisposer
+let _disposer: IDisposer | undefined
 export async function setupRootStore(rootStore: RootStore): Promise<{
   rootStore: RootStore
   restoredState: RootStoreSnapshot | undefined
@@ -64,8 +64,8 @@ export async function setupRootStore(rootStore: RootStore): Promise<{
   _disposer = onSnapshot(rootStore, (snapshot) => storage.save(ROOT_STATE_STORAGE_KEY, snapshot))
 
   const unsubscribe = () => {
-    _disposer()
-    _disposer = undefined as any
+    if (_disposer) _disposer()
+    _disposer = undefined
   }
 
   return { rootStore, restoredState, unsubscribe }

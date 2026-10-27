@@ -35,7 +35,8 @@ function applyFormSuggestionPopoverMocks() {
     }),
   }))
 
-  vi.doMock("@/components/Box/Box", () => ({
+  vi.doMock("@/components", () => ({
+    ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
     Box: forwardRef<
       HTMLDivElement,
       Record<string, unknown> & { children?: ReactNode; testID?: string }
@@ -44,9 +45,6 @@ function applyFormSuggestionPopoverMocks() {
         {children}
       </div>
     )),
-  }))
-
-  vi.doMock("@/components/Text/Text", () => ({
     Text: ({
       children,
       testID,
@@ -56,9 +54,6 @@ function applyFormSuggestionPopoverMocks() {
         {children}
       </span>
     ),
-  }))
-
-  vi.doMock("@/components/Pressable/Pressable", () => ({
     Pressable: ({
       children,
       onPress,
@@ -85,9 +80,6 @@ function applyFormSuggestionPopoverMocks() {
         {children}
       </button>
     ),
-  }))
-
-  vi.doMock("@/components/Popover/Popover", () => ({
     Popover: ({
       children,
       trigger,

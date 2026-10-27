@@ -1,6 +1,13 @@
-import { vi, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
 import { act, render, screen } from "@testing-library/react"
 import type { ReactNode } from "react"
+import {
+  describe as baseDescribe,
+  test as baseTest,
+  beforeAll,
+  beforeEach,
+  expect,
+  vi,
+} from "vitest"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 const describe = localizeTestRegistrar(baseDescribe)
@@ -64,6 +71,11 @@ const componentsMock = {
     bookImageItemProps.push(props)
     return <div data-testid="library-grid-item" />
   },
+  BookListItem: (props: Record<string, unknown>) => {
+    bookListItemProps.push(props)
+    return <div data-testid="library-list-item" />
+  },
+  SearchInputField: () => <div data-testid="library-search-input" />,
   Box: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   Button: ({ children }: { children?: ReactNode }) => <button type="button">{children}</button>,
   FlatList: ({
@@ -80,8 +92,8 @@ const componentsMock = {
     numColumns && numColumns > 0 ? (
       <div data-num-columns={String(numColumns)} data-testid="library-flat-list">
         {ListHeaderComponent}
-        {data.map((item, index) => (
-          <div key={index}>{renderItem({ item })}</div>
+        {data.map((item) => (
+          <div key={String(item)}>{renderItem({ item })}</div>
         ))}
       </div>
     ) : (

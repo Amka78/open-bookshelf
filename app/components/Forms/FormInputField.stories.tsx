@@ -1,6 +1,4 @@
-import { Box } from "@/components/Box/Box"
-import { Input } from "@/components/Input/Input"
-import { Pressable } from "@/components/Pressable/Pressable"
+import { Box, Input, Pressable } from "@/components"
 import type { Meta, StoryObj } from "@storybook/react"
 import { useForm } from "react-hook-form"
 import { act } from "@testing-library/react"

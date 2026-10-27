@@ -1,4 +1,4 @@
-import type { SeriesNavigationInfo } from "@/components/ViewerHeader/ViewerHeader"
+import type { SeriesNavigationInfo } from "@/components"
 import { useStores } from "@/models"
 import type { ApppNavigationProp } from "@/navigators/types"
 import { useViewer } from "@/screens/ViewerScreen/useViewer"
@@ -46,8 +46,7 @@ export function useSeriesNavigation(): UseSeriesNavigationResult {
     const targetBook = selectedLibrary.books.get(bookId.toString())
     if (!targetBook) return
 
-    const format =
-      targetBook.metaData?.selectedFormat ?? targetBook.metaData?.formats[0] ?? "EPUB"
+    const format = targetBook.metaData?.selectedFormat ?? targetBook.metaData?.formats[0] ?? "EPUB"
 
     navigation.navigate("Viewer", {
       request: {

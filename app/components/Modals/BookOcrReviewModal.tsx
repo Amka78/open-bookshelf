@@ -1,6 +1,4 @@
-import { Button } from "@/components/Button/Button"
-import { ScrollView } from "@/components/ScrollView/ScrollView"
-import { Heading } from "@/components/Heading/Heading"
+import { Button, Heading, ScrollView } from "@/components"
 import { BookOcrReviewContent } from "@/screens/BookOcrReviewScreen/BookOcrReviewContent"
 import { useBookOcrReviewController } from "@/screens/BookOcrReviewScreen/useBookOcrReview"
 import { observer } from "mobx-react-lite"

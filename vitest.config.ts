@@ -66,6 +66,13 @@ export default defineConfig({
         test: {
           name: "unit",
           environment: "jsdom",
+          // 画面系テストが expo パッケージの async-require/setup.ts（SDK 57 のソース）
+          // を素の Node で require して落ちるため、expo を Vite 変換対象に含める。
+          server: {
+            deps: {
+              inline: ["expo", "expo-file-system", "expo-image", /expo/],
+            },
+          },
           // describe / test / expect / vi / beforeEach をグローバル提供する。
           // bun:test 由来の import を持たない（グローバル前提の）テストファイルがあるため。
           globals: true,

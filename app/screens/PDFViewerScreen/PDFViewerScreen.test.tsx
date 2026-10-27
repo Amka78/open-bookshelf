@@ -1,4 +1,13 @@
-import { vi, afterAll, afterEach, describe as baseDescribe, test as baseTest, beforeAll, beforeEach, expect } from "vitest"
+import {
+  vi,
+  afterAll,
+  afterEach,
+  describe as baseDescribe,
+  test as baseTest,
+  beforeAll,
+  beforeEach,
+  expect,
+} from "vitest"
 import { act, cleanup, render, screen } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
@@ -122,7 +131,6 @@ const componentsMock = {
     <div data-style={JSON.stringify(style)}>{tx ?? children}</div>
   ),
 }
-
 ;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
 
 vi.doMock("@/components", () => componentsMock)

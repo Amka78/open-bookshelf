@@ -20,7 +20,6 @@ const componentsMock = {
   Image: "img",
   Text: "span",
 }
-
 ;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
 
 vi.doMock("@/components", () => componentsMock)

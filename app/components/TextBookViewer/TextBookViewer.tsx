@@ -5,7 +5,7 @@ import { useStores } from "@/models"
 import type { Annotation } from "@/models/calibre"
 import type { ApppNavigationProp } from "@/navigators/types"
 import { useAnnotations } from "@/screens/ViewerScreen/useAnnotations"
-import { useViewer } from "@/screens/ViewerScreen/useViewer"
+import type { useViewer } from "@/screens/ViewerScreen/useViewer"
 import { usePalette } from "@/theme"
 import type { BookReadingStyleType } from "@/type/types"
 import { useNavigation } from "@react-navigation/native"
@@ -44,13 +44,8 @@ export function TextBookViewer({
   const navigation = useNavigation<ApppNavigationProp>()
   const modal = useElectrobunModal()
   const { settingStore } = useStores()
-  const {
-    annotations,
-    addBookmark,
-    addHighlight,
-    deleteAnnotation,
-    exportAnnotationsAsMarkdown,
-  } = useAnnotations()
+  const { annotations, addBookmark, addHighlight, deleteAnnotation, exportAnnotationsAsMarkdown } =
+    useAnnotations()
   const [showAnnotationPanel, setShowAnnotationPanel] = useState(false)
   const [currentDisplayPage, setCurrentDisplayPage] = useState(0)
   const [spinePageCounts, setSpinePageCounts] = useState<number[]>([])
@@ -66,7 +61,9 @@ export function TextBookViewer({
   const selectedBook = viewerHook.selectedBook
   const selectedLibrary = viewerHook.selectedLibrary
   const spinePaths: string[] = selectedBook ? Array.from(selectedBook.path) : []
-  const spineContentLengths: number[] = selectedBook ? Array.from(selectedBook.spineItemLengths) : []
+  const spineContentLengths: number[] = selectedBook
+    ? Array.from(selectedBook.spineItemLengths)
+    : []
   const totalSpines = spinePaths.length
   const estimatedSpinePageCounts = useMemo(
     () => estimateSpinePageCounts(totalSpines, spinePageCounts, spineContentLengths),
@@ -82,7 +79,8 @@ export function TextBookViewer({
     viewerHook.readingStyle,
   )
   const currentLocation = useMemo(
-    () => mapDisplayPageToSpineLocation(normalizedDisplayPage, totalSpines, estimatedSpinePageCounts),
+    () =>
+      mapDisplayPageToSpineLocation(normalizedDisplayPage, totalSpines, estimatedSpinePageCounts),
     [estimatedSpinePageCounts, normalizedDisplayPage, totalSpines],
   )
   const currentSpineIndex = currentLocation.spineIndex
@@ -113,7 +111,7 @@ export function TextBookViewer({
     setPendingAnchor(null)
     setPendingAnchorSpineIndex(null)
     setPendingResumeLocation(viewerHook.resumeSpineLocation)
-  }, [selectedBook?.id, viewerHook.initialPage])
+  }, [viewerHook.initialPage, viewerHook.resumeSpineLocation, viewerHook.textSpinePageCounts])
 
   useEffect(() => {
     if (!selectedBook || totalSpines <= 0) {
@@ -149,7 +147,11 @@ export function TextBookViewer({
 
   const navigateToDisplayPage = useCallback(
     (page: number) => {
-      const nextPage = normalizeDisplayPageForReadingStyle(page, totalPages, viewerHook.readingStyle)
+      const nextPage = normalizeDisplayPageForReadingStyle(
+        page,
+        totalPages,
+        viewerHook.readingStyle,
+      )
       setCurrentDisplayPage(nextPage)
     },
     [totalPages, viewerHook.readingStyle],
@@ -189,7 +191,13 @@ export function TextBookViewer({
     return () => {
       clearTimeout(timeoutId)
     }
-  }, [autoPageTurnIntervalMs, autoPageTurning, navigateDirection, normalizedDisplayPage, totalPages])
+  }, [
+    autoPageTurnIntervalMs,
+    autoPageTurning,
+    navigateDirection,
+    normalizedDisplayPage,
+    totalPages,
+  ])
 
   const handleShowToc = useCallback(() => {
     const toc = viewerHook.toc
@@ -273,7 +281,10 @@ export function TextBookViewer({
   )
 
   const handlePaginationChange = useCallback(
-    ({ currentPage, totalPages: nextSpinePageCount }: { currentPage: number; totalPages: number }) => {
+    ({
+      currentPage,
+      totalPages: nextSpinePageCount,
+    }: { currentPage: number; totalPages: number }) => {
       const normalizedSpinePageCount = Math.max(1, Math.floor(nextSpinePageCount))
       const previousCounts = spinePageCountsRef.current
       const previousSpinePageCount = previousCounts[currentSpineIndex]
@@ -291,14 +302,20 @@ export function TextBookViewer({
         setSpinePageCounts(nextCounts)
       }
 
-      const nextEstimatedCounts = estimateSpinePageCounts(totalSpines, nextCounts, spineContentLengths)
+      const nextEstimatedCounts = estimateSpinePageCounts(
+        totalSpines,
+        nextCounts,
+        spineContentLengths,
+      )
       let resolvedPageInSpine = currentPage
 
       if (pendingResumeLocation?.spineIndex === currentSpineIndex) {
         resolvedPageInSpine = Math.max(
           0,
           Math.min(
-            Math.round(pendingResumeLocation.progressInSpine * Math.max(normalizedSpinePageCount - 1, 0)),
+            Math.round(
+              pendingResumeLocation.progressInSpine * Math.max(normalizedSpinePageCount - 1, 0),
+            ),
             normalizedSpinePageCount - 1,
           ),
         )
@@ -317,7 +334,13 @@ export function TextBookViewer({
         setPendingAnchorSpineIndex(null)
       }
     },
-    [currentSpineIndex, pendingAnchorSpineIndex, pendingResumeLocation, spineContentLengths, totalSpines],
+    [
+      currentSpineIndex,
+      pendingAnchorSpineIndex,
+      pendingResumeLocation,
+      spineContentLengths,
+      totalSpines,
+    ],
   )
 
   const handleAnnotationJump = useCallback(
@@ -399,11 +422,17 @@ export function TextBookViewer({
               hash={selectedBook.hash ?? 0}
               headers={getAuthHeader?.(currentSpinePath)}
               pagePath={currentSpinePath}
-              size={selectedBook.metaData!.formatSizes.get(selectedBook.metaData!.selectedFormat ?? "") ?? 0}
+              size={
+                selectedBook.metaData!.formatSizes.get(
+                  selectedBook.metaData!.selectedFormat ?? "",
+                ) ?? 0
+              }
               currentPage={currentPageInSpine}
               readingStyle={viewerHook.readingStyle}
               pageDirection={viewerHook.pageDirection}
-              leadingBlankPage={currentSpineIndex === 0 && viewerHook.readingStyle === "facingPageWithTitle"}
+              leadingBlankPage={
+                currentSpineIndex === 0 && viewerHook.readingStyle === "facingPageWithTitle"
+              }
               isCoverPage={currentSpineIndex === 0}
               preferredWritingMode={selectedBook.primaryWritingMode ?? "horizontal-tb"}
               anchor={pendingAnchorSpineIndex === currentSpineIndex ? pendingAnchor : null}
@@ -440,7 +469,8 @@ export function TextBookViewer({
             onExport={
               Platform.OS !== "web"
                 ? async () => {
-                    const message = exportAnnotationsAsMarkdown(selectedBook.metaData!.title ?? "") ?? ""
+                    const message =
+                      exportAnnotationsAsMarkdown(selectedBook.metaData!.title ?? "") ?? ""
                     await Share.share({ message })
                   }
                 : undefined

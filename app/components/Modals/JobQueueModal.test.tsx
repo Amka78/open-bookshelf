@@ -1,4 +1,11 @@
-import { vi, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
+import {
+  vi,
+  beforeAll,
+  beforeEach,
+  describe as baseDescribe,
+  expect,
+  test as baseTest,
+} from "vitest"
 import { render, waitFor } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
@@ -16,7 +23,8 @@ vi.doMock("@/services/api", () => ({
   },
 }))
 
-vi.doMock("@/components/Button/Button", () => ({
+vi.doMock("@/components", () => ({
+  ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
   Button: ({
     children,
     tx,
@@ -30,13 +38,7 @@ vi.doMock("@/components/Button/Button", () => ({
       {children ?? tx}
     </button>
   ),
-}))
-
-vi.doMock("@/components/Heading/Heading", () => ({
   Heading: ({ children, tx }: { children?: ReactNode; tx?: string }) => <div>{children ?? tx}</div>,
-}))
-
-vi.doMock("@/components/Text/Text", () => ({
   Text: ({ children, tx }: { children?: ReactNode; tx?: string }) => <div>{children ?? tx}</div>,
 }))
 
@@ -121,11 +123,7 @@ function createCalibreRootStore(trackedJobs: ReturnType<typeof createTrackedJob>
 }
 
 function renderJobQueueModal() {
-  return render(
-    <JobQueueModal
-      modal={{ closeModal: vi.fn(), params: {} } as never}
-    />,
-  )
+  return render(<JobQueueModal modal={{ closeModal: vi.fn(), params: {} } as never} />)
 }
 
 describe("JobQueueModal", () => {

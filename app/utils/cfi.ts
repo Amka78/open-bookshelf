@@ -39,5 +39,7 @@ export function generateCfiForSpineLocation(
   const localPageNumber = Math.max(1, Math.round(clampedProgressInSpine * 100) + 1)
   const localComponent = localPageNumber * 2
 
-  return `epubcfi(/${calibreSpineComponent}/2/4/${localComponent}[page_${localPageNumber}]@${spatialX}:${spatialY.toFixed(2)})`
+  return `epubcfi(/${calibreSpineComponent}/2/4/${localComponent}[page_${localPageNumber}]@${spatialX}:${spatialY.toFixed(
+    2,
+  )})`
 }

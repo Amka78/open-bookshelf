@@ -1,16 +1,18 @@
-import { Button } from "@/components/Button/Button"
-import { Box } from "@/components/Box/Box"
-import { FormIdentifierField } from "@/components/Forms/FormIdentifierField"
-import { FormMultipleInputField } from "@/components/Forms/FormMultipleInputField"
-import { Pressable } from "@/components/Pressable/Pressable"
-import { Input } from "@/components/Input/Input"
-import { InputField } from "@/components/InputField/InputField"
-import { ScrollView } from "@/components/ScrollView/ScrollView"
-import { Text } from "@/components/Text/Text"
-import { VStack } from "@/components/VStack/VStack"
+import {
+  Box,
+  Button,
+  FormIdentifierField,
+  FormMultipleInputField,
+  Input,
+  InputField,
+  Pressable,
+  ScrollView,
+  Text,
+  VStack,
+} from "@/components"
 import type { AppStackParamList, ApppNavigationProp } from "@/navigators/types"
-import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { Textarea, TextareaInput } from "@gluestack-ui/themed"
+import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import type { FC } from "react"
 import { useCallback, useLayoutEffect, useMemo, useState } from "react"

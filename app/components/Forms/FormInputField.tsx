@@ -1,8 +1,7 @@
-import { Box } from "@/components/Box/Box"
+import { Box, InputField, type InputFieldProps } from "@/components"
 import { useEffect, useRef, useState } from "react"
 import { Controller, type ControllerProps, type FieldValues } from "react-hook-form"
 import type { TextInput as RNTextInput } from "react-native"
-import { InputField, type InputFieldProps } from "../InputField/InputField"
 import { FormSuggestionPopover } from "./FormSuggestionPopover"
 
 const MAX_SUGGESTIONS = 5

@@ -1,8 +1,9 @@
 import { MaterialCommunityIcon } from "@/components"
 import { translate } from "@/i18n"
 import type { SortField } from "@/models/calibre"
-import { Menu, MenuItem, MenuItemLabel, Pressable } from "@gluestack-ui/themed"
+import { Menu, MenuItem, MenuItemLabel } from "@gluestack-ui/themed"
 import type { ComponentProps } from "react"
+import { Pressable } from "react-native"
 
 export type SortMenuProps = {
   selectedSort?: string

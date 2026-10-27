@@ -23,7 +23,6 @@ const componentsMock = {
     </button>
   ),
 }
-
 ;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
 
 vi.doMock("@/components", () => componentsMock)

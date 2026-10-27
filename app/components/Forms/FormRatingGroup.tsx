@@ -1,9 +1,12 @@
 import React from "react"
 import { Controller, type ControllerProps, type FieldValues } from "react-hook-form"
 
-import { RatingGroup, type RatingGroupProps } from "../RatingGroup/RatingGroup"
+import { RatingGroup, type RatingGroupProps } from "@/components"
 
-export type FormRatingGroupProps<T extends FieldValues> = Omit<RatingGroupProps, "onSelectRating" | "selectedValue"> &
+export type FormRatingGroupProps<T extends FieldValues> = Omit<
+  RatingGroupProps,
+  "onSelectRating" | "selectedValue"
+> &
   Omit<ControllerProps<T>, "render">
 export function FormRatingGroup<T extends FieldValues>(props: FormRatingGroupProps<T>) {
   return (

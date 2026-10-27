@@ -1,24 +1,23 @@
 import {
   BookImageItem,
+  BookListItem,
   Box,
-  FlatList,
+  type CalibreFieldOperator,
+  type FlatList,
   HStack,
   IconButton,
   LeftSideMenu,
   LibraryActions,
+  type QueryOperator,
+  SearchInputField,
   SelectionActionBar,
   SortMenu,
   StaggerContainer,
   VirtualLibraryButton,
-} from "@/components"
-import { BookListItem } from "@/components/BookListItem"
-import type { CalibreFieldOperator, QueryOperator } from "@/components/LeftSideMenu/LeftSideMenu"
-import {
   buildItemKey,
   buildTagQuery,
   normalizeTagQuery,
-} from "@/components/LeftSideMenu/LeftSideMenu"
-import { SearchInputField } from "@/components/SearchInputField"
+} from "@/components"
 import { useBulkDownloadBooks } from "@/hooks/useBulkDownloadBooks"
 import { useConvergence } from "@/hooks/useConvergence"
 import { useDeleteBook } from "@/hooks/useDeleteBook"
@@ -39,24 +38,24 @@ import {
   type NativeSyntheticEvent,
   useWindowDimensions,
 } from "react-native"
-import { buildThumbnailSourceCache } from "./buildThumbnailSourceCache"
 import { LibraryBookList } from "./LibraryBookList"
+import {
+  DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS,
+  type LibraryTableColumnKey,
+  type LibraryTableColumnWidths,
+  LibraryTableHeader,
+  LibraryTableItem,
+  clampColumnWidth,
+  computeLibraryTableMinWidth,
+  createLibraryTableFieldLabels,
+} from "./LibraryTableItem"
+import { buildThumbnailSourceCache } from "./buildThumbnailSourceCache"
 import {
   buildQueryFromParts,
   getLeftSideMenuSelectedNames,
   getNextLeftSideMenuSelectionState,
   parseQueryParts,
 } from "./librarySearchState"
-import {
-  clampColumnWidth,
-  computeLibraryTableMinWidth,
-  createLibraryTableFieldLabels,
-  DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS,
-  type LibraryTableColumnKey,
-  type LibraryTableColumnWidths,
-  LibraryTableHeader,
-  LibraryTableItem,
-} from "./LibraryTableItem"
 import { useLibrary } from "./useLibrary"
 import { useLibraryScrollPosition } from "./useLibraryScrollPosition"
 
@@ -215,7 +214,9 @@ export const LibraryScreen: FC = observer(() => {
     seriesIndex: clampColumnWidth(
       storedTableColumnWidths.seriesIndex ?? DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS.seriesIndex,
     ),
-    tags: clampColumnWidth(storedTableColumnWidths.tags ?? DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS.tags),
+    tags: clampColumnWidth(
+      storedTableColumnWidths.tags ?? DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS.tags,
+    ),
     publisher: clampColumnWidth(
       storedTableColumnWidths.publisher ?? DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS.publisher,
     ),
@@ -595,9 +596,10 @@ export const LibraryScreen: FC = observer(() => {
       readingProgressById,
       thumbnailSourceById,
       viewMode,
-      settingStore,
       calibreRootStore,
       tableColumnWidths,
+      tableColumnVisibility,
+      customColumns,
     ],
   )
 
@@ -731,11 +733,10 @@ export const LibraryScreen: FC = observer(() => {
         // Extract numeric value from seriesNumber (e.g., "1", "Vol.2", "第1巻")
         const numMatch = seriesNumber.match(/(\d+)/)
         const seriesIndex = numMatch ? Number(numMatch[1]) : null
-        await book.update(
-          selectedLibrary!.id,
-          { series: seriesName, seriesIndex },
-          ["series", "seriesIndex"],
-        )
+        await book.update(selectedLibrary!.id, { series: seriesName, seriesIndex }, [
+          "series",
+          "seriesIndex",
+        ])
       }
     }
     if (settingStore.bulkEditAutoRefresh) {
@@ -767,7 +768,7 @@ export const LibraryScreen: FC = observer(() => {
       {selectedLibrary ? (
         <LibraryBookList
           bookList={bookList}
-          listRef={listRef as any}
+          listRef={listRef}
           renderItem={renderItem}
           numColumns={viewMode === "grid" ? Math.max(1, Math.floor(window.width / 242)) : 1}
           isFocused={isFocused}
@@ -782,7 +783,7 @@ export const LibraryScreen: FC = observer(() => {
                 totalNum: calibreRootStore.selectedLibrary?.searchSetting?.totalNum,
                 offset: calibreRootStore.selectedLibrary?.searchSetting?.offset,
                 bookListLength: bookList.length,
-              })
+              }),
             )
             if (calibreRootStore.isFetchingMore) return
             await calibreRootStore.searchMoreLibrary()

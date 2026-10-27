@@ -6,7 +6,9 @@ import { InputField } from "./InputField"
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 
 function findInputByPlaceholder(canvasElement: HTMLElement, placeholder: string): HTMLInputElement {
-  const input = canvasElement.querySelector(`input[placeholder="${placeholder}"]`) as HTMLInputElement | null
+  const input = canvasElement.querySelector(
+    `input[placeholder="${placeholder}"]`,
+  ) as HTMLInputElement | null
 
   if (!input) {
     throw new Error(`Input with placeholder '${placeholder}' was not found.`)

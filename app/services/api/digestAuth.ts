@@ -18,7 +18,7 @@ export function parseDigestChallenge(wwwAuthenticate: string): DigestChallenge |
     const qop = typeof qopRaw === "string" ? qopRaw.split(",").map((s) => s.trim())[0] : undefined
 
     const toStr = (v: string | string[] | undefined): string =>
-      Array.isArray(v) ? (v[0] ?? "") : (v ?? "")
+      Array.isArray(v) ? v[0] ?? "" : v ?? ""
 
     return {
       realm: toStr(parsed.params.realm),

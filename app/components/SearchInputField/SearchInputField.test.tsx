@@ -15,7 +15,8 @@ vi.doMock("@/theme", () => ({
   }),
 }))
 
-vi.doMock("@/components/Box/Box", () => ({
+vi.doMock("@/components", () => ({
+  ...(global as { __componentsMock?: Record<string, unknown> }).__componentsMock,
   Box: ({
     children,
     testID,
@@ -25,9 +26,6 @@ vi.doMock("@/components/Box/Box", () => ({
       {children}
     </div>
   ),
-}))
-
-vi.doMock("@/components/Text/Text", () => ({
   Text: ({
     children,
     testID,
@@ -37,35 +35,6 @@ vi.doMock("@/components/Text/Text", () => ({
       {children}
     </span>
   ),
-}))
-
-vi.doMock("@gluestack-ui/themed", () => ({
-  HStack: ({
-    children,
-    testID,
-    ...props
-  }: Record<string, unknown> & { children?: ReactNode; testID?: string }) => (
-    <div data-testid={testID} {...(props as object)}>
-      {children}
-    </div>
-  ),
-  Input: ({
-    children,
-    testID,
-    ...props
-  }: Record<string, unknown> & { children?: ReactNode; testID?: string }) => (
-    <div data-testid={testID} {...(props as object)}>
-      {children}
-    </div>
-  ),
-  Menu: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  MenuItem: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  MenuItemLabel: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
-  Pressable: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  ScrollView: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-}))
-
-vi.doMock("@/components/Forms/FormSuggestionPopover", () => ({
   FormSuggestionPopover: ({
     trigger,
     isOpen,
@@ -98,7 +67,9 @@ vi.doMock("@/components/Forms/FormSuggestionPopover", () => ({
             {candidates.map((candidate) => (
               <button
                 key={candidate}
-                data-testid={`${candidateTestIDPrefix ?? `${testIdPrefix}-suggestion`}-${encodeURIComponent(candidate)}`}
+                data-testid={`${
+                  candidateTestIDPrefix ?? `${testIdPrefix}-suggestion`
+                }-${encodeURIComponent(candidate)}`}
                 type="button"
                 onClick={() => onSelect(candidate)}
               >
@@ -110,9 +81,6 @@ vi.doMock("@/components/Forms/FormSuggestionPopover", () => ({
       ) : null}
     </>
   ),
-}))
-
-vi.doMock("@/components/InputField/InputField", () => ({
   InputField: ({
     testID,
     value,
@@ -123,7 +91,10 @@ vi.doMock("@/components/InputField/InputField", () => ({
   }: Record<string, unknown> & {
     testID?: string
     value?: string
-    onChange?: (e: { nativeEvent: { text: string }; target: EventTarget & HTMLInputElement }) => void
+    onChange?: (e: {
+      nativeEvent: { text: string }
+      target: EventTarget & HTMLInputElement
+    }) => void
     onFocus?: () => void
     onBlur?: () => void
   }) => (
@@ -141,23 +112,48 @@ vi.doMock("@/components/InputField/InputField", () => ({
       {...(props as object)}
     />
   ),
-}))
-
-vi.doMock("@/components/IconButton/IconButton", () => ({
   IconButton: ({
     testID,
     labelTx,
     ...props
   }: Record<string, unknown> & { testID?: string; labelTx?: string }) => (
-    <button data-label-tx={labelTx ?? ""} data-testid={testID} type="button" {...(props as object)} />
+    <button
+      data-label-tx={labelTx ?? ""}
+      data-testid={testID}
+      type="button"
+      {...(props as object)}
+    />
   ),
-}))
-
-vi.doMock("@/components/Popover/Popover", () => ({
   Popover: () => null,
   PopoverBackdrop: () => null,
   PopoverContent: () => null,
   PopoverBody: () => null,
+}))
+
+vi.doMock("@gluestack-ui/themed", () => ({
+  HStack: ({
+    children,
+    testID,
+    ...props
+  }: Record<string, unknown> & { children?: ReactNode; testID?: string }) => (
+    <div data-testid={testID} {...(props as object)}>
+      {children}
+    </div>
+  ),
+  Input: ({
+    children,
+    testID,
+    ...props
+  }: Record<string, unknown> & { children?: ReactNode; testID?: string }) => (
+    <div data-testid={testID} {...(props as object)}>
+      {children}
+    </div>
+  ),
+  Menu: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  MenuItem: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  MenuItemLabel: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
+  Pressable: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  ScrollView: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
 localizeTestRegistrar("SearchInputField")

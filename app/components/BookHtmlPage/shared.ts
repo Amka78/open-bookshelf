@@ -281,8 +281,7 @@ const resolveBookRelativePathCandidates = (basePath: string, rawValue: string) =
   const candidates: BookResourceDescriptor[] = []
   const seen = new Set<string>()
   const decodedBasePath = decodeTextResourcePath(basePath)
-  const basePathCandidates =
-    decodedBasePath === basePath ? [basePath] : [basePath, decodedBasePath]
+  const basePathCandidates = decodedBasePath === basePath ? [basePath] : [basePath, decodedBasePath]
 
   const addCandidate = (candidate: BookResourceDescriptor | undefined) => {
     if (!candidate?.name) {

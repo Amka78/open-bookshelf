@@ -26,13 +26,17 @@ export function useBookDetail() {
 
   const selectedLibrary = calibreRootStore.selectedLibrary!
   const selectedBook = selectedLibrary.selectedBook!
-  const ocrImageUrl = encodeURI(api.getBookThumbnailUrl(selectedBook.id, selectedLibrary.id, "1200x1600"))
+  const ocrImageUrl = encodeURI(
+    api.getBookThumbnailUrl(selectedBook.id, selectedLibrary.id, "1200x1600"),
+  )
+
+  const bookTitle = selectedBook.metaData?.title
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerTitle: selectedBook.metaData!.title ?? undefined,
+      headerTitle: bookTitle ?? undefined,
     })
-  }, [navigation, selectedBook.metaData!.title])
+  }, [navigation, bookTitle])
 
   const handleOpenBook = async () => {
     if (route.params.onOpenBookAction) {
@@ -149,10 +153,11 @@ export function useBookDetail() {
     const openSendConfirmModal = (format: string) => {
       modal.openModal("ConfirmModal", {
         titleTx: "emailDelivery.confirmTitle",
-        message: translate("emailDelivery.confirmMessage", {
-          format,
-          title: book.metaData?.title ?? "",
-        }) ?? undefined,
+        message:
+          translate("emailDelivery.confirmMessage", {
+            format,
+            title: book.metaData?.title ?? "",
+          }) ?? undefined,
         okTx: "emailDelivery.send",
         onOKPress: async () => {
           const result = await api.sendBookByEmail(library.id, book.id, format)

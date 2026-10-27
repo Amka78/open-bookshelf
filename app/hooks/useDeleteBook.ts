@@ -12,10 +12,11 @@ export function useDeleteBook() {
     if (!selectedLibrary || !selectedBook) return
     modal.openModal("ConfirmModal", {
       titleTx: "modal.deleteConfirmModal.title",
-      message: translate({
-        key: "modal.deleteConfirmModal.message",
-        restParam: [{ key: selectedBook.metaData!.title ?? "", translate: false }],
-      }) ?? "",
+      message:
+        translate({
+          key: "modal.deleteConfirmModal.message",
+          restParam: [{ key: selectedBook.metaData!.title ?? "", translate: false }],
+        }) ?? "",
       onOKPress: async () => {
         selectedLibrary.deleteBook(selectedBook.id)
         modal.closeModal()

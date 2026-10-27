@@ -1,5 +1,6 @@
 import { type MessageKey, translate } from "@/i18n"
 import {
+  ChevronDownIcon,
   Select,
   SelectBackdrop,
   SelectContent,
@@ -12,7 +13,6 @@ import {
   SelectScrollView,
   SelectTrigger,
 } from "@gluestack-ui/themed"
-import { ChevronDownIcon } from "@gluestack-ui/themed"
 import type { ComponentProps } from "react"
 import { Controller, type ControllerProps, type FieldValues } from "react-hook-form"
 
@@ -37,7 +37,9 @@ export function FormSelectField<TForm extends FieldValues, TValue extends string
 ) {
   const { control, name, rules, shouldUnregister, defaultValue, disabled, options, width } = props
 
-  const placeholder = props.placeholderTx ? translate(props.placeholderTx) ?? undefined : props.placeholder
+  const placeholder = props.placeholderTx
+    ? translate(props.placeholderTx) ?? undefined
+    : props.placeholder
 
   return (
     <Controller
@@ -67,7 +69,9 @@ export function FormSelectField<TForm extends FieldValues, TValue extends string
                 {options.map((opt) => (
                   <SelectItem
                     key={opt.value}
-                    label={opt.labelTx ? translate(opt.labelTx) ?? opt.value : opt.label ?? opt.value}
+                    label={
+                      opt.labelTx ? translate(opt.labelTx) ?? opt.value : opt.label ?? opt.value
+                    }
                     value={opt.value}
                   />
                 ))}

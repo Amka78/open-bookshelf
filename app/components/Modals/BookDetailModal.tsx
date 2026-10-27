@@ -1,11 +1,13 @@
-import { BookDetailFieldList } from "@/components/BookDetailFieldList/BookDetailFieldList"
-import { BookDetailMenu } from "@/components/BookDetailMenu/BookDetailMenu"
-import { BookImageItem } from "@/components/BookImageItem/BookImageItem"
-import { Box } from "@/components/Box/Box"
-import { HStack } from "@/components/HStack/HStack"
-import { Heading } from "@/components/Heading/Heading"
-import { VStack } from "@/components/VStack/VStack"
-import type { ModalComponentProp } from "react-native-modalfy"
+import {
+  BookDetailFieldList,
+  BookDetailMenu,
+  BookImageItem,
+  Box,
+  HStack,
+  Heading,
+  VStack,
+} from "@/components"
+import type { ModalComponentProp, UsableModalProp } from "react-native-modalfy"
 
 import { useDeleteBook } from "@/hooks/useDeleteBook"
 import { useDownloadBook } from "@/hooks/useDownloadBook"
@@ -32,12 +34,12 @@ export const BookDetailModal = observer((props: BookDetailModalProps) => {
   const selectedBook = selectedLibrary.selectedBook!
 
   const onOpenBook = async () => {
-    await openViewerHook.execute(props.modal as any)
+    await openViewerHook.execute(props.modal as UsableModalProp<ModalStackParams>)
     props.modal.closeModal()
   }
 
   const onDownloadBook = async () => {
-    await downloadBookHook.execute(props.modal as any)
+    await downloadBookHook.execute(props.modal as UsableModalProp<ModalStackParams>)
   }
 
   const onEditBook = () => {
@@ -48,12 +50,14 @@ export const BookDetailModal = observer((props: BookDetailModalProps) => {
 
   const onRunCoverOcr = () => {
     props.modal.openModal("BookOcrReviewModal", {
-      imageUrl: encodeURI(api.getBookThumbnailUrl(selectedBook.id, selectedLibrary.id, "1200x1600")),
+      imageUrl: encodeURI(
+        api.getBookThumbnailUrl(selectedBook.id, selectedLibrary.id, "1200x1600"),
+      ),
     })
   }
 
   const onDeleteBook = async () => {
-    await deleteBookHook.execute(props.modal as any)
+    await deleteBookHook.execute(props.modal as UsableModalProp<ModalStackParams>)
   }
   return (
     <BookDetailModalTemplate
@@ -70,7 +74,7 @@ export const BookDetailModal = observer((props: BookDetailModalProps) => {
           onDeleteBook,
           onEditBook,
           onRunCoverOcr,
-        } as any,
+        } as ModalStackParams["BookDetailModal"],
       }}
     />
   )

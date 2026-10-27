@@ -1,6 +1,13 @@
-import { vi, beforeAll, beforeEach, describe as baseDescribe, expect, test as baseTest } from "vitest"
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import type { ReactNode } from "react"
+import {
+  describe as baseDescribe,
+  test as baseTest,
+  beforeAll,
+  beforeEach,
+  expect,
+  vi,
+} from "vitest"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
 const describe = localizeTestRegistrar(baseDescribe)
@@ -8,10 +15,12 @@ const test = localizeTestRegistrar(baseTest)
 
 function normalizeStyle(style: unknown): React.CSSProperties | undefined {
   if (Array.isArray(style)) {
-    return style.reduce<React.CSSProperties>(
-      (acc, value) => (value && typeof value === "object" ? { ...acc, ...value } : acc),
-      {},
-    )
+    return style.reduce<React.CSSProperties>((acc, value) => {
+      if (value && typeof value === "object") {
+        return Object.assign(acc, value)
+      }
+      return acc
+    }, {})
   }
 
   return style && typeof style === "object" ? (style as React.CSSProperties) : undefined
@@ -48,7 +57,12 @@ const componentsMock = {
     testID?: string
     isDisabled?: boolean
   }) => (
-    <button data-testid={testID} disabled={isDisabled} onClick={() => void onPress?.()} type="button">
+    <button
+      data-testid={testID}
+      disabled={isDisabled}
+      onClick={() => void onPress?.()}
+      type="button"
+    >
       {children}
     </button>
   ),
@@ -66,12 +80,7 @@ const componentsMock = {
     testID?: string
     disabled?: boolean
   }) => (
-    <button
-      data-testid={testID}
-      disabled={disabled}
-      onClick={onPress}
-      type="button"
-    >
+    <button data-testid={testID} disabled={disabled} onClick={onPress} type="button">
       {name}
     </button>
   ),
@@ -103,14 +112,14 @@ const componentsMock = {
     value?: string[]
   }) => (
     <div data-testid={testID}>
-      {(value ?? []).map((tag, index) => (
-        <span key={index} data-testid={`${testID}-tag-${index}`}>
+      {(value ?? []).map((tag) => (
+        <span key={tag} data-testid={`${testID}-tag-${tag}`}>
           {tag}
           <button
-            data-testid={`${testID}-tag-${index}-remove`}
+            data-testid={`${testID}-tag-${tag}-remove`}
             onClick={() => {
               const next = [...(value ?? [])]
-              next.splice(index, 1)
+              next.splice(next.indexOf(tag), 1)
               onChange?.(next)
             }}
             type="button"
@@ -124,7 +133,10 @@ const componentsMock = {
         onChange={(event) => {
           const text = (event.target as HTMLInputElement).value
           if (text.includes(",")) {
-            const parts = text.split(",").map((s) => s.trim()).filter(Boolean)
+            const parts = text
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean)
             onChange?.([...(value ?? []), ...parts])
           }
         }}
@@ -177,6 +189,12 @@ vi.doMock("@/components/InputField/InputField", () => ({
   ),
 }))
 
+// LibraryTableItem は render 時に palette.bg0 (usePalette) を読む。
+// vitest-setup.ts のデフォルトモック (usePalette: vi.fn()) では undefined になるため上書きする。
+vi.doMock("@/theme", () => ({
+  usePalette: () => ({ bg0: "#ffffff" }),
+}))
+
 vi.doMock("@gluestack-ui/themed", () => ({
   Pressable: ({
     children,
@@ -198,8 +216,15 @@ vi.doMock("@gluestack-ui/themed", () => ({
         event.preventDefault()
         onLongPress?.()
       }}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          onPress?.()
+        }
+      }}
       role="button"
-      style={style as React.CSSProperties | undefined}
+      // LibraryTableItem は style を配列で渡す (例: [styles.bookCell, { backgroundColor }])。
+      // 配列のまま DOM に渡すと react-dom が index を CSS プロパティ扱いして失敗する。
+      style={normalizeStyle(style)}
       tabIndex={0}
     >
       {children}
@@ -214,6 +239,14 @@ vi.doMock("mobx-react-lite", () => ({
 vi.doMock("react-native", () => ({
   PanResponder: {
     create: () => ({ panHandlers: {} }),
+  },
+  // app/i18n/i18n.ts がモジュールロード時に I18nManager.allowRTL/forceRTL を呼ぶため必須。
+  I18nManager: {
+    isRTL: false,
+    doLeftAndRightSwapInRTL: true,
+    allowRTL: vi.fn(),
+    forceRTL: vi.fn(),
+    swapLeftAndRightInRTL: vi.fn(),
   },
   Platform: { OS: "web" },
   StyleSheet: {
@@ -230,6 +263,40 @@ vi.doMock("react-native", () => ({
     testID?: string
   }) => (
     <div data-testid={testID} style={normalizeStyle(style)}>
+      {children}
+    </div>
+  ),
+  // LibraryTableItem は react-native の Pressable を import するため、
+  // ここに onPress → onClick 変換のモックが必要 (gluestack 側のモックは届かない)。
+  Pressable: ({
+    children,
+    onLongPress,
+    onPress,
+    style,
+    testID,
+  }: {
+    children?: ReactNode
+    onLongPress?: () => void
+    onPress?: () => void
+    style?: unknown
+    testID?: string
+  }) => (
+    <div
+      data-testid={testID}
+      onClick={onPress}
+      onContextMenu={(event) => {
+        event.preventDefault()
+        onLongPress?.()
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          onPress?.()
+        }
+      }}
+      role="button"
+      style={normalizeStyle(style)}
+      tabIndex={0}
+    >
       {children}
     </div>
   ),
@@ -438,7 +505,10 @@ describe("LibraryTableItem", () => {
 describe("extractSeriesFromTitle", () => {
   test("extracts series name and number from title", () => {
     expect(extractSeriesFromTitle("Dune 1")).toEqual({ series: "Dune", number: "1" })
-    expect(extractSeriesFromTitle("Foundation Vol.2")).toEqual({ series: "Foundation", number: "Vol.2" })
+    expect(extractSeriesFromTitle("Foundation Vol.2")).toEqual({
+      series: "Foundation",
+      number: "Vol.2",
+    })
     expect(extractSeriesFromTitle("指輪物語 01")).toEqual({ series: "指輪物語", number: "01" })
     expect(extractSeriesFromTitle("Series 第1巻")).toEqual({ series: "Series", number: "第1巻" })
   })

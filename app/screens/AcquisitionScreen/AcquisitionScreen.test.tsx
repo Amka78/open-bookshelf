@@ -1,4 +1,11 @@
-import { vi, describe as baseDescribe, test as baseTest, beforeAll, beforeEach, expect } from "vitest"
+import {
+  vi,
+  describe as baseDescribe,
+  test as baseTest,
+  beforeAll,
+  beforeEach,
+  expect,
+} from "vitest"
 import { useStores } from "@/models"
 import { OpdsChildrenModel, OpdsModel } from "@/models/opds/OpdsRootStore"
 import { usePalette } from "@/theme"
@@ -70,7 +77,6 @@ const componentsMock = {
     </div>
   ),
 }
-
 ;(global as { __componentsMock?: Record<string, unknown> }).__componentsMock = componentsMock
 
 vi.doMock("@/components", () => componentsMock)
@@ -103,9 +109,10 @@ describe("AcquisitionScreen", () => {
     vi.clearAllMocks()
 
     vi.spyOn(OpdsModel, "create").mockImplementation(() => opdsCreateMock())
-    vi
-      .spyOn(OpdsChildrenModel as { create: (...args: unknown[]) => unknown }, "create")
-      .mockReturnValue({})
+    vi.spyOn(
+      OpdsChildrenModel as { create: (...args: unknown[]) => unknown },
+      "create",
+    ).mockReturnValue({})
 
     opdsLoadMock.mockResolvedValue(undefined)
     opdsCreateMock.mockReturnValue({

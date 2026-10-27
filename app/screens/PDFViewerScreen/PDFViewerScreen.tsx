@@ -95,16 +95,15 @@ const PDFViewerScreenContent = observer(() => {
     }
   }, [isViewerSourceLocalPdf, viewerSourceUri])
 
-  const handleHiddenPdfLoadComplete = useCallback((numberOfPages: number) => {
-    setTotalPages((prev) => Math.max(prev ?? 0, numberOfPages))
-  }, [setTotalPages])
+  const handleHiddenPdfLoadComplete = useCallback(
+    (numberOfPages: number) => {
+      setTotalPages((prev) => Math.max(prev ?? 0, numberOfPages))
+    },
+    [setTotalPages],
+  )
 
   const handlePageLoadComplete = useCallback(
-    (
-      numberOfPages: number,
-      _path: string,
-      size: { width: number; height: number },
-    ) => {
+    (numberOfPages: number, _path: string, size: { width: number; height: number }) => {
       setTotalPages((prev) => Math.max(prev ?? 0, numberOfPages))
 
       setSourcePageSize((prev) => {

@@ -1,16 +1,16 @@
-import { fireEvent } from "@testing-library/react"
-import { BookEditFieldNavList } from "./BookEditFieldNavList"
 import type { Meta, StoryObj } from "@storybook/react"
+import { fireEvent } from "@testing-library/react"
+import { getSnapshot } from "mobx-state-tree"
 import type { ComponentProps } from "react"
 import { useForm } from "react-hook-form"
-import { getSnapshot } from "mobx-state-tree"
+import { BookEditFieldNavList } from "./BookEditFieldNavList"
 
+import type { MetadataSnapshotIn } from "@/models/calibre"
 import { ComponentHolder } from "../../../.storybook/stories/ComponentHolder"
 import {
   bookDetailFieldListStoryArgs,
   bookDetailFieldListWithCustomFieldsStoryArgs,
 } from "../../../.storybook/stories/data/bookDetailFieldListStoryData"
-import type { MetadataSnapshotIn } from "@/models/calibre"
 
 /** Click the Custom Fields tab */
 async function playCustomFieldsTab({
@@ -23,7 +23,9 @@ async function playCustomFieldsTab({
   fireEvent.click(customTab)
 }
 
-function FormBookEditFieldNavList(props: Omit<ComponentProps<typeof BookEditFieldNavList>, "control">) {
+function FormBookEditFieldNavList(
+  props: Omit<ComponentProps<typeof BookEditFieldNavList>, "control">,
+) {
   const form = useForm<MetadataSnapshotIn>({
     defaultValues: props.book.metaData
       ? (getSnapshot(props.book.metaData) as MetadataSnapshotIn)

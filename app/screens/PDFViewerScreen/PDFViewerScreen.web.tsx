@@ -101,9 +101,7 @@ const PDFViewerScreenContent = observer(() => {
   const onDocumentLoadSuccess = useCallback(
     async (pdf: {
       numPages: number
-      getPage: (
-        n: number,
-      ) => Promise<{
+      getPage: (n: number) => Promise<{
         getViewport: (opts: { scale: number }) => { width: number; height: number }
       }>
     }) => {

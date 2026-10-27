@@ -377,7 +377,9 @@ describe("useCalibreHtmlDocument", () => {
     )
 
     const { result } = renderHook(() =>
-      useCalibreHtmlDocument(createBookHtmlProps({ pagePath: "Text/missing.xhtml", hash: 17749658582 })),
+      useCalibreHtmlDocument(
+        createBookHtmlProps({ pagePath: "Text/missing.xhtml", hash: 17749658582 }),
+      ),
     )
 
     await waitFor(() => {
@@ -385,7 +387,9 @@ describe("useCalibreHtmlDocument", () => {
     })
 
     expect(result.current.html).toBeNull()
-    expect(result.current.error).toContain("Failed to fetch book resource: Text/missing.xhtml (404)")
+    expect(result.current.error).toContain(
+      "Failed to fetch book resource: Text/missing.xhtml (404)",
+    )
   })
 
   test("falls back to the original encoded text spine path when decoded path fails", async () => {
@@ -629,9 +633,11 @@ describe("useCalibreHtmlDocument", () => {
     })
 
     expect(result.current.error).toBeNull()
-    expect(fetchWithAuthMock.mock.calls.some((call) => call[0].includes("text/chapter/styles/book.css"))).toBe(
-      true,
-    )
-    expect(fetchWithAuthMock.mock.calls.some((call) => call[0].includes("text/styles/book.css"))).toBe(true)
+    expect(
+      fetchWithAuthMock.mock.calls.some((call) => call[0].includes("text/chapter/styles/book.css")),
+    ).toBe(true)
+    expect(
+      fetchWithAuthMock.mock.calls.some((call) => call[0].includes("text/styles/book.css")),
+    ).toBe(true)
   })
 })
