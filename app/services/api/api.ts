@@ -427,8 +427,61 @@ export class Api {
           headers: retryHeaders,
         })
       }
+      // Android の File.downloadFileAsync は OkHttpClient の既定設定
+      // （readTimeout=10秒）を使い、JS から変更できない。タイムアウト時は
+      // React Native の fetch（readTimeout=120秒）へフォールバックする。
+      // writableStream() は File のみの API なので、Directory 宛では再試行しない。
+      if (this.isDownloadTimeout(msg) && "writableStream" in destination) {
+        return this.downloadViaFetchStream(url, destination as FileSystemFile)
+      }
       throw error
     }
+  }
+
+  /**
+   * Android の OkHttpClient 既定 readTimeout(10秒) によるタイムアウトを検出する。
+   * OkHttp は "timeout" / "Read timed out" / SocketTimeoutException のような
+   * メッセージを返す。iOS でも同様の文言が来るため、プラットフォームを問わず判定する。
+   */
+  private isDownloadTimeout(message: string): boolean {
+    return /timeout|timed out|SocketTimeoutException/i.test(message)
+  }
+
+  /**
+   * fetch() + writableStream() でファイルをストリーミング書き込みする
+   * タイムアウト用フォールバック。fetchWithAuth が認証ヘッダーを付与する。
+   */
+  private async downloadViaFetchStream(
+    url: string,
+    destination: FileSystemFile,
+  ): Promise<FileSystemFile> {
+    const response = await this.fetchWithAuth(url)
+    if (!response.ok) {
+      throw new Error(`Download failed with status ${response.status}`)
+    }
+    if (!response.body) {
+      throw new Error("Download failed: response body is empty")
+    }
+
+    // 途中まで書き込まれた部分ファイルの上書きを避けるため、先に削除する
+    if (destination.exists) {
+      destination.delete()
+    }
+
+    const reader = response.body.getReader()
+    const writer = destination.writableStream().getWriter()
+    try {
+      for (;;) {
+        const { done, value } = await reader.read()
+        if (done) break
+        await writer.write(value)
+      }
+      await writer.close()
+    } catch (streamError) {
+      await writer.abort(streamError)
+      throw streamError
+    }
+    return destination
   }
 
   /**
