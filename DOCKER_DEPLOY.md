@@ -14,7 +14,8 @@ v* タグ push
 ```
 
 - イメージは**公開**（pull に認証不要）
-- 2ステージビルド。builder で `bun install` → `expo export --platform web`、実行ステージは `nginx:alpine` に `dist` と `nginx.conf` を COPY するだけ
+- 2ステージビルド。builder で `bun install` → `expo export --platform web`、実行ステージは `nginx:alpine` に `dist`・`nginx.conf`（テンプレート）・`docker-entrypoint.sh` を COPY
+- HTTPS は**自己署名証明書**で対応。証明書は初回起動時にエントリポイントが `/etc/nginx/ssl` に自動生成し、compose の `ssl-certs` ボリュームで永続化する（`nginx.conf` の TLS サーバーブロック・`80→443` リダイレクトを含む）
 
 ## 反映経路が2つある（重要）
 
@@ -23,10 +24,11 @@ v* タグ push
 | 変更したもの | 反映経路 | 必要な作業 |
 |---|---|---|
 | `docker-compose.yml` | サーバーが GitHub raw から `curl -O` して取得 | main へ push → サーバーで再取得 → `docker compose up -d` |
-| `nginx.conf` | **イメージに焼き込まれる**（`Dockerfile:24`） | main へ push → `v*` タグ → CI がビルド → Watchtower が pull |
+| `nginx.conf` / `docker-entrypoint.sh` | **イメージに焼き込まれる**（`Dockerfile`） | main へ push → `v*` タグ → CI がビルド → Watchtower が pull |
 | アプリのソースコード | 同上（`expo export` で `dist` にビルド） | 同上 |
 
-`nginx.conf` は `docker-compose.yml` から bind mount していないため、**イメージを再ビルドしない限り一切反映されません**。サーバー上で直接編集してもコンテナ再作成で消えます。
+- 証明書そのものは**ランタイム生成**なので、`HTTPS_PORT` / `HTTPS_CN` 等の環境変数を変えるだけならイメージ再ビルドは不要です（compose の環境変数で完結）。
+- `nginx.conf` は `docker-compose.yml` から bind mount していないため、**イメージを再ビルドしない限り一切反映されません**。サーバー上で直接編集してもコンテナ再作成で消えます。
 
 ## 更新の反映手順
 
@@ -49,10 +51,17 @@ git push origin main
 
 `nginx.conf` が不正だとコンテナが起動せず、`restart: unless-stopped` により**起動ループ**に落ちます。CI は `nginx -t` を実行しないため、push 後に手元で確認してください。
 
+`nginx.conf` はテンプレート（`${HTTPS_PORT}` をエントリポイントが展開）のため、**イメージをローカルビルドしてエントリポイント経由で検証**するのが最も確実です:
+
 ```bash
-curl -sO https://raw.githubusercontent.com/Amka78/open-bookshelf/main/nginx.conf
-docker run --rm -v "$PWD/nginx.conf:/etc/nginx/conf.d/default.conf:ro" nginx:alpine nginx -t
+docker build -t open-bookshelf:test .
+# エントリポイントが証明書生成 → テンプレート展開 を実行してから nginx -t が走る
+docker run --rm -e HTTPS_PORT=443 open-bookshelf:test nginx -t
 ```
+
+> `docker build` は `expo export`（5〜10分）を含むため時間がかかります。サクッと構文だけ確認したい場合は、
+> `/etc/nginx/conf.d/default.conf` に展開済みの設定が手元にあれば
+> `docker run --rm -v "$PWD/default.conf:/etc/nginx/conf.d/default.conf:ro" nginx:alpine nginx -t` で検証できます。
 
 ### 3. サーバーで Watchtower が生きているか確認
 
@@ -93,8 +102,14 @@ docker run --rm \
 # 反映確認
 docker images --digests ghcr.io/amka78/open-bookshelf     # latest の digest / IMAGE ID が変わったか
 docker inspect -f '{{.State.StartedAt}}' open-bookshelf   # 再起動時刻
-curl -sI http://localhost:${PORT:-3000}/ | grep -iE 'cache-control|last-modified|etag'
-curl -s  http://localhost:${PORT:-3000}/ | grep -oE 'AppEntry-[a-f0-9]+\.js'
+curl -skI https://localhost:${HTTPS_PORT:-8443}/ | grep -iE 'cache-control|last-modified|etag'
+curl -sk  https://localhost:${HTTPS_PORT:-8443}/ | grep -oE 'AppEntry-[a-f0-9]+\.js'
+```
+
+`-k` は自己署名証明書用（`curl` の証明書検証をスキップ）。HTTP でアクセスした場合も `https://` へのリダイレクトが確認できます。
+
+```bash
+curl -sI http://localhost:${PORT:-3000}/ | head -5   # 301 と Location: https://... を確認
 ```
 
 `AppEntry-<hash>.js` のハッシュが GHCR のイメージ内 `index.html` と一致していれば、コンテナは新イメージを配信しています。

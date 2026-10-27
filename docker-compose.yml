@@ -3,7 +3,20 @@ services:
     image: ghcr.io/amka78/open-bookshelf:latest
     container_name: open-bookshelf
     ports:
+      # HTTP は HTTPS へのリダイレクト用（従来の ${PORT} 動作を維持）
       - "${PORT:-3000}:80"
+      # HTTPS 本体。ホスト 80/443 を NPM 等が使っている場合は HTTPS_PORT で変更する
+      - "${HTTPS_PORT:-8443}:443"
+    environment:
+      # HTTP→HTTPS リダイレクト先のホスト側ポート（コンテナ内部は常に 443）
+      HTTPS_PORT: "${HTTPS_PORT:-8443}"
+      # 自己署名証明書の CN / SAN。LAN の IP で接続する場合は HTTPS_SAN_IP にその IP を指定
+      HTTPS_CN: "${HTTPS_CN:-localhost}"
+      HTTPS_SAN_IP: "${HTTPS_SAN_IP:-}"
+      HTTPS_SAN_DNS: "${HTTPS_SAN_DNS:-}"
+    volumes:
+      # 証明書を永続化（Watchtower による再作成後もブラウザの警告が再発しない）
+      - ssl-certs:/etc/nginx/ssl
     restart: unless-stopped
     labels:
       - "com.centurylinklabs.watchtower.scope=open-bookshelf"

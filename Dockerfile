@@ -24,7 +24,18 @@ RUN timeout 900 bunx expo export --platform web --output-dir dist && \
 # Stage 2: Serve
 FROM nginx:alpine
 
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# 自己署名証明書の生成（openssl）と nginx.conf テンプレートの展開（envsubst）に必要
+RUN apk add --no-cache openssl gettext
+
+# nginx.conf はテンプレート。エントリポイントが ${HTTPS_PORT} を展開して
+# /etc/nginx/conf.d/default.conf を生成する（HTTPS 用のサーバーブロックを含む）
+COPY nginx.conf /etc/nginx/conf.d/default.conf.template
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-EXPOSE 80
+EXPOSE 80 443
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]

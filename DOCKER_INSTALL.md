@@ -17,12 +17,27 @@ docker run -d \
   --name open-bookshelf \
   --restart unless-stopped \
   -p 3000:80 \
+  -p 8443:443 \
+  -e HTTPS_PORT=8443 \
+  -e HTTPS_CN=localhost \
+  -v ssl-certs:/etc/nginx/ssl \
   ghcr.io/amka78/open-bookshelf:latest
 ```
 
-ブラウザで `http://localhost:3000` を開いてください。
+ブラウザで `https://localhost:8443` を開いてください。
 
-Open `http://localhost:3000` in your browser.
+Open `https://localhost:8443` in your browser.
+
+> **自己署名証明書について / About the self-signed certificate**
+>
+> 初回起動時にコンテナが自己署名証明書を自動生成するため、ブラウザには証明書警告が出ます。
+> 警告を承認して進めれば、クリップボード API を含む全機能が動作します（Secure Context 要件を満たすため）。
+>
+> A self-signed certificate is generated automatically on first container start, so your browser
+> will show a certificate warning. Accept it and all features (including the clipboard API) will work.
+>
+> 接続に使う名前を `HTTPS_CN`（ホスト名）や `HTTPS_SAN_IP`（IP アドレス）で指定しておくと、
+> 証明書がその名前に対応するため、警告回数が減ります。
 
 ---
 
@@ -40,7 +55,15 @@ Open `http://localhost:3000` in your browser.
 
 | 変数名 / Variable | デフォルト / Default | 説明 / Description |
 |--------|-----------|------|
-| `PORT` | `3000` | ホスト側の公開ポート番号 / Host port to expose the app |
+| `PORT` | `3000` | HTTP リスナー（HTTPS へのリダイレクト用）のホスト側ポート / Host port of the HTTP listener (redirects to HTTPS) |
+| `HTTPS_PORT` | `8443` | HTTPS のホスト側ポート。HTTP→HTTPS リダイレクト先にも使う / Host port of HTTPS; also used as the HTTP→HTTPS redirect target |
+| `HTTPS_CN` | `localhost` | 自己署名証明書の CN / SAN に含めるホスト名 / Hostname embedded in the self-signed certificate CN and SAN |
+| `HTTPS_SAN_IP` | （なし / none） | 証明書に追加する IP SAN（IP アドレスで接続する場合に指定）例: `192.168.1.50` / IP SAN to add to the certificate, e.g. when accessing via LAN IP |
+| `HTTPS_SAN_DNS` | （なし / none） | 証明書に追加する DNS SAN / Additional DNS SAN entries |
+
+> **注意:** HTTP（`PORT`）から HTTPS（`HTTPS_PORT`）へのリダイレクトは、コンテナ内の環境変数 `HTTPS_PORT` を使って生成されます。`docker run` では `-e HTTPS_PORT=<ホスト側ポート>` を必ずポート公開と揃えてください。compose では自動的に揃います。
+>
+> **Note:** the HTTP→HTTPS redirect is rendered inside the container from the `HTTPS_PORT` env var, so with `docker run` keep `-e HTTPS_PORT` in sync with the published port. With compose this is automatic.
 
 ---
 
@@ -57,8 +80,19 @@ curl -O https://raw.githubusercontent.com/Amka78/open-bookshelf/main/docker-comp
 # 起動 / Start
 docker compose up -d
 
-# ポートを変更する場合 / To use a different port
-PORT=8080 docker compose up -d
+# ブラウザで開く / Open in your browser
+# https://localhost:8443
+
+# ポートを変更する場合 / To change the port
+HTTPS_PORT=9443 docker compose up -d
+```
+
+`PORT`（HTTP 側）・`HTTPS_PORT`・`HTTPS_CN` はどれも環境変数で変更できます。compose 上ではポート公開とリダイレクト先が自動的に揃います。
+
+LAN の IP アドレスで接続する場合は、証明書に SAN を追加してください:
+
+```bash
+HTTPS_CN=localhost HTTPS_SAN_IP=192.168.1.50 docker compose up -d   # → https://192.168.1.50:8443
 ```
 
 ---
@@ -90,8 +124,24 @@ docker compose down --rmi all
 Error: bind: address already in use
 ```
 
-→ `PORT=8080 docker compose up -d` のように別のポートを指定してください。  
-→ Specify a different port, e.g. `PORT=8080 docker compose up -d`.
+→ 別のポートを指定してください（compose なら `HTTPS_PORT` / `PORT`）。
+→ Specify different ports, e.g. `HTTPS_PORT=9443 docker compose up -d` (use `PORT` for the HTTP redirect port).
+
+**証明書を再生成したい / Regenerate the certificate**
+
+```bash
+docker compose down
+docker volume rm open-bookshelf_ssl-certs   # プロジェクト名(open-bookshelf_)が付く場合あり
+docker compose up -d
+```
+
+**HTTPS ページから Calibre へ接続できない / Cannot reach Calibre from an HTTPS page**
+
+ブラウザは HTTPS ページから `http://` への XHR/fetch を Mixed Content としてブロックします。
+Calibre の接続先は HTTPS（例: Nginx Proxy Manager の https URL）を指定してください。
+
+Browsers block XHR/fetch from an HTTPS page to `http://` (mixed content). Point the Calibre URL
+at an HTTPS endpoint (e.g. an Nginx Proxy Manager reverse-proxy URL).
 
 **ログ確認 / View logs**
 
