@@ -54,8 +54,12 @@ export default defineConfig({
         esbuild: { jsx: "automatic" },
         // vite-tsconfig-paths だけの解決だと vi.doMock("@/...") が実パスのモジュールに一致せず、
         // mock が黙って無視される。Vite ネイティブの alias としても登録する。
+        // "@" はプリフィックス一致のため "@/test/..." を先に解決させる（app 側に食われないよう順序に注意）。
         resolve: {
-          alias: { "@": path.resolve(process.cwd(), "app") },
+          alias: {
+            "@/test": path.resolve(process.cwd(), "test"),
+            "@": path.resolve(process.cwd(), "app"),
+          },
         },
         define: {
           __DEV__: "true",
