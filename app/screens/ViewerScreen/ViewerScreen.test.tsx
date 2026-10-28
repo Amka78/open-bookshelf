@@ -100,10 +100,14 @@ beforeAll(async () => {
 
 describe("ViewerScreen", () => {
   const navigate = vi.fn()
+  const goBack = vi.fn()
+  const canGoBack = vi.fn().mockReturnValue(true)
+  const replace = vi.fn()
 
   beforeEach(() => {
     vi.clearAllMocks()
-    useNavigationMock.mockReturnValue({ navigate })
+    canGoBack.mockReturnValue(true)
+    useNavigationMock.mockReturnValue({ navigate, canGoBack, goBack, replace })
     useViewerPreparationMock.mockReturnValue({
       messageTx: "viewerPreparation.preparing",
       phase: "ready",
@@ -194,7 +198,7 @@ describe("ViewerScreen", () => {
     expect(screen.getByTestId("viewer-screen-text-book-viewer")).toBeTruthy()
   })
 
-  test("navigates back to Library when no selected book is available", () => {
+  test("goes back when no selected book is available and a back target exists", () => {
     useViewerMock.mockReturnValue({
       selectedLibrary: null,
       selectedBook: null,
@@ -207,7 +211,27 @@ describe("ViewerScreen", () => {
 
     render(<ViewerScreen />)
 
-    expect(navigate).toHaveBeenCalledWith("Library")
+    expect(goBack).toHaveBeenCalledTimes(1)
+    expect(navigate).not.toHaveBeenCalled()
+  })
+
+  test("replaces with Library when no selected book is available and there is no back target", () => {
+    canGoBack.mockReturnValue(false)
+    useViewerMock.mockReturnValue({
+      selectedLibrary: null,
+      selectedBook: null,
+      initialPage: 0,
+      viewerReady: true,
+      cachedPathList: undefined,
+      onPageChange: vi.fn(),
+      onLastPage: vi.fn(),
+    })
+
+    render(<ViewerScreen />)
+
+    expect(replace).toHaveBeenCalledWith("Library")
+    expect(goBack).not.toHaveBeenCalled()
+    expect(navigate).not.toHaveBeenCalled()
   })
 
   test("switches to TextBookViewer when spine paths arrive after the first render", () => {

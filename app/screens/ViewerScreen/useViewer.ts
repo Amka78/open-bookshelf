@@ -86,6 +86,31 @@ const getDefaultPageDirection = (pageProgressionDirection: "rtl" | "ltr" | null 
   return pageProgressionDirection === "ltr" ? "right" : "left"
 }
 
+/**
+ * 再開プロンプトの状態をモジュールスコープで保持する（コンポーネントのマウントをまたいで共有）。
+ *
+ * Android ではナビゲーションスタックに重複した Viewer ルートが残ることがあり（シリーズ遷移や
+ * 状態復元後に ViewerScreen が Library を push する経路）、同じ本の ViewerScreen が複数
+ * マウントされた状態で並走する。各マウントが独立した useRef を持つと全インスタンスが
+ * 再開ダイアログを開いてしまい、react-native-modalfy が同名モーダルを積み重ねて
+ * 「ダイアログが2度表示される」問題になる。
+ * このモジュール状態により、同一キーのプロンプトは1つのインスタンスだけが開き、
+ * 残りのインスタンスは結果（受け入れ/拒否）を反映する。
+ */
+type ResumePromptState =
+  | { key: string; status: "pending"; opened: boolean; openedAt: number }
+  | { key: string; status: "accepted" | "declined" }
+let resumePromptState: ResumePromptState | undefined = undefined
+
+/** テスト用: モジュール状態をリセットする。 */
+export function resetResumePromptForTests() {
+  resumePromptState = undefined
+}
+
+/** モーダルを閉じる操作（Android のハードウェアバック等）で onCancelPress が呼ばれずに
+ *  閉じられたとみなすための閾値。開いた直後の spurious な再レンダーと区別する。 */
+const RESUME_PROMPT_CLOSED_SILENTLY_MS = 750
+
 export function useViewer() {
   const { calibreRootStore } = useStores()
   const modal = useElectrobunModal()
@@ -93,7 +118,6 @@ export function useViewer() {
   const [showMenu, setShowMenu] = useState(false)
   const [initialPage, setInitialPage] = useState(0)
   const [viewerReady, setViewerReady] = useState(false)
-  const pendingPromptKeyRef = useRef<string | undefined>(undefined)
   const handledRatingPromptKeyRef = useRef<string | undefined>(undefined)
   const syncTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const resumePageRef = useRef<number>(0)
@@ -196,12 +220,15 @@ export function useViewer() {
         : Math.round(history.serverPosFrac * (availablePageCount - 1))
       : -1
 
-  // Handle resume reading prompt
+  // Handle resume reading prompt.
+  //
+  // NOTE: The prompt state lives at module scope (resumePromptState), not in a
+  // useRef, because duplicate Viewer routes can stay mounted simultaneously on
+  // Android (see the type comment above). A component-local ref would let every
+  // mounted instance open its own resume dialog and modalfy would stack them.
   useEffect(() => {
-    let cleanup = () => {}
-
     if (viewerReady) {
-      return cleanup
+      return
     }
 
     // Local progress: history exists AND currentPage > 0 (page 0 means not yet started)
@@ -213,71 +240,114 @@ export function useViewer() {
       : serverEstimatedPage > 0
 
     if (!hasLocalProgress && !hasServerProgress) {
-      pendingPromptKeyRef.current = undefined
+      resumePromptState = undefined
       setInitialPage(0)
       setViewerReady(true)
       logger.debug("No reading history or at first page, starting from the beginning", {
         promptKey,
       })
-    } else if (pendingPromptKeyRef.current === promptKey) {
-      setViewerReady(false)
-    } else {
-      pendingPromptKeyRef.current = promptKey
-      setViewerReady(false)
+      return
+    }
 
-      const maxPage = Math.max(availablePageCount - 1, 0)
+    const maxPage = Math.max(availablePageCount - 1, 0)
+    const resumePage = hasLocalProgress
+      ? Math.max(0, Math.min(history?.currentPage ?? 0, maxPage))
+      : Math.max(0, Math.min(serverEstimatedPage, maxPage))
 
-      const resumePage = hasLocalProgress
-        ? Math.max(0, Math.min(history?.currentPage ?? 0, maxPage))
-        : Math.max(0, Math.min(serverEstimatedPage, maxPage))
+    // A different book/format than the one currently prompted is now the subject.
+    if (resumePromptState !== undefined && resumePromptState.key !== promptKey) {
+      resumePromptState = undefined
+    }
 
-      logger.debug("Prompting user to resume reading", {
+    if (resumePromptState === undefined) {
+      resumePromptState = { key: promptKey, status: "pending", opened: false, openedAt: 0 }
+    }
+
+    if (resumePromptState.status !== "pending") {
+      // Another instance already answered the prompt for this key: mirror the outcome.
+      logger.debug("Resume prompt already resolved, applying outcome", {
         promptKey,
-        hasLocalProgress,
-        hasServerProgress,
+        status: resumePromptState.status,
         resumePage,
-        serverEstimatedPage,
-        localCurrentPage: history?.currentPage,
       })
+      setInitialPage(resumePromptState.status === "accepted" ? resumePage : 0)
+      setViewerReady(true)
+      return
+    }
 
-      // Store in ref so callbacks always use the latest value
-      resumePageRef.current = resumePage
-
-      let secondFrame: number | undefined
-      const firstFrame = runOnNextFrame(() => {
-        secondFrame = runOnNextFrame(() => {
-          if (pendingPromptKeyRef.current !== promptKey) {
-            return
-          }
-
-          modal.openModal("ConfirmModal", {
-            titleTx: "modal.resumeReadingConfirmModal.title",
-            messageTx: "modal.resumeReadingConfirmModal.message",
-            okTx: "common.yes",
-            cancelTx: "common.no",
-            onOKPress: () => {
-              logger.debug("User chose to resume reading", { promptKey, resumePage })
-              pendingPromptKeyRef.current = undefined
-              setInitialPage(resumePageRef.current)
-              setViewerReady(true)
-            },
-            onCancelPress: () => {
-              pendingPromptKeyRef.current = undefined
-              setInitialPage(0)
-              setViewerReady(true)
-            },
-          })
+    if (resumePromptState.opened && modal.currentModal === null) {
+      // The dialog was closed without answering (e.g. Android hardware back or
+      // backdrop press), which never fires onCancelPress. Treat it as declining.
+      if (Date.now() - resumePromptState.openedAt > RESUME_PROMPT_CLOSED_SILENTLY_MS) {
+        logger.debug("Resume dialog closed without answer, starting from the beginning", {
+          promptKey,
         })
-      })
-      cleanup = () => {
-        cancelScheduledFrame(firstFrame)
-        if (secondFrame !== undefined) {
-          cancelScheduledFrame(secondFrame)
-        }
+        resumePromptState = { key: promptKey, status: "declined" }
+        setInitialPage(0)
+        setViewerReady(true)
+        return
       }
     }
 
-    return cleanup
+    if (resumePromptState.opened) {
+      // The prompt for this key is already showing; wait for its outcome.
+      return
+    }
+
+    logger.debug("Prompting user to resume reading", {
+      promptKey,
+      hasLocalProgress,
+      hasServerProgress,
+      resumePage,
+      serverEstimatedPage,
+      localCurrentPage: history?.currentPage,
+    })
+
+    // Store in ref so callbacks always use the latest value
+    resumePageRef.current = resumePage
+
+    let secondFrame: number | undefined
+    const firstFrame = runOnNextFrame(() => {
+      secondFrame = runOnNextFrame(() => {
+        // Only the first instance that reaches this point may open the dialog.
+        const current = resumePromptState
+        const shouldOpen =
+          current !== undefined &&
+          current.key === promptKey &&
+          current.status === "pending" &&
+          !current.opened
+        if (!shouldOpen || !current) {
+          return
+        }
+
+        current.opened = true
+        current.openedAt = Date.now()
+        modal.openModal("ConfirmModal", {
+          titleTx: "modal.resumeReadingConfirmModal.title",
+          messageTx: "modal.resumeReadingConfirmModal.message",
+          okTx: "common.yes",
+          cancelTx: "common.no",
+          onOKPress: () => {
+            logger.debug("User chose to resume reading", { promptKey, resumePage })
+            resumePromptState = { key: promptKey, status: "accepted" }
+            setInitialPage(resumePageRef.current)
+            setViewerReady(true)
+          },
+          onCancelPress: () => {
+            resumePromptState = { key: promptKey, status: "declined" }
+            setInitialPage(0)
+            setViewerReady(true)
+          },
+        })
+      })
+    })
+
+    return () => {
+      cancelScheduledFrame(firstFrame)
+      if (secondFrame !== undefined) {
+        cancelScheduledFrame(secondFrame)
+      }
+    }
   }, [
     availablePageCount,
     history,

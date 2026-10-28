@@ -119,6 +119,7 @@ vi.doMock("@/hooks/useElectrobunModal", () => ({
 
 let useConvergence: typeof import("../../hooks/useConvergence").useConvergence
 let useViewer: typeof import("./useViewer").useViewer
+let resetResumePromptForTests: typeof import("./useViewer").resetResumePromptForTests
 
 describe("useViewer", () => {
   const mockSetProp = vi.fn()
@@ -200,6 +201,7 @@ describe("useViewer", () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    resetResumePromptForTests()
     mockSelectedBook.pageProgressionDirection = null
     mockSelectedLibrary.clientSetting = [mockClientSetting]
     useStoresMock.mockReturnValue({
@@ -221,7 +223,7 @@ describe("useViewer", () => {
 
   beforeAll(async () => {
     ;({ useConvergence } = await import("../../hooks/useConvergence"))
-    ;({ useViewer } = await import("./useViewer"))
+    ;({ useViewer, resetResumePromptForTests } = await import("./useViewer"))
   })
 
   afterAll(() => {
@@ -639,6 +641,32 @@ describe("useViewer", () => {
 
     await playResumeReadingPromptDoesNotReopenOnRerender({
       rerender,
+      flushFrame: frames.flushFrame,
+    })
+
+    expect(mockOpenModal).toHaveBeenCalledTimes(1)
+    expect(mockOpenModal).toHaveBeenCalledWith(
+      "ConfirmModal",
+      expect.objectContaining({
+        titleTx: "modal.resumeReadingConfirmModal.title",
+      }),
+    )
+  })
+
+  test("opens the resume reading confirm modal exactly once across concurrent instances", async () => {
+    const frames = createFrameScheduler()
+    globalThis.requestAnimationFrame = frames.requestAnimationFrame
+    globalThis.cancelAnimationFrame = frames.cancelAnimationFrame
+
+    // Android では重複した Viewer ルートにより同じ本のフックが複数マウントされ得る。
+    // プロンプト状態はモジュールスコープで共有されるため、ダイアログは1回だけ開く。
+    renderHook(() => useViewer())
+    renderHook(() => useViewer())
+
+    await playResumeReadingPromptAppears({
+      flushFrame: frames.flushFrame,
+    })
+    await playResumeReadingPromptAppears({
       flushFrame: frames.flushFrame,
     })
 

@@ -68,7 +68,13 @@ const ViewerScreenContent: FC = observer(() => {
 
   useLayoutEffect(() => {
     if (!selectedBook) {
-      navigation.navigate("Library")
+      // Library を push すると重複ルートが蓄積されるため、戻れる場合は goBack する。
+      // 直接リンク等で戻り先がない場合のみ Library に置き換える。
+      if (navigation.canGoBack()) {
+        navigation.goBack()
+      } else {
+        navigation.replace("Library")
+      }
     }
   }, [selectedBook, navigation])
 

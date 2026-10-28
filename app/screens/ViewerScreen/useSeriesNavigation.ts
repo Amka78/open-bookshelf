@@ -48,7 +48,9 @@ export function useSeriesNavigation(): UseSeriesNavigationResult {
 
     const format = targetBook.metaData?.selectedFormat ?? targetBook.metaData?.formats[0] ?? "EPUB"
 
-    navigation.navigate("Viewer", {
+    // replace() を使い、シリーズ移動で Viewer ルートが積み重なる（＝同じ画面の
+    // インスタンスが複数マウントされる）ことを防ぐ。
+    navigation.replace("Viewer", {
       request: {
         bookId: targetBook.id,
         libraryId: selectedLibrary.id,
