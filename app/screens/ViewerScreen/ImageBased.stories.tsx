@@ -136,6 +136,16 @@ function querySvgPageImages(canvasElement: HTMLElement) {
   )
 }
 
+// モックSVGの src は "Page N of M" を含むため、描画済みページ番号を src から取り出す。
+function extractSvgPageNumbers(canvasElement: HTMLElement): number[] {
+  return querySvgPageImages(canvasElement)
+    .map((img) => {
+      const decoded = decodeURIComponent(img.getAttribute("src") ?? "")
+      return Number(decoded.match(/Page (\d+)/)?.[1] ?? Number.NaN)
+    })
+    .filter((n) => Number.isInteger(n))
+}
+
 async function playViewerShowsTitleIfVisible({
   canvasElement,
   title,
@@ -162,15 +172,21 @@ async function playImageBasedViewerRendersPages({
   pageCount: number
   maxRetries?: number
 }) {
+  const expectedPages = new Set(Array.from({ length: pageCount }, (_, i) => i + 1))
   for (let i = 0; i < maxRetries; i++) {
-    if (querySvgPageImages(canvasElement).length === pageCount) {
+    const foundPages = new Set(extractSvgPageNumbers(canvasElement))
+    // FlashList の web 実装はバッチ描画時にリサイクルセルが残り、同一ページの img が
+    // 一時的に重複することがある（実測: 8ページ中 "5" が2枚、計9枚）。全ページの描画を
+    // 確認するのが目的なので枚数の完全一致ではなく「全ページが揃うこと」で検証する。
+    if ([...expectedPages].every((page) => foundPages.has(page))) {
       return
     }
-    await new Promise((r) => setTimeout(r, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
   }
 
+  const foundPages = [...new Set(extractSvgPageNumbers(canvasElement))].sort((a, b) => a - b)
   throw new Error(
-    `Expected ${pageCount} SVG page images but found ${querySvgPageImages(canvasElement).length}.`,
+    `Expected ${pageCount} distinct SVG page images but found [${foundPages.join(", ")}].`,
   )
 }
 

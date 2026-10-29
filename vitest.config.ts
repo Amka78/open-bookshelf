@@ -33,7 +33,12 @@ export default defineConfig({
             enabled: true,
             headless: true,
             provider: "playwright",
-            instances: [{ browser: "chromium", headless: true }],
+            // ストーリーテストは英語テキストを検索するため、実行マシンのロケール（例: ja）で
+            // 翻訳が変わりテストが落ちないよう、ブラウザロケールを en-US に固定する。
+            // instances 使用時は providerOptions が無視されるため context は instance 側に書く。
+            instances: [
+              { browser: "chromium", headless: true, context: { locale: "en-US" } },
+            ],
           },
         },
       },
