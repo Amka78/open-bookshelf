@@ -55,6 +55,22 @@ export const CalibreRootStore = types
     thumbnailRevisions: types.optional(types.map(types.number), {}),
     isFetchingMore: types.optional(types.boolean, false),
   })
+  .volatile(() => ({
+    // 検索リクエストの世代番号。新しい検索（searchLibrary）が始まるたびに increment する。
+    // レスポンス到着時にこの値と一致しない場合は「古いリクエストのレスポンス」として破棄する。
+    // 対になるリクエストが並行実行されるため、遅れて到着した古い検索結果が
+    // 最新の検索結果（例: クリア後の全件表示）を上書きする競合を防ぐ。
+    searchRequestSeq: 0,
+    // タグブラウザ（LeftSideMenu）の再取得が必要かどうか。件数に影響する
+    // フィールドの編集保存に成功したら markTagBrowserDirty() で立てる。
+    // 再取得の開始時に false へ戻す（取得成功のタイミングではない点に注意）。
+    tagBrowserDirty: false,
+    // タグブラウザ取得の多重実行ガード。取得中に再要求が来た場合は
+    // tagBrowserPending を立てて後回しにし、呼び出し側に「後でもう1回」
+    // を委ねる（useLibrary のデバウンス経路で再スケジュールされる）。
+    tagBrowserFetching: false,
+    tagBrowserPending: false,
+  }))
   .views((root) => ({
     getBookThumbnailRevision(libraryId: string, bookId: number) {
       return root.thumbnailRevisions.get(`${libraryId}:${bookId}`) ?? 0
@@ -132,66 +148,85 @@ export const CalibreRootStore = types
       handleCommonApiError(response)
       return false
     }),
+    markTagBrowserDirty() {
+      root.tagBrowserDirty = true
+    },
     getTagBrowser: flow(function* () {
-      const response = yield api.getTagBrowser(root.defaultLibraryId ?? "")
-      if (response.kind === "ok") {
-        const oldTbSnapshot = [...root.selectedLibrary!.tagBrowser]
-        for (const cat of oldTbSnapshot) {
-          detach(cat)
-        }
-        root.selectedLibrary!.tagBrowser.clear()
+      // 多重実行ガード: 取得中に再要求が来たら pending を立てて後回しにする。
+      // 呼び出し側（useLibrary のデバウンス再取得）が pending を見て再度スケジュールする。
+      if (root.tagBrowserFetching) {
+        root.tagBrowserPending = true
+        return false
+      }
+      root.tagBrowserFetching = true
+      root.tagBrowserPending = false
+      // dirty は「再取得を開始した」時点で消費する。失敗しても再試行ループにはせず、
+      // 次の編集で再び dirty が立つのを待つ。
+      root.tagBrowserDirty = false
+      try {
+        const response = yield api.getTagBrowser(root.defaultLibraryId ?? "")
+        if (response.kind === "ok") {
+          const oldTbSnapshot = [...root.selectedLibrary!.tagBrowser]
+          for (const cat of oldTbSnapshot) {
+            detach(cat)
+          }
+          root.selectedLibrary!.tagBrowser.clear()
 
-        const rootChildren = response.data.root.children
-        rootChildren.forEach((value: Children) => {
-          const category = response.data.item_map[value.id] as CategoryItemMap
+          const rootChildren = response.data.root.children
+          rootChildren.forEach((value: Children) => {
+            const category = response.data.item_map[value.id] as CategoryItemMap
 
-          const categoryModel = CategoryModel.create({
-            category: category.category as string,
-            count: category.count,
-            isCategory: category.is_category,
-            isEditable: category.is_editable,
-            isSearchable: category.is_searchable,
-            name: category.name,
-            tooltip: category.tooltip,
-          })
-
-          const subCategoryArray: Instance<typeof SubCategoryModel>[] = []
-          value.children.forEach((subValue: Children) => {
-            const subCateogy = response.data.item_map[subValue.id] as CategoryItemMap
-            const subCategoryModel = SubCategoryModel.create({
-              category: subCateogy.category as string,
-              count: subCateogy.count,
-              isCategory: subCateogy.is_category,
-              isSearchable: subCateogy.is_searchable,
-              name: subCateogy.name,
+            const categoryModel = CategoryModel.create({
+              category: category.category as string,
+              count: category.count,
+              isCategory: category.is_category,
+              isEditable: category.is_editable,
+              isSearchable: category.is_searchable,
+              name: category.name,
+              tooltip: category.tooltip,
             })
 
-            const nodeArray: Instance<typeof NodeModel>[] = []
-            subValue.children.forEach((nodeValue: Children) => {
-              const node = response.data.item_map[nodeValue.id] as NodeItemMap
-
-              const nodeModel = NodeModel.create({
-                avgRating: node.avg_rating,
-                count: node.count,
-                id: node.id,
-                name: node.name,
+            const subCategoryArray: Instance<typeof SubCategoryModel>[] = []
+            value.children.forEach((subValue: Children) => {
+              const subCateogy = response.data.item_map[subValue.id] as CategoryItemMap
+              const subCategoryModel = SubCategoryModel.create({
+                category: subCateogy.category as string,
+                count: subCateogy.count,
+                isCategory: subCateogy.is_category,
+                isSearchable: subCateogy.is_searchable,
+                name: subCateogy.name,
               })
 
-              nodeArray.push(nodeModel)
-            })
-            subCategoryModel.setProp("children", nodeArray)
-            subCategoryArray.push(subCategoryModel)
-          })
+              const nodeArray: Instance<typeof NodeModel>[] = []
+              subValue.children.forEach((nodeValue: Children) => {
+                const node = response.data.item_map[nodeValue.id] as NodeItemMap
 
-          categoryModel.setProp("subCategory", subCategoryArray)
-          root.selectedLibrary!.tagBrowser.push(categoryModel)
-        })
-        return true
+                const nodeModel = NodeModel.create({
+                  avgRating: node.avg_rating,
+                  count: node.count,
+                  id: node.id,
+                  name: node.name,
+                })
+
+                nodeArray.push(nodeModel)
+              })
+              subCategoryModel.setProp("children", nodeArray)
+              subCategoryArray.push(subCategoryModel)
+            })
+
+            categoryModel.setProp("subCategory", subCategoryArray)
+            root.selectedLibrary!.tagBrowser.push(categoryModel)
+          })
+          return true
+        }
+        handleCommonApiError(response)
+        return false
+      } finally {
+        root.tagBrowserFetching = false
       }
-      handleCommonApiError(response)
-      return false
     }),
     searchLibrary: flow(function* (num?: number) {
+      const requestSeq = ++root.searchRequestSeq
       root.isFetchingMore = false
       const response = yield api.getLibrary(
         root.selectedLibrary!.id,
@@ -205,6 +240,11 @@ export const CalibreRootStore = types
         root.selectedLibrary!.searchSetting?.vl,
         num,
       )
+
+      // この間に新しい検索が開始されている場合は、古いレスポンスとして破棄する。
+      // convertSearchResult は searchSetting（query 含む）を無条件に置き換えるため、
+      // 遅れて到着した古い検索結果が最新の検索（例: クリア後の全件）を上書きしてしまう。
+      if (requestSeq !== root.searchRequestSeq) return false
 
       if (response.kind === "ok") {
         // books.clear() は使わない。convertSearchResult 内で古い books を個別に削除する。
@@ -228,6 +268,8 @@ export const CalibreRootStore = types
       const offset = selectedLibrary.searchSetting?.offset ?? 0
       if (totalNum > 0 && offset >= totalNum) return false
 
+      // 取得開始時点の検索世代を捕捉し、取得中に新しい検索が始まったら破棄する
+      const requestSeq = root.searchRequestSeq
       root.isFetchingMore = true
       try {
         const response = yield api.getMoreLibrary(selectedLibrary.id, {
@@ -237,6 +279,8 @@ export const CalibreRootStore = types
           sort_order: selectedLibrary.searchSetting!.sortOrder,
           vl: selectedLibrary.searchSetting!.vl ?? "",
         })
+
+        if (requestSeq !== root.searchRequestSeq) return false
 
         if (response.kind === "ok") {
           convertSearchResult(response.data, selectedLibrary, true)

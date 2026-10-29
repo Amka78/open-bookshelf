@@ -18,6 +18,7 @@ const useConvergenceMock = vi.fn()
 const bookListItemProps: Array<Record<string, unknown>> = []
 const bookImageItemProps: Array<Record<string, unknown>> = []
 const libraryTableItemProps: Array<Record<string, unknown>> = []
+const scrollViewProps: Array<Record<string, unknown>> = []
 const navigationMock = {
   goBack: vi.fn(),
   navigate: vi.fn(),
@@ -106,7 +107,10 @@ const componentsMock = {
   LeftSideMenu: () => null,
   LibraryActions: () => <div data-testid="library-actions" />,
   MaterialCommunityIcon: () => <span data-testid="mock-icon" />,
-  ScrollView: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  ScrollView: (props: Record<string, unknown>) => {
+    scrollViewProps.push(props)
+    return <div>{props.children as ReactNode}</div>
+  },
   SelectionActionBar: () => <div data-testid="selection-action-bar" />,
   SortMenu: () => null,
   StaggerContainer: ({ children, menus }: { children?: ReactNode; menus?: ReactNode }) => (
@@ -346,6 +350,7 @@ function renderLibraryScreen({
 } = {}) {
   const selectedLibrary = buildSelectedLibrary()
   selectedLibrary.searchSetting.query = searchQuery
+  const searchMoreLibrary = vi.fn()
   useConvergenceMock.mockReturnValue({
     isLarge: false,
     orientation: "vertical",
@@ -358,7 +363,7 @@ function renderLibraryScreen({
       isFetchingMore: false,
       readingHistories: [],
       searchLibrary: vi.fn().mockResolvedValue(undefined),
-      searchMoreLibrary: vi.fn(),
+      searchMoreLibrary,
       selectedLibrary,
     },
     settingStore: {
@@ -373,7 +378,7 @@ function renderLibraryScreen({
     },
   })
 
-  return { selectedLibrary, ...render(<LibraryScreen />) }
+  return { searchMoreLibrary, selectedLibrary, ...render(<LibraryScreen />) }
 }
 
 function getBeforeRemoveHandler() {
@@ -390,6 +395,7 @@ beforeEach(() => {
   bookImageItemProps.length = 0
   bookListItemProps.length = 0
   libraryTableItemProps.length = 0
+  scrollViewProps.length = 0
   vi.clearAllMocks()
 })
 
@@ -494,6 +500,63 @@ describe("LibraryScreen", () => {
     expect(screen.getByTestId("library-table-header")).toBeTruthy()
     expect(screen.getAllByTestId("library-table-item").length).toBeGreaterThan(0)
     expect(libraryTableItemProps.length).toBeGreaterThan(0)
+  })
+
+  test("table mode loads more books when scrolled to the bottom", () => {
+    const { searchMoreLibrary } = renderLibraryScreen({
+      viewMode: "table",
+    })
+
+    const onScroll = scrollViewProps.find(
+      (props) => typeof props.onScroll === "function",
+    )?.onScroll as (event: {
+      nativeEvent: {
+        contentOffset: { y: number }
+        contentSize: { height: number }
+        layoutMeasurement: { height: number }
+      }
+    }) => void
+    expect(onScroll).toBeInstanceOf(Function)
+
+    act(() => {
+      onScroll({
+        nativeEvent: {
+          contentOffset: { y: 500 },
+          contentSize: { height: 600 },
+          layoutMeasurement: { height: 100 },
+        },
+      })
+    })
+
+    expect(searchMoreLibrary).toHaveBeenCalledTimes(1)
+  })
+
+  test("table mode does not load more books when far from the bottom", () => {
+    const { searchMoreLibrary } = renderLibraryScreen({
+      viewMode: "table",
+    })
+
+    const onScroll = scrollViewProps.find(
+      (props) => typeof props.onScroll === "function",
+    )?.onScroll as (event: {
+      nativeEvent: {
+        contentOffset: { y: number }
+        contentSize: { height: number }
+        layoutMeasurement: { height: number }
+      }
+    }) => void
+
+    act(() => {
+      onScroll({
+        nativeEvent: {
+          contentOffset: { y: 0 },
+          contentSize: { height: 600 },
+          layoutMeasurement: { height: 100 },
+        },
+      })
+    })
+
+    expect(searchMoreLibrary).not.toHaveBeenCalled()
   })
 
   test("hardware back clears the search instead of leaving when a query is active", async () => {

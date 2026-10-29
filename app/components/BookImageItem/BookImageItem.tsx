@@ -5,6 +5,7 @@ import {
   BookDetailMenu,
   type BookDetailMenuProps,
   Box,
+  buildTagQuery,
   HStack,
   Image,
   type ImageProps,
@@ -82,19 +83,19 @@ function buildHoverSearchSections(metadata?: BookImageHoverSearchMetadata): Hove
 
   const authors = uniqNonEmpty(metadata.authors ?? []).map((author) => ({
     label: author,
-    query: `authors:=${author}`,
+    query: buildTagQuery("authors", author),
   }))
   const series = uniqNonEmpty([metadata.series ?? undefined]).map((value) => ({
     label: value,
-    query: `series:=${value}`,
+    query: buildTagQuery("series", value),
   }))
   const tags = uniqNonEmpty(metadata.tags ?? []).map((tag) => ({
     label: tag,
-    query: `tags:=${tag}`,
+    query: buildTagQuery("tags", tag),
   }))
   const formats = uniqNonEmpty(metadata.formats ?? []).map((format) => ({
     label: format.toUpperCase(),
-    query: `formats:=${format.toUpperCase()}`,
+    query: buildTagQuery("formats", format.toUpperCase()),
   }))
 
   const sections: HoverSearchSection[] = [

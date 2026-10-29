@@ -111,6 +111,7 @@ describe("useBookDetail", () => {
   const mockCalibreRootStore = {
     selectedLibrary: mockSelectedLibrary,
     getReadingStatus: mockGetReadingStatus,
+    markTagBrowserDirty: vi.fn(),
   }
 
   const mockRoute = {

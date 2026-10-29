@@ -213,6 +213,8 @@ export function useBookDetail() {
         const upper = format.toUpperCase()
         const remaining = currentFormats.filter((f) => f.toUpperCase() !== upper)
         selectedBook.metaData?.setProp("formats", remaining as never)
+        // フォーマット件数はタグブラウザの formats カテゴリに映るため再取得を予約する
+        calibreRootStore.markTagBrowserDirty()
         modal.openModal("ErrorModal", {
           titleTx: "common.ok",
           messageTx: "bookFormatList.deleteSuccess",
@@ -260,6 +262,8 @@ export function useBookDetail() {
           currentFormats.push(format)
           selectedBook.metaData?.setProp("formats", currentFormats as never)
         }
+        // フォーマット件数はタグブラウザの formats カテゴリに映るため再取得を予約する
+        calibreRootStore.markTagBrowserDirty()
         modal.openModal("ErrorModal", {
           titleTx: "common.ok",
           messageTx: "bookFormatList.uploadSuccess",

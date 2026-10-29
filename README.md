@@ -14,7 +14,7 @@ A cross-platform book library management application built with React Native, Ex
 - 📖 **PDF Viewer**: Built-in PDF viewer for reading books
 - 🎯 **Navigation & Organization**: Intuitive navigation with bottom tab bar and side menu
 - 💾 **Persistent Storage**: Async storage for local data persistence
-- 🧪 **Testing**: Jest unit tests
+- 🧪 **Testing**: Vitest unit tests + Storybook play tests
 
 ## Tech Stack
 
@@ -27,7 +27,7 @@ A cross-platform book library management application built with React Native, Ex
 - **Forms**: React Hook Form
 - **Internationalization**: i18n-js
 - **Build Tools**: Metro bundler, Webpack5 for Storybook
-- **Testing**: Jest, Storybook
+- **Testing**: Vitest, Storybook
 
 ## Project Structure
 
@@ -238,6 +238,16 @@ Add or modify translations in `app/i18n/`:
 bun run test:unit
 bun run test:watch
 ```
+
+### UI Interaction Tests (rule)
+
+UI 操作（クリック・貼りつけ・入力など）の検証は **test ファイルではなく story の `play` 関数**に書く。`bun run test:story`（Vitest + Playwright、実ブラウザ）がそれを実行するため、CI はこの経由で UI 操作をテストする。
+
+- 操作の検証は `.stories.tsx` の `play` に関連するロジックとアサーションをまとめて書く（play が例外を投げると CI が失敗する）
+- Story から API を呼ぶ場合は、`@/services/api` の該当メソッド（例: `api.editBook`）をスタブに差し替えて **API 呼び出しを Mock 化**する。実サーバーへは送らない
+- 純粋な関数・モデルのロジック検証は引き続き `*.test.ts(x)` のユニットテストで行ってよい（jsdom で UI 操作を再現する必要はない）
+
+Example: `app/screens/LibraryScreen/LibraryTableItem.stories.tsx`（貼りつけ自動保存の検証、`api.editBook` をモック）。
 
 ### Component Testing with Storybook
 

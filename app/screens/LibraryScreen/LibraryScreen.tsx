@@ -546,7 +546,7 @@ export const LibraryScreen: FC = observer(() => {
               libraryHook.isSelectionMode
                 ? undefined
                 : (author) => {
-                    void handleBookMetadataSearch(`authors:=${author}`)
+                    void handleBookMetadataSearch(buildTagQuery("authors", author))
                   }
             }
             detailMenuProps={detailMenuProps}

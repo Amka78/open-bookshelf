@@ -72,7 +72,12 @@ export function buildTagQuery(
   value: string,
   calibreOp: CalibreFieldOperator = "=",
 ): string {
-  return `${normalizeCategoryKey(categoryKey)}:${calibreOp}${value.trim()}`
+  const trimmedValue = value.trim()
+  // スペースを含む値を 1 つの語として検索させるため引用符で囲む。
+  // 囲まないと calibre-web 側で空白区切りに分解され、
+  // 絞込が空結果となり、さらに壊れたクエリに次々連結されて絞込全体が動かなくなる。
+  const quotedValue = /\s/.test(trimmedValue) ? `"${trimmedValue}"` : trimmedValue
+  return `${normalizeCategoryKey(categoryKey)}:${calibreOp}${quotedValue}`
 }
 
 /** Stable key for a menu item: `"category:value"` (no calibre op, lowercase) */
@@ -131,6 +136,9 @@ export function parseTagQuery(query: string): { categoryKey: string; value: stri
 
   // strip any leading calibre operator: =, ~, !=, !~
   rawValue = rawValue.replace(/^(!?[=~])/, "").trim()
+  // buildTagQuery が空白入り値を引用符で囲むため、value は引用符を外した素の値で返す
+  // （buildItemKey 等の下流で引用符を含まないキーと一致させるため）
+  rawValue = stripWrappingQuotes(rawValue)
 
   if (!rawCategory || !rawValue) return null
 

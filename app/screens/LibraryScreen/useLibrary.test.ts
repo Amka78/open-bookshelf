@@ -10,6 +10,7 @@ import {
 import { useStores } from "@/models"
 import { api } from "@/services/api"
 import { useNavigation } from "@react-navigation/native"
+import { observable, runInAction } from "mobx"
 import { act, renderHook } from "@testing-library/react"
 import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 
@@ -373,5 +374,66 @@ describe("useLibrary", () => {
     const { result } = await renderUseLibrary()
 
     expect(result.current.areAllBooksSelected([])).toBe(false)
+  })
+
+  test("tagBrowserDirty が立つとデバウンス後に getTagBrowser を1回だけ再取得する", async () => {
+    vi.useFakeTimers()
+    try {
+      const getTagBrowser = vi.fn().mockResolvedValue(undefined)
+      const store = observable({
+        selectedLibrary: {
+          id: "test-library",
+          books: {},
+          searchSetting: {
+            query: "",
+            sort: "title",
+            sortOrder: "asc" as const,
+            setProp: vi.fn(),
+          },
+          sortField: [],
+          fieldMetadataList: new Map(),
+          tagBrowser: [],
+          setBook: vi.fn(),
+        },
+        searchLibrary: vi.fn().mockResolvedValue(undefined),
+        getTagBrowser,
+        readingHistories: [],
+        tagBrowserDirty: false,
+        tagBrowserPending: false,
+      })
+      ;(useStores as vi.Mock).mockReturnValue({
+        calibreRootStore: store,
+        settingStore: {
+          booksPerPage: 20,
+          addRecentSearch: vi.fn(),
+        },
+      })
+
+      renderHook(() => useLibrary())
+      await act(async () => {})
+
+      // マウント時の初期取得のみ呼ばれている
+      expect(getTagBrowser).toHaveBeenCalledTimes(1)
+
+      // 編集保存で dirty が立つ（markTagBrowserDirty に相当）
+      act(() => {
+        runInAction(() => {
+          store.tagBrowserDirty = true
+        })
+      })
+      act(() => {
+        vi.advanceTimersByTime(1000)
+      })
+      // デバウンス幅の経過前は再取得しない
+      expect(getTagBrowser).toHaveBeenCalledTimes(1)
+
+      await act(async () => {
+        vi.advanceTimersByTime(1500)
+      })
+      // デバウンス幅（2.5 秒）経過後に1回だけ再取得する
+      expect(getTagBrowser).toHaveBeenCalledTimes(2)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

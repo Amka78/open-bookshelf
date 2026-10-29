@@ -5,9 +5,14 @@ import type { Book } from "@/models/calibre"
 import { api } from "@/services/api"
 import { logger } from "@/utils/logger"
 import type { DocumentPickerAsset } from "expo-document-picker"
+import { reaction } from "mobx"
 import { useCallback, useEffect, useState } from "react"
 export type LibraryViewStyle = "gridView" | "viewList"
 export type LibrarySelectionMode = "none" | "single" | "multi"
+
+// タグブラウザ（LeftSideMenu）の再取得デバウンス幅。
+// 編集は blur/Enter で頻発するため、最後の編集からこの時間経過後に1回だけ全件再取得する。
+const TAG_BROWSER_REFRESH_DEBOUNCE_MS = 2500
 
 export function useLibrary() {
   const { calibreRootStore, settingStore } = useStores()
@@ -258,6 +263,53 @@ export function useLibrary() {
     }
 
     void initialize()
+  }, [calibreRootStore])
+
+  // 編集保存（book.update 成功）で tagBrowserDirty が立ったら、最後の編集から
+  // TAG_BROWSER_REFRESH_DEBOUNCE_MS 後に一度だけタグブラウザを全件再取得する。
+  // blur/Enter 自動保存で編集が連続しても、リクエストはデバウンスで1回にまとまる。
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null
+    let running = false
+
+    const runRefresh = async () => {
+      // 実行中に再スケジュールされた場合は、実行中の取得完了後のチェック
+      // （tagBrowserDirty / tagBrowserPending）が再スケジュールを担うため、
+      // ここで何もせず戻る。
+      if (running) return
+      running = true
+      try {
+        await calibreRootStore.getTagBrowser()
+      } finally {
+        running = false
+      }
+      // 取得が多重ガードで後回しになった（tagBrowserPending）か、取得中に新しい編集が
+      // 入った（tagBrowserDirty）場合はもう1回スケジュールする。失敗時は dirty が
+      // 取得開始時に消費済み（false）のため再スケジュールされず、無限リトライにならない。
+      if (calibreRootStore.tagBrowserPending || calibreRootStore.tagBrowserDirty) {
+        scheduleRefresh()
+      }
+    }
+
+    const scheduleRefresh = () => {
+      if (timer) clearTimeout(timer)
+      timer = setTimeout(() => {
+        timer = null
+        void runRefresh()
+      }, TAG_BROWSER_REFRESH_DEBOUNCE_MS)
+    }
+
+    const disposer = reaction(
+      () => calibreRootStore.tagBrowserDirty,
+      (dirty) => {
+        if (dirty) scheduleRefresh()
+      },
+    )
+
+    return () => {
+      disposer()
+      if (timer) clearTimeout(timer)
+    }
   }, [calibreRootStore])
 
   const onSelectVirtualLibrary = async (vl: string | null) => {
