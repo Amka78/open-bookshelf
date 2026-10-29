@@ -22,6 +22,7 @@ const navigationMock = {
   goBack: vi.fn(),
   navigate: vi.fn(),
   setOptions: vi.fn(),
+  addListener: vi.fn(),
 }
 const gluestackComponent = ({ children }: { children?: ReactNode }) => <div>{children}</div>
 const gluestackMock = {
@@ -338,10 +339,13 @@ function buildSelectedLibrary() {
 
 function renderLibraryScreen({
   viewMode = "list",
+  searchQuery = "",
 }: {
   viewMode?: "grid" | "list" | "table"
+  searchQuery?: string
 } = {}) {
   const selectedLibrary = buildSelectedLibrary()
+  selectedLibrary.searchSetting.query = searchQuery
   useConvergenceMock.mockReturnValue({
     isLarge: false,
     orientation: "vertical",
@@ -369,7 +373,17 @@ function renderLibraryScreen({
     },
   })
 
-  return render(<LibraryScreen />)
+  return { selectedLibrary, ...render(<LibraryScreen />) }
+}
+
+function getBeforeRemoveHandler() {
+  const addListenerMock = navigationMock.addListener as ReturnType<typeof vi.fn>
+  const call = addListenerMock.mock.calls.find(([eventName]) => eventName === "beforeRemove")
+  expect(call).toBeTruthy()
+  return call?.[1] as (event: {
+    data: { action: { type: string } }
+    preventDefault: () => void
+  }) => void
 }
 
 beforeEach(() => {
@@ -480,5 +494,47 @@ describe("LibraryScreen", () => {
     expect(screen.getByTestId("library-table-header")).toBeTruthy()
     expect(screen.getAllByTestId("library-table-item").length).toBeGreaterThan(0)
     expect(libraryTableItemProps.length).toBeGreaterThan(0)
+  })
+
+  test("hardware back clears the search instead of leaving when a query is active", async () => {
+    const { selectedLibrary } = renderLibraryScreen({
+      searchQuery: "tolkien",
+    })
+
+    const handler = getBeforeRemoveHandler()
+    const event = { data: { action: { type: "GO_BACK" } }, preventDefault: vi.fn() }
+    await act(async () => {
+      handler(event)
+    })
+
+    expect(event.preventDefault).toHaveBeenCalled()
+    expect(selectedLibrary.searchSetting.setProp).toHaveBeenCalledWith("query", "")
+  })
+
+  test("hardware back proceeds normally when no search query is active", async () => {
+    renderLibraryScreen()
+
+    const handler = getBeforeRemoveHandler()
+    const event = { data: { action: { type: "GO_BACK" } }, preventDefault: vi.fn() }
+    await act(async () => {
+      handler(event)
+    })
+
+    expect(event.preventDefault).not.toHaveBeenCalled()
+  })
+
+  test("non-back navigation (e.g. logout via navigate) is not blocked by an active search", async () => {
+    const { selectedLibrary } = renderLibraryScreen({
+      searchQuery: "tolkien",
+    })
+
+    const handler = getBeforeRemoveHandler()
+    const event = { data: { action: { type: "NAVIGATE" } }, preventDefault: vi.fn() }
+    await act(async () => {
+      handler(event)
+    })
+
+    expect(event.preventDefault).not.toHaveBeenCalled()
+    expect(selectedLibrary.searchSetting.setProp).not.toHaveBeenCalled()
   })
 })

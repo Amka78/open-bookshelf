@@ -325,6 +325,27 @@ export const LibraryScreen: FC = observer(() => {
     thumbnailSourceCacheRef.current = thumbnailSourceById
   }, [thumbnailSourceById])
 
+  const handleBackPress = useCallback(() => {
+    // 検索条件が入力済みなら、戻る代わりに検索をクリアする（ヘッダーの戻るボタンと共通の挙動）
+    if (selectedLibrary?.searchSetting?.query !== "") {
+      libraryHook.onSearch("")
+      return true
+    }
+    return false
+  }, [libraryHook, selectedLibrary?.searchSetting?.query])
+
+  // ハードウェア戻るボタン（Android）でもアプリ内の戻るボタンと同じく検索クリアを行う。
+  // GO_BACK のみ対象にし、ログアウト等の navigate による画面遷移は阻害しない。
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", (event) => {
+      if (event.data.action.type !== "GO_BACK") return
+      if (handleBackPress()) {
+        event.preventDefault()
+      }
+    })
+    return unsubscribe
+  }, [navigation, handleBackPress])
+
   const libraryActions = (
     <LibraryActions
       viewMode={viewMode}
@@ -342,9 +363,8 @@ export const LibraryScreen: FC = observer(() => {
           <IconButton
             name="arrow-left"
             onPress={() => {
-              if (selectedLibrary?.searchSetting?.query !== "") {
-                libraryHook.onSearch("")
-              } else if (navigation.canGoBack()) {
+              if (handleBackPress()) return
+              if (navigation.canGoBack()) {
                 navigation.goBack()
               } else {
                 navigation.navigate("CalibreRoot")
