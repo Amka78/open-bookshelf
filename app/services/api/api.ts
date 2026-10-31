@@ -683,6 +683,7 @@ export class Api {
       contentLength: headers?.["content-length"] ?? headers?.["Content-Length"] ?? "",
       num: num ?? null,
       queryLength: searchText.length,
+      query: searchText.slice(0, 120),
       vl: vl ?? "",
     })
 
