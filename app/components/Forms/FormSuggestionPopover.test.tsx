@@ -188,8 +188,9 @@ describe("FormSuggestionPopover", () => {
       />,
     )
 
+    // RN Modal は Android で別ウィンドウを開きキーボードが閉じるため使わない
     expect(getByTestId("form-suggestion-popover-root").getAttribute("data-use-rn-modal")).toBe(
-      "true",
+      "false",
     )
     fireEvent.mouseDown(getByTestId("form-suggestion-test-suggestion-Alpha"))
 

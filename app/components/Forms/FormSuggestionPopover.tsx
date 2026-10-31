@@ -178,12 +178,15 @@ export function FormSuggestionPopover(props: FormSuggestionPopoverProps) {
     )
   }
 
+  // useRNModal は使わない。RN Modal は Android で別ウィンドウを開くため、入力中の
+  // TextInput からフォーカスが外れてソフトキーボードが閉じてしまう（候補が出た瞬間に
+  // キーボードが消える）。同一ウィンドウ内のオーバーレイ描画ならフォーカスもキーボードも維持される。
   return (
     <Popover
       placement={popoverPlacement}
-      shouldFlip={false}
+      // キーボード表示中は入力欄の上に出すが、上に余地がなければ下へ反転させる
+      shouldFlip={true}
       isKeyboardDismissable={false}
-      useRNModal={true}
       trigger={trigger}
       isOpen={isOpen}
       trapFocus={false}
