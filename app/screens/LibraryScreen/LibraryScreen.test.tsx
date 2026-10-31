@@ -105,6 +105,8 @@ const componentsMock = {
   IconButton: ({ children }: { children?: ReactNode }) => <button type="button">{children}</button>,
   Image: () => <img alt="" />,
   LeftSideMenu: () => null,
+  LeftSideMenuContent: () => null,
+  LeftSideMenuScreen: () => null,
   LibraryActions: () => <div data-testid="library-actions" />,
   MaterialCommunityIcon: () => <span data-testid="mock-icon" />,
   ScrollView: (props: Record<string, unknown>) => {

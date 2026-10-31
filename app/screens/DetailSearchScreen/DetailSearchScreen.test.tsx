@@ -95,7 +95,7 @@ vi.doMock("@/components", () => {
         Search
       </button>
     ),
-    LeftSideMenu: () => <div data-testid="left-side-menu" />,
+    LeftSideMenuScreen: () => <div data-testid="left-side-menu-screen" />,
     normalizeCategoryKey,
     buildItemKey,
     buildTagQuery,

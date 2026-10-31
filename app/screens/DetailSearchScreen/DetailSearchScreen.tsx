@@ -1,4 +1,4 @@
-import { Box, IconButton, LeftSideMenu } from "@/components"
+import { Box, IconButton, LeftSideMenuScreen } from "@/components"
 import type { AppStackParamList, ApppNavigationProp } from "@/navigators/types"
 import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
@@ -42,7 +42,7 @@ export const DetailSearchScreen: FC = observer(() => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <Box flex={1} testID="detail-search-screen">
-        <LeftSideMenu
+        <LeftSideMenuScreen
           tagBrowser={tagBrowser}
           selectedNames={selectedNames}
           itemOperators={itemOperators}

@@ -323,6 +323,8 @@ const componentsMockFactory = () => ({
   Image: "img",
   Input: "div",
   LabeledSpinner: "div",
+  LeftSideMenuContent: "div",
+  LeftSideMenuScreen: "div",
   LeftSideMenuItem: "div",
   ListItem: ({
     LeftComponent,

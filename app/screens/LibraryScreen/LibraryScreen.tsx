@@ -858,69 +858,67 @@ export const LibraryScreen: FC = observer(() => {
 
   return convergenceHook.isLarge ? (
     <Box flex={1} flexDirection="row">
-      <Box flex={0.1}>
-        <LeftSideMenu
-          onNodePress={async (query) => {
-            const start = perfNow()
-            perfLog("search", "menu.press", {
-              queryLength: query.length,
-              query: query.slice(0, 120),
-            })
-            const nextSelectionState = getNextLeftSideMenuSelectionState({
-              currentSearchText: libraryHook.headerSearchText,
-              clickedQuery: query,
-              itemOperators,
-            })
+      <LeftSideMenu
+        onNodePress={async (query) => {
+          const start = perfNow()
+          perfLog("search", "menu.press", {
+            queryLength: query.length,
+            query: query.slice(0, 120),
+          })
+          const nextSelectionState = getNextLeftSideMenuSelectionState({
+            currentSearchText: libraryHook.headerSearchText,
+            clickedQuery: query,
+            itemOperators,
+          })
 
-            if (nextSelectionState.shouldResetMenuSettings) {
-              setItemCalibreOperators({})
-            }
+          if (nextSelectionState.shouldResetMenuSettings) {
+            setItemCalibreOperators({})
+          }
 
-            setItemOperators(nextSelectionState.nextOperators)
-            libraryHook.setHeaderSearchText(nextSelectionState.nextQuery)
-            await libraryHook.onSearch(nextSelectionState.nextQuery)
-            perfLog("search", "menu.done", {
-              queryLength: nextSelectionState.nextQuery.length,
-              totalMs: Math.round((perfNow() - start) * 10) / 10,
-            })
-          }}
-          onItemOperatorChange={async (itemKey, op) => {
-            const nextOperators = { ...itemOperators, [itemKey]: op }
-            setItemOperators(nextOperators)
-            const currentQuery = libraryHook.headerSearchText
-            const parts = parseQueryParts(currentQuery)
-            const nextQuery = buildQueryFromParts(parts, nextOperators)
+          setItemOperators(nextSelectionState.nextOperators)
+          libraryHook.setHeaderSearchText(nextSelectionState.nextQuery)
+          await libraryHook.onSearch(nextSelectionState.nextQuery)
+          perfLog("search", "menu.done", {
+            queryLength: nextSelectionState.nextQuery.length,
+            totalMs: Math.round((perfNow() - start) * 10) / 10,
+          })
+        }}
+        onItemOperatorChange={async (itemKey, op) => {
+          const nextOperators = { ...itemOperators, [itemKey]: op }
+          setItemOperators(nextOperators)
+          const currentQuery = libraryHook.headerSearchText
+          const parts = parseQueryParts(currentQuery)
+          const nextQuery = buildQueryFromParts(parts, nextOperators)
+          libraryHook.setHeaderSearchText(nextQuery)
+          await libraryHook.onSearch(nextQuery)
+        }}
+        onItemCalibreOperatorChange={async (categoryKey, value, newOp) => {
+          const itemKey = buildItemKey(categoryKey, value)
+          const oldOp = itemCalibreOperators[itemKey] ?? "="
+          setItemCalibreOperators((prev) => ({ ...prev, [itemKey]: newOp }))
+          const currentQuery = libraryHook.headerSearchText
+          const parts = parseQueryParts(currentQuery)
+          const oldNorm = normalizeTagQuery(buildTagQuery(categoryKey, value, oldOp))
+          const updatedParts = parts.map((p) =>
+            normalizeTagQuery(p) === oldNorm ? buildTagQuery(categoryKey, value, newOp) : p,
+          )
+          if (updatedParts.some((p, i) => p !== parts[i])) {
+            const nextQuery = buildQueryFromParts(updatedParts, itemOperators)
             libraryHook.setHeaderSearchText(nextQuery)
             await libraryHook.onSearch(nextQuery)
-          }}
-          onItemCalibreOperatorChange={async (categoryKey, value, newOp) => {
-            const itemKey = buildItemKey(categoryKey, value)
-            const oldOp = itemCalibreOperators[itemKey] ?? "="
-            setItemCalibreOperators((prev) => ({ ...prev, [itemKey]: newOp }))
-            const currentQuery = libraryHook.headerSearchText
-            const parts = parseQueryParts(currentQuery)
-            const oldNorm = normalizeTagQuery(buildTagQuery(categoryKey, value, oldOp))
-            const updatedParts = parts.map((p) =>
-              normalizeTagQuery(p) === oldNorm ? buildTagQuery(categoryKey, value, newOp) : p,
-            )
-            if (updatedParts.some((p, i) => p !== parts[i])) {
-              const nextQuery = buildQueryFromParts(updatedParts, itemOperators)
-              libraryHook.setHeaderSearchText(nextQuery)
-              await libraryHook.onSearch(nextQuery)
-            }
-          }}
-          onSubCategoryLongPress={(name) => {
-            setItemOperators({})
-            setItemCalibreOperators({})
-            libraryHook.setHeaderSearchText(name)
-            libraryHook.onSearch(name)
-          }}
-          tagBrowser={selectedLibrary?.tagBrowser}
-          itemOperators={itemOperators}
-          itemCalibreOperators={itemCalibreOperators}
-          selectedNames={getLeftSideMenuSelectedNames(libraryHook.headerSearchText)}
-        />
-      </Box>
+          }
+        }}
+        onSubCategoryLongPress={(name) => {
+          setItemOperators({})
+          setItemCalibreOperators({})
+          libraryHook.setHeaderSearchText(name)
+          libraryHook.onSearch(name)
+        }}
+        tagBrowser={selectedLibrary?.tagBrowser}
+        itemOperators={itemOperators}
+        itemCalibreOperators={itemCalibreOperators}
+        selectedNames={getLeftSideMenuSelectedNames(libraryHook.headerSearchText)}
+      />
       <Box flex={1}>{LibraryCore}</Box>
     </Box>
   ) : (
