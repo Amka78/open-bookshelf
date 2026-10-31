@@ -1183,33 +1183,61 @@ export const buildTextBookHtmlDocument = ({
           // ページ箱が画面いっぱいになるモード（単一ページ・縦スクロール・全画面化した
           // 見開き+表紙）では中央へ。見開きの半ページ箱では箱内の位置を変えない。
           // 縦書きは 1ユニット＝見開きで表紙が右半ページに来るのが正なので中央にしない。
-          const centerCoverImage = isCoverOnlyDocument() && !isVerticalWriting && spreadPageCount === 1
+          const coverBoxWidth = isVerticalWriting ? verticalPageWidth : pageInlineSize
+          const coverBoxHeight = isVerticalWriting ? pageInlineSize : viewportHeight
+          const centerCoverImage =
+            isCoverOnlyDocument() && !isVerticalWriting && spreadPageCount === 1
           const mediaElements = document.querySelectorAll("img, svg, video, canvas, iframe")
           for (const element of mediaElements) {
-            if (isPaginated) {
-              if (isVerticalWriting) {
-                applyImportantStyle(element, "max-height", pageInlineSize + "px")
-                // 見開きでも画像は論理1ページ分に収める（2ページをまたがせない）。
-                applyImportantStyle(element, "max-width", verticalPageWidth + "px")
-              } else {
-                applyImportantStyle(element, "max-width", pageInlineSize + "px")
-                applyImportantStyle(element, "max-height", viewportHeight + "px")
-              }
-            }
-
-            if (!isCoverOnlyDocument()) {
+            if (!isPaginated) {
               continue
             }
 
-            // max-* は上限指定なので、元の表紙が画面より小さいと小さいまま左詰めで残る。
-            // 表紙は縦幅を画面高さに固定し、width:auto でアスペクト比を保つ。
-            // display:block は inline 画像のベースライン隙間（数pxの縦溢出）も消す。
-            applyImportantStyle(element, "display", "block")
-            applyImportantStyle(element, "height", viewportHeight + "px")
-            applyImportantStyle(element, "width", "auto")
-            applyImportantStyle(element, "margin-left", centerCoverImage ? "auto" : "0px")
-            applyImportantStyle(element, "margin-right", centerCoverImage ? "auto" : "0px")
+            if (isVerticalWriting) {
+              applyImportantStyle(element, "max-height", pageInlineSize + "px")
+              // 見開きでも画像は論理1ページ分に収める（2ページをまたがせない）。
+              applyImportantStyle(element, "max-width", verticalPageWidth + "px")
+            } else {
+              applyImportantStyle(element, "max-width", pageInlineSize + "px")
+              applyImportantStyle(element, "max-height", viewportHeight + "px")
+            }
           }
+
+          // 表紙ページのメディアをページ箱へフィットさせる。normalizeFirstColumnElements()
+          // が wrapper 直下の唯一の子に height:auto !important を当てるため、この処理は
+          // 正規化より後に実行する（先に実行すると表紙が自然サイズのまま描画される）。
+          const applyCoverMediaLayout = () => {
+            if (!isCoverOnlyDocument()) {
+              return
+            }
+
+            for (const element of document.querySelectorAll("img, svg, video, canvas, iframe")) {
+              // max-* は上限指定なので、元の表紙が画面より小さいと小さいまま残る。
+              // 表紙は縦幅をページ箱に固定し、width:auto でアスペクト比を保つ。
+              // display:block は inline 画像のベースライン隙間（数pxの縦溢出）も消す。
+              // 横幅がページ箱を超える表紙だけ max-width で縮め、object-fit で歪みを防ぐ。
+              applyImportantStyle(element, "display", "block")
+              applyImportantStyle(element, "height", coverBoxHeight + "px")
+              applyImportantStyle(element, "max-height", coverBoxHeight + "px")
+              applyImportantStyle(element, "width", "auto")
+              applyImportantStyle(element, "max-width", coverBoxWidth + "px")
+              applyImportantStyle(element, "object-fit", "contain")
+              applyImportantStyle(element, "margin-left", centerCoverImage ? "auto" : "0px")
+              applyImportantStyle(element, "margin-right", centerCoverImage ? "auto" : "0px")
+            }
+
+            // 表紙は1枚で1ページ。multicolumn の空き領域が見えない列として残り、
+            // wrapper の scrollHeight がページ高さを超えるのでクリップして止める。
+            // 縦スクロール表示は列を使わないのでクリップしない。
+            const coverWrapper = getPageWrapper()
+            if (coverWrapper && isPaginated) {
+              applyImportantStyle(coverWrapper, "overflow", "hidden")
+            }
+          }
+
+          normalizePaginatedRootContainers()
+          normalizeFirstColumnElements()
+          applyCoverMediaLayout()
 
           // TEMP DIAGNOSTIC: 表紙の縦溢出を診断するため、実測値をログに出す。確認後に削除予定。
           if (isCoverOnlyDocument()) {
@@ -1258,8 +1286,6 @@ export const buildTextBookHtmlDocument = ({
             }
           }
 
-          normalizePaginatedRootContainers()
-          normalizeFirstColumnElements()
           applyThemeOverrides()
         }
 

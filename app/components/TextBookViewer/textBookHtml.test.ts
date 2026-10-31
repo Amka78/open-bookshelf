@@ -658,14 +658,28 @@ describe("textBookHtml", () => {
     expect(html).toContain("!getLayoutDirectionState().isVerticalWriting")
     expect(html).toContain("if (isFullScreenCoverPage()) {\n            return 1")
     // max-* は上限なので小さい表紙が画面高さまで拡大されない。高さ固定で揃える。
-    expect(html).toContain('applyImportantStyle(element, "height", viewportHeight + "px")')
+    expect(html).toContain('applyImportantStyle(element, "height", coverBoxHeight + "px")')
     expect(html).toContain('applyImportantStyle(element, "width", "auto")')
     expect(html).toContain('applyImportantStyle(element, "display", "block")')
+    // 横幅がページ箱を超える表紙は max-width で縮め、object-fit で歪ませない。
+    expect(html).toContain('applyImportantStyle(element, "max-width", coverBoxWidth + "px")')
+    expect(html).toContain('applyImportantStyle(element, "object-fit", "contain")')
     expect(html).toContain(
-      "const centerCoverImage = isCoverOnlyDocument() && !isVerticalWriting && spreadPageCount === 1",
+      "const centerCoverImage =\n            isCoverOnlyDocument() && !isVerticalWriting && spreadPageCount === 1",
     )
     expect(html).toContain(
       'applyImportantStyle(element, "margin-left", centerCoverImage ? "auto" : "0px")',
     )
+    // normalizeFirstColumnElements() は wrapper 直下の唯一の子に height:auto を当てるため、
+    // 表紙のフィット指定は正規化の後に再適用しないと打ち消される
+    // （wrapper 直下に img がある AZW3 で表紙が自然サイズのまま描画される回帰）。
+    const normalizeIndex = html.indexOf(
+      "normalizeFirstColumnElements()\n          applyCoverMediaLayout()",
+    )
+    expect(normalizeIndex).toBeGreaterThan(-1)
+    expect(html.indexOf("const applyCoverMediaLayout = () => {")).toBeLessThan(normalizeIndex)
+    expect(html).not.toContain("normalizeFirstColumnElements()\n          applyThemeOverrides()")
+    // 表紙は1枚で1ページ。multicol の空き領域が見えない列として残るので wrapper を clip する。
+    expect(html).toContain('applyImportantStyle(coverWrapper, "overflow", "hidden")')
   })
 })
