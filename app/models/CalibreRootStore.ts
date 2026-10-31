@@ -1,14 +1,15 @@
 import {
-  detach,
-  getSnapshot,
   type Instance,
   type SnapshotIn,
   type SnapshotOut,
+  detach,
   flow,
+  getSnapshot,
   types,
 } from "mobx-state-tree"
 
 import { lowerCaseToCamelCase } from "@/utils/convert"
+import { perfLog, perfNow } from "@/utils/perf"
 import {
   type ApiBookInfo,
   type ApiBookInfoCore,
@@ -22,6 +23,7 @@ import {
 } from "../services/api"
 import {
   CategoryModel,
+  ConversionJobModel,
   DateFormatModel,
   FieldMetadataModel,
   IsMultipleModel,
@@ -29,7 +31,6 @@ import {
   LibraryMapModel,
   MetadataModel,
   NodeModel,
-  ConversionJobModel,
   type ReadingHistory,
   ReadingHistoryModel,
   SearchSettingModel,
@@ -227,7 +228,9 @@ export const CalibreRootStore = types
     }),
     searchLibrary: flow(function* (num?: number) {
       const requestSeq = ++root.searchRequestSeq
+      const requestStart = perfNow()
       root.isFetchingMore = false
+      perfLog("search", "request", { seq: requestSeq, num: num ?? null })
       const response = yield api.getLibrary(
         root.selectedLibrary!.id,
         root.selectedLibrary!.searchSetting ? root.selectedLibrary!.searchSetting.query ?? "" : "",
@@ -240,21 +243,42 @@ export const CalibreRootStore = types
         root.selectedLibrary!.searchSetting?.vl,
         num,
       )
+      const responseAt = perfNow()
 
       // この間に新しい検索が開始されている場合は、古いレスポンスとして破棄する。
       // convertSearchResult は searchSetting（query 含む）を無条件に置き換えるため、
       // 遅れて到着した古い検索結果が最新の検索（例: クリア後の全件）を上書きしてしまう。
-      if (requestSeq !== root.searchRequestSeq) return false
+      if (requestSeq !== root.searchRequestSeq) {
+        perfLog("search", "discarded", {
+          seq: requestSeq,
+          currentSeq: root.searchRequestSeq,
+          waitMs: Math.round((responseAt - requestStart) * 10) / 10,
+        })
+        return false
+      }
 
       if (response.kind === "ok") {
         // books.clear() は使わない。convertSearchResult 内で古い books を個別に削除する。
         // React 19 の concurrent mode では、clear() による一括削除が中間 render を引き起こし、
         // 削除済みノードへの参照エラーが発生するため。
+        const bookCount = response.data.search_result?.book_ids?.length ?? 0
+        const convertStart = perfNow()
         convertLibraryInformation(response.data, root.selectedLibrary!)
         convertSearchResult(response.data, root.selectedLibrary!)
+        perfLog("search", "converted", {
+          seq: requestSeq,
+          books: bookCount,
+          totalNum: response.data.search_result?.total_num ?? null,
+          waitMs: Math.round((responseAt - requestStart) * 10) / 10,
+          convertMs: Math.round((perfNow() - convertStart) * 10) / 10,
+        })
 
         return true
       }
+      perfLog("search", "failed", {
+        seq: requestSeq,
+        waitMs: Math.round((perfNow() - requestStart) * 10) / 10,
+      })
       handleCommonApiError(response)
       return false
     }),

@@ -104,6 +104,18 @@ bun run version 0.2.0    # 更新 app.config.ts 与 package.json 并创建标签
 
 `bun run version` 会同时更新 `app.config.ts` 和 `package.json`，并创建 annotated 标签；加上 `--push` 会推送提交和标签。完整流程见 [RELEASE.md](./RELEASE.md)。
 
+### 性能诊断
+
+搜索耗时日志默认关闭。将 `EXPO_PUBLIC_PERF_LOG` 设为以逗号分隔的模式列表（`search` 或 `all`）：
+
+```bash
+bun run start:perf            # Expo Go，输出搜索耗时日志
+bun run start:perf:dev-client # 开发客户端，输出搜索耗时日志
+bun run debug:web:perf        # Web，输出搜索耗时日志
+```
+
+日志是以 `[PERF]` 开头的单行 JSON，并带有共享的 `performance.now()` 时钟（`t`）。一次搜索会输出 `menu.press`、`onSearch.start`、`request`、`api.getLibrary`、`converted`、`onSearch.end`、`menu.done`，因此可以直接比较 `waitMs`（服务器与网络）和 `convertMs`（客户端模型转换）。未指定模式时不会输出任何内容。
+
 ## 测试
 
 - **单元测试**（`*.test.ts(x)`，Vitest + jsdom）覆盖模型、工具函数和逻辑。

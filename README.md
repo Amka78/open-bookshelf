@@ -104,6 +104,18 @@ bun run version 0.2.0    # Bump app.config.ts + package.json and tag
 
 `bun run version` updates both `app.config.ts` and `package.json` and creates the annotated tag; add `--push` to push the commit and tag. See [RELEASE.md](./RELEASE.md) for the full procedure.
 
+### Performance diagnostics
+
+Search timing logs are opt-in. Set `EXPO_PUBLIC_PERF_LOG` to a comma-separated list of modes (`search`, or `all`):
+
+```bash
+bun run start:perf            # Expo Go, search timing logs
+bun run start:perf:dev-client # development client, search timing logs
+bun run debug:web:perf        # web, search timing logs
+```
+
+Logs are printed as one-line JSON prefixed with `[PERF]` and share a `performance.now()` clock (`t`). A search emits `menu.press`, `onSearch.start`, `request`, `api.getLibrary`, `converted`, `onSearch.end`, and `menu.done`, so `waitMs` (server + network) and `convertMs` (client-side model conversion) can be compared directly. Nothing is logged unless a mode is requested.
+
 ## Testing
 
 - **Unit tests** (`*.test.ts(x)`, Vitest + jsdom) cover models, utility functions, and logic.

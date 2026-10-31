@@ -4,6 +4,7 @@ import { useStores } from "@/models"
 import type { Book } from "@/models/calibre"
 import { api } from "@/services/api"
 import { logger } from "@/utils/logger"
+import { perfLog, perfNow } from "@/utils/perf"
 import type { DocumentPickerAsset } from "expo-document-picker"
 import { reaction } from "mobx"
 import { useCallback, useEffect, useState } from "react"
@@ -318,11 +319,21 @@ export function useLibrary() {
   }
 
   const onSearch = async (searchCondition?: string) => {
-    selectedLibrary!.searchSetting!.setProp("query", searchCondition ?? "")
+    const start = perfNow()
+    const query = searchCondition ?? ""
+    perfLog("search", "onSearch.start", {
+      queryLength: query.length,
+      query: query.slice(0, 120),
+    })
+    selectedLibrary!.searchSetting!.setProp("query", query)
     if (searchCondition) {
       settingStore.addRecentSearch(searchCondition)
     }
     await search()
+    perfLog("search", "onSearch.end", {
+      queryLength: query.length,
+      totalMs: Math.round((perfNow() - start) * 10) / 10,
+    })
   }
 
   const onSort = (sortKey: string) => {

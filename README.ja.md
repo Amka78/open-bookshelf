@@ -104,6 +104,18 @@ bun run version 0.2.0    # app.config.ts と package.json を更新してタグ�
 
 `bun run version` は `app.config.ts` と `package.json` の両方を更新し、annotated タグを作成します。`--push` を付けるとコミットとタグを push します。詳しい手順は [RELEASE.md](./RELEASE.md) を参照してください。
 
+### パフォーマンス計測
+
+検索の計測ログは必要なときだけ有効にします。`EXPO_PUBLIC_PERF_LOG` にモード（`search`、または `all`）をカンマ区切りで指定します。
+
+```bash
+bun run start:perf            # Expo Go で検索の計測ログ
+bun run start:perf:dev-client # 開発クライアントで検索の計測ログ
+bun run debug:web:perf        # Web で検索の計測ログ
+```
+
+ログは `[PERF]` 接頭辞付きの1行 JSON で出力され、共通の `performance.now()` 時計（`t`）を持ちます。検索では `menu.press`、`onSearch.start`、`request`、`api.getLibrary`、`converted`、`onSearch.end`、`menu.done` が出るため、`waitMs`（サーバー＋ネットワーク）と `convertMs`（クライアントのモデル変換）を直接比較できます。モードを指定しない限り何も出力しません。
+
 ## テスト
 
 - **ユニットテスト**（`*.test.ts(x)`、Vitest + jsdom）はモデル、ユーティリティ、ロジックを対象にします。

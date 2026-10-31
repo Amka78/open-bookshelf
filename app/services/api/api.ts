@@ -7,6 +7,7 @@
  */
 import Config from "@/config"
 import { logger } from "@/utils/logger"
+import { perfLog, perfNow } from "@/utils/perf"
 import { type ApiResponse, type ApisauceInstance, create } from "apisauce"
 import type { AxiosError } from "axios"
 import { type Directory, type DownloadOptions, File as FileSystemFile } from "expo-file-system"
@@ -665,6 +666,7 @@ export class Api {
   ): Promise<{ kind: "ok"; data: ApiBookInfo } | GeneralApiProblem> {
     const encodedSearchText = searchText ? encodeURIComponent(searchText) : ""
 
+    const perfStart = perfNow()
     const response: ApiResponse<ApiBookInfo> = await this.apisauce.get(
       `interface-data/books-init?library_id=${library}${
         encodedSearchText ? `&search=${encodedSearchText}` : ""
@@ -672,6 +674,17 @@ export class Api {
         num != null ? `&num=${num}` : ""
       }&sort=${sort}.${sortOrder}&${Date.now()}`,
     )
+
+    const headers = response.headers as Record<string, string> | undefined
+    perfLog("search", "api.getLibrary", {
+      ms: Math.round((perfNow() - perfStart) * 10) / 10,
+      ok: response.ok,
+      status: response.status ?? null,
+      contentLength: headers?.["content-length"] ?? headers?.["Content-Length"] ?? "",
+      num: num ?? null,
+      queryLength: searchText.length,
+      vl: vl ?? "",
+    })
 
     if (!response.ok) {
       const problem = getGeneralApiProblem(response)

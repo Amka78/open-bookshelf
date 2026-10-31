@@ -29,6 +29,7 @@ import type { Book } from "@/models/calibre"
 import type { ApppNavigationProp } from "@/navigators/types"
 import { api } from "@/services/api"
 import { deleteCachedBookImages } from "@/utils/bookImageCache"
+import { perfLog, perfNow } from "@/utils/perf"
 import { useIsFocused, useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
 import type React from "react"
@@ -860,6 +861,11 @@ export const LibraryScreen: FC = observer(() => {
       <Box flex={0.1}>
         <LeftSideMenu
           onNodePress={async (query) => {
+            const start = perfNow()
+            perfLog("search", "menu.press", {
+              queryLength: query.length,
+              query: query.slice(0, 120),
+            })
             const nextSelectionState = getNextLeftSideMenuSelectionState({
               currentSearchText: libraryHook.headerSearchText,
               clickedQuery: query,
@@ -873,6 +879,10 @@ export const LibraryScreen: FC = observer(() => {
             setItemOperators(nextSelectionState.nextOperators)
             libraryHook.setHeaderSearchText(nextSelectionState.nextQuery)
             await libraryHook.onSearch(nextSelectionState.nextQuery)
+            perfLog("search", "menu.done", {
+              queryLength: nextSelectionState.nextQuery.length,
+              totalMs: Math.round((perfNow() - start) * 10) / 10,
+            })
           }}
           onItemOperatorChange={async (itemKey, op) => {
             const nextOperators = { ...itemOperators, [itemKey]: op }
