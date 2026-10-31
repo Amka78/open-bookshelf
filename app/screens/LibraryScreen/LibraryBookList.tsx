@@ -97,7 +97,19 @@ export function LibraryBookList({
       ) : null
 
     return (
-      <ScrollView>
+      <ScrollView
+        onScroll={(event) => {
+          const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent
+          const distanceFromBottom =
+            contentSize.height - (contentOffset.y + layoutMeasurement.height)
+          // FlatList のデフォルト onEndReachedThreshold (0.5) と同等: 画面高の半分以内で追加読み込み
+          if (distanceFromBottom <= layoutMeasurement.height * 0.5) {
+            if (!isFocused) return
+            onEndReached()
+          }
+        }}
+        scrollEventThrottle={16}
+      >
         {header}
         <ScrollView horizontal showsHorizontalScrollIndicator={true}>
           <Box width={Math.max(window.width, horizontalContentWidth)}>
