@@ -507,9 +507,8 @@ describe("LibraryScreen", () => {
       viewMode: "table",
     })
 
-    const onScroll = scrollViewProps.find(
-      (props) => typeof props.onScroll === "function",
-    )?.onScroll as (event: {
+    const onScroll = scrollViewProps.find((props) => typeof props.onScroll === "function")
+      ?.onScroll as (event: {
       nativeEvent: {
         contentOffset: { y: number }
         contentSize: { height: number }
@@ -536,9 +535,8 @@ describe("LibraryScreen", () => {
       viewMode: "table",
     })
 
-    const onScroll = scrollViewProps.find(
-      (props) => typeof props.onScroll === "function",
-    )?.onScroll as (event: {
+    const onScroll = scrollViewProps.find((props) => typeof props.onScroll === "function")
+      ?.onScroll as (event: {
       nativeEvent: {
         contentOffset: { y: number }
         contentSize: { height: number }

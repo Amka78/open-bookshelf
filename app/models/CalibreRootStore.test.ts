@@ -380,7 +380,9 @@ describe("CalibreRootStore test", () => {
     } as Awaited<ReturnType<typeof api.editBook>>)
 
     // title はカテゴリ件数と無関係 → dirty にならない
-    const titleResult = await book!.update(model.selectedLibrary.id, { title: "Renamed" }, ["title"])
+    const titleResult = await book!.update(model.selectedLibrary.id, { title: "Renamed" }, [
+      "title",
+    ])
     expect(titleResult).toBe(true)
     expect(model.tagBrowserDirty).toBe(false)
 
