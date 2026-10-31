@@ -45,8 +45,9 @@ jobs:
           APP_VARIANT: "preview"
           EXPO_PUBLIC_STORYBOOK_ENABLED: "false"
         run: |
+          # --channel と --branch は併用不可（eas-cli がエラーにする）。
+          # 端末はチャンネルを購読するため、チャンネル指定のみで配信する。
           eas update \
-            --branch main \
             --channel preview \
             --message "Preview OTA ${{ github.ref_name }} (${{ github.sha }})" \
             --non-interactive
