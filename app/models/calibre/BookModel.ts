@@ -1,4 +1,11 @@
-import { type Instance, type SnapshotIn, type SnapshotOut, flow, types } from "mobx-state-tree"
+import {
+  type Instance,
+  type SnapshotIn,
+  type SnapshotOut,
+  flow,
+  getRoot,
+  types,
+} from "mobx-state-tree"
 
 import type { ConvertOptions } from "@/components/BookConvertForm/ConvertOptions"
 import { isCalibreHtmlViewerFormat } from "@/utils/calibreHtmlViewer"
@@ -21,9 +28,22 @@ import { handleCommonApiError } from "../errors/errors"
 import { withSetPropAction } from "../helpers/withSetPropAction"
 import { type Annotation, AnnotationModel } from "./AnnotationModel"
 import { MetadataModel } from "./MetadataModel"
+import type { RootStore } from "../RootStore"
 
 type BookManifestResponse = Awaited<ReturnType<typeof api.CheckBookConverting>>
 type ConversionStatusResponse = Awaited<ReturnType<typeof api.getConversionStatus>>
+
+// タグブラウザ（LeftSideMenu）の件数に影響するフィールド。
+// これらが編集で変わる場合のみ、再取得を予約する（markTagBrowserDirty）。
+// title / seriesIndex / cover / comments などはカテゴリ件数と無関係なので対象外。
+const TAG_BROWSER_AFFECTING_FIELDS = new Set([
+  "authors",
+  "tags",
+  "series",
+  "publisher",
+  "rating",
+  "languages",
+])
 
 function normalizeUpdateFieldValue(field: string, value: unknown) {
   if (field === "seriesIndex") {
@@ -497,6 +517,17 @@ export const BookModel = types
           const added = (formatChanges?.added_formats ?? []).map((f) => f.ext.toUpperCase())
           const merged = [...new Set([...remaining, ...added])]
           ;(root.metaData as unknown as Record<string, unknown>).formats = merged
+        }
+        // 件数表示（LeftSideMenu）に影響するフィールドが変わったら、再取得を予約する。
+        // getRoot はツリー未接続（テスト等のスタンドアロン生成）では自分自身を返すため、
+        // calibreRootStore が無い場合（＝ルートストア未構成）は何もしない。
+        const affectsTagBrowser =
+          regularFields.some((field) => TAG_BROWSER_AFFECTING_FIELDS.has(field)) ||
+          updateField.includes("formats") ||
+          updateField.includes("customColumns")
+        if (affectsTagBrowser) {
+          const rootStore = getRoot(root) as unknown as Partial<RootStore>
+          rootStore.calibreRootStore?.markTagBrowserDirty()
         }
         return true
       }
