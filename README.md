@@ -1,377 +1,159 @@
 # Open BookShelf
 
-A cross-platform book library management application built with React Native, Expo, and TypeScript. Access and manage your digital book collection seamlessly across iOS, Android, and Web platforms.
+[English](./README.md) | [日本語](./README.ja.md) | [中文](./README.zh.md)
+
+Open BookShelf is a cross-platform client for a [Calibre](https://calibre-ebook.com/) book library. Browse, search, edit, and read your books on iOS, Android, and the web.
+
+It talks to a Calibre content server (REST/OPDS) — it does not bundle Calibre itself.
 
 ## Features
 
-- 📚 **Multi-Platform Support**: Native iOS and Android apps, plus a responsive web version
-- 🌐 **Calibre Integration**: Connect to Calibre library servers and manage your book collection
-- 🎨 **Beautiful UI**: Modern, responsive design using Gluestack UI components
-- 🌍 **Multi-Language Support**: i18n support for multiple languages (English, Korean, Arabic, etc.)
-- 🔄 **Hot Reload**: Fast Refresh enabled for rapid development feedback
-- 📱 **Responsive Design**: Optimized layouts for tablets and desktops
-- 🗂️ **Advanced Search & Filter**: Search books by title, author, category, and tags
-- 📖 **PDF Viewer**: Built-in PDF viewer for reading books
-- 🎯 **Navigation & Organization**: Intuitive navigation with bottom tab bar and side menu
-- 💾 **Persistent Storage**: Async storage for local data persistence
-- 🧪 **Testing**: Vitest unit tests + Storybook play tests
+- **Library browsing** — grid, list, and table views, with sorting, filtering, and a tag browser that shows per-tag counts
+- **Search** — server-side search with incremental loading
+- **Metadata editing** — edit titles, authors, tags, series, custom columns, and covers, with inline auto-save in the table view
+- **Reader** — paginated text viewer for EPUB/AZW3 (horizontal and vertical writing, configurable page direction), PDF viewer, and image-based books such as CBZ
+- **Annotations** — highlights and notes for formats that support them
+- **Reading history** — reading status and last-read position per book
+- **Calibre jobs** — book conversion and OCR (text recognition) review
+- **Multi-language UI** — English, Japanese, Korean, and Arabic
+- **OTA updates** — JavaScript and asset updates via EAS Update, without rebuilding the app
 
 ## Tech Stack
 
-- **Framework**: React Native 0.73 with Expo 50
-- **Language**: TypeScript 5
-- **State Management**: MobX State Tree
-- **Navigation**: React Navigation
-- **UI Components**: Gluestack UI, Material Community Icons
-- **PDF Handling**: react-native-pdf
-- **Forms**: React Hook Form
-- **Internationalization**: i18n-js
-- **Build Tools**: Metro bundler, Webpack5 for Storybook
-- **Testing**: Vitest, Storybook
+| Area | Technology |
+| --- | --- |
+| Framework | Expo SDK 57, React Native 0.86, React 19 |
+| Language | TypeScript 7 |
+| State | MobX State Tree 5 |
+| Navigation | React Navigation 7 (native stack) |
+| UI | gluestack-ui 1.x, react-native-svg, expo-image |
+| Lists | FlashList 2 |
+| Reading | react-native-pdf, react-native-webview (paginated text viewer) |
+| i18n | i18n-js |
+| Tests | Vitest 3 (jsdom) + Storybook 8 play functions (Chromium via Playwright) |
+| Tooling | Bun, Biome, EAS Build / EAS Update |
 
 ## Project Structure
 
 ```
 open-bookshelf
 ├── app/
-│   ├── components/          # Reusable UI components
-│   ├── config/              # Environment-specific configurations
-│   ├── hooks/               # Custom React hooks
-│   ├── i18n/                # Translation files and i18n setup
-│   ├── library/             # PDF and other library utilities
-│   ├── models/              # MobX State Tree models
-│   ├── navigators/          # React Navigation configuration
-│   ├── screens/             # Screen components
-│   ├── services/            # API clients and external services
-│   ├── theme/               # Theme configuration
-│   ├── type/                # TypeScript type definitions
-│   ├── utils/               # Utility functions
-│   └── app.tsx              # Main app entry point
-├── assets/                  # Images and static resources
-├── android/                 # Android native code
-├── ios/                     # iOS native code
-├── .storybook/              # Storybook configuration (Web & Native)
-├── test/                    # Test setup and mocks
-├── app.config.ts            # Expo configuration
-├── babel.config.js          # Babel configuration with React Refresh
-├── metro.config.js          # Metro bundler configuration
-├── package.json             # Project dependencies
-└── tsconfig.json            # TypeScript configuration
+│   ├── components/     # UI components (each with *.stories.tsx where useful)
+│   ├── config/         # Environment-specific configuration
+│   ├── hooks/          # Shared hooks (imported via @/hooks)
+│   ├── i18n/           # en / ja / ko / ar dictionaries
+│   ├── library/        # Reader and pagination logic
+│   ├── models/         # MobX State Tree stores
+│   ├── navigators/     # Navigation setup
+│   ├── screens/        # Connect, Library, Detail, Edit, Viewer, Convert, OCR, ...
+│   ├── services/       # Calibre API client, storage, logging
+│   ├── theme/          # Colors, spacing, typography
+│   ├── type/           # Shared TypeScript types
+│   └── utils/
+├── assets/             # Icons, splash, images
+├── .storybook/         # Storybook for web and native
+├── test/               # Vitest setup and mocks
+├── scripts/            # Build, version, and EAS helper scripts
+├── .github/workflows/  # CI, Docker, GitHub Pages, EAS build/update
+├── Dockerfile          # Web build served by nginx
+└── app.config.ts       # Expo configuration
 ```
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ and Bun
-- Expo CLI: `bunx expo --version`
-- For iOS: Xcode 15+
-- For Android: Android Studio and SDK
+- Node.js 20+ and [Bun](https://bun.sh/)
+- A Calibre content server you can reach from the device
+- For local native builds: Android Studio (Android) or Xcode (iOS, macOS only)
 
-### Installation
+iOS and Android release builds are normally produced with EAS Build, so a Mac is not required for Android work.
+
+### Install and run
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/open-bookshelf.git
+git clone git@github.com:Amka78/open-bookshelf.git
 cd open-bookshelf
-
-# Install dependencies
 bun install
 
-# Optional: Link native dependencies
-bun run patch
+bun run start        # Expo Go (JavaScript-only development)
+bun run expo:web     # Web development server
 ```
 
-### Development
-
-#### Web Development
+Native modules are used by the reader and the viewer, so use a development build for full native testing:
 
 ```bash
-# Start the web development server
-bun run expo:web
-
-# Build for production
-GITHUB_PAGES=true bun run build:web
+bun run eas:android:dev   # Build and install a development client
+bun run start:dev-client
 ```
 
-#### iOS Development
+Then open the app, enter your Calibre server URL and credentials, and pick a library.
+
+## Common Commands
 
 ```bash
-# Run on iOS simulator
-bun run expo:ios
-
-# Or use React Native CLI
-bun run ios
+bun run check            # type check + lint + format check + unit + story tests
+bun run compile          # tsc --noEmit
+bun run lint             # Biome lint
+bun run format           # Biome format (write)
+bun run test:unit        # Vitest (jsdom)
+bun run test:story       # Storybook play tests (Chromium)
+bun run build:web        # Export the web build to dist/
+bun run version 0.2.0    # Bump app.config.ts + package.json and tag
 ```
 
-#### Android Development
-
-```bash
-# Run on Android emulator
-bun run expo:android
-
-# Or use React Native CLI
-bun run android
-```
-
-#### Storybook (Component Development)
-
-```bash
-# Web Storybook
-bun run storybook:web
-
-# Native Storybook (with Expo dev client)
-bun run storybook-native
-```
-
-## Available Scripts
-
-```
-"start": "USE_EXPO_GO=true bunx expo start"       // Start Expo Go
-"start:dev-client": "bunx expo start --dev-client" // Start Expo dev client
-"expo:web": "bunx expo start --web"               // Start web development
-"expo:ios": "USE_EXPO_GO=true bunx expo start --ios" // Start iOS simulator in Expo Go
-"expo:android": "USE_EXPO_GO=true bunx expo start --android" // Start Android emulator in Expo Go
-"build:web": "bunx expo export --platform web --output-dir dist"  // Build web for production
-"test": "jest"                                   // Run unit tests
-"test:watch": "jest --watch"                     // Run tests in watch mode
-"lint": "eslint app test --fix"                  // Lint and fix code
-"compile": "tsc --noEmit"                        // Type check
-"storybook:web": "sb dev --config-dir .storybook/web"  // Storybook web
-"build-storybook": "build-storybook"             // Build Storybook static
-```
-
-## Github Pages Deployment
-
-Deploy the web version to Github Pages:
-
-```bash
-# Setup: Configure Github Pages in repository settings
-# Branch: gh-pages
-# Folder: / (root)
-
-# Automatic deployment on push to main branch
-git add .
-git commit -m "Deploy to Github Pages"
-git push origin main
-```
-
-After deployment, access your app at: `https://<your-username>.github.io/open-bookshelf/`
-
-For detailed deployment instructions, see [GITHUB_PAGES_DEPLOY.md](./GITHUB_PAGES_DEPLOY.md)
-
-## Key Directories Explained
-
-### `app/components`
-
-Reusable UI components built with Gluestack UI:
-
-- `Box`, `VStack`, `HStack` - Layout components
-- `Button`, `ButtonGroup` - Button variants
-- `Input`, `InputField` - Form inputs
-- `Image`, `ImageUploader` - Image handling
-- `BookImageItem`, `BookDescriptionItem` - Domain-specific components
-- Custom themed components for consistent styling
-
-### `app/models`
-
-MobX State Tree models for application state:
-
-- `RootStore` - Main application store
-- `AuthenticationStore` - User authentication state
-- `CalibreRootStore` - Calibre library management
-- `SettingStore` - Application settings
-
-### `app/screens`
-
-Screen components for different app pages:
-
-- `LibraryScreen` - Book library listing
-- `BookDetailScreen` - Individual book details
-- `SearchScreen` - Search functionality
-- `SettingsScreen` - Application settings
-
-### `app/services`
-
-External service integrations:
-
-- `api` - REST API client with Calibre backend support
-- `reactotron` - Development tools integration
-- `storage` - Async storage operations
-
-### `app/hooks`
-
-Custom React hooks:
-
-- `useConvergence` - Handle data convergence
-- `useOpenViewer` - Open book viewer
-- `useDownloadBook` - Download book management
-- `useOrientation` - Device orientation handling
-
-## Configuration
-
-### Environment-Specific Config
-
-Configuration files are located in `app/config/`:
-
-- `config.base.ts` - Base configuration
-- `config.dev.ts` - Development configuration
-- `config.prod.ts` - Production configuration
-
-### Theme
-
-Customize colors, spacing, and typography in `app/theme/`
-
-### Internationalization
-
-Add or modify translations in `app/i18n/`:
-
-- `en.ts` - English
-- `ko.ts` - Korean
-- `ar.ts` - Arabic
+`bun run version` updates both `app.config.ts` and `package.json` and creates the annotated tag; add `--push` to push the commit and tag. See [RELEASE.md](./RELEASE.md) for the full procedure.
 
 ## Testing
 
-### Unit Tests
+- **Unit tests** (`*.test.ts(x)`, Vitest + jsdom) cover models, utility functions, and logic.
+- **UI interaction tests** live in Storybook `play` functions (`*.stories.tsx`) and run in a real Chromium via `bun run test:story`. Use these for clicks, pastes, and typing; mock the Calibre API with `api.*` stubs instead of hitting a server.
+- CI runs type check, unit tests, and story tests on every push and pull request.
+
+## Docker (Web)
+
+The web build is published as a public image and served over HTTPS by nginx.
 
 ```bash
-bun run test:unit
-bun run test:watch
+docker run -d \
+  --name open-bookshelf \
+  --restart unless-stopped \
+  -p 3000:80 \
+  -p 8443:443 \
+  -e HTTPS_PORT=8443 \
+  -e HTTPS_CN=localhost \
+  -v ssl-certs:/etc/nginx/ssl \
+  ghcr.io/amka78/open-bookshelf:latest
 ```
 
-### UI Interaction Tests (rule)
+Open `https://localhost:8443`. The container generates a self-signed certificate on first start, so the browser will warn once. HTTPS is required because the clipboard API only works in a secure context.
 
-UI 操作（クリック・貼りつけ・入力など）の検証は **test ファイルではなく story の `play` 関数**に書く。`bun run test:story`（Vitest + Playwright、実ブラウザ）がそれを実行するため、CI はこの経由で UI 操作をテストする。
+The image also works with Watchtower for automatic updates; `docker-compose.yml` in this repository is the reference setup. See [DOCKER_INSTALL.md](./DOCKER_INSTALL.md) for users and [DOCKER_DEPLOY.md](./DOCKER_DEPLOY.md) for maintainers.
 
-- 操作の検証は `.stories.tsx` の `play` に関連するロジックとアサーションをまとめて書く（play が例外を投げると CI が失敗する）
-- Story から API を呼ぶ場合は、`@/services/api` の該当メソッド（例: `api.editBook`）をスタブに差し替えて **API 呼び出しを Mock 化**する。実サーバーへは送らない
-- 純粋な関数・モデルのロジック検証は引き続き `*.test.ts(x)` のユニットテストで行ってよい（jsdom で UI 操作を再現する必要はない）
+## Mobile Builds and Releases
 
-Example: `app/screens/LibraryScreen/LibraryTableItem.stories.tsx`（貼りつけ自動保存の検証、`api.editBook` をモック）。
+- `bun run eas:android:preview` / `bun run eas:ios:preview` — local EAS builds
+- `bun run eas:android:prod` / `bun run eas:ios:prod` — production builds
+- Pushing a `v*` tag publishes a preview OTA update and the web/Docker artifacts; it does **not** build an APK
+- To rebuild the preview APK, run the **Preview APK Build (Manual)** workflow
 
-### Component Testing with Storybook
+See [RELEASE.md](./RELEASE.md) for release steps and [EAS_BUILD.md](./EAS_BUILD.md) for build troubleshooting.
 
-```bash
-bun run storybook:web
-```
+## Documentation
 
-## Debugging
-
-### Development Features
-
-- **Fast Refresh**: Enabled in web and native development for instant feedback
-- **Reactotron**: Redux DevTools-like debugging for MobX State Tree
-- **TypeScript**: Full type safety across the codebase
-
-### Console Debugging
-
-```bash
-# Start Expo Go with debugging enabled
-bun run start -- --verbose
-```
-
-## Platform-Specific Features
-
-### Web
-
-- Responsive design for desktop and tablet
-- Service worker support for offline functionality
-- Optimized build size with code splitting
-- Github Pages deployment ready
-
-### iOS
-
-- Native gesture handling
-- Safe area insets support
-- iOS-specific navigation patterns
-
-### Android
-
-- Material Design compliance
-- Android-specific permissions handling
-- Hardware back button support
-
-## Performance Optimization
-
-- **Code Splitting**: Automatic code splitting for web builds
-- **Tree Shaking**: Dead code elimination in production builds
-- **Metro Transformer**: Optimized JavaScript transformation
-- **Hermes Engine**: Lightweight JavaScript engine for faster app startup (iOS/Android)
-
-## Troubleshooting
-
-### Build Issues
-
-```bash
-# Clear all caches and rebuild
-bun run clean-all
-bun install
-```
-
-### Metro Cache Issues
-
-```bash
-# Clear Metro cache for Expo Go
-bun run start -- --reset-cache
-```
-
-### Web Build Errors
-
-```bash
-# Rebuild with verbose output
-GITHUB_PAGES=true bun run build:web -- --verbose
-```
-
-## Contributing
-
-1. Create a feature branch: `git checkout -b feature/your-feature`
-2. Commit changes: `git commit -am 'Add new feature'`
-3. Push to branch: `git push origin feature/your-feature`
-4. Open a Pull Request
-
-## Code Style
-
-- **Formatter/Linter**: Biome (configured in `biome.json`)
-
-Run formatting:
-
-```bash
-bun run format
-```
-
-Run linting:
-
-```bash
-bun run lint
-```
+- [RELEASE.md](./RELEASE.md) — versioning, tags, OTA, and APK builds
+- [EAS_BUILD.md](./EAS_BUILD.md) — EAS build troubleshooting
+- [DOCKER_INSTALL.md](./DOCKER_INSTALL.md) — running the web build with Docker
+- [DOCKER_DEPLOY.md](./DOCKER_DEPLOY.md) — deploying and updating the Docker setup
+- [GITHUB_PAGES_DEPLOY.md](./GITHUB_PAGES_DEPLOY.md) — Storybook deployment to GitHub Pages
+- [Design.md](./Design.md) — design notes
 
 ## License
 
-This project is private and all rights are reserved.
+This project is licensed under the **PolyForm Noncommercial License 1.0.0**. You may use, modify, and redistribute it for any noncommercial purpose, such as personal use, study, hobby projects, research, education, and use by noncommercial organizations.
 
-## Support
+Commercial use requires a separate commercial license. This includes use in the course of business (including internal business use at a company), incorporation into a commercial product or service, and redistribution for a fee.
 
-For issues and questions:
+The commercial license terms are not finalized yet. For commercial licensing inquiries, please open an issue at [github.com/Amka78/open-bookshelf](https://github.com/Amka78/open-bookshelf/issues).
 
-- Check existing [GitHub Issues](https://github.com/yourusername/open-bookshelf/issues)
-- Create a new issue for bug reports
-- Reference the related documentation
-
-## Changelog
-
-### Latest Updates
-
-- ✅ Fast Refresh enabled for web development
-- ✅ Github Pages deployment automation
-- ✅ Calibre library integration complete
-- ✅ Multi-language support
-- ✅ PDF viewer integration
-- ✅ Type-safe state management with MobX State Tree
-
-## Related Documentation
-
-- [Expo Documentation](https://docs.expo.dev/)
-- [React Native Documentation](https://reactnative.dev/)
-- [MobX State Tree Docs](https://mobx-state-tree.js.org/)
-- [React Navigation Docs](https://reactnavigation.org/)
-- [Gluestack UI](https://gluestack.io/)
+See [LICENSE](./LICENSE) for the full license text. Third-party dependencies remain under their own licenses.
