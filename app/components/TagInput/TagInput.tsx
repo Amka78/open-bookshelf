@@ -22,6 +22,9 @@ export type TagInputProps = {
   showCopyPaste?: boolean
   onBlur?: () => void
   onCopy?: () => void
+  // 貼りつけ直後に追加済みの全値（value + 新規分）を渡す。
+  // Editor 側で自動保存を直接トリガーするために使う（blur は発生しないため）。
+  onPaste?: (values: string[]) => void
 }
 
 const DEFAULT_SEPARATOR = /[,;、]/
@@ -37,6 +40,7 @@ export function TagInput({
   showCopyPaste = false,
   onBlur,
   onCopy,
+  onPaste,
 }: TagInputProps) {
   const [inputValue, setInputValue] = useState("")
   const [isFocused, setIsFocused] = useState(false)
@@ -123,7 +127,9 @@ export function TagInput({
           .filter(Boolean)
         const newTags = parts.filter((tag) => !value.includes(tag))
         if (newTags.length > 0) {
-          onChange([...value, ...newTags])
+          const next = [...value, ...newTags]
+          onChange(next)
+          onPaste?.(next)
         }
       } catch (e) {
         console.warn("TagInput: clipboard read failed", { error: String(e) })

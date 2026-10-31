@@ -95,6 +95,16 @@ type LibraryTableFieldLabels = {
   publisher: string
 }
 
+// インライン編集で保存する draft 全体。currentValue と同一の形。
+type LibraryTableDraft = {
+  title: string
+  authors: string[]
+  publisher: string | null
+  series: string | null
+  seriesIndex: number | null
+  tags: string[]
+}
+
 type CustomColumn = {
   key: string
   label: string
@@ -426,10 +436,11 @@ export const LibraryTableItem = observer(function LibraryTableItem({
     return JSON.stringify(currentValue) !== JSON.stringify(originalValue)
   }, [currentValue, originalValue])
 
-  const handleSave = async () => {
-    if (!isDirty || isSaving) {
-      return
-    }
+  // blur/Enter ではフォーカスが移る前に state が flush されるため handleSave で足りるが、
+  // 貼りつけ・シリーズ抽出は「新値を setState した直後」に保存が走る。
+  // その時点では isDirty/currentValue が旧値のままなので、変更対象は overrides で直接渡す。
+  const saveMetadata = async (overrides?: Partial<LibraryTableDraft>) => {
+    if (isSaving) return
 
     setIsSaving(true)
     try {
@@ -440,6 +451,7 @@ export const LibraryTableItem = observer(function LibraryTableItem({
         seriesIndex: currentValue.seriesIndex,
         tags: currentValue.tags,
         title: currentValue.title,
+        ...overrides,
       }
 
       // Convert fieldMetadataList to a plain Map for BookModel.update
@@ -462,6 +474,15 @@ export const LibraryTableItem = observer(function LibraryTableItem({
     } finally {
       setIsSaving(false)
     }
+  }
+
+  const handleSave = async () => {
+    if (!isDirty) return
+    await saveMetadata()
+  }
+
+  const handlePasteForField = (field: "authors" | "tags") => (newValues: string[]) => {
+    void saveMetadata(field === "authors" ? { authors: newValues } : { tags: newValues })
   }
 
   const handleCustomColumnSave = async (columnKey: string) => {
@@ -562,38 +583,12 @@ export const LibraryTableItem = observer(function LibraryTableItem({
                         setSeriesIndex(newSeriesIndex)
                       }
 
-                      // Directly save with the new values since state hasn't updated yet
-                      if (isSaving) return
-                      setIsSaving(true)
-                      try {
-                        const updateInfo: Partial<MetadataSnapshotIn> = {
-                          authors: currentValue.authors,
-                          publisher: currentValue.publisher,
-                          series: extracted.series,
-                          seriesIndex: newSeriesIndex,
-                          tags: currentValue.tags,
-                          title: currentValue.title,
-                        }
-
-                        const metadataMap = fieldMetadataList
-                          ? new Map(
-                              Array.from(fieldMetadataList.entries()).map(([key, value]) => [
-                                key,
-                                { isMultiple: value.isMultiple },
-                              ]),
-                            )
-                          : undefined
-
-                        await book.update(
-                          libraryId,
-                          updateInfo,
-                          ["title", "authors", "series", "seriesIndex", "tags", "publisher"],
-                          undefined,
-                          metadataMap,
-                        )
-                      } finally {
-                        setIsSaving(false)
-                      }
+                      // state 反映前でも抽出値を直接渡して保存する
+                      // （setSeries 直後は isDirty が false のままなので handleSave は早期リターンする）
+                      await saveMetadata({
+                        series: extracted.series,
+                        seriesIndex: newSeriesIndex,
+                      })
                     }
                   }}
                   testID={`library-table-extract-series-${book.id}`}
@@ -618,6 +613,7 @@ export const LibraryTableItem = observer(function LibraryTableItem({
               showCopyPaste
               onBlur={handleSave}
               onCopy={() => handleFieldCopy("authors")}
+              onPaste={handlePasteForField("authors")}
             />
           </Box>
         ) : null}
@@ -682,6 +678,7 @@ export const LibraryTableItem = observer(function LibraryTableItem({
               showCopyPaste
               onBlur={handleSave}
               onCopy={() => handleFieldCopy("tags")}
+              onPaste={handlePasteForField("tags")}
             />
           </Box>
         ) : null}
