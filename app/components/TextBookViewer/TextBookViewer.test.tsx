@@ -145,6 +145,53 @@ describe("TextBookViewer", () => {
     latestTextBookSpineProps = null
   })
 
+  test("keeps the turned page when the parent re-renders with an equivalent page count array", () => {
+    // useViewer は毎レンダーで textSpinePageCounts を新しい配列として返すため、
+    // 参照をそのまま effect の依存にするとページ送りのたびに initialPage へ戻される。
+    // 見開き（表紙あり）＋右開きの表紙から次へ進めることを確認する。
+    const viewerHook = () =>
+      createViewerHook({
+        initialPage: 0,
+        textSpinePageCounts: [],
+        readingStyle: "facingPageWithTitle",
+        pageDirection: "left",
+      }) as never
+
+    const { rerender } = render(<TextBookViewer viewerHook={viewerHook()} />)
+
+    expect(latestTextBookSpineProps?.pagePath).toBe("text/chapter-1.xhtml")
+
+    act(() => {
+      ;(
+        latestTextBookSpineProps?.onNavigate as
+          | ((payload: { x: number; y: number; width: number; height: number }) => void)
+          | undefined
+      )?.({ x: 10, y: 10, width: 1920, height: 528 })
+    })
+
+    expect(latestTextBookSpineProps?.pagePath).toBe("text/chapter-2.xhtml")
+
+    rerender(<TextBookViewer viewerHook={viewerHook()} />)
+
+    expect(latestTextBookSpineProps?.pagePath).toBe("text/chapter-2.xhtml")
+
+    // 実測でページ数が変わっても、読んでいる位置は巻き戻さない。
+    rerender(
+      <TextBookViewer
+        viewerHook={
+          createViewerHook({
+            initialPage: 0,
+            textSpinePageCounts: [1, 20],
+            readingStyle: "facingPageWithTitle",
+            pageDirection: "left",
+          }) as never
+        }
+      />,
+    )
+
+    expect(latestTextBookSpineProps?.pagePath).toBe("text/chapter-2.xhtml")
+  })
+
   test("maps persisted text spine page counts back to the correct spine page", () => {
     render(
       <TextBookViewer

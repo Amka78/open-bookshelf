@@ -105,13 +105,43 @@ export function TextBookViewer({
     spinePageCountsRef.current = spinePageCounts
   }, [spinePageCounts])
 
+  // useViewer は textSpinePageCounts を毎レンダー別配列で返し、ページ数を実測する
+  // たびに内容も変わる。これを初期位置の再適用の条件にすると、ページ送りのたびに
+  // initialPage へ巻き戻って改ページできなくなる。保存値の同期と初期位置の適用を
+  // 分け、初期位置は「前回適用した値」との比較で判定する。
   useEffect(() => {
+    const storedPageCounts = viewerHook.textSpinePageCounts
+    if (!storedPageCounts) {
+      return
+    }
+
+    setSpinePageCounts((previous) => {
+      const unchanged =
+        previous.length === storedPageCounts.length &&
+        previous.every((pageCount, index) => pageCount === storedPageCounts[index])
+      return unchanged ? previous : storedPageCounts
+    })
+  }, [viewerHook.textSpinePageCounts])
+
+  const resumeLocationKey = viewerHook.resumeSpineLocation
+    ? `${viewerHook.resumeSpineLocation.spineIndex}:${viewerHook.resumeSpineLocation.progressInSpine}`
+    : ""
+  const initialLocationKey = `${selectedBook?.id ?? ""}|${
+    viewerHook.initialPage
+  }|${resumeLocationKey}`
+  const appliedInitialLocationRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (appliedInitialLocationRef.current === initialLocationKey) {
+      return
+    }
+
+    appliedInitialLocationRef.current = initialLocationKey
     setCurrentDisplayPage(viewerHook.initialPage)
-    setSpinePageCounts(viewerHook.textSpinePageCounts)
     setPendingAnchor(null)
     setPendingAnchorSpineIndex(null)
     setPendingResumeLocation(viewerHook.resumeSpineLocation)
-  }, [viewerHook.initialPage, viewerHook.resumeSpineLocation, viewerHook.textSpinePageCounts])
+  }, [initialLocationKey, viewerHook.initialPage, viewerHook.resumeSpineLocation])
 
   useEffect(() => {
     if (!selectedBook || totalSpines <= 0) {
