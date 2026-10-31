@@ -1,4 +1,5 @@
 import { AddFileButton, AuthButton, IconButton, LibraryViewModeButton } from "@/components"
+import { useConvergence } from "@/hooks/useConvergence"
 import { useElectrobunModal } from "@/hooks/useElectrobunModal"
 import { translate } from "@/i18n"
 import { useStores } from "@/models"
@@ -22,6 +23,7 @@ export function LibraryActions({
 }: LibraryActionsProps) {
   const { authenticationStore } = useStores()
   const modal = useElectrobunModal()
+  const { isLarge } = useConvergence()
 
   return (
     <>
@@ -49,7 +51,13 @@ export function LibraryActions({
         placement="bottom"
         closeOnSelect={true}
         trigger={(triggerProps) => (
-          <IconButton {...triggerProps} name="cog" iconSize="md-" variant="staggerChild" />
+          <IconButton
+            {...triggerProps}
+            name="cog"
+            iconSize="md-"
+            variant="staggerChild"
+            testID="library-actions-menu"
+          />
         )}
       >
         <MenuItem
@@ -78,6 +86,19 @@ export function LibraryActions({
           }}
         >
           <MenuItemLabel>{translate("readingStats.title")}</MenuItemLabel>
+        </MenuItem>
+        <MenuItem
+          key="about"
+          textValue="about"
+          onPress={() => {
+            if (isLarge) {
+              modal.openModal("AboutModal", {})
+            } else {
+              navigation.navigate("About")
+            }
+          }}
+        >
+          <MenuItemLabel>{translate("about.title")}</MenuItemLabel>
         </MenuItem>
       </Menu>
     </>

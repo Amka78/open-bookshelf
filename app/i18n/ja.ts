@@ -367,6 +367,20 @@ const ja: Translations = {
   libraryViewMode: {
     toggleTooltip: "表示モード切替",
   },
+  about: {
+    title: "このアプリについて",
+    version: "バージョン {{version}}",
+    unknownVersion: "不明",
+    author: "作成者",
+    contact: "連絡先",
+    contactHint: "不具合報告やご質問は GitHub Issues へお願いします。",
+    license: "ライセンス",
+    licenseSummary:
+      "このアプリは PolyForm Noncommercial License 1.0.0 で公開しています。非商用目的であれば、使用・改変・再頒布が自由です。",
+    commercialUse: "法人の社内業務を含む商用利用には、別途商用ライセンスが必要です。",
+    viewLicense: "ライセンス全文を見る",
+    repository: "リポジトリ",
+  },
 }
 
 export default ja

@@ -35,6 +35,7 @@ export type AppStackParamList = {
   OPDSRoot: undefined
   CalibreRoot: undefined
   Library: undefined
+  About: undefined
   Acquisition: {
     link: Link
   }

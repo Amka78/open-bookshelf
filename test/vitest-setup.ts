@@ -301,6 +301,7 @@ Object.defineProperty(global, "__reactNativeMock", {
 // Test files that need custom behaviour should spread this via global.__componentsMock.
 const componentsMockFactory = () => ({
   Box: "div",
+  AboutContent: "div",
   BookDetailMenu: "div",
   BookPage: "div",
   BookViewer: "div",

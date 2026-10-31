@@ -364,6 +364,21 @@ const en = {
   libraryViewMode: {
     toggleTooltip: "Toggle view mode",
   },
+  about: {
+    title: "About",
+    version: "Version {{version}}",
+    unknownVersion: "Unknown",
+    author: "Author",
+    contact: "Contact",
+    contactHint: "For bug reports and questions, please use GitHub Issues.",
+    license: "License",
+    licenseSummary:
+      "This app is released under the PolyForm Noncommercial License 1.0.0. You may use, modify, and redistribute it for noncommercial purposes.",
+    commercialUse:
+      "Commercial use, including internal business use at a company, requires a separate commercial license.",
+    viewLicense: "View full license",
+    repository: "Repository",
+  },
 }
 
 export default en

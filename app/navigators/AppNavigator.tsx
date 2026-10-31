@@ -17,6 +17,7 @@ import Config from "../config"
 import { useStores } from "../models"
 import { ReadingHistoryModel } from "../models/calibre"
 import {
+  AboutScreen,
   AcquisitionScreen,
   BookConvertScreen,
   BookDetailScreen,
@@ -61,6 +62,7 @@ const getLinking = (): LinkingOptions<AppStackParamList> => {
         OPDSRoot: "opds",
         CalibreRoot: "calibre",
         Library: "library",
+        About: "about",
         Acquisition: "acquisition",
         Viewer: "viewer",
         PDFViewer: "pdf-viewer",
@@ -118,6 +120,7 @@ const AppStack = observer(function AppStack() {
       <Stack.Screen name="Acquisition" component={AcquisitionScreen} />
       <Stack.Screen name="CalibreRoot" component={CalibreRootScreen} />
       <Stack.Screen name="Library" component={LibraryScreen} />
+      <Stack.Screen name="About" component={AboutScreen} />
       <Stack.Screen
         name="Viewer"
         component={ViewerScreen}

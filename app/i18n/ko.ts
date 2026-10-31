@@ -365,6 +365,20 @@ const ko: Translations = {
   libraryViewMode: {
     toggleTooltip: "보기 모드 전환",
   },
+  about: {
+    title: "앱 정보",
+    version: "버전 {{version}}",
+    unknownVersion: "알 수 없음",
+    author: "작성자",
+    contact: "연락처",
+    contactHint: "버그 신고와 질문은 GitHub Issues를 이용해 주세요.",
+    license: "라이선스",
+    licenseSummary:
+      "이 앱은 PolyForm Noncommercial License 1.0.0으로 공개됩니다. 비상업적 목적이라면 사용, 수정, 재배포가 자유롭습니다.",
+    commercialUse: "기업 내부 업무를 포함한 상업적 이용에는 별도의 상용 라이선스가 필요합니다.",
+    viewLicense: "라이선스 전문 보기",
+    repository: "저장소",
+  },
 }
 
 export default ko

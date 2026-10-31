@@ -365,6 +365,21 @@ const ar: Translations = {
   libraryViewMode: {
     toggleTooltip: "تبديل وضع العرض",
   },
+  about: {
+    title: "حول التطبيق",
+    version: "الإصدار {{version}}",
+    unknownVersion: "غير معروف",
+    author: "المؤلف",
+    contact: "التواصل",
+    contactHint: "للإبلاغ عن الأخطاء والأسئلة، يرجى استخدام GitHub Issues.",
+    license: "الترخيص",
+    licenseSummary:
+      "هذا التطبيق منشور بموجب PolyForm Noncommercial License 1.0.0. يجوز استخدامه وتعديله وإعادة توزيعه للأغراض غير التجارية.",
+    commercialUse:
+      "تتطلب الاستخدامات التجارية، بما في ذلك الاستخدام الداخلي في الشركات، ترخيصًا تجاريًا منفصلًا.",
+    viewLicense: "عرض نص الترخيص الكامل",
+    repository: "المستودع",
+  },
 }
 
 export default ar

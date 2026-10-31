@@ -86,6 +86,7 @@ export type ModalStackParams = {
   ReadingStatsModal: Record<string, never>
   UserPreferencesModal: Record<string, never>
   JobQueueModal: Record<string, never>
+  AboutModal: Record<string, never>
   ReadingSettingsModal: {
     autoPageTurnIntervalMs: number
     onAutoPageTurnIntervalChange?: (intervalMs: number) => void
