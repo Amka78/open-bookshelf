@@ -431,21 +431,23 @@ export type CalibreRootSnapshotOut = SnapshotOut<typeof CalibreRootStore>
 export type CalibreRootSnapshotIn = SnapshotIn<typeof CalibreRootStore>
 
 function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap, isAppend = false) {
-  const previousQuery = selectedLibrary.searchSetting?.query ?? ""
+  const previousSearchSetting = selectedLibrary.searchSetting
+  const previousQuery = previousSearchSetting?.query ?? ""
+  // detach すると selectedLibrary.searchSetting が null になるため、置換前に値を控える。
+  // total_num が 0（ヒットなし）のときも 0 をそのまま使い、vl も維持する。
+  const previousTotalNum = previousSearchSetting?.totalNum ?? 0
+  const previousVl = previousSearchSetting?.vl ?? null
 
   // searchSetting: detach してから置換（HMR reaction が古いノードを参照するのを防ぐ）
-  const oldSearchSetting = selectedLibrary.searchSetting
-  if (oldSearchSetting) detach(oldSearchSetting)
+  if (previousSearchSetting) detach(previousSearchSetting)
 
   selectedLibrary.searchSetting = SearchSettingModel.create({
     offset: data.search_result.num + data.search_result.offset,
     query: data.search_result.query ? data.search_result.query : previousQuery,
     sort: data.search_result.sort,
     sortOrder: data.search_result.sort_order,
-    totalNum: data.search_result.total_num
-      ? data.search_result.total_num
-      : selectedLibrary.searchSetting!.totalNum,
-    vl: selectedLibrary.searchSetting?.vl ?? null,
+    totalNum: data.search_result.total_num ?? previousTotalNum,
+    vl: previousVl,
   })
 
   // 追加モードでない場合のみ、古い書籍を削除する

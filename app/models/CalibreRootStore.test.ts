@@ -223,6 +223,58 @@ describe("CalibreRootStore test", () => {
     expect(book!.metaData.sharpFixed).toBeNull()
   })
 
+  test("searchLibrary handles a zero-result response and keeps the virtual library", async () => {
+    vi.spyOn(api, "initializeCalibre").mockResolvedValue({
+      kind: "ok" as const,
+      data: initializeData,
+    } as Awaited<ReturnType<typeof api.initializeCalibre>>)
+
+    const model = CalibreRootStore.create({})
+    await model.initialize()
+    model.setLibrary("test1")
+
+    if (!model.selectedLibrary.searchSetting) {
+      model.selectedLibrary.setProp("searchSetting", {
+        offset: 0,
+        query: "",
+        sort: "timestamp",
+        sortOrder: "desc",
+        totalNum: 1,
+        vl: "fiction",
+      })
+    } else {
+      model.selectedLibrary.searchSetting.setProp("vl", "fiction")
+    }
+
+    const base = buildBookInfoResponse("authors:=FUNA").data
+    const zeroResult = {
+      kind: "ok" as const,
+      data: {
+        ...base,
+        search_result: {
+          ...base.search_result,
+          total_num: 0,
+          num: 0,
+          num_book_without_search: 0,
+          offset: 0,
+          book_ids: [],
+          query: "authors:=FUNA",
+        },
+        metadata: {},
+      },
+    }
+
+    vi.spyOn(api, "getLibrary").mockResolvedValue(
+      zeroResult as Awaited<ReturnType<typeof api.getLibrary>>,
+    )
+
+    // total_num: 0 のとき detach 済みの searchSetting を参照して落ちていた
+    await expect(model.searchLibrary(50)).resolves.toBe(true)
+    expect(model.selectedLibrary.searchSetting?.totalNum).toBe(0)
+    expect(model.selectedLibrary.searchSetting?.vl).toBe("fiction")
+    expect(model.selectedLibrary.books.size).toBe(0)
+  })
+
   test("stale searchLibrary response must not overwrite a newer search", async () => {
     vi.spyOn(api, "initializeCalibre").mockResolvedValue({
       kind: "ok" as const,
