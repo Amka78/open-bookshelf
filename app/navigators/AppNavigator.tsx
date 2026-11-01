@@ -24,6 +24,7 @@ import {
   BookEditScreen,
   BookFieldEditScreen,
   BookOcrReviewScreen,
+  BulkEditScreen,
   CalibreRootScreen,
   ConnectScreen,
   DetailSearchScreen,
@@ -147,6 +148,7 @@ const AppStack = observer(function AppStack() {
       />
       <Stack.Screen name="BookDetail" component={BookDetailScreen} />
       <Stack.Screen name="BookEdit" component={BookEditScreen} />
+      <Stack.Screen name="BulkEdit" component={BulkEditScreen} />
       <Stack.Screen name="BookFieldEdit" component={BookFieldEditScreen} />
       <Stack.Screen name="BookOcrReview" component={BookOcrReviewScreen} />
       <Stack.Screen name="BookConvert" component={BookConvertScreen} />

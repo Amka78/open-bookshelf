@@ -54,6 +54,11 @@ export type AppStackParamList = {
   BookEdit: {
     imageUrl: string
   }
+  BulkEdit: {
+    bookIds: number[]
+    libraryId: string
+    onComplete?: () => void
+  }
   BookFieldEdit: {
     title: string
     formPath: string

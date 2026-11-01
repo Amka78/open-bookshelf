@@ -1,6 +1,7 @@
 export { useBookEditAutoActions } from "./useBookEditAutoActions"
 export { useBookEditFields } from "./useBookEditFields"
 export { useBulkDownloadBooks } from "./useBulkDownloadBooks"
+export { useBulkEditForm } from "./useBulkEditForm"
 export { useConvergence } from "./useConvergence"
 export { useDeleteBook } from "./useDeleteBook"
 export { useDownloadBook } from "./useDownloadBook"

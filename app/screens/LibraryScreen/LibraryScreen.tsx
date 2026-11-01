@@ -633,6 +633,18 @@ export const LibraryScreen: FC = observer(() => {
 
   const onBulkEdit = () => {
     if (libraryHook.selectedBooks.length === 0) return
+
+    if (!convergenceHook.isLarge) {
+      navigation.navigate("BulkEdit", {
+        bookIds: libraryHook.selectedBooks.map((book) => book.id),
+        libraryId: selectedLibrary!.id,
+        onComplete: () => {
+          libraryHook.clearSelection()
+        },
+      })
+      return
+    }
+
     modal.openModal("BulkEditModal", {
       books: libraryHook.selectedBooks,
       libraryId: selectedLibrary!.id,

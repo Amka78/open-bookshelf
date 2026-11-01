@@ -668,4 +668,46 @@ describe("LibraryScreen", () => {
     expect(event.preventDefault).not.toHaveBeenCalled()
     expect(selectedLibrary.searchSetting.setProp).not.toHaveBeenCalled()
   })
+
+  test("bulk edit opens a screen on mobile", () => {
+    renderLibraryScreen({
+      viewMode: "list",
+    })
+
+    const firstItem = bookListItemProps[0]
+    act(() => {
+      ;(firstItem.onLongPress as () => void)()
+    })
+    act(() => {
+      ;(selectionActionBarProps.at(-1)?.onBulkEdit as () => void)()
+    })
+
+    expect(navigationMock.navigate).toHaveBeenCalledWith("BulkEdit", {
+      bookIds: [1],
+      libraryId: "test-library",
+      onComplete: expect.any(Function),
+    })
+    expect(openModalMock).not.toHaveBeenCalled()
+  })
+
+  test("bulk edit opens a modal on a large screen", () => {
+    renderLibraryScreen({
+      viewMode: "list",
+      isLarge: true,
+    })
+
+    const firstItem = bookListItemProps[0]
+    act(() => {
+      ;(firstItem.onLongPress as () => void)()
+    })
+    act(() => {
+      ;(selectionActionBarProps.at(-1)?.onBulkEdit as () => void)()
+    })
+
+    expect(openModalMock).toHaveBeenCalledWith(
+      "BulkEditModal",
+      expect.objectContaining({ libraryId: "test-library" }),
+    )
+    expect(navigationMock.navigate).not.toHaveBeenCalled()
+  })
 })
