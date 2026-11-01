@@ -67,6 +67,9 @@ const ko: Translations = {
     placeHolder: "(http 또는 https)://{Address}:{Port}",
     checkbox: "opds 사용?",
   },
+  calibreRootScreen: {
+    title: "라이브러리 선택",
+  },
   libraryScreen: {
     dataSearching: "검색 중",
     searchPlaceholder: "책 검색...",

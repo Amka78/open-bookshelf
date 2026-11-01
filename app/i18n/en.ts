@@ -78,6 +78,9 @@ const en = {
     placeHolder: "(http or https)://{Address}:{Port}",
     checkbox: "use opds?",
   },
+  calibreRootScreen: {
+    title: "Select Library",
+  },
   libraryScreen: {
     dataSearching: "Searching",
     searchPlaceholder: "Search books...",

@@ -37,6 +37,9 @@ describe("useCalibreRoot", () => {
 
   const mockSetLibrary = vi.fn()
   const mockNavigate = vi.fn()
+  const mockPopTo = vi.fn()
+  let mockRoutes: Array<{ name: string }> = [{ name: "CalibreRoot" }]
+  const mockGetState = vi.fn(() => ({ routes: mockRoutes }))
   const mockLibraryMap = new Map([
     [
       "library1",
@@ -58,6 +61,7 @@ describe("useCalibreRoot", () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    mockRoutes = [{ name: "CalibreRoot" }]
     ;(useStores as vi.Mock).mockReturnValue({
       calibreRootStore: {
         libraryMap: mockLibraryMap,
@@ -65,7 +69,9 @@ describe("useCalibreRoot", () => {
       },
     })
     ;(useNavigation as vi.Mock).mockReturnValue({
+      getState: mockGetState,
       navigate: mockNavigate,
+      popTo: mockPopTo,
     })
   })
 
@@ -92,6 +98,19 @@ describe("useCalibreRoot", () => {
 
     expect(mockSetLibrary).toHaveBeenCalledWith(libraryId)
     expect(mockNavigate).toHaveBeenCalledWith("Library")
+  })
+
+  test("onLibraryPress pops back to an existing Library screen", () => {
+    mockRoutes = [{ name: "Library" }, { name: "CalibreRoot" }]
+    const { result } = renderUseCalibreRoot()
+
+    act(() => {
+      result.current.onLibraryPress("library1")
+    })
+
+    expect(mockSetLibrary).toHaveBeenCalledWith("library1")
+    expect(mockPopTo).toHaveBeenCalledWith("Library")
+    expect(mockNavigate).not.toHaveBeenCalled()
   })
 
   test("onLibraryPress calls setLibrary before navigating", async () => {

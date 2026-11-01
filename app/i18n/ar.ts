@@ -67,6 +67,9 @@ const ar: Translations = {
     placeHolder: "(http أو https)://{Address}:{Port}",
     checkbox: "استخدام opds؟",
   },
+  calibreRootScreen: {
+    title: "اختيار المكتبة",
+  },
   libraryScreen: {
     dataSearching: "جارٍ البحث",
     searchPlaceholder: "البحث عن كتب...",

@@ -80,6 +80,9 @@ const ja: Translations = {
     placeHolder: "(http または https)://{Address}:{Port}",
     checkbox: "opds を使用する?",
   },
+  calibreRootScreen: {
+    title: "ライブラリを選択",
+  },
   libraryScreen: {
     dataSearching: "検索中",
     searchPlaceholder: "書籍を検索...",

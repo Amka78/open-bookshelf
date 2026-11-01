@@ -38,6 +38,11 @@ export function LibraryActions({
         }}
         onLogoutPress={() => {
           authenticationStore.logout()
+          if (isLarge) {
+            modal.openModal("ConnectModal", {})
+            return
+          }
+
           navigation.navigate("Connect")
         }}
       />

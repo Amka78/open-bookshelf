@@ -11,6 +11,8 @@ import type { LoginType } from "./LoginModal"
 export type { TocItem }
 
 export type ModalStackParams = {
+  ConnectModal: Record<string, never>
+  CalibreRootModal: Record<string, never>
   ConfirmModal: {
     title?: string
     titleTx?: MessageKey

@@ -27,7 +27,13 @@ const navigationMock = {
   setOptions: vi.fn(),
   addListener: vi.fn(),
 }
-const gluestackComponent = ({ children }: { children?: ReactNode }) => <div>{children}</div>
+const gluestackComponent = ({
+  children,
+  testID,
+}: {
+  children?: ReactNode
+  testID?: string
+}) => <div data-testid={testID}>{children}</div>
 const gluestackMock = {
   Box: gluestackComponent,
   Button: gluestackComponent,
@@ -104,6 +110,9 @@ const componentsMock = {
       <div data-num-columns={String(numColumns)} data-testid="library-flat-list-empty" />
     ),
   HStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  Heading: ({ children, testID }: { children?: ReactNode; testID?: string }) => (
+    <h2 data-testid={testID}>{children}</h2>
+  ),
   IconButton: ({ children }: { children?: ReactNode }) => <button type="button">{children}</button>,
   Image: () => <img alt="" />,
   LeftSideMenu: () => null,
@@ -128,7 +137,9 @@ const componentsMock = {
   ),
   Text: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
   VirtualLibraryButton: () => null,
-  VStack: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  VStack: ({ children, testID }: { children?: ReactNode; testID?: string }) => (
+    <div data-testid={testID}>{children}</div>
+  ),
 }
 
 vi.doMock("@/models", () => ({
@@ -377,6 +388,7 @@ function renderLibraryScreen({
       getReadingStatus: () => null,
       getTagBrowser: vi.fn(),
       isFetchingMore: false,
+      libraryMap: new Map(),
       readingHistories: [],
       searchLibrary: vi.fn().mockResolvedValue(undefined),
       searchMoreLibrary,
@@ -384,6 +396,7 @@ function renderLibraryScreen({
     },
     settingStore: {
       addRecentSearch: vi.fn(),
+      api: { baseUrl: "http://localhost:8080" },
       booksPerPage: 20,
       getLibraryTableColumnWidths: () => ({}),
       getLibraryTableColumnVisibility: () => ({}),
@@ -652,6 +665,14 @@ describe("LibraryScreen", () => {
     })
 
     expect(event.preventDefault).not.toHaveBeenCalled()
+  })
+
+  test("renders the disconnected state when no library is selected", () => {
+    renderLibraryScreen({
+      withSelectedLibrary: false,
+    })
+
+    expect(screen.getByTestId("library-disconnected")).toBeTruthy()
   })
 
   test("non-back navigation (e.g. logout via navigate) is not blocked by an active search", async () => {

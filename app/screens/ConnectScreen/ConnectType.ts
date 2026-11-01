@@ -1,4 +1,1 @@
-export type ConnectType = {
-  url: string
-  isOPDS: boolean
-}
+export type { ConnectType } from "@/type/types"

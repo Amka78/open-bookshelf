@@ -2,6 +2,7 @@ import type { ModalStackParams } from "@/components/Modals/Types"
 import type { MessageKey } from "@/i18n"
 import { navigate, navigationRef } from "@/navigators/navigationUtilities"
 import type { GeneralApiProblem } from "@/services/api/apiProblem"
+import { isLargeScreen } from "@/utils/responsive"
 import { modalfy } from "react-native-modalfy"
 
 const runOnNextFrame = (callback: () => void) => {
@@ -96,6 +97,11 @@ export function handleCommonApiError(apiProblem: GeneralApiProblem) {
         okTx: "common.yes",
         cancelTx: "common.no",
         onOKPress: () => {
+          if (isLargeScreen()) {
+            openModalDeferred(modal, "ConnectModal", {})
+            return
+          }
+
           navigate("Connect")
         },
       })

@@ -41,6 +41,9 @@ function createDefaultRootStore() {
       userId: "user",
       password: "pass",
     },
+    settingStore: {
+      api: { baseUrl: "http://localhost:8080" },
+    },
     calibreRootStore: {
       defaultLibraryId: "library-1",
       numPerPage: 20,

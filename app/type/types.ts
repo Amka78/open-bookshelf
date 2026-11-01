@@ -3,3 +3,8 @@ export type BookReadingStyleType =
   | "facingPage"
   | "facingPageWithTitle"
   | "verticalScroll"
+
+export type ConnectType = {
+  url: string
+  isOPDS: boolean
+}

@@ -306,6 +306,8 @@ const componentsMockFactory = () => ({
   BookPage: "div",
   BookViewer: "div",
   BulkEditContent: "div",
+  CalibreRootContent: "div",
+  ConnectContent: "div",
   Button: "button",
   BookEditFieldNavList: "div",
   FlatList: ({

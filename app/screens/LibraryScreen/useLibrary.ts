@@ -250,8 +250,10 @@ export function useLibrary() {
     }
   }, [clearSelection, searchConditionsKey])
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: MST observable (settingStore.booksPerPage) is tracked via observer(); adding it to deps would cause unnecessary re-fetches
+  // biome-ignore lint/correctness/useExhaustiveDependencies: MST observable (selectedLibrary.id) is read to re-run after a library is selected; booksPerPage is tracked via observer()
   useEffect(() => {
+    if (!selectedLibrary) return
+
     const initialize = async () => {
       setSearching(true)
       try {
@@ -264,7 +266,7 @@ export function useLibrary() {
     }
 
     void initialize()
-  }, [calibreRootStore])
+  }, [calibreRootStore, selectedLibrary?.id])
 
   // 編集保存（book.update 成功）で tagBrowserDirty が立ったら、最後の編集から
   // TAG_BROWSER_REFRESH_DEBOUNCE_MS 後に一度だけタグブラウザを全件再取得する。

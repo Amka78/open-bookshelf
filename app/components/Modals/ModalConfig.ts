@@ -6,8 +6,10 @@ import { BookDetailModal } from "./BookDetailModal"
 import { BookEditModal } from "./BookEditModal"
 import { BookOcrReviewModal } from "./BookOcrReviewModal"
 import { BulkEditModal } from "./BulkEditModal"
+import { CalibreRootModal } from "./CalibreRootModal"
 import { ColumnVisibilityModal } from "./ColumnVisibilityModal"
 import { ConfirmModal } from "./ConfirmModal"
+import { ConnectModal } from "./ConnectModal"
 import { ErrorModal } from "./ErrorModal"
 import { FormatSelectModal } from "./FormatSelectModal"
 import { JobQueueModal } from "./JobQueueModal"
@@ -27,8 +29,10 @@ export const modalConfig: ModalStackConfig = {
   BookEditModal,
   BookOcrReviewModal,
   BulkEditModal,
+  CalibreRootModal,
   ColumnVisibilityModal,
   ConfirmModal,
+  ConnectModal,
   ErrorModal,
   FormatSelectModal,
   JobQueueModal,

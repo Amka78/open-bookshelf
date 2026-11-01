@@ -4,6 +4,7 @@ import { localizeTestRegistrar } from "../../../test/test-name-i18n"
 const storageClearMock = vi.fn()
 const resetRootMock = vi.fn()
 const isNavigationReadyMock = vi.fn()
+const openModalMock = vi.fn()
 
 vi.doMock("@/utils/storage", () => ({
   clear: () => storageClearMock(),
@@ -14,6 +15,10 @@ vi.doMock("@/navigators", () => ({
   resetRoot: (params: unknown) => resetRootMock(params),
 }))
 
+vi.doMock("react-native-modalfy", () => ({
+  modalfy: () => ({ openModal: openModalMock }),
+}))
+
 let resetAppToConnect: typeof import("./resetApp").resetAppToConnect
 let navigateToConnect: typeof import("./resetApp").navigateToConnect
 
@@ -22,6 +27,7 @@ beforeEach(async () => {
   storageClearMock.mockReset()
   resetRootMock.mockReset()
   isNavigationReadyMock.mockReset()
+  openModalMock.mockReset()
   ;({ resetAppToConnect, navigateToConnect } = await import("./resetApp"))
 })
 
@@ -32,7 +38,7 @@ describe("resetAppToConnect", () => {
   test("clears all cache before resetting navigation", async () => {
     isNavigationReadyMock.mockReturnValue(true)
 
-    await resetAppToConnect({ retryIntervalMs: 1, maxAttempts: 2 })
+    await resetAppToConnect({ retryIntervalMs: 1, maxAttempts: 2, largeScreen: false })
 
     expect(storageClearMock).toHaveBeenCalledTimes(1)
     expect(resetRootMock).toHaveBeenCalledWith({
@@ -47,7 +53,7 @@ describe("resetAppToConnect", () => {
       .mockReturnValueOnce(false)
       .mockReturnValue(true)
 
-    await resetAppToConnect({ retryIntervalMs: 1, maxAttempts: 5 })
+    await resetAppToConnect({ retryIntervalMs: 1, maxAttempts: 5, largeScreen: false })
 
     expect(resetRootMock).toHaveBeenCalledTimes(1)
   })
@@ -55,7 +61,7 @@ describe("resetAppToConnect", () => {
   test("does not reset root when navigation never becomes ready", async () => {
     isNavigationReadyMock.mockReturnValue(false)
 
-    await resetAppToConnect({ retryIntervalMs: 1, maxAttempts: 3 })
+    await resetAppToConnect({ retryIntervalMs: 1, maxAttempts: 3, largeScreen: false })
 
     expect(resetRootMock).not.toHaveBeenCalled()
   })
@@ -65,7 +71,7 @@ describe("navigateToConnect", () => {
   test("resets navigation without clearing stored data", async () => {
     isNavigationReadyMock.mockReturnValue(true)
 
-    await navigateToConnect({ retryIntervalMs: 1, maxAttempts: 2 })
+    await navigateToConnect({ retryIntervalMs: 1, maxAttempts: 2, largeScreen: false })
 
     expect(storageClearMock).not.toHaveBeenCalled()
     expect(resetRootMock).toHaveBeenCalledWith({
@@ -74,13 +80,25 @@ describe("navigateToConnect", () => {
     })
   })
 
+  test("resets to Library on a large screen", async () => {
+    isNavigationReadyMock.mockReturnValue(true)
+
+    await navigateToConnect({ retryIntervalMs: 1, maxAttempts: 2, largeScreen: true })
+
+    expect(resetRootMock).toHaveBeenCalledWith({
+      index: 0,
+      routes: [{ key: "library-reset", name: "Library" }],
+    })
+    expect(openModalMock).toHaveBeenCalledWith("ConnectModal", {})
+  })
+
   test("retries until navigation becomes ready", async () => {
     isNavigationReadyMock
       .mockReturnValueOnce(false)
       .mockReturnValueOnce(false)
       .mockReturnValue(true)
 
-    await navigateToConnect({ retryIntervalMs: 1, maxAttempts: 5 })
+    await navigateToConnect({ retryIntervalMs: 1, maxAttempts: 5, largeScreen: false })
 
     expect(resetRootMock).toHaveBeenCalledTimes(1)
   })

@@ -1,4 +1,5 @@
 import { Button, FormInputField, Heading, Input } from "@/components"
+import { useConvergence } from "@/hooks/useConvergence"
 import React from "react"
 import type { ModalComponentProp } from "react-native-modalfy"
 
@@ -20,10 +21,13 @@ export type LoginModalProps = ModalComponentProp<ModalStackParams, void, "LoginM
 export const LoginModal = observer((props: LoginModalProps) => {
   const { authenticationStore, calibreRootStore } = useStores()
   const navigation = useNavigation<ApppNavigationProp>()
+  const { isLarge } = useConvergence()
   const onLoginPress = async (data: LoginType) => {
     authenticationStore.login(data.userId, data.password)
     await calibreRootStore.initialize()
-    navigation.navigate("CalibreRoot")
+    if (!isLarge) {
+      navigation.navigate("CalibreRoot")
+    }
   }
 
   return (

@@ -41,6 +41,7 @@ import {
   useWindowDimensions,
 } from "react-native"
 import { LibraryBookList } from "./LibraryBookList"
+import { LibraryDisconnectedState } from "./LibraryDisconnectedState"
 import {
   DEFAULT_LIBRARY_TABLE_COLUMN_WIDTHS,
   type LibraryTableColumnKey,
@@ -59,6 +60,7 @@ import {
   parseQueryParts,
 } from "./librarySearchState"
 import { useLibrary } from "./useLibrary"
+import { useDesktopSetupModals } from "./useDesktopSetupModals"
 import { useLibraryScrollPosition } from "./useLibraryScrollPosition"
 
 type LibrarySearchHeaderProps = {
@@ -181,6 +183,7 @@ export const LibraryScreen: FC = observer(() => {
   const downloadBookHook = useDownloadBook()
   const bulkDownloadHook = useBulkDownloadBooks()
   const libraryHook = useLibrary()
+  useDesktopSetupModals()
   const listRef = useRef<React.ElementRef<typeof FlatList>>(null)
   const [authStateVersion, setAuthStateVersion] = useState(() => api.getAuthStateVersion())
 
@@ -314,8 +317,6 @@ export const LibraryScreen: FC = observer(() => {
     return map
   }, [calibreRootStore.readingHistories, selectedLibrary?.id])
 
-  if (!selectedLibrary) return null
-
   const thumbnailSourceById = buildThumbnailSourceCache({
     authStateVersion,
     bookList,
@@ -325,7 +326,7 @@ export const LibraryScreen: FC = observer(() => {
       const revision = calibreRootStore.getBookThumbnailRevision(libraryId, bookId)
       return `${thumbnailUrl}&rev=${revision}`
     },
-    libraryId: selectedLibrary.id,
+    libraryId: selectedLibrary?.id ?? "",
     previousCache: thumbnailSourceCacheRef.current,
   })
 
@@ -374,6 +375,8 @@ export const LibraryScreen: FC = observer(() => {
               if (handleBackPress()) return
               if (navigation.canGoBack()) {
                 navigation.goBack()
+              } else if (convergenceHook.isLarge) {
+                modal.openModal("CalibreRootModal", {})
               } else {
                 navigation.navigate("CalibreRoot")
               }
@@ -849,7 +852,9 @@ export const LibraryScreen: FC = observer(() => {
             ) : undefined
           }
         />
-      ) : null}
+      ) : (
+        <LibraryDisconnectedState />
+      )}
       {convergenceHook.isLarge ? null : (
         <StaggerContainer
           menusHeight={270}
@@ -933,7 +938,7 @@ export const LibraryScreen: FC = observer(() => {
           libraryHook.setHeaderSearchText(name)
           libraryHook.onSearch(name)
         }}
-        tagBrowser={selectedLibrary?.tagBrowser}
+        tagBrowser={selectedLibrary?.tagBrowser ?? []}
         itemOperators={itemOperators}
         itemCalibreOperators={itemCalibreOperators}
         selectedNames={getLeftSideMenuSelectedNames(libraryHook.headerSearchText)}

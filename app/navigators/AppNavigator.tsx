@@ -8,6 +8,7 @@ import { Platform, useColorScheme } from "react-native"
 import type { AppStackParamList, AppStackScreenProps } from "./types"
 
 import { modalConfig } from "@/components/Modals/ModalConfig"
+import { useConvergence } from "@/hooks/useConvergence"
 import { cacheBookImages } from "@/utils/bookImageCache"
 import { isCalibreHtmlViewerFormat } from "@/utils/calibreHtmlViewer"
 import { ModalProvider, createModalStack } from "react-native-modalfy"
@@ -36,6 +37,7 @@ import { PDFViewerScreen } from "../screens/PDFViewerScreen/PDFViewerScreen"
 import { ViewerErrorBoundary } from "../screens/ViewerScreen/ViewerErrorBoundary"
 import { api } from "../services/api"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
+import { ResponsiveModalCoordinator } from "./ResponsiveModalCoordinator"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -101,6 +103,7 @@ const PDFViewerRoute = (props: AppStackScreenProps<"PDFViewer">) => (
 
 const AppStack = observer(function AppStack() {
   const { authenticationStore, settingStore } = useStores()
+  const { isLarge } = useConvergence()
   const colorScheme = useColorScheme()
   const palette = getPalette(colorScheme === "dark" ? "dark" : "light")
   // biome-ignore lint/correctness/useExhaustiveDependencies: MST observable properties (userId, password) are accessible via observer(); the effect tracks isAuthenticated and token as the change triggers
@@ -128,7 +131,7 @@ const AppStack = observer(function AppStack() {
         headerTitleStyle: { color: palette.textPrimary },
         headerShadowVisible: false,
       }}
-      initialRouteName={"Connect"}
+      initialRouteName={isLarge ? "Library" : "Connect"}
     >
       <Stack.Screen name="Connect" component={ConnectScreen} />
       <Stack.Screen name="OPDSRoot" component={OPDSRootScreen} />
@@ -258,6 +261,7 @@ const clearViewerTabRoute = () => {
 
 export const AppNavigator = observer(function AppNavigator(props: NavigationProps) {
   const { authenticationStore, calibreRootStore, settingStore } = useStores()
+  const { isLarge } = useConvergence()
   const [pendingViewerInfo, setPendingViewerInfo] = useState<ViewerTabInfo | null>(null)
   const handlingViewerInfoRef = useRef(false)
   const colorScheme = useColorScheme()
@@ -460,10 +464,18 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
         if (viewerInfo && navigationRef.isReady()) {
           setPendingViewerInfo(viewerInfo)
         }
+
+        if (isLarge && navigationRef.isReady()) {
+          const currentRoute = navigationRef.getCurrentRoute()?.name
+          if (currentRoute === "Connect" || currentRoute === "CalibreRoot") {
+            navigationRef.resetRoot({ index: 0, routes: [{ name: "Library" }] })
+          }
+        }
       }}
     >
       <ModalProvider stack={modalStack}>
         <AppStack />
+        <ResponsiveModalCoordinator />
       </ModalProvider>
     </NavigationContainer>
   )
