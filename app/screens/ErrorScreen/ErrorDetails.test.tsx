@@ -23,6 +23,17 @@ async function playPressResetButton({ canvasElement }: { canvasElement: HTMLElem
   await new Promise((resolve) => setTimeout(resolve, 50))
 }
 
+async function playConnectButtonIsVisible({ canvasElement }: { canvasElement: HTMLElement }) {
+  const button = await findByTestId(canvasElement, "error-connect-button")
+  if (!button) throw new Error("Connect button should be visible.")
+}
+
+async function playPressConnectButton({ canvasElement }: { canvasElement: HTMLElement }) {
+  const button = await findByTestId(canvasElement, "error-connect-button")
+  fireEvent.click(button)
+  await new Promise((resolve) => setTimeout(resolve, 50))
+}
+
 const BoxMock = vi.fn(({ children }: { children?: ReactNode }) => <div>{children}</div>)
 
 vi.doMock("@/components", () => ({
@@ -107,5 +118,34 @@ describe("ErrorDetails", () => {
     await playPressResetButton({ canvasElement: container })
 
     expect(onReset).toHaveBeenCalledTimes(1)
+  })
+
+  test("connect button is hidden when onGoToConnect is not provided", async () => {
+    const { container } = render(
+      <ErrorDetails
+        error={new Error("Something went wrong")}
+        errorInfo={{ componentStack: "at TestComponent" } as ErrorInfo}
+        onReset={vi.fn()}
+      />,
+    )
+
+    expect(container.querySelector('[data-testid="error-connect-button"]')).toBeNull()
+  })
+
+  test("connect button is visible and calls onGoToConnect", async () => {
+    const onGoToConnect = vi.fn()
+    const { container } = render(
+      <ErrorDetails
+        error={new Error("Something went wrong")}
+        errorInfo={{ componentStack: "at TestComponent" } as ErrorInfo}
+        onReset={vi.fn()}
+        onGoToConnect={onGoToConnect}
+      />,
+    )
+
+    await playConnectButtonIsVisible({ canvasElement: container })
+    await playPressConnectButton({ canvasElement: container })
+
+    expect(onGoToConnect).toHaveBeenCalledTimes(1)
   })
 })

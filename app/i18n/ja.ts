@@ -53,6 +53,10 @@ const ja: Translations = {
     friendlySubtitle:
       "この画面は本番環境でエラーが発生したときに表示されます。メッセージ（`app/i18n/ja.ts`）やレイアウト（`app/screens/ErrorScreen`）を必要に応じて調整してください。不要な場合は `app/app.tsx` の <ErrorBoundary> を確認してください。",
     reset: "アプリをリセット",
+    goToConnect: "接続画面に戻る",
+    viewerErrorPrompt: "予期しないエラーが発生しました。ライブラリに戻りますか？",
+    backToLibrary: "ライブラリに戻る",
+    showErrorDetails: "エラー詳細を表示",
     traceTitle: "%{name} スタックのエラー",
   },
   errors: {

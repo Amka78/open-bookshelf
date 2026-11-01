@@ -1,6 +1,6 @@
 import { Button, Heading, Text } from "@/components"
 import { ScrollView } from "@gluestack-ui/themed"
-import React from "react"
+import React, { useEffect, useRef } from "react"
 import type { ModalComponentProp } from "react-native-modalfy"
 
 import { Body } from "./Body"
@@ -19,8 +19,24 @@ export function ConfirmModal(props: ConfirmModalProps) {
   const message = props.modal.params!.message
   const okTx = props.modal.params!.okTx ?? "common.ok"
   const cancelTx = props.modal.params!.cancelTx ?? "common.cancel"
+  const onDismiss = props.modal.params!.onDismiss
+  const decisionMadeRef = useRef(false)
+
+  useEffect(() => {
+    if (!onDismiss) return undefined
+
+    const listener = props.modal.addListener("onClose", () => {
+      if (decisionMadeRef.current) return
+      onDismiss()
+    })
+
+    return () => {
+      listener.remove()
+    }
+  }, [props.modal, onDismiss])
 
   const onCancelPress = () => {
+    decisionMadeRef.current = true
     if (props.modal.params!.onCancelPress) {
       props.modal.params!.onCancelPress()
     }
@@ -47,6 +63,7 @@ export function ConfirmModal(props: ConfirmModalProps) {
       <Footer>
         <Button
           onPress={async () => {
+            decisionMadeRef.current = true
             if (props.modal.params!.onOKPress) {
               await props.modal.params!.onOKPress()
             }

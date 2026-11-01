@@ -20,6 +20,7 @@ export type ModalStackParams = {
     cancelTx?: MessageKey
     onOKPress?: () => void
     onCancelPress?: () => void
+    onDismiss?: () => void
   }
   ErrorModal: {
     title?: string

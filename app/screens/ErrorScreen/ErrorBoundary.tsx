@@ -1,7 +1,7 @@
 import React, { Component, type ErrorInfo, type ReactNode } from "react"
 
 import { ErrorDetails } from "./ErrorDetails"
-import { resetAppToConnect } from "./resetApp"
+import { navigateToConnect, resetAppToConnect } from "./resetApp"
 
 interface Props {
   children: ReactNode
@@ -44,6 +44,12 @@ export class ErrorBoundary extends Component<Props, State> {
     await resetAppToConnect()
   }
 
+  // Move to Connect without clearing stored data, then clear the error state
+  goToConnect = async () => {
+    await navigateToConnect()
+    this.setState({ error: null, errorInfo: null })
+  }
+
   // To avoid unnecessary re-renders
   shouldComponentUpdate(_nextProps: Readonly<Props>, nextState: Readonly<State>): boolean {
     return nextState.error !== this.state.error
@@ -63,6 +69,7 @@ export class ErrorBoundary extends Component<Props, State> {
     return this.isEnabled() && this.state.error ? (
       <ErrorDetails
         onReset={this.resetError}
+        onGoToConnect={this.goToConnect}
         error={this.state.error}
         errorInfo={this.state.errorInfo!}
       />

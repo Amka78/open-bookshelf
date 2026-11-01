@@ -1,16 +1,19 @@
 import { isNavigationReady, resetRoot } from "@/navigators"
 import * as storage from "@/utils/storage"
 
-export type ResetAppToConnectOptions = {
+export type NavigateToConnectOptions = {
   retryIntervalMs?: number
   maxAttempts?: number
 }
 
-export async function resetAppToConnect(options: ResetAppToConnectOptions = {}) {
+export type ResetAppToConnectOptions = NavigateToConnectOptions
+
+/**
+ * ナビゲーションのルートだけを Connect に戻す。保存済みデータは消さない。
+ */
+export async function navigateToConnect(options: NavigateToConnectOptions = {}) {
   const retryIntervalMs = options.retryIntervalMs ?? 50
   const maxAttempts = options.maxAttempts ?? 20
-
-  await storage.clear()
 
   return await new Promise<void>((resolve) => {
     let attempts = 0
@@ -33,4 +36,10 @@ export async function resetAppToConnect(options: ResetAppToConnectOptions = {}) 
 
     setTimeout(tryReset, 0)
   })
+}
+
+export async function resetAppToConnect(options: ResetAppToConnectOptions = {}) {
+  await storage.clear()
+
+  return navigateToConnect(options)
 }

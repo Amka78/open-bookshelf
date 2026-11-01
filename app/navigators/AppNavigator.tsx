@@ -5,7 +5,7 @@ import { observer } from "mobx-react-lite"
 import type React from "react"
 import { useEffect, useRef, useState } from "react"
 import { Platform, useColorScheme } from "react-native"
-import type { AppStackParamList } from "./types"
+import type { AppStackParamList, AppStackScreenProps } from "./types"
 
 import { modalConfig } from "@/components/Modals/ModalConfig"
 import { cacheBookImages } from "@/utils/bookImageCache"
@@ -32,6 +32,7 @@ import {
   ViewerScreen,
 } from "../screens"
 import { PDFViewerScreen } from "../screens/PDFViewerScreen/PDFViewerScreen"
+import { ViewerErrorBoundary } from "../screens/ViewerScreen/ViewerErrorBoundary"
 import { api } from "../services/api"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 
@@ -84,6 +85,19 @@ const exitRoutes = Config.exitRoutes
 
 // Documentation: https://reactnavigation.org/docs/stack-navigator/
 const Stack = createNativeStackNavigator<AppStackParamList>()
+
+const ViewerRoute = (props: AppStackScreenProps<"Viewer">) => (
+  <ViewerErrorBoundary onBackToLibrary={() => props.navigation.popTo("Library")}>
+    <ViewerScreen />
+  </ViewerErrorBoundary>
+)
+
+const PDFViewerRoute = (props: AppStackScreenProps<"PDFViewer">) => (
+  <ViewerErrorBoundary onBackToLibrary={() => props.navigation.popTo("Library")}>
+    <PDFViewerScreen />
+  </ViewerErrorBoundary>
+)
+
 const AppStack = observer(function AppStack() {
   const { authenticationStore, settingStore } = useStores()
   const colorScheme = useColorScheme()
@@ -123,12 +137,12 @@ const AppStack = observer(function AppStack() {
       <Stack.Screen name="About" component={AboutScreen} />
       <Stack.Screen
         name="Viewer"
-        component={ViewerScreen}
+        component={ViewerRoute}
         options={{ statusBarHidden: true, headerShown: false }}
       />
       <Stack.Screen
         name="PDFViewer"
-        component={PDFViewerScreen}
+        component={PDFViewerRoute}
         options={{ statusBarHidden: true, headerShown: false }}
       />
       <Stack.Screen name="BookDetail" component={BookDetailScreen} />

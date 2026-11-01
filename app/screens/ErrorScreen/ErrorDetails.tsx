@@ -6,6 +6,7 @@ export interface ErrorDetailsProps {
   error: Error
   errorInfo: ErrorInfo
   onReset(): void
+  onGoToConnect?: () => void
 }
 
 export function ErrorDetails(props: ErrorDetailsProps) {
@@ -30,6 +31,16 @@ export function ErrorDetails(props: ErrorDetailsProps) {
           width="$full"
           alignSelf="stretch"
         />
+        {props.onGoToConnect ? (
+          <Button
+            onPress={props.onGoToConnect}
+            tx="errorScreen.goToConnect"
+            testID="error-connect-button"
+            width="$full"
+            alignSelf="stretch"
+            marginTop="$2"
+          />
+        ) : null}
       </VStack>
     </RootContainer>
   )

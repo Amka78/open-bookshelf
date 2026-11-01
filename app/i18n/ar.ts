@@ -41,6 +41,10 @@ const ar: Translations = {
     friendlySubtitle:
       "هذه هي الشاشة التي سيشاهدها المستخدمون في عملية الانتاج عند حدوث خطأ. سترغب في تخصيص هذه الرسالة ( الموجودة في 'ts.en/i18n/app') وربما التخطيط ايضاً ('app/screens/ErrorScreen'). إذا كنت تريد إزالة هذا بالكامل، تحقق من 'app/app.tsp' من اجل عنصر <ErrorBoundary>.",
     reset: "اعادة تعيين التطبيق",
+    goToConnect: "العودة إلى شاشة الاتصال",
+    viewerErrorPrompt: "حدث خطأ غير متوقع. هل تريد العودة إلى المكتبة؟",
+    backToLibrary: "العودة إلى المكتبة",
+    showErrorDetails: "عرض تفاصيل الخطأ",
     traceTitle: "خطأ من مجموعة %{name}",
   },
   errors: {

@@ -41,6 +41,10 @@ const ko: Translations = {
     friendlySubtitle:
       "이 화면은 오류가 발생할 때 프로덕션에서 사용자에게 표시됩니다. 이 메시지를 커스터마이징 할 수 있고(해당 파일은 `app/i18n/ko.ts` 에 있습니다) 레이아웃도 마찬가지로 수정할 수 있습니다(`app/screens/error`). 만약 이 오류화면을 완전히 없에버리고 싶다면 `app/app.tsx` 파일에서 <ErrorBoundary> 컴포넌트를 확인하기 바랍니다.",
     reset: "초기화",
+    goToConnect: "연결 화면으로 돌아가기",
+    viewerErrorPrompt: "예기치 않은 오류가 발생했습니다. 라이브러리로 돌아가시겠습니까?",
+    backToLibrary: "라이브러리로 돌아가기",
+    showErrorDetails: "오류 세부 정보 표시",
     traceTitle: "%{name} 스택에서의 오류",
   },
   errors: {
