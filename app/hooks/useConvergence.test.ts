@@ -74,6 +74,17 @@ describe("useConvergent test", () => {
     const result = useConvergence()
 
     expect(result.isLarge).toBeTruthy()
+    expect(result.isDesktop).toBeTruthy()
     expect(result.orientation).toBe("horizontal")
+  })
+
+  test("If screen is smaller than desktop, isDesktop is false", () => {
+    mockUseBreakpointValue.mockReturnValue(false)
+    mockUseOrientation.mockReturnValue(mockScreenOrientation.Orientation.LANDSCAPE_LEFT)
+
+    const result = useConvergence()
+
+    expect(result.isLarge).toBeFalsy()
+    expect(result.isDesktop).toBeFalsy()
   })
 })

@@ -12,6 +12,12 @@ export function useConvergence() {
     xl: true,
   })
 
+  const isDesktop = useBreakpointValue({
+    base: false,
+    lg: false,
+    xl: true,
+  })
+
   const orientation: OrientationType =
     isLarge ||
     screenOrientation === ScreenOrientation.Orientation.LANDSCAPE_LEFT ||
@@ -22,5 +28,6 @@ export function useConvergence() {
   return {
     orientation,
     isLarge,
+    isDesktop,
   }
 }

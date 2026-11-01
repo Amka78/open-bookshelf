@@ -29,6 +29,7 @@ import type { Book } from "@/models/calibre"
 import type { ApppNavigationProp } from "@/navigators/types"
 import { api } from "@/services/api"
 import { deleteCachedBookImages } from "@/utils/bookImageCache"
+import { getNextLibraryViewMode, normalizeLibraryViewMode } from "@/utils/libraryViewMode"
 import { perfLog, perfNow } from "@/utils/perf"
 import { useIsFocused, useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
@@ -163,10 +164,16 @@ export const LibraryScreen: FC = observer(() => {
   const convergenceHook = useConvergence()
   const window = useWindowDimensions()
 
-  const viewMode = settingStore.getLibraryViewMode(convergenceHook.isLarge)
+  const canUseTableMode = convergenceHook.isDesktop
+  const viewMode = normalizeLibraryViewMode(
+    settingStore.getLibraryViewMode(convergenceHook.isLarge),
+    canUseTableMode,
+  )
   const handleToggleViewMode = () => {
-    const nextViewMode = viewMode === "grid" ? "list" : viewMode === "list" ? "table" : "grid"
-    settingStore.setLibraryViewMode(nextViewMode, convergenceHook.isLarge)
+    settingStore.setLibraryViewMode(
+      getNextLibraryViewMode(viewMode, canUseTableMode),
+      convergenceHook.isLarge,
+    )
   }
 
   const openViewerHook = useOpenViewer()
@@ -777,11 +784,11 @@ export const LibraryScreen: FC = observer(() => {
           onBulkEdit={onBulkEdit}
           onBulkDownload={onBulkDownload}
           onBulkDelete={onBulkDelete}
-          onBulkCopyAuthors={onBulkCopyAuthors}
-          onBulkCopyTags={onBulkCopyTags}
-          onBulkPasteAuthors={onBulkPasteAuthors}
-          onBulkPasteTags={onBulkPasteTags}
-          onBulkExtractSeries={onBulkExtractSeries}
+          onBulkCopyAuthors={viewMode === "table" ? onBulkCopyAuthors : undefined}
+          onBulkCopyTags={viewMode === "table" ? onBulkCopyTags : undefined}
+          onBulkPasteAuthors={viewMode === "table" ? onBulkPasteAuthors : undefined}
+          onBulkPasteTags={viewMode === "table" ? onBulkPasteTags : undefined}
+          onBulkExtractSeries={viewMode === "table" ? onBulkExtractSeries : undefined}
           onClearSelection={libraryHook.clearSelection}
           toggleVisibleSelectionDisabled={visibleBookIds.length === 0}
         />

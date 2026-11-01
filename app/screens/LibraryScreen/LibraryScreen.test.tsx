@@ -15,9 +15,11 @@ const test = localizeTestRegistrar(baseTest)
 
 const useStoresMock = vi.fn()
 const useConvergenceMock = vi.fn()
+const openModalMock = vi.fn()
 const bookListItemProps: Array<Record<string, unknown>> = []
 const bookImageItemProps: Array<Record<string, unknown>> = []
 const libraryTableItemProps: Array<Record<string, unknown>> = []
+const selectionActionBarProps: Array<Record<string, unknown>> = []
 const scrollViewProps: Array<Record<string, unknown>> = []
 const navigationMock = {
   goBack: vi.fn(),
@@ -113,7 +115,10 @@ const componentsMock = {
     scrollViewProps.push(props)
     return <div>{props.children as ReactNode}</div>
   },
-  SelectionActionBar: () => <div data-testid="selection-action-bar" />,
+  SelectionActionBar: (props: Record<string, unknown>) => {
+    selectionActionBarProps.push(props)
+    return <div data-testid="selection-action-bar" />
+  },
   SortMenu: () => null,
   StaggerContainer: ({ children, menus }: { children?: ReactNode; menus?: ReactNode }) => (
     <div>
@@ -234,7 +239,7 @@ vi.doMock("@/hooks/useDownloadBook", () => ({
 vi.doMock("@/hooks/useElectrobunModal", () => ({
   useElectrobunModal: () => ({
     closeModal: vi.fn(),
-    openModal: vi.fn(),
+    openModal: openModalMock,
   }),
 }))
 
@@ -346,15 +351,24 @@ function buildSelectedLibrary() {
 function renderLibraryScreen({
   viewMode = "list",
   searchQuery = "",
+  isDesktop = viewMode === "table",
+  isLarge = false,
+  withSelectedLibrary = true,
 }: {
   viewMode?: "grid" | "list" | "table"
   searchQuery?: string
+  isDesktop?: boolean
+  isLarge?: boolean
+  withSelectedLibrary?: boolean
 } = {}) {
-  const selectedLibrary = buildSelectedLibrary()
-  selectedLibrary.searchSetting.query = searchQuery
+  const selectedLibrary = withSelectedLibrary ? buildSelectedLibrary() : undefined
+  if (selectedLibrary) {
+    selectedLibrary.searchSetting.query = searchQuery
+  }
   const searchMoreLibrary = vi.fn()
   useConvergenceMock.mockReturnValue({
-    isLarge: false,
+    isDesktop,
+    isLarge,
     orientation: "vertical",
   })
   useStoresMock.mockReturnValue({
@@ -380,7 +394,11 @@ function renderLibraryScreen({
     },
   })
 
-  return { searchMoreLibrary, selectedLibrary, ...render(<LibraryScreen />) }
+  return {
+    searchMoreLibrary,
+    selectedLibrary: selectedLibrary as ReturnType<typeof buildSelectedLibrary>,
+    ...render(<LibraryScreen />),
+  }
 }
 
 function getBeforeRemoveHandler() {
@@ -398,6 +416,7 @@ beforeEach(() => {
   bookListItemProps.length = 0
   libraryTableItemProps.length = 0
   scrollViewProps.length = 0
+  selectionActionBarProps.length = 0
   vi.clearAllMocks()
 })
 
@@ -484,6 +503,45 @@ describe("LibraryScreen", () => {
     expect(screen.getByTestId("selection-action-bar")).toBeTruthy()
   })
 
+  test("hides table-only bulk actions in list mode", () => {
+    renderLibraryScreen({
+      viewMode: "list",
+    })
+
+    const firstItem = bookListItemProps[0]
+    act(() => {
+      ;(firstItem.onLongPress as () => void)()
+    })
+
+    const props = selectionActionBarProps.at(-1)
+    expect(props).toBeTruthy()
+    expect(props?.onBulkCopyAuthors).toBeUndefined()
+    expect(props?.onBulkCopyTags).toBeUndefined()
+    expect(props?.onBulkPasteAuthors).toBeUndefined()
+    expect(props?.onBulkPasteTags).toBeUndefined()
+    expect(props?.onBulkExtractSeries).toBeUndefined()
+    expect(props?.onBulkDelete).toBeInstanceOf(Function)
+  })
+
+  test("shows table-only bulk actions in table mode", () => {
+    renderLibraryScreen({
+      viewMode: "table",
+    })
+
+    const firstItem = libraryTableItemProps[0]
+    act(() => {
+      ;(firstItem.onLongPress as () => void)()
+    })
+
+    const props = selectionActionBarProps.at(-1)
+    expect(props).toBeTruthy()
+    expect(props?.onBulkCopyAuthors).toBeInstanceOf(Function)
+    expect(props?.onBulkCopyTags).toBeInstanceOf(Function)
+    expect(props?.onBulkPasteAuthors).toBeInstanceOf(Function)
+    expect(props?.onBulkPasteTags).toBeInstanceOf(Function)
+    expect(props?.onBulkExtractSeries).toBeInstanceOf(Function)
+  })
+
   test("grid mode still renders a book image item on narrow screens", () => {
     renderLibraryScreen({
       viewMode: "grid",
@@ -502,6 +560,16 @@ describe("LibraryScreen", () => {
     expect(screen.getByTestId("library-table-header")).toBeTruthy()
     expect(screen.getAllByTestId("library-table-item").length).toBeGreaterThan(0)
     expect(libraryTableItemProps.length).toBeGreaterThan(0)
+  })
+
+  test("table mode falls back to list when the screen is not larger than a tablet", () => {
+    renderLibraryScreen({
+      viewMode: "table",
+      isDesktop: false,
+    })
+
+    expect(screen.queryByTestId("library-table-header")).toBeNull()
+    expect(screen.getByTestId("library-flat-list")).toBeTruthy()
   })
 
   test("table mode loads more books when scrolled to the bottom", () => {
