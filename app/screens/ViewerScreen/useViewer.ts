@@ -9,6 +9,7 @@ import type { BookReadingStyleType } from "@/type/types"
 import { isCalibreHtmlViewerFormat, isCalibreSerializedHtmlPath } from "@/utils/calibreHtmlViewer"
 import { generateCfiForPage, generateCfiForSpineLocation } from "@/utils/cfi"
 import { logger } from "@/utils/logger"
+import { hasNamedTocEntries } from "@/utils/toc"
 import {
   buildSpinePageOffsets,
   estimateSpinePageCounts,
@@ -753,7 +754,8 @@ export function useViewer() {
     setShowMenu((currentValue) => !currentValue)
   }
 
-  const toc: TocItem | null = (selectedBook?.manifestToc as TocItem | null | undefined) ?? null
+  const manifestToc = (selectedBook?.manifestToc as TocItem | null | undefined) ?? null
+  const toc: TocItem | null = hasNamedTocEntries(manifestToc) ? manifestToc : null
 
   const goToTocEntry = (dest: string): number => {
     if (!selectedBook) return 0
