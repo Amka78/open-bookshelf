@@ -59,7 +59,7 @@ export function TocModal(props: TocModalProps) {
   const hasChapters = toc.children.length > 0
 
   return (
-    <Root>
+    <Root onBackdropPress={() => props.modal.closeModal()}>
       <Header>
         <Heading tx="toc.title" isTruncated={true} />
         <CloseButton onPress={() => props.modal.closeModal()} />

@@ -6,6 +6,7 @@ import { ConfirmModal } from "./ConfirmModal"
 import { ErrorModal } from "./ErrorModal"
 import { FormatSelectModal } from "./FormatSelectModal"
 import { LoginModalTemplate as LoginModal } from "./LoginModal"
+import { TocModal } from "./TocModal"
 
 export const modalConfig: ModalStackConfig = {
   BookConvertModal,
@@ -15,4 +16,5 @@ export const modalConfig: ModalStackConfig = {
   ErrorModal,
   FormatSelectModal,
   LoginModal,
+  TocModal,
 }

@@ -24,6 +24,32 @@ async function playBookEditModalFormatClickRunsUpload({
   trigger.click()
 }
 
+async function waitForTestIdToDisappear(canvasElement: HTMLElement, testId: string) {
+  for (let retry = 0; retry < 100; retry += 1) {
+    if (!canvasElement.querySelector(`[data-testid="${testId}"]`)) {
+      return
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 20))
+  }
+
+  throw new Error(`Element with data-testid='${testId}' was still visible.`)
+}
+
+async function playTocModalClosesWhenBackdropIsPressed({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) {
+  const trigger = await findByTestId(canvasElement, "toc-modal-launch")
+  trigger.click()
+
+  const backdrop = await findByTestId(canvasElement, "modal-backdrop")
+  backdrop.click()
+
+  await waitForTestIdToDisappear(canvasElement, "modal-backdrop")
+}
+
 export default {
   title: "Modals Test",
   component: ModalTestContainer,
@@ -35,6 +61,7 @@ export default {
     onDeleteBook: { action: null },
     onDownloadBook: { action: null },
     onOpenBook: { action: null },
+    onNavigateToc: { action: null },
   },
   parameters: {
     notes: "Press the button to confirm the corresponding modal.",
@@ -56,4 +83,8 @@ export const FormatUpload: StoryProps = {
   play: async ({ canvasElement }) => {
     await playBookEditModalFormatClickRunsUpload({ canvasElement }).catch(() => {})
   },
+}
+
+export const TocModalBackdrop: StoryProps = {
+  play: playTocModalClosesWhenBackdropIsPressed,
 }

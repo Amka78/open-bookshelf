@@ -16,6 +16,7 @@ export type ModalTestContainerProp = {
   onDeleteBook: () => void | Promise<void>
   onDownloadBook: () => void | Promise<void>
   onOpenBook: () => void | Promise<void>
+  onNavigateToc?: (dest: string) => void
 }
 export function ModalTestContainer(props: ModalTestContainerProp) {
   const modal = useModal<ModalStackParams>()
@@ -137,6 +138,25 @@ export function ModalTestContainer(props: ModalTestContainerProp) {
         }}
       >
         {"BookEditModal"}
+      </ModalLaunchButton>
+      <ModalLaunchButton
+        testID="toc-modal-launch"
+        onPress={() => {
+          modal.openModal("TocModal", {
+            toc: {
+              title: "Table of Contents",
+              children: [
+                { title: "Chapter 1", dest: "chapter-1.xhtml", children: [] },
+                { title: "Chapter 2", dest: "chapter-2.xhtml", children: [] },
+              ],
+            },
+            onNavigate: (dest: string) => {
+              props.onNavigateToc?.(dest)
+            },
+          })
+        }}
+      >
+        {"TocModal"}
       </ModalLaunchButton>
     </ScrollView>
   )
