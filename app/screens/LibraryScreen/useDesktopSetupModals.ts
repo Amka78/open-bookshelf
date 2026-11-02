@@ -22,35 +22,41 @@ export function useDesktopSetupModals() {
   })
 
   useEffect(() => {
-    if (step === "connect") {
-      if (modal.currentModal !== "ConnectModal") {
-        modal.openModal("ConnectModal", {})
-      }
-      return
-    }
-
-    if (step === "data-source") {
-      if (modal.currentModal !== "CalibreRootModal") {
-        modal.openModal("CalibreRootModal", {})
-      }
-      return
-    }
-
-    if (step !== "initialize") return
-    // 接続モーダルからの initialize と二重にならないようにする
-    if (modal.currentModal === "ConnectModal") return
-    if (initializingRef.current) return
-
-    initializingRef.current = true
-    void calibreRootStore
-      .initialize()
-      .then((ok) => {
-        if (!ok) {
+    // ModalProvider は自身の useEffect で ModalState を初期化する。子の effect は
+    // 親より先に走るため、直接 openModal すると "not a valid modal name" で落ちる。
+    const timer = setTimeout(() => {
+      if (step === "connect") {
+        if (modal.currentModal !== "ConnectModal") {
           modal.openModal("ConnectModal", {})
         }
-      })
-      .finally(() => {
-        initializingRef.current = false
-      })
+        return
+      }
+
+      if (step === "data-source") {
+        if (modal.currentModal !== "CalibreRootModal") {
+          modal.openModal("CalibreRootModal", {})
+        }
+        return
+      }
+
+      if (step !== "initialize") return
+      // 接続モーダルからの initialize と二重にならないようにする
+      if (modal.currentModal === "ConnectModal") return
+      if (initializingRef.current) return
+
+      initializingRef.current = true
+      void calibreRootStore
+        .initialize()
+        .then((ok) => {
+          if (!ok) {
+            modal.openModal("ConnectModal", {})
+          }
+        })
+        .finally(() => {
+          initializingRef.current = false
+        })
+    }, 0)
+
+    return () => clearTimeout(timer)
   }, [calibreRootStore, modal, step])
 }

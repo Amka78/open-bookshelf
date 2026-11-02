@@ -50,45 +50,52 @@ beforeEach(async () => {
   ;({ useDesktopSetupModals } = await import("./useDesktopSetupModals"))
 })
 
+const flushEffect = () => new Promise((resolve) => setTimeout(resolve, 0))
+
 describe("useDesktopSetupModals", () => {
-  test("opens the connect modal when no base URL is configured", () => {
+  test("opens the connect modal when no base URL is configured", async () => {
     renderHook(() => useDesktopSetupModals())
+    await flushEffect()
 
     expect(openModalMock).toHaveBeenCalledWith("ConnectModal", {})
   })
 
-  test("initializes the Calibre connection when libraries are not loaded yet", () => {
+  test("initializes the Calibre connection when libraries are not loaded yet", async () => {
     state.baseUrl = "http://localhost:8080"
 
     renderHook(() => useDesktopSetupModals())
+    await flushEffect()
 
     expect(initializeMock).toHaveBeenCalledTimes(1)
     expect(openModalMock).not.toHaveBeenCalled()
   })
 
-  test("opens the library selection modal when libraries are loaded", () => {
+  test("opens the library selection modal when libraries are loaded", async () => {
     state.baseUrl = "http://localhost:8080"
     state.libraryCount = 2
 
     renderHook(() => useDesktopSetupModals())
+    await flushEffect()
 
     expect(openModalMock).toHaveBeenCalledWith("CalibreRootModal", {})
   })
 
-  test("does nothing when a library is already selected", () => {
+  test("does nothing when a library is already selected", async () => {
     state.baseUrl = "http://localhost:8080"
     state.libraryCount = 2
     state.selectedLibrary = { id: "library-1" }
 
     renderHook(() => useDesktopSetupModals())
+    await flushEffect()
 
     expect(openModalMock).not.toHaveBeenCalled()
   })
 
-  test("does nothing on mobile", () => {
+  test("does nothing on mobile", async () => {
     state.isLarge = false
 
     renderHook(() => useDesktopSetupModals())
+    await flushEffect()
 
     expect(openModalMock).not.toHaveBeenCalled()
     expect(initializeMock).not.toHaveBeenCalled()
