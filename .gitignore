@@ -111,3 +111,7 @@ build/
 
 
 .codegraph/
+
+# Electrobun / Hutch generated devkit
+.hutch/
+.cottontail-tmp/

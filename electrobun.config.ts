@@ -4,11 +4,12 @@ export default {
   app: {
     name: "open-book-shelf",
     identifier: "com.electrobun.open-book-shelf",
-    version: "0.0.1",
+    version: "0.1.4",
   },
   build: {
+    mainProcess: "bun",
     bun: {
-      entrypoint: "src-electrobun/main.ts",
+      entrypoint: "src-electrobun/index.ts",
     },
     views: {
       preload: {

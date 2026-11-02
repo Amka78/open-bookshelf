@@ -88,7 +88,7 @@ Translation keys are typed (`MessageKey`). Locale files are in `app/i18n/` (en, 
 - **Modal UX**: Do not use React Native `Alert`. Always use `react-native-modalfy` for user-facing alerts, confirmations, and error dialogs.
 - **Reactotron**: MST is wired to Reactotron in development for time-travel debugging. Config is in `app/services/reactotron/`.
 - **Storybook**: Stories live alongside components. Run native Storybook by setting `EXPO_PUBLIC_STORYBOOK=true` or via the `storybook:native` script.
-- **Electrobun desktop**: `src-electrobun/` contains the Bun/Zig shell. `src-electrobun/main.ts` is the main process entry, `src-electrobun/preload.ts` injects bridge APIs into the webview. Desktop-specific logic should be gated behind `isElectrobun()` from `@/utils/electrobunBridge`.
+- **Electrobun desktop**: `src-electrobun/` contains the Bun/Zig shell. `src-electrobun/index.ts` is the main process entry, `src-electrobun/preload.ts` injects bridge APIs into the webview. Desktop-specific logic should be gated behind `isElectrobun()` from `@/utils/electrobunBridge`.
 
 ## Testing & Play Functions
 
