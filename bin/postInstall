@@ -6,8 +6,10 @@
  * have to remember these extra steps.
  */
 
-// Patch any packages that need patching
-run(resolvePatchPackageCommand());
+// Patch any packages that need patching.
+// Windows の cmd には node_modules/.bin のシム（sh スクリプト）を実行できないため、
+// shell を介さず Node で patch-package のエントリを直接起動する。
+runPatchPackage();
 
 // Kill the metro bundler if it's running.
 if (["darwin", "linux"].includes(process.platform)) {
@@ -36,25 +38,17 @@ function run(command, options = {}) {
   }
 }
 
-function resolvePatchPackageCommand() {
-  if (hasCommand("bunx")) {
-    return "bunx patch-package";
-  }
+function runPatchPackage() {
+  const { spawnSync } = require("child_process");
+  const patchPackageBin = require.resolve("patch-package/index.js");
 
-  if (hasCommand("npx")) {
-    return "npx --yes patch-package";
-  }
+  console.log(`./bin/postInstall script running: patch-package`);
+  const result = spawnSync(process.execPath, [patchPackageBin], {
+    stdio: "inherit",
+  });
 
-  return "./node_modules/.bin/patch-package";
-}
-
-function hasCommand(command) {
-  try {
-    require("child_process").execSync(`command -v ${command}`, {
-      stdio: "ignore",
-    });
-    return true;
-  } catch (_) {
-    return false;
+  if (result.status !== 0) {
+    console.error("./bin/postInstall failed to run patch-package");
+    process.exit(result.status === null ? 1 : result.status);
   }
 }
