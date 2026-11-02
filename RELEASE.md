@@ -28,7 +28,7 @@ bun run version <patch|minor|major|x.y.z> [--push]
 2. コミット（メッセージ: `vX.Y.Z にバージョンアップ`）+ annotated タグ `vX.Y.Z` を作成
 3. `--push` 指定時のみ、確認の上で `git push origin HEAD` と `git push origin vX.Y.Z` を実行
 
-## 重要な注意: タグ push で3ワークフローが同時起動する
+## 重要な注意: タグ push で4ワークフローが同時起動する
 
 `v*` タグの push で以下が起動します。**preview への OTA 配信（EAS Update）が無条件で走る**ため、push は意図的に済ませること。
 
@@ -36,6 +36,7 @@ bun run version <patch|minor|major|x.y.z> [--push]
 |---|---|
 | `docker.yml` | GHCR へ Docker イメージ push → サーバーの Watchtower が pull して本番 Web を更新 |
 | `preview-release.yml` | **EAS Update で preview チャンネルへ OTA 配信**（ビルド・Release 作成なし） |
+| `desktop-ota.yml` | **デスクトップ（Electrobun canary）の OTA 成果物**を `desktop-canary` Release へ上書き |
 | `deploy-web.yml` | Storybook を GitHub Pages へデプロイ |
 
 ## OTA 配信（タグ push 時）

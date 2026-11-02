@@ -115,3 +115,4 @@ build/
 # Electrobun / Hutch generated devkit
 .hutch/
 .cottontail-tmp/
+artifacts/

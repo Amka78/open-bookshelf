@@ -1,0 +1,23 @@
+name: Desktop Canary OTA
+
+on:
+  push:
+    # バージョンタグ（v1.2.3 形式）で自動トリガー
+    # stable は用意せず、canary チャンネルの更新成果物だけを配信する
+    tags:
+      - "v*"
+
+permissions:
+  contents: write # 固定タグ Release へのアップロードに必要
+
+concurrency:
+  group: desktop-ota-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  ota:
+    uses: ./.github/workflows/desktop-build.yml
+    with:
+      ref: ${{ github.ref }}
+      release_tag: desktop-canary
+      upload_installers: false

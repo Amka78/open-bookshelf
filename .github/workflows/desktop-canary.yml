@@ -1,0 +1,24 @@
+name: Desktop Canary Build (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "ビルドする ref（空なら既定ブランチ）"
+        required: false
+        type: string
+
+permissions:
+  contents: write # 固定タグ Release へのアップロードに必要
+
+concurrency:
+  group: desktop-canary
+  cancel-in-progress: false
+
+jobs:
+  canary:
+    uses: ./.github/workflows/desktop-build.yml
+    with:
+      ref: ${{ inputs.ref }}
+      release_tag: desktop-canary
+      upload_installers: true

@@ -8,13 +8,15 @@ usage() {
   cat <<'EOF'
 使い方: bun run version <patch|minor|major|x.y.z> [--push]
 
-  package.json と app.config.ts の version を更新し、コミット + annotated タグを作成します。
+  package.json / app.config.ts / electrobun.config.ts の version を更新し、
+  コミット + annotated タグを作成します。
   既定では push しません。--push 指定時のみ、確認の上でブランチとタグを push します。
 
 注意:
-  タグ v* の push で3ワークフローが同時起動します:
+  タグ v* の push で以下が同時起動します:
     - GHCR への Docker イメージ配布（本番 Web の更新）
-    - EAS preview build + GitHub Release 作成
+    - EAS Update で preview チャンネルへ OTA 配信
+    - デスクトップ（canary）の OTA 配信
     - Storybook の GitHub Pages デプロイ
 EOF
 }
@@ -113,29 +115,36 @@ node -e "
   pkg.version = NEW;
   fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
 
-  let cfg = fs.readFileSync('app.config.ts', 'utf8');
-  const re = /(version:\s*\")[^\"]*(\")/;
-  const m = cfg.match(re);
-  if (!m) {
-    console.error('エラー: app.config.ts に version が見つかりません');
-    process.exit(1);
+  const versionTargets = ['app.config.ts', 'electrobun.config.ts'];
+  for (const file of versionTargets) {
+    const cfg = fs.readFileSync(file, 'utf8');
+    const re = /(version:\s*\")[^\"]*(\")/;
+    const m = cfg.match(re);
+    if (!m) {
+      console.error('エラー: ' + file + ' に version が見つかりません');
+      process.exit(1);
+    }
+    if (m[2] === NEW) {
+      console.error('エラー: ' + file + ' の version が既に ' + NEW + ' です');
+      process.exit(1);
+    }
+    fs.writeFileSync(file, cfg.replace(re, '\$1' + NEW + '\$2'));
   }
-  if (m[2] === NEW) {
-    console.error('エラー: app.config.ts の version が既に ' + NEW + ' です');
-    process.exit(1);
-  }
-  fs.writeFileSync('app.config.ts', cfg.replace(re, '\$1' + NEW + '\$2'));
 "
 
-# --- 更新の検証（両ファイルの version が一致しているか） ---
+# --- 更新の検証（3ファイルの version が一致しているか） ---
 VERIFY_PKG=$(node -e "console.log(require('./package.json').version)")
 VERIFY_CFG=$(node -e "
   const m = require('fs').readFileSync('app.config.ts', 'utf8').match(/version:\s*\"([^\"]*)\"/);
   process.stdout.write(m ? m[1] : '');
 ")
-if [ "$VERIFY_PKG" != "$NEW_VERSION" ] || [ "$VERIFY_CFG" != "$NEW_VERSION" ]; then
-  echo "エラー: バージョン更新の検証に失敗しました（pkg=$VERIFY_PKG / cfg=$VERIFY_CFG）。変更を元に戻します。"
-  git checkout -- package.json app.config.ts
+VERIFY_DESKTOP=$(node -e "
+  const m = require('fs').readFileSync('electrobun.config.ts', 'utf8').match(/version:\s*\"([^\"]*)\"/);
+  process.stdout.write(m ? m[1] : '');
+")
+if [ "$VERIFY_PKG" != "$NEW_VERSION" ] || [ "$VERIFY_CFG" != "$NEW_VERSION" ] || [ "$VERIFY_DESKTOP" != "$NEW_VERSION" ]; then
+  echo "エラー: バージョン更新の検証に失敗しました（pkg=$VERIFY_PKG / cfg=$VERIFY_CFG / desktop=$VERIFY_DESKTOP）。変更を元に戻します。"
+  git checkout -- package.json app.config.ts electrobun.config.ts
   exit 1
 fi
 
@@ -143,7 +152,7 @@ echo "  package.json:    $OLD_VERSION → $NEW_VERSION"
 echo "  app.config.ts:   $OLD_VERSION → $NEW_VERSION"
 
 # --- コミット + annotated タグ ---
-git add package.json app.config.ts
+git add package.json app.config.ts electrobun.config.ts
 git commit -m "v$NEW_VERSION にバージョンアップ"
 git tag -a "v$NEW_VERSION" -m "v$NEW_VERSION をリリース"
 
@@ -152,9 +161,10 @@ echo "✓ v$NEW_VERSION を作成しました。"
 
 if [ "$PUSH" = "true" ]; then
   echo ""
-  echo "⚠ タグ push で3ワークフローが同時起動します:"
+  echo "⚠ タグ push で以下が同時起動します:"
   echo "  - GHCR への Docker イメージ配布（本番 Web の更新）"
-  echo "  - EAS preview build + GitHub Release 作成"
+  echo "  - EAS Update で preview チャンネルへ OTA 配信"
+  echo "  - デスクトップ（canary）の OTA 配信"
   echo "  - Storybook の GitHub Pages デプロイ"
   read -r -p "ブランチとタグを origin に push しますか? [y/N]: " confirmed
   if [[ "$confirmed" =~ ^[Yy]$ ]]; then
