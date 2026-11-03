@@ -1,25 +1,24 @@
 import { existsSync, readFileSync, statSync } from "node:fs"
 import { join, normalize, sep } from "node:path"
 import { BrowserView, BrowserWindow, Updater, Utils } from "electrobun/bun"
+import { proxyCalibreRequest, resolveCalibreTarget } from "./calibreProxy"
 import type { AppRPCType } from "./shared/rpcTypes"
 
 const bundledWebRoot = join(import.meta.dir, "..", "views", "app")
 
-// Electrobun 2.0.5 の Linux では preload に views:// URL を渡しても実行されないため、
-// ビルド済みの preload バンドルを読み込んでインライン JavaScript として渡す。
-const preloadScript = readFileSync(
-  join(import.meta.dir, "..", "views", "preload", "index.js"),
-  "utf8",
-)
-
 // dist/index.html は /_expo/... の絶対パスを参照するため views:// では解決できない。
-// 同梱した Web バンドルを 127.0.0.1 で配信して読み込む。
-function startBundledWebServer(): string {
+// 同梱した Web バンドルを 127.0.0.1 で配信し、同じサーバーで Calibre プロキシも提供する。
+function startLocalServer(): { origin: string; appUrl: string } {
   const indexPath = join(bundledWebRoot, "index.html")
   const server = Bun.serve({
     hostname: "127.0.0.1",
     port: 0,
-    fetch(request) {
+    async fetch(request) {
+      const target = resolveCalibreTarget(request.url)
+      if (target) {
+        return proxyCalibreRequest(request, target)
+      }
+
       const { pathname } = new URL(request.url)
       const filePath = normalize(join(bundledWebRoot, decodeURIComponent(pathname)))
       if (
@@ -32,8 +31,18 @@ function startBundledWebServer(): string {
       return new Response(Bun.file(indexPath))
     },
   })
-  return `http://127.0.0.1:${server.port}/`
+
+  const origin = `http://127.0.0.1:${server.port}`
+  return { origin, appUrl: `${origin}/` }
 }
+
+const localServer = startLocalServer()
+
+// Electrobun 2.0.5 の Linux では preload に views:// URL を渡しても実行されないため、
+// ビルド済みの preload バンドルを読み込んでインライン JavaScript として渡す。
+// プロキシのポートは起動ごとに変わるので、preload の先頭で注入する。
+const preloadScript = `window.__ELECTROBUN_PROXY_ORIGIN = ${JSON.stringify(localServer.origin)};
+${readFileSync(join(import.meta.dir, "..", "views", "preload", "index.js"), "utf8")}`
 
 const rpc = BrowserView.defineRPC<AppRPCType>({
   maxRequestTime: 10000,
@@ -73,7 +82,7 @@ new BrowserWindow({
     width: 1200,
     height: 800,
   },
-  url: devServerUrl ?? startBundledWebServer(),
+  url: devServerUrl ?? localServer.appUrl,
   preload: preloadScript,
   rpc,
 })

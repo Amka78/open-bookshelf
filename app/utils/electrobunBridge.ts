@@ -8,6 +8,7 @@
 declare global {
   interface Window {
     __ELECTROBUN__?: boolean
+    __ELECTROBUN_PROXY_ORIGIN?: string
     __electrobunShowConfirm?: (
       title: string,
       message: string,

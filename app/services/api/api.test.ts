@@ -1,5 +1,5 @@
-import { vi, beforeEach, describe, expect, test } from "vitest"
 import type { ApiResponse } from "apisauce"
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest"
 import { Api } from "./api"
 
 describe("Api.startConversion", () => {
@@ -221,5 +221,100 @@ describe("Api.fetchWithAuth", () => {
     const result = await api.setCoverBinary("config", 8578, imageBlob)
 
     expect(result).toEqual({ kind: "unauthorized" })
+  })
+})
+
+describe("Api with the Electrobun Calibre proxy", () => {
+  const originalProxyOrigin = window.__ELECTROBUN_PROXY_ORIGIN
+  const proxyOrigin = "http://127.0.0.1:41234"
+  const proxyBase = `${proxyOrigin}/__calibre/${encodeURIComponent("http://calibrelocal")}`
+
+  beforeEach(() => {
+    window.__ELECTROBUN_PROXY_ORIGIN = proxyOrigin
+  })
+
+  afterEach(() => {
+    window.__ELECTROBUN_PROXY_ORIGIN = originalProxyOrigin
+    vi.restoreAllMocks()
+  })
+
+  test("builds same-origin URLs for API calls, thumbnails and downloads", () => {
+    const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
+    api.setUrl("http://calibrelocal/")
+
+    expect(api.getBookThumbnailUrl(1, "lib")).toBe(`${proxyBase}/get/thumb/1/lib?sz=300x400`)
+    expect(api.getInlineBookUrl("EPUB", 1, "lib")).toBe(
+      `${proxyBase}/get/EPUB/1/lib?content_disposition=inline`,
+    )
+  })
+
+  test("keeps the upstream path in Digest authorization headers", async () => {
+    const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
+    api.setUrl("http://calibrelocal")
+    api.setCredentials("reader", "secret", "cmVhZGVyOnNlY3JldA==")
+
+    const internalApi = api as Api & {
+      authMethod: "digest" | "basic" | null
+      digestChallenge: { realm: string; nonce: string; qop?: string; algorithm?: string } | null
+    }
+    internalApi.authMethod = "digest"
+    internalApi.digestChallenge = {
+      realm: "calibre",
+      nonce: "nonce-123",
+      qop: "auth",
+      algorithm: "MD5",
+    }
+
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue({ ok: true, status: 200 } as Response)
+
+    await api.fetchWithAuth(`${proxyBase}/book-file/1/EPUB/10/20/Text/chapter.xhtml`)
+
+    const request = fetchMock.mock.calls[0]?.[1] as RequestInit | undefined
+    const authorization = (request?.headers as Record<string, string>)?.Authorization
+
+    expect(authorization).toContain('uri="/book-file/1/EPUB/10/20/Text/chapter.xhtml"')
+    expect(authorization).not.toContain("__calibre")
+  })
+
+  test("keeps the base path in Digest authorization headers", async () => {
+    const api = new Api({ timeout: 1000, url: "http://calibrelocal/calibre" })
+    api.setUrl("http://calibrelocal/calibre")
+    api.setCredentials("reader", "secret", "cmVhZGVyOnNlY3JldA==")
+
+    const internalApi = api as Api & {
+      authMethod: "digest" | "basic" | null
+      digestChallenge: { realm: string; nonce: string; qop?: string; algorithm?: string } | null
+    }
+    internalApi.authMethod = "digest"
+    internalApi.digestChallenge = {
+      realm: "calibre",
+      nonce: "nonce-123",
+      qop: "auth",
+      algorithm: "MD5",
+    }
+
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue({ ok: true, status: 200 } as Response)
+    const pathProxyBase = `${proxyOrigin}/__calibre/${encodeURIComponent(
+      "http://calibrelocal/calibre",
+    )}`
+
+    await api.fetchWithAuth(`${pathProxyBase}/book-file/1/EPUB/10/20/Text/chapter.xhtml`)
+
+    const request = fetchMock.mock.calls[0]?.[1] as RequestInit | undefined
+    const authorization = (request?.headers as Record<string, string>)?.Authorization
+
+    expect(authorization).toContain('uri="/calibre/book-file/1/EPUB/10/20/Text/chapter.xhtml"')
+  })
+
+  test("keeps the original URL outside Electrobun", () => {
+    window.__ELECTROBUN_PROXY_ORIGIN = undefined
+    const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
+    api.setUrl("http://calibrelocal")
+
+    expect(api.getBookThumbnailUrl(1, "lib")).toBe("http://calibrelocal/get/thumb/1/lib?sz=300x400")
   })
 })
