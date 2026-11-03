@@ -1,5 +1,5 @@
-import { vi, afterEach, beforeEach, describe, expect, test } from "vitest"
 import { renderHook } from "@testing-library/react"
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest"
 
 const useModalMock = vi.fn()
 
@@ -50,6 +50,20 @@ describe("useElectrobunModal", () => {
     const { result } = renderHook(() => useElectrobunModal())
 
     expect(result.current.openModal).toBe(passthroughOpenModal)
+  })
+
+  test("keeps the returned object stable across re-renders inside Electrobun", async () => {
+    window.__ELECTROBUN__ = true
+    const { useElectrobunModal } = await import("./useElectrobunModal")
+
+    const { result, rerender } = renderHook(() => useElectrobunModal())
+    const first = result.current
+
+    rerender()
+    rerender()
+
+    expect(result.current).toBe(first)
+    expect(result.current.openModal).toBe(first.openModal)
   })
 
   test("routes ConfirmModal to the native confirm dialog inside Electrobun", async () => {

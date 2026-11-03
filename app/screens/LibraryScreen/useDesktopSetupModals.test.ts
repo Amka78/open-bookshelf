@@ -8,11 +8,12 @@ const state = {
   isLarge: true,
   libraryCount: 0,
   selectedLibrary: undefined as unknown,
+  currentModal: null as string | null,
 }
 
 vi.doMock("@/hooks/useElectrobunModal", () => ({
   useElectrobunModal: () => ({
-    currentModal: null,
+    currentModal: state.currentModal,
     openModal: openModalMock,
   }),
 }))
@@ -46,6 +47,7 @@ beforeEach(async () => {
   state.isLarge = true
   state.libraryCount = 0
   state.selectedLibrary = undefined
+  state.currentModal = null
   initializeMock.mockResolvedValue(true)
   ;({ useDesktopSetupModals } = await import("./useDesktopSetupModals"))
 })
@@ -68,6 +70,52 @@ describe("useDesktopSetupModals", () => {
 
     expect(initializeMock).toHaveBeenCalledTimes(1)
     expect(openModalMock).not.toHaveBeenCalled()
+  })
+
+  test("does not initialize while a modal is open", async () => {
+    state.baseUrl = "http://localhost:8080"
+    state.currentModal = "LoginModal"
+
+    renderHook(() => useDesktopSetupModals())
+    await flushEffect()
+
+    expect(initializeMock).not.toHaveBeenCalled()
+  })
+
+  test("initializes once even when authentication keeps the modal open", async () => {
+    state.baseUrl = "http://localhost:8080"
+    initializeMock.mockResolvedValue(false)
+
+    const { rerender } = renderHook(() => useDesktopSetupModals())
+    await flushEffect()
+    expect(initializeMock).toHaveBeenCalledTimes(1)
+
+    // 401 で LoginModal が開き、モーダルの context が更新され続ける状況
+    state.currentModal = "LoginModal"
+    rerender()
+    await flushEffect()
+    rerender()
+    await flushEffect()
+    rerender()
+    await flushEffect()
+
+    expect(initializeMock).toHaveBeenCalledTimes(1)
+  })
+
+  test("does not auto-initialize after connecting from an empty base URL", async () => {
+    const { rerender } = renderHook(() => useDesktopSetupModals())
+    await flushEffect()
+    expect(openModalMock).toHaveBeenCalledWith("ConnectModal", {})
+
+    // ConnectModal で URL を入力して 401 になった直後の状態
+    state.baseUrl = "http://localhost:8080"
+    state.currentModal = "LoginModal"
+    rerender()
+    await flushEffect()
+    rerender()
+    await flushEffect()
+
+    expect(initializeMock).not.toHaveBeenCalled()
   })
 
   test("opens the library selection modal when libraries are loaded", async () => {

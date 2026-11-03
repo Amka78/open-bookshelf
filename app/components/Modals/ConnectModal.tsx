@@ -13,6 +13,9 @@ export type ConnectModalProps = ModalComponentProp<ModalStackParams, void, "Conn
 export const ConnectModal = observer((props: ConnectModalProps) => {
   const { form, baseUrl, onConnectPress } = useConnect({
     onConnected: () => props.modal.closeModal(),
+    // 失敗時は ConnectModal を閉じる。認証が必要なら LoginModal、
+    // 接続できなければ ErrorModal が initialize 側から開かれる。
+    onConnectFailed: () => props.modal.closeModal(),
   })
 
   return (

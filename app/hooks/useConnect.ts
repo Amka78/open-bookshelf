@@ -8,6 +8,8 @@ import { useForm } from "react-hook-form"
 export type UseConnectOptions = {
   /** Called after a successful Calibre connection. Defaults to navigating to CalibreRoot. */
   onConnected?: () => void
+  /** Called when the connection attempt fails. Use it to dismiss the connect UI. */
+  onConnectFailed?: () => void
 }
 
 export function useConnect(options: UseConnectOptions = {}) {
@@ -32,7 +34,10 @@ export function useConnect(options: UseConnectOptions = {}) {
       } else {
         navigation.navigate("CalibreRoot")
       }
+      return
     }
+
+    options.onConnectFailed?.()
   }
 
   const onLoginPress = async (data: LoginType) => {
