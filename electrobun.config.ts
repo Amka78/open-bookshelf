@@ -4,7 +4,7 @@ export default {
   app: {
     name: "open-book-shelf",
     identifier: "com.electrobun.open-book-shelf",
-    version: "0.1.4",
+    version: "0.1.5",
   },
   build: {
     mainProcess: "bun",
