@@ -117,3 +117,4 @@ Electrobun はクロスコンパイルできないため、各 OS のネイテ�
 | `X11 Error: GLXBadWindow` | WSLg の GLX。`WEBKIT_DISABLE_COMPOSITING_MODE=1` で回避（スクリプト設定済み） |
 | ログに `GTK EVENT LOOP STARTED` は出るがウィンドウが出ない | `Resources/app/bun/index.js` が生成されていない（Hutch のビルドログを確認） |
 | 画面が「問題が発生しました」になる | WebView 内の JS エラー。Metro のログを確認する |
+| 401 後にログイン画面が出ない／一瞬だけ出て消える | `react-native-modalfy` の `closeModal()` がアニメーション終了時点の最新モーダルを閉じてしまう競合。`patches/react-native-modalfy+3.7.0.patch` で修正済み（`bun install` の postinstall で適用） |
