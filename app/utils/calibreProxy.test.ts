@@ -8,15 +8,21 @@ import {
 
 const originalProxyOrigin = window.__ELECTROBUN_PROXY_ORIGIN
 const originalElectrobunFlag = window.__ELECTROBUN__
+const originalWebProxyFlag = window.__CALIBRE_WEB_PROXY__
+const originalDevProxyOrigin = process.env.EXPO_PUBLIC_CALIBRE_PROXY_ORIGIN
 
 beforeEach(() => {
   window.__ELECTROBUN_PROXY_ORIGIN = undefined
   window.__ELECTROBUN__ = false
+  window.__CALIBRE_WEB_PROXY__ = false
+  process.env.EXPO_PUBLIC_CALIBRE_PROXY_ORIGIN = ""
 })
 
 afterEach(() => {
   window.__ELECTROBUN_PROXY_ORIGIN = originalProxyOrigin
   window.__ELECTROBUN__ = originalElectrobunFlag
+  window.__CALIBRE_WEB_PROXY__ = originalWebProxyFlag
+  process.env.EXPO_PUBLIC_CALIBRE_PROXY_ORIGIN = originalDevProxyOrigin ?? ""
 })
 
 describe("getCalibreProxyOrigin", () => {
@@ -28,6 +34,18 @@ describe("getCalibreProxyOrigin", () => {
     window.__ELECTROBUN_PROXY_ORIGIN = "http://127.0.0.1:41234/"
 
     expect(getCalibreProxyOrigin()).toBe("http://127.0.0.1:41234")
+  })
+
+  test("uses the dev proxy origin during web development", () => {
+    process.env.EXPO_PUBLIC_CALIBRE_PROXY_ORIGIN = "http://127.0.0.1:8082/"
+
+    expect(getCalibreProxyOrigin()).toBe("http://127.0.0.1:8082")
+  })
+
+  test("uses the same origin when the web release flag is injected", () => {
+    window.__CALIBRE_WEB_PROXY__ = true
+
+    expect(getCalibreProxyOrigin()).toBe(window.location.origin)
   })
 })
 
@@ -56,6 +74,14 @@ describe("buildCalibreProxyBase", () => {
     window.__ELECTROBUN_PROXY_ORIGIN = "http://127.0.0.1:41234"
 
     expect(buildCalibreProxyBase("   ")).toBeNull()
+  })
+
+  test("builds the proxy base from the dev proxy origin", () => {
+    process.env.EXPO_PUBLIC_CALIBRE_PROXY_ORIGIN = "http://127.0.0.1:8082"
+
+    expect(buildCalibreProxyBase("http://calibre.local:8080")).toBe(
+      "http://127.0.0.1:8082/__calibre/http%3A%2F%2Fcalibre.local%3A8080",
+    )
   })
 })
 

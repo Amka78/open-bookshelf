@@ -127,6 +127,31 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 
 `index.html` に `Cache-Control: no-cache` を付与する**前**から HTML をキャッシュしているブラウザは、ヒューリスティックな鮮度期間の最中は再検証すら行いません。Ctrl+Shift+R が1回必要です。それ以降は自動で追従します。
 
+## Calibre プロキシ（CORS 回避）
+
+Web 版はビルド済み SPA を nginx が配信するため、Calibre へ直接アクセスすると CORS で失敗する。リリースイメージでは nginx が `/__calibre/...` をローカルの Bun プロキシへ転送し、アプリは `window.__CALIBRE_WEB_PROXY__` を見て同一オリジン経由で接続する。
+
+- プロキシは entrypoint が `127.0.0.1:8082` で起動し、`index.html` にフラグを注入する。API・サムネイル・本文画像・PDF がすべてプロキシ経由になる。
+- `CALIBRE_PROXY=0`（`false` / `off` も可）で無効化できる。従来どおり Calibre へ直接接続する。
+- `CALIBRE_PROXY_ALLOWED_HOSTS` にカンマ区切りで host / host:port を指定すると、それ以外への転送を 403 で拒否する。**外部公開する場合は必ず指定する**。空のままだと任意の http(s) URL を取得できる SSRF プロキシになる。
+- 許可リスト迂回を防ぐため、上流のリダイレクトは追跡しない。Calibre 側がリダイレクトを返す構成では 502 になる。
+- 接続先の保存値（ユーザーが入力した URL）は元のまま。プロキシ URL はリクエスト時だけ使う。
+
+```bash
+# 例: この Calibre だけを許可する
+CALIBRE_PROXY_ALLOWED_HOSTS=calibre.example.com,192.168.1.11:8081
+```
+
+確認:
+
+```bash
+# index.html にフラグが入っている
+curl -sk https://localhost:${HTTPS_PORT:-8443}/ | grep -o "__CALIBRE_WEB_PROXY__"
+
+# プロキシ経由の応答（401 なら認証交渉まで届いている）
+curl -skI "https://localhost:${HTTPS_PORT:-8443}/__calibre/http%3A%2F%2F192.168.1.11%3A8081/interface-data/init"
+```
+
 ## トラブルシューティング
 
 ### Watchtower が更新しない（`is a directory`）

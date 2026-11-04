@@ -14,6 +14,10 @@ services:
       HTTPS_CN: "${HTTPS_CN:-localhost}"
       HTTPS_SAN_IP: "${HTTPS_SAN_IP:-}"
       HTTPS_SAN_DNS: "${HTTPS_SAN_DNS:-}"
+      # Calibre プロキシ（同一オリジン化して CORS を回避）。0/false/off で無効化
+      CALIBRE_PROXY: "${CALIBRE_PROXY:-1}"
+      # 外部公開する場合は接続先を制限する（カンマ区切りの host / host:port）
+      CALIBRE_PROXY_ALLOWED_HOSTS: "${CALIBRE_PROXY_ALLOWED_HOSTS:-}"
     volumes:
       # 証明書を永続化（Watchtower による再作成後もブラウザの警告が再発しない）
       - ssl-certs:/etc/nginx/ssl

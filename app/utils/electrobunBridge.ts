@@ -9,6 +9,11 @@ declare global {
   interface Window {
     __ELECTROBUN__?: boolean
     __ELECTROBUN_PROXY_ORIGIN?: string
+    /**
+     * Web リリース（Docker）で nginx が index.html に注入するフラグ。
+     * 有効な場合、アプリは同一オリジンの /__calibre/ をプロキシとして使う。
+     */
+    __CALIBRE_WEB_PROXY__?: boolean
     __electrobunShowConfirm?: (
       title: string,
       message: string,

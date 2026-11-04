@@ -2,7 +2,9 @@
  * Electrobun の同梱 Web バンドルは 127.0.0.1 の Bun サーバーから配信される。
  * Calibre へのリクエストをそのサーバーの /__calibre/ 以下へ通すことで、
  * WebView から見たオリジンを同一にして CORS を回避する。
+ * Web 開発時も同じ経路を別プロセスのローカルプロキシで使える。
  */
+import { Platform } from "react-native"
 
 const PROXY_PATH = "/__calibre/"
 
@@ -19,6 +21,18 @@ export function getCalibreProxyOrigin(): string | null {
 
   const injected = window.__ELECTROBUN_PROXY_ORIGIN
   if (injected) return injected.replace(/\/+$/, "")
+
+  // Web リリース（Docker）では nginx が同一オリジンに /__calibre/ を提供する。
+  if (window.__CALIBRE_WEB_PROXY__ === true && window.location?.origin) {
+    return window.location.origin
+  }
+
+  // Web 開発時は Metro とは別に起動したプロキシ（scripts/calibreProxyDevServer.ts）を使う。
+  // ネイティブで 127.0.0.1 を指してしまう事故を避けるため web に限定する。
+  const devProxyOrigin = process.env.EXPO_PUBLIC_CALIBRE_PROXY_ORIGIN
+  if (__DEV__ && Platform.OS === "web" && devProxyOrigin) {
+    return devProxyOrigin.trim().replace(/\/+$/, "")
+  }
 
   if (window.__ELECTROBUN__ === true && window.location?.hostname === "127.0.0.1") {
     return window.location.origin

@@ -60,6 +60,8 @@ Open `https://localhost:8443` in your browser.
 | `HTTPS_CN` | `localhost` | 自己署名証明書の CN / SAN に含めるホスト名 / Hostname embedded in the self-signed certificate CN and SAN |
 | `HTTPS_SAN_IP` | （なし / none） | 証明書に追加する IP SAN（IP アドレスで接続する場合に指定）例: `192.168.1.50` / IP SAN to add to the certificate, e.g. when accessing via LAN IP |
 | `HTTPS_SAN_DNS` | （なし / none） | 証明書に追加する DNS SAN / Additional DNS SAN entries |
+| `CALIBRE_PROXY` | `1` | Calibre への同一オリジンプロキシを有効化（CORS 回避）。`0` / `false` / `off` で無効 / Same-origin Calibre proxy (avoids CORS). Disable with `0` |
+| `CALIBRE_PROXY_ALLOWED_HOSTS` | （なし / none） | プロキシを許可する接続先（カンマ区切り）。**外部公開時は必須** / Allowed upstream hosts, comma-separated. **Required when publicly reachable** |
 
 > **注意:** HTTP（`PORT`）から HTTPS（`HTTPS_PORT`）へのリダイレクトは、コンテナ内の環境変数 `HTTPS_PORT` を使って生成されます。`docker run` では `-e HTTPS_PORT=<ホスト側ポート>` を必ずポート公開と揃えてください。compose では自動的に揃います。
 >

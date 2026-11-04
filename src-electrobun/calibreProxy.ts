@@ -5,6 +5,43 @@
 
 export const CALIBRE_PROXY_PREFIX = "/__calibre/"
 
+export type CalibreProxyOptions = {
+  /**
+   * 上流 fetch のリダイレクト挙動。公開プロキシでは "error" にして、
+   * 許可リストを迂回した別ホストへの転送を防ぐ。
+   */
+  redirect?: RequestRedirect
+}
+
+function normalizeAllowedHost(entry: string): string {
+  return entry
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/\/.*$/, "")
+}
+
+/**
+ * CALIBRE_PROXY_ALLOWED_HOSTS の値を解析する。
+ * カンマ区切りの host / host:port（スキームやパスは無視）を受け付ける。
+ */
+export function parseAllowedCalibreHosts(value: string | undefined): string[] {
+  if (!value) return []
+
+  return value.split(",").map(normalizeAllowedHost).filter(Boolean)
+}
+
+/**
+ * 上流 URL が許可リストに含まれるか。許可リストが空なら全ホストを許可する。
+ */
+export function isAllowedCalibreHost(target: URL, allowedHosts: string[]): boolean {
+  if (allowedHosts.length === 0) return true
+
+  const host = target.host.toLowerCase()
+  const hostname = target.hostname.toLowerCase()
+  return allowedHosts.some((allowed) => allowed === host || allowed === hostname)
+}
+
 const HOP_BY_HOP_HEADERS = new Set([
   "accept-encoding",
   "connection",
@@ -70,7 +107,11 @@ export function resolveCalibreTarget(requestUrl: string): URL | null {
  * Calibre へのリクエストを中継する。WebView から見ると同一オリジンになるため
  * CORS の判定が発生せず、OS ごとの WebView 実装差にも依存しない。
  */
-export async function proxyCalibreRequest(request: Request, target: URL): Promise<Response> {
+export async function proxyCalibreRequest(
+  request: Request,
+  target: URL,
+  options: CalibreProxyOptions = {},
+): Promise<Response> {
   const cors = buildCorsHeaders(request)
   if (request.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: cors })
@@ -89,7 +130,7 @@ export async function proxyCalibreRequest(request: Request, target: URL): Promis
       method: request.method,
       headers,
       body: hasBody ? request.body : undefined,
-      redirect: "follow",
+      redirect: options.redirect ?? "follow",
       ...(hasBody ? { duplex: "half" } : {}),
     } as RequestInit)
 
