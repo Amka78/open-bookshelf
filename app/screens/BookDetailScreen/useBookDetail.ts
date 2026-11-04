@@ -26,9 +26,7 @@ export function useBookDetail() {
 
   const selectedLibrary = calibreRootStore.selectedLibrary!
   const selectedBook = selectedLibrary.selectedBook!
-  const ocrImageUrl = encodeURI(
-    api.getBookThumbnailUrl(selectedBook.id, selectedLibrary.id, "1200x1600"),
-  )
+  const ocrImageUrl = api.getBookThumbnailUrl(selectedBook.id, selectedLibrary.id, "1200x1600")
 
   const bookTitle = selectedBook.metaData?.title
 

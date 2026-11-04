@@ -546,19 +546,21 @@ export class Api {
   }
 
   getBookDownloadUrl(format: string, bookId: number, libraryId: string): string {
-    return `${this.apisauce.getBaseURL()}/get/${encodeURIComponent(format)}/${bookId}/${libraryId}`
+    return `${this.apisauce.getBaseURL()}/get/${encodeURIComponent(
+      format,
+    )}/${bookId}/${encodeURIComponent(libraryId)}`
   }
 
   getBookThumbnailUrl(bookId: number, libraryId: string, size = "300x400"): string {
-    return `${this.apisauce.getBaseURL()}/get/thumb/${bookId}/${libraryId}?sz=${encodeURIComponent(
-      size,
-    )}`
+    return `${this.apisauce.getBaseURL()}/get/thumb/${bookId}/${encodeURIComponent(
+      libraryId,
+    )}?sz=${encodeURIComponent(size)}`
   }
 
   getInlineBookUrl(format: string, bookId: number, libraryId = "config"): string {
     return `${this.apisauce.getBaseURL()}/get/${encodeURIComponent(
       format,
-    )}/${bookId}/${libraryId}?content_disposition=inline`
+    )}/${bookId}/${encodeURIComponent(libraryId)}?content_disposition=inline`
   }
 
   getBookFileUrl(
@@ -571,11 +573,15 @@ export class Api {
     baseUrl?: string,
   ): string {
     const targetBaseUrl = baseUrl ?? this.apisauce.getBaseURL()
-    return encodeURI(
-      `${targetBaseUrl}/book-file/${bookId}/${encodeURIComponent(
-        format,
-      )}/${size}/${hash}/${path}?library_id=${libraryId}`,
-    )
+    // baseURL にはプロキシのパス（%3A を含む）が入るため、URL 全体を encodeURI すると
+    // %3A が %253A になって二重エンコードされる。パス要素だけを個別にエンコードする。
+    const encodedPath = path
+      .split("/")
+      .map((segment) => encodeURIComponent(segment))
+      .join("/")
+    return `${targetBaseUrl}/book-file/${bookId}/${encodeURIComponent(
+      format,
+    )}/${size}/${hash}/${encodedPath}?library_id=${encodeURIComponent(libraryId)}`
   }
 
   /**

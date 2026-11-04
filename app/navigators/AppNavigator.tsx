@@ -10,6 +10,7 @@ import type { AppStackParamList, AppStackScreenProps } from "./types"
 import { modalConfig } from "@/components/Modals/ModalConfig"
 import { useConvergence } from "@/hooks/useConvergence"
 import { cacheBookImages } from "@/utils/bookImageCache"
+import { getCalibreRequestBase } from "@/utils/calibreProxy"
 import { isCalibreHtmlViewerFormat } from "@/utils/calibreHtmlViewer"
 import { ModalProvider, createModalStack } from "react-native-modalfy"
 
@@ -392,7 +393,7 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
                     bookId: selectedBook.id,
                     format,
                     libraryId: selectedLibrary.id,
-                    baseUrl: settingStore.api.baseUrl ?? "",
+                    baseUrl: getCalibreRequestBase(settingStore.api.baseUrl ?? ""),
                     size,
                     hash,
                     pathList: selectedBook.path.slice(),

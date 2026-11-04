@@ -76,7 +76,7 @@ export const buildBookDownloadUrl = (
   bookId: number,
   libraryId: string,
 ) => {
-  return `${baseUrl}/get/${encodeURIComponent(format)}/${bookId}/${libraryId}`
+  return `${baseUrl}/get/${encodeURIComponent(format)}/${bookId}/${encodeURIComponent(libraryId)}`
 }
 
 export const isRemoteBookImagePath = (path?: string) => {

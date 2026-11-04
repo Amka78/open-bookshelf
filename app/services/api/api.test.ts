@@ -248,6 +248,21 @@ describe("Api with the Electrobun Calibre proxy", () => {
     )
   })
 
+  test("encodes only path segments so the proxy base is not double-encoded", () => {
+    const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
+    api.setUrl("http://calibrelocal")
+
+    const fileUrl = api.getBookFileUrl(1, "EPUB", 10, 20, "OPS/pages/image 01.jpg", "lib")
+    expect(fileUrl).toBe(
+      `${proxyBase}/book-file/1/EPUB/10/20/OPS/pages/image%2001.jpg?library_id=lib`,
+    )
+    expect(fileUrl).not.toContain("%253A")
+
+    expect(api.getBookThumbnailUrl(1, "calibre library")).toBe(
+      `${proxyBase}/get/thumb/1/calibre%20library?sz=300x400`,
+    )
+  })
+
   test("keeps the upstream path in Digest authorization headers", async () => {
     const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
     api.setUrl("http://calibrelocal")

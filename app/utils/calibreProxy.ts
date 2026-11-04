@@ -40,6 +40,15 @@ export function buildCalibreProxyBase(baseUrl: string): string | null {
 }
 
 /**
+ * 画像やファイル URL を組み立てるときのベース URL。
+ * Electrobun ではプロキシ URL、それ以外では元の URL を返す。
+ */
+export function getCalibreRequestBase(baseUrl: string): string {
+  const normalized = normalizeBaseUrl(baseUrl)
+  return buildCalibreProxyBase(normalized) ?? normalized
+}
+
+/**
  * プロキシ URL を上流の URL に戻す。Digest 認証の uri は上流のパスで
  * 計算する必要があるため、Authorization を作る前にこれを通す。
  */

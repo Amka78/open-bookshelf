@@ -156,6 +156,48 @@ describe("prepareViewerSession", () => {
     expect(setCacheVerified).toHaveBeenCalledWith(true)
   })
 
+  test("rebuilds cached image URLs that point at a stale base", async () => {
+    const selectedBook = createBook()
+    const setCachePath = vi.fn()
+    const stores = createStores({
+      selectedBook,
+      readingHistories: [
+        {
+          libraryId: "library-1",
+          bookId: 1,
+          format: "EPUB",
+          cachedPath: [
+            "http://old-host:8080/book-file/1/EPUB/100/101/page-1.jpg?library_id=library-1",
+          ],
+          setCachePath,
+          setCacheVerified: vi.fn(),
+        },
+      ],
+    })
+
+    vi.spyOn(bookImageCache, "verifyCachedBookImages").mockResolvedValue({
+      allExist: true,
+      missingIndices: [],
+    })
+    const rebuilt = [
+      "https://server.example/book-file/1/EPUB/100/101/page-1.jpg?library_id=library-1",
+      "https://server.example/book-file/1/EPUB/100/101/page-2.jpg?library_id=library-1",
+    ]
+    vi.spyOn(bookImageCache, "cacheBookImages").mockResolvedValue(rebuilt)
+
+    await prepareViewerSession({
+      request: {
+        bookId: 1,
+        libraryId: "library-1",
+        format: "EPUB",
+      },
+      ...stores,
+    })
+
+    expect(bookImageCache.cacheBookImages).toHaveBeenCalled()
+    expect(setCachePath).toHaveBeenCalledWith(rebuilt)
+  })
+
   test("converts and caches image pages when history does not exist", async () => {
     const selectedBook = createBook()
     const addReadingHistory = vi.fn()

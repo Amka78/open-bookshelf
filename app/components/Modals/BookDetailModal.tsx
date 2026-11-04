@@ -50,9 +50,7 @@ export const BookDetailModal = observer((props: BookDetailModalProps) => {
 
   const onRunCoverOcr = () => {
     props.modal.openModal("BookOcrReviewModal", {
-      imageUrl: encodeURI(
-        api.getBookThumbnailUrl(selectedBook.id, selectedLibrary.id, "1200x1600"),
-      ),
+      imageUrl: api.getBookThumbnailUrl(selectedBook.id, selectedLibrary.id, "1200x1600"),
     })
   }
 

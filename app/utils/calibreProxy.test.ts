@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
-import { buildCalibreProxyBase, getCalibreProxyOrigin, toCalibreUpstreamUrl } from "./calibreProxy"
+import {
+  buildCalibreProxyBase,
+  getCalibreProxyOrigin,
+  getCalibreRequestBase,
+  toCalibreUpstreamUrl,
+} from "./calibreProxy"
 
 const originalProxyOrigin = window.__ELECTROBUN_PROXY_ORIGIN
 const originalElectrobunFlag = window.__ELECTROBUN__
@@ -51,6 +56,20 @@ describe("buildCalibreProxyBase", () => {
     window.__ELECTROBUN_PROXY_ORIGIN = "http://127.0.0.1:41234"
 
     expect(buildCalibreProxyBase("   ")).toBeNull()
+  })
+})
+
+describe("getCalibreRequestBase", () => {
+  test("returns the original URL outside Electrobun", () => {
+    expect(getCalibreRequestBase("http://calibre.local:8080/")).toBe("http://calibre.local:8080")
+  })
+
+  test("returns the proxy URL inside Electrobun", () => {
+    window.__ELECTROBUN_PROXY_ORIGIN = "http://127.0.0.1:41234"
+
+    expect(getCalibreRequestBase("http://calibre.local:8080")).toBe(
+      "http://127.0.0.1:41234/__calibre/http%3A%2F%2Fcalibre.local%3A8080",
+    )
   })
 })
 
