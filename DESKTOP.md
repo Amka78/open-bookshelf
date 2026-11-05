@@ -61,7 +61,8 @@ Electrobun の WebView はブラウザと同じ CORS 判定を行うため、`ht
 - プロキシのパスは `/__calibre/<encodeURIComponent(CalibreのベースURL)>/...`。`src-electrobun/calibreProxy.ts` が上流 URL に解決し、`Authorization`・Range・POST ボディをそのまま流す。
 - `api.setUrl()` は Electrobun のときだけ axios の baseURL をプロキシに差し替える。`settingStore.api.baseUrl` にはユーザーが入力した元 URL をそのまま保存するので、ConnectScreen の表示・再接続・OPDS は従来どおり。
 - Digest 認証の `uri` は上流のパスでなければ通らないため、`api.ts` は元 URL を保持し、プロキシ URL を上流に戻してから計算する。ベース URL にパス（例: `http://host/calibre`）がある場合は、そのパスも含めて連結する。
-- 開発時は Metro（`localhost:8081`）からプロキシへクロスオリジンになるため、プロキシは CORS ヘッダーと `OPTIONS` を処理し、`WWW-Authenticate` を expose する。
+- 上流の `401 + WWW-Authenticate` はそのまま返さず、`X-Calibre-WWW-Authenticate` に載せ替える。同一オリジンの WebView2 / WebKitGTK は `WWW-Authenticate` を見ると自前の認証ダイアログを開き、アプリの `LoginModal` や Digest ネゴシエーションに 401 が届かなくなるため。`api.ts` は両方のヘッダーを読む。
+- 開発時は Metro（`localhost:8081`）からプロキシへクロスオリジンになるため、プロキシは CORS ヘッダーと `OPTIONS` を処理し、`X-Calibre-WWW-Authenticate`（互換のため `WWW-Authenticate` も）を expose する。
 - 制約: 自己署名 HTTPS の Calibre は Bun の `fetch` が証明書エラーで止まる。ブラウザのように警告を承認して続行することはできない。
 
 動作確認は、アプリ起動中に待受ポートを調べて直接叩ける。

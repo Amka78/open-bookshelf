@@ -33,7 +33,7 @@ EXPO_PUBLIC_CALIBRE_PROXY_ORIGIN=http://127.0.0.1:8082 bun run expo:web
 ## 仕組み
 
 - `scripts/calibreProxyDevServer.ts` が `src-electrobun/calibreProxy.ts` の `resolveCalibreTarget` / `proxyCalibreRequest` をそのまま使う。
-- 401 の `WWW-Authenticate` を expose し、`Authorization`・Range・POST ボディを転送するため、Digest 認証もそのまま動く。
+- 401 の認証チャレンジは `X-Calibre-WWW-Authenticate` として expose する（同一オリジンの WebView が自前の認証ダイアログを出さないよう、標準の `WWW-Authenticate` は載せ替える）。`Authorization`・Range・POST ボディを転送するため、Digest 認証もそのまま動く。
 - `settingStore.api.baseUrl` には元の URL を保存したまま、リクエスト時だけプロキシ URL を使う（`app/utils/calibreProxy.ts`）。
 - サムネイル・本文画像・PDF も同じプロキシ経由になる（`getCalibreRequestBase`）。
 
