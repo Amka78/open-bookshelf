@@ -271,10 +271,13 @@ export class Api {
       return config
     })
 
-    // Handle 401 challenges: parse WWW-Authenticate and retry with the
+    // Handle 401 challenges: parse the auth challenge and retry with the
     // correct scheme (Basic or Digest).
-    // Also handles the case where WWW-Authenticate is not accessible
-    // (e.g., CORS blocking on web) by trying Basic auth as a fallback.
+    // The challenge normally arrives in WWW-Authenticate. On desktop/web the
+    // same-origin Calibre proxy renames it to X-Calibre-WWW-Authenticate so the
+    // WebView does not intercept the 401 with its own native auth dialog.
+    // Also handles the case where no challenge is accessible (e.g., CORS
+    // blocking on web) by trying Basic auth as a fallback.
     axiosInstance.interceptors.response.use(
       (response) => response,
       async (error) => {
@@ -289,8 +292,11 @@ export class Api {
           const headers = error.response.headers
           const wwwAuthenticate =
             typeof headers?.get === "function"
-              ? headers.get("www-authenticate")
-              : headers?.["WWW-Authenticate"] ?? headers?.["www-authenticate"]
+              ? headers.get("www-authenticate") ?? headers.get("x-calibre-www-authenticate")
+              : headers?.["WWW-Authenticate"] ??
+                headers?.["www-authenticate"] ??
+                headers?.["X-Calibre-WWW-Authenticate"] ??
+                headers?.["x-calibre-www-authenticate"]
 
           // Build a clean retry config to avoid issues with reusing
           // processed axios configs.
@@ -362,14 +368,14 @@ export class Api {
             }
           }
 
-          // WWW-Authenticate header not available (e.g. CORS blocking on web).
+          // Auth challenge header not available (e.g. CORS blocking on web).
           // Try Basic auth first; if the server rejects it with 400
           // "Unsupported authentication method", it needs Digest auth —
-          // but we can't negotiate Digest without the WWW-Authenticate header.
+          // but we can't negotiate Digest without the challenge.
           if (!wwwAuthenticate && !this.authMethod) {
             logger.warn(
-              "WWW-Authenticate header not available. Trying Basic auth.",
-              "If using a CORS proxy, add: Access-Control-Expose-Headers: WWW-Authenticate",
+              "Auth challenge header not available. Trying Basic auth.",
+              "If using a CORS proxy, expose: X-Calibre-WWW-Authenticate",
             )
             retryConfig.headers.Authorization = `Basic ${this.credentials.basicToken}`
 
@@ -389,11 +395,11 @@ export class Api {
                 basicData.includes("Unsupported")
               ) {
                 // Server requires Digest auth but we can't negotiate
-                // without WWW-Authenticate header. Propagate as 401
+                // without the challenge. Propagate as 401
                 // so the LoginModal shows with a helpful error.
                 logger.error(
-                  "Server requires Digest auth but WWW-Authenticate header is not accessible.",
-                  "Update your CORS proxy config to add: Access-Control-Expose-Headers: WWW-Authenticate",
+                  "Server requires Digest auth but the auth challenge header is not accessible.",
+                  "Update your CORS proxy config to expose: X-Calibre-WWW-Authenticate",
                 )
               }
               return Promise.reject(error)

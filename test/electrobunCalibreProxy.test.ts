@@ -64,7 +64,7 @@ describe("proxyCalibreRequest", () => {
     vi.restoreAllMocks()
   })
 
-  test("forwards the request and exposes the auth challenge to the WebView", async () => {
+  test("passes the auth challenge via a custom header so the WebView does not prompt", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response("{}", {
         status: 401,
@@ -87,9 +87,14 @@ describe("proxyCalibreRequest", () => {
     const response = await proxyCalibreRequest(request, target!)
 
     expect(response.status).toBe(401)
-    expect(response.headers.get("www-authenticate")).toContain("Digest")
+    // WebView2/WebKitGTK は同一オリジンの 401 + WWW-Authenticate を横取りするため、
+    // 標準ヘッダーは落として独自ヘッダーでアプリへ渡す。
+    expect(response.headers.get("www-authenticate")).toBeNull()
+    expect(response.headers.get("x-calibre-www-authenticate")).toContain("Digest")
     expect(response.headers.get("access-control-allow-origin")).toBe("*")
-    expect(response.headers.get("access-control-expose-headers")).toContain("WWW-Authenticate")
+    expect(response.headers.get("access-control-expose-headers")).toContain(
+      "X-Calibre-WWW-Authenticate",
+    )
     expect(response.headers.get("content-encoding")).toBeNull()
     expect(response.headers.get("content-length")).toBeNull()
 

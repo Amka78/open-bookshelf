@@ -333,3 +333,53 @@ describe("Api with the Electrobun Calibre proxy", () => {
     expect(api.getBookThumbnailUrl(1, "lib")).toBe("http://calibrelocal/get/thumb/1/lib?sz=300x400")
   })
 })
+
+describe("Api auth challenge handling", () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  test("negotiates Digest from X-Calibre-WWW-Authenticate when the standard header is hidden", async () => {
+    const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
+    api.setCredentials("reader", "secret", "cmVhZGVyOnNlY3JldA==")
+
+    const authorizations: (string | undefined)[] = []
+    const adapter = async (config: unknown) => {
+      const headers = (config as { headers?: { get?: (name: string) => unknown } }).headers
+      authorizations.push(headers?.get?.("Authorization") as string | undefined)
+
+      if (authorizations.length === 1) {
+        return Promise.reject({
+          isAxiosError: true,
+          config,
+          response: {
+            status: 401,
+            statusText: "Unauthorized",
+            headers: {
+              "x-calibre-www-authenticate":
+                'Digest realm="calibre", nonce="abc", qop="auth", algorithm=MD5',
+            },
+            data: "Unauthorized",
+          },
+        })
+      }
+
+      return {
+        data: {},
+        status: 200,
+        statusText: "OK",
+        headers: {},
+        config,
+      }
+    }
+
+    api.apisauce.axiosInstance.defaults.adapter = adapter as never
+
+    const result = await api.initializeCalibre()
+
+    expect(result.kind).toBe("ok")
+    expect(authorizations).toHaveLength(2)
+    expect(authorizations[0]).toBeUndefined()
+    expect(authorizations[1]).toContain('uri="/interface-data/update')
+  })
+})

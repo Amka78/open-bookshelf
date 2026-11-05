@@ -61,7 +61,7 @@ function buildCorsHeaders(request: Request): Record<string, string> {
     "Access-Control-Allow-Headers":
       request.headers.get("access-control-request-headers") ?? "Authorization, Content-Type",
     "Access-Control-Expose-Headers":
-      "WWW-Authenticate, Content-Disposition, Content-Length, Content-Range, Accept-Ranges, ETag, Last-Modified",
+      "WWW-Authenticate, X-Calibre-WWW-Authenticate, Content-Disposition, Content-Length, Content-Range, Accept-Ranges, ETag, Last-Modified",
     "Access-Control-Max-Age": "600",
   }
 }
@@ -139,6 +139,16 @@ export async function proxyCalibreRequest(
       if (HOP_BY_HOP_HEADERS.has(key.toLowerCase())) return
       responseHeaders.set(key, value)
     })
+
+    // 同一オリジンの WebView は 401 + WWW-Authenticate を自前の認証ダイアログで
+    // 処理してしまい、アプリの 401 ハンドラ（Digest/Basic の選択）に届かない。
+    // チャレンジは独自ヘッダーで渡し、WebView には認証チャレンジを見せない。
+    const authChallenge = responseHeaders.get("www-authenticate")
+    if (authChallenge) {
+      responseHeaders.delete("www-authenticate")
+      responseHeaders.set("x-calibre-www-authenticate", authChallenge)
+    }
+
     for (const [key, value] of Object.entries(cors)) {
       responseHeaders.set(key, value)
     }
