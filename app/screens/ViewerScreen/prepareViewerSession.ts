@@ -5,11 +5,14 @@ import type { ViewerOpenRequest } from "@/navigators/types"
 import {
   cacheBookFile,
   cacheBookImages,
+  isRemoteBookImagePath,
   reCacheMissingImages,
   verifyCachedBookImages,
 } from "@/utils/bookImageCache"
+import { getCalibreRequestBase } from "@/utils/calibreProxy"
 import { isCalibreHtmlViewerFormat, isCalibreSerializedHtmlPath } from "@/utils/calibreHtmlViewer"
 import { isNetworkAvailable } from "@/utils/network"
+import { Platform } from "react-native"
 
 type Stores = ReturnType<typeof useStores>
 
@@ -75,6 +78,8 @@ export async function prepareViewerSession({
 
   const { selectedBook, selectedLibrary } = resolveSelectedLibraryAndBook(calibreRootStore, request)
   const { format } = request
+  // Electrobun ではプロキシ経由の URL でないと画像が CORS で読めない。
+  const requestBaseUrl = getCalibreRequestBase(settingStore.api.baseUrl ?? "")
 
   selectedBook.metaData!.setProp("selectedFormat", format)
 
@@ -93,7 +98,7 @@ export async function prepareViewerSession({
       bookId: selectedBook.id,
       format,
       libraryId: selectedLibrary.id,
-      baseUrl: settingStore.api.baseUrl ?? "",
+      baseUrl: requestBaseUrl,
     })
 
     if (history) {
@@ -157,7 +162,7 @@ export async function prepareViewerSession({
         bookId: selectedBook.id,
         format,
         libraryId: selectedLibrary.id,
-        baseUrl: settingStore.api.baseUrl ?? "",
+        baseUrl: requestBaseUrl,
         size,
         hash,
         pathList: selectedBook.path.slice(),
@@ -169,8 +174,14 @@ export async function prepareViewerSession({
       reportProgress(onProgress, "viewerPreparation.verifyingCache")
 
       const { allExist, missingIndices } = await verifyCachedBookImages(cachedPaths)
+      // Web の cachedPath はリモート URL。以前のベース URL（プロキシ導入前など）で
+      // 保存されていると画像が読めないため、現在のベースと違えば作り直す。
+      const canRebuildWebUrls = Platform.OS === "web" && selectedBook.path.length > 0
+      const usesStaleBaseUrl =
+        canRebuildWebUrls &&
+        cachedPaths.some((path) => isRemoteBookImagePath(path) && !path.startsWith(requestBaseUrl))
 
-      if (!allExist) {
+      if (!allExist || usesStaleBaseUrl) {
         const online = await isNetworkAvailable()
 
         if (!online) {
@@ -183,16 +194,26 @@ export async function prepareViewerSession({
 
         const hash = selectedBook.hash ?? history.bookHash ?? 0
         const size = selectedBook.metaData?.formatSizes.get(format) ?? 0
-        const updatedPaths = await reCacheMissingImages({
-          bookId: selectedBook.id,
-          format,
-          libraryId: selectedLibrary.id,
-          baseUrl: settingStore.api.baseUrl ?? "",
-          size,
-          hash,
-          cachedPaths: history.cachedPath.slice(),
-          missingIndices,
-        })
+        const updatedPaths = canRebuildWebUrls
+          ? await cacheBookImages({
+              bookId: selectedBook.id,
+              format,
+              libraryId: selectedLibrary.id,
+              baseUrl: requestBaseUrl,
+              size,
+              hash,
+              pathList: selectedBook.path.slice(),
+            })
+          : await reCacheMissingImages({
+              bookId: selectedBook.id,
+              format,
+              libraryId: selectedLibrary.id,
+              baseUrl: requestBaseUrl,
+              size,
+              hash,
+              cachedPaths: history.cachedPath.slice(),
+              missingIndices,
+            })
 
         history.setCachePath(updatedPaths)
         history.setCacheVerified(true)
@@ -221,7 +242,7 @@ export async function prepareViewerSession({
               bookId: selectedBook.id,
               format,
               libraryId: selectedLibrary.id,
-              baseUrl: settingStore.api.baseUrl ?? "",
+              baseUrl: requestBaseUrl,
               size,
               hash,
               pathList: selectedBook.path.slice(),

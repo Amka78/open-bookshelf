@@ -45,16 +45,31 @@ Electrobun 2.x のビルドは Hutch が担当する。初回実行時に版に�
 
 ## preload（ネイティブダイアログ連携）
 
-`src-electrobun/preload.ts` が `window.__ELECTROBUN__` とネイティブダイアログの bridge を注入する。2.0.5 の Linux では `BrowserWindow` の `preload` に `views://preload/index.js` を渡しても実行されない（インライン JavaScript なら動く）。そのため `src-electrobun/index.ts` でビルド済みの `views/preload/index.js` を読み込み、インライン JavaScript として渡している。
+`src-electrobun/preload.ts` が `window.__ELECTROBUN__` とネイティブダイアログの bridge を注入する。2.0.5 の Linux では `BrowserWindow` の `preload` に `views://preload/index.js` を渡しても実行されない（インライン JavaScript なら動く）。そのため `src-electrobun/index.ts` でビルド済みの `views/preload/index.js` を読み込み、インライン JavaScript として渡している。プロキシのポートは起動ごとに変わるため、preload の先頭で `window.__ELECTROBUN_PROXY_ORIGIN` も注入する。
 
 ```ts
-const preloadScript = readFileSync(
-  join(import.meta.dir, "..", "views", "preload", "index.js"),
-  "utf8",
-)
+const preloadScript = `window.__ELECTROBUN_PROXY_ORIGIN = ${JSON.stringify(localServer.origin)};
+${readFileSync(join(import.meta.dir, "..", "views", "preload", "index.js"), "utf8")}`
 ```
 
 `window.__ELECTROBUN__` が `true` なら preload は効いている。`false`/`undefined` の場合はネイティブダイアログではなく Web のモーダルが使われる。
+
+## Calibre API のプロキシ（CORS 回避）
+
+Electrobun の WebView はブラウザと同じ CORS 判定を行うため、`http://127.0.0.1:<port>` から Calibre へ直接アクセスすると CORS で失敗する（Android はネイティブ通信なので発生しない）。Electrobun の API には CORS を無効化する設定が無いため、同梱 Web バンドルを配信している Bun サーバーがリバースプロキシになる。
+
+- プロキシのパスは `/__calibre/<encodeURIComponent(CalibreのベースURL)>/...`。`src-electrobun/calibreProxy.ts` が上流 URL に解決し、`Authorization`・Range・POST ボディをそのまま流す。
+- `api.setUrl()` は Electrobun のときだけ axios の baseURL をプロキシに差し替える。`settingStore.api.baseUrl` にはユーザーが入力した元 URL をそのまま保存するので、ConnectScreen の表示・再接続・OPDS は従来どおり。
+- Digest 認証の `uri` は上流のパスでなければ通らないため、`api.ts` は元 URL を保持し、プロキシ URL を上流に戻してから計算する。ベース URL にパス（例: `http://host/calibre`）がある場合は、そのパスも含めて連結する。
+- 開発時は Metro（`localhost:8081`）からプロキシへクロスオリジンになるため、プロキシは CORS ヘッダーと `OPTIONS` を処理し、`WWW-Authenticate` を expose する。
+- 制約: 自己署名 HTTPS の Calibre は Bun の `fetch` が証明書エラーで止まる。ブラウザのように警告を承認して続行することはできない。
+
+動作確認は、アプリ起動中に待受ポートを調べて直接叩ける。
+
+```bash
+# http://calibre.local:8080 をエンコードした例
+curl "http://127.0.0.1:<proxy-port>/__calibre/http%3A%2F%2Fcalibre.local%3A8080/interface-data/init"
+```
 
 ## 配布ビルドと OTA（canary のみ）
 
@@ -102,3 +117,4 @@ Electrobun はクロスコンパイルできないため、各 OS のネイテ�
 | `X11 Error: GLXBadWindow` | WSLg の GLX。`WEBKIT_DISABLE_COMPOSITING_MODE=1` で回避（スクリプト設定済み） |
 | ログに `GTK EVENT LOOP STARTED` は出るがウィンドウが出ない | `Resources/app/bun/index.js` が生成されていない（Hutch のビルドログを確認） |
 | 画面が「問題が発生しました」になる | WebView 内の JS エラー。Metro のログを確認する |
+| 401 後にログイン画面が出ない／一瞬だけ出て消える | `react-native-modalfy` の `closeModal()` がアニメーション終了時点の最新モーダルを閉じてしまう競合。`patches/react-native-modalfy+3.7.0.patch` で修正済み（`bun install` の postinstall で適用） |

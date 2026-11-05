@@ -6,6 +6,7 @@
  * documentation for more details.
  */
 import Config from "@/config"
+import { buildCalibreProxyBase, toCalibreUpstreamUrl } from "@/utils/calibreProxy"
 import { logger } from "@/utils/logger"
 import { perfLog, perfNow } from "@/utils/perf"
 import { type ApiResponse, type ApisauceInstance, create } from "apisauce"
@@ -60,6 +61,10 @@ export class Api {
   private digestChallenge: DigestChallenge | null = null
   private digestNc = 0
   private authStateVersion = 0
+  // Electrobun でローカルプロキシを使うとき、上流の URL とプロキシのベースを
+  // 分けて保持する。Digest の uri は上流のパスで計算する必要がある。
+  private originalBaseUrl: string | null = null
+  private calibreProxyBase: string | null = null
   private _cachedBasicHeader: Record<string, string> | undefined = undefined
   private _cachedBasicToken: string | undefined = undefined
   private authStateListeners = new Set<(version: number) => void>()
@@ -80,7 +85,11 @@ export class Api {
   }
 
   setUrl(baseUrl: string) {
-    this.apisauce.setBaseURL(baseUrl)
+    const normalized = baseUrl.trim().replace(/\/+$/, "")
+    this.originalBaseUrl = normalized || null
+    this.calibreProxyBase = normalized ? buildCalibreProxyBase(normalized) : null
+    // Electrobun では同一オリジンのローカルプロキシ経由にする（CORS 回避）。
+    this.apisauce.setBaseURL(this.calibreProxyBase ?? normalized)
   }
 
   setAuthorization(token: string) {
@@ -202,12 +211,29 @@ export class Api {
   }
 
   private getDigestUri(url?: string, baseURL?: string): string {
+    const upstreamUrl = url
+      ? toCalibreUpstreamUrl(url, this.calibreProxyBase, this.originalBaseUrl)
+      : url
+    const base = this.originalBaseUrl ?? baseURL ?? this.apisauce.getBaseURL()
     try {
-      const fullUrl = new URL(url ?? "", baseURL || this.apisauce.getBaseURL())
-      return fullUrl.pathname + fullUrl.search
+      const baseUrl = new URL(base)
+      if (!upstreamUrl) {
+        return baseUrl.pathname + baseUrl.search
+      }
+
+      // 絶対 URL はそのまま、相対パスは axios と同じくベースのパスの下に連結する。
+      // new URL("/x", "http://host/calibre") はベースのパスを捨ててしまうため使わない。
+      if (/^https?:\/\//i.test(upstreamUrl)) {
+        const absoluteUrl = new URL(upstreamUrl)
+        return absoluteUrl.pathname + absoluteUrl.search
+      }
+
+      const basePath = baseUrl.pathname.replace(/\/+$/, "")
+      const path = upstreamUrl.startsWith("/") ? upstreamUrl : `/${upstreamUrl}`
+      return `${basePath}${path}`
     } catch {
-      if (!url) return "/"
-      return url.startsWith("/") ? url : `/${url}`
+      if (!upstreamUrl) return "/"
+      return upstreamUrl.startsWith("/") ? upstreamUrl : `/${upstreamUrl}`
     }
   }
 
@@ -520,19 +546,21 @@ export class Api {
   }
 
   getBookDownloadUrl(format: string, bookId: number, libraryId: string): string {
-    return `${this.apisauce.getBaseURL()}/get/${encodeURIComponent(format)}/${bookId}/${libraryId}`
+    return `${this.apisauce.getBaseURL()}/get/${encodeURIComponent(
+      format,
+    )}/${bookId}/${encodeURIComponent(libraryId)}`
   }
 
   getBookThumbnailUrl(bookId: number, libraryId: string, size = "300x400"): string {
-    return `${this.apisauce.getBaseURL()}/get/thumb/${bookId}/${libraryId}?sz=${encodeURIComponent(
-      size,
-    )}`
+    return `${this.apisauce.getBaseURL()}/get/thumb/${bookId}/${encodeURIComponent(
+      libraryId,
+    )}?sz=${encodeURIComponent(size)}`
   }
 
   getInlineBookUrl(format: string, bookId: number, libraryId = "config"): string {
     return `${this.apisauce.getBaseURL()}/get/${encodeURIComponent(
       format,
-    )}/${bookId}/${libraryId}?content_disposition=inline`
+    )}/${bookId}/${encodeURIComponent(libraryId)}?content_disposition=inline`
   }
 
   getBookFileUrl(
@@ -545,11 +573,15 @@ export class Api {
     baseUrl?: string,
   ): string {
     const targetBaseUrl = baseUrl ?? this.apisauce.getBaseURL()
-    return encodeURI(
-      `${targetBaseUrl}/book-file/${bookId}/${encodeURIComponent(
-        format,
-      )}/${size}/${hash}/${path}?library_id=${libraryId}`,
-    )
+    // baseURL にはプロキシのパス（%3A を含む）が入るため、URL 全体を encodeURI すると
+    // %3A が %253A になって二重エンコードされる。パス要素だけを個別にエンコードする。
+    const encodedPath = path
+      .split("/")
+      .map((segment) => encodeURIComponent(segment))
+      .join("/")
+    return `${targetBaseUrl}/book-file/${bookId}/${encodeURIComponent(
+      format,
+    )}/${size}/${hash}/${encodedPath}?library_id=${encodeURIComponent(libraryId)}`
   }
 
   /**

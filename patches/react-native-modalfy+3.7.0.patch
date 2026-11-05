@@ -1,0 +1,80 @@
+diff --git a/node_modules/react-native-modalfy/lib/commonjs/lib/ModalState.js b/node_modules/react-native-modalfy/lib/commonjs/lib/ModalState.js
+index 9e0e726..7bdfad8 100644
+--- a/node_modules/react-native-modalfy/lib/commonjs/lib/ModalState.js
++++ b/node_modules/react-native-modalfy/lib/commonjs/lib/ModalState.js
+@@ -146,7 +146,7 @@ const createModalState = () => {
+     } else if (closingElement && newOpenedItems.has(closingElement)) {
+       // @ts-ignore
+       newOpenedItems.delete(closingElement);
+-    } else {
++    } else if (!closingElement) {
+       const staleStackItem = Array.from(newOpenedItems).pop();
+       if (staleStackItem) newOpenedItems.delete(staleStackItem);
+     }
+diff --git a/node_modules/react-native-modalfy/lib/commonjs/lib/StackItem.js b/node_modules/react-native-modalfy/lib/commonjs/lib/StackItem.js
+index 691616f..1f202f6 100644
+--- a/node_modules/react-native-modalfy/lib/commonjs/lib/StackItem.js
++++ b/node_modules/react-native-modalfy/lib/commonjs/lib/StackItem.js
+@@ -124,7 +124,7 @@ useEffect(() => {
+         type: 'closeModal',
+         origin: wasClosedByBackdropPress ? 'backdrop' : 'default'
+       });
+-      closeModal(modalName);
++      closeModal(stackItem);
+       if ((pendingClosingAction === null || pendingClosingAction === void 0 ? void 0 : pendingClosingAction.action) === 'closeModal') removeClosingAction(pendingClosingAction);
+       (0, _utils.queueMacroTask)(callback);
+     });
+diff --git a/node_modules/react-native-modalfy/lib/module/lib/ModalState.js b/node_modules/react-native-modalfy/lib/module/lib/ModalState.js
+index 9815dad..119fbb5 100644
+--- a/node_modules/react-native-modalfy/lib/module/lib/ModalState.js
++++ b/node_modules/react-native-modalfy/lib/module/lib/ModalState.js
+@@ -138,7 +138,7 @@ const createModalState = () => {
+     } else if (closingElement && newOpenedItems.has(closingElement)) {
+       // @ts-ignore
+       newOpenedItems.delete(closingElement);
+-    } else {
++    } else if (!closingElement) {
+       const staleStackItem = Array.from(newOpenedItems).pop();
+       if (staleStackItem) newOpenedItems.delete(staleStackItem);
+     }
+diff --git a/node_modules/react-native-modalfy/lib/module/lib/StackItem.js b/node_modules/react-native-modalfy/lib/module/lib/StackItem.js
+index 5df1205..ce76ef8 100644
+--- a/node_modules/react-native-modalfy/lib/module/lib/StackItem.js
++++ b/node_modules/react-native-modalfy/lib/module/lib/StackItem.js
+@@ -109,7 +109,7 @@ useEffect(() => {
+         type: 'closeModal',
+         origin: wasClosedByBackdropPress ? 'backdrop' : 'default'
+       });
+-      closeModal(modalName);
++      closeModal(stackItem);
+       if ((pendingClosingAction === null || pendingClosingAction === void 0 ? void 0 : pendingClosingAction.action) === 'closeModal') removeClosingAction(pendingClosingAction);
+       queueMacroTask(callback);
+     });
+diff --git a/node_modules/react-native-modalfy/src/lib/ModalState.ts b/node_modules/react-native-modalfy/src/lib/ModalState.ts
+index b55c0a8..5975038 100644
+--- a/node_modules/react-native-modalfy/src/lib/ModalState.ts
++++ b/node_modules/react-native-modalfy/src/lib/ModalState.ts
+@@ -175,7 +175,7 @@ const createModalState = (): ModalStateType<any> => {
+     } else if (closingElement && newOpenedItems.has(closingElement)) {
+       // @ts-ignore
+       newOpenedItems.delete(closingElement)
+-    } else {
++    } else if (!closingElement) {
+       const staleStackItem = Array.from(newOpenedItems).pop()
+       if (staleStackItem) newOpenedItems.delete(staleStackItem)
+     }
+diff --git a/node_modules/react-native-modalfy/src/lib/StackItem.tsx b/node_modules/react-native-modalfy/src/lib/StackItem.tsx
+index 42a3548..227ae5e 100644
+--- a/node_modules/react-native-modalfy/src/lib/StackItem.tsx
++++ b/node_modules/react-native-modalfy/src/lib/StackItem.tsx
+@@ -163,7 +163,9 @@ useEffect(() => {
+ 
+       updateAnimatedValue(position - 1, () => {
+         onCloseListener.current({ type: 'closeModal', origin: wasClosedByBackdropPress ? 'backdrop' : 'default' })
+-        closeModal(modalName)
++        // NOTE: アニメーション中に別のモーダルが開いても、閉じる対象が最新モーダルにすり替わらないよう
++        // 自身のスタック項目を渡す（closeModal(undefined) は終了時点の最新項目を消してしまう）。
++        closeModal(stackItem)
+         if (pendingClosingAction?.action === 'closeModal') removeClosingAction(pendingClosingAction)
+         queueMacroTask(callback)
+       })

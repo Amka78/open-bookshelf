@@ -30,7 +30,7 @@ export function buildThumbnailSourceCache({
   const nextCache = new Map<Book["id"], ThumbnailSourceCacheEntry>()
 
   for (const book of bookList) {
-    const uri = encodeURI(getBookThumbnailUrl(book.id, libraryId))
+    const uri = getBookThumbnailUrl(book.id, libraryId)
     const cachedSource = previousCache.get(book.id)
 
     if (

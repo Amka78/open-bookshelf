@@ -1,6 +1,6 @@
 {
   "name": "open-book-shelf",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "private": true,
   "license": "PolyForm-Noncommercial-1.0.0",
   "scripts": {
@@ -42,6 +42,8 @@
     "expo:android": "USE_EXPO_GO=true bunx expo start --android",
     "expo:ios": "USE_EXPO_GO=true bunx expo start --ios",
     "expo:web": "bunx expo start --web",
+    "dev:proxy": "bun scripts/calibreProxyDevServer.ts",
+    "dev:web": "bun scripts/devWeb.ts",
     "debug:web": "EXPO_PUBLIC_LOG_LEVEL=debug bunx expo start --web",
     "debug:web:perf": "EXPO_PUBLIC_PERF_LOG=search bunx expo start --web",
     "desktop": "WEBKIT_DISABLE_COMPOSITING_MODE=1 ELECTROBUN_WEB_URL=http://localhost:8081 electrobun dev",

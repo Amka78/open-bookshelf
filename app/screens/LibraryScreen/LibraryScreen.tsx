@@ -411,15 +411,13 @@ export const LibraryScreen: FC = observer(() => {
       const showSingleSelectionDetails = isSelected && libraryHook.selectedBookIds.size === 1
       const readStatus = calibreRootStore.getReadingStatus(selectedLibrary!.id, item.id)
 
-      const thumbnailUri = encodeURI(api.getBookThumbnailUrl(item.id, selectedLibrary!.id))
+      const thumbnailUri = api.getBookThumbnailUrl(item.id, selectedLibrary!.id)
       const imageSource = thumbnailSourceById.get(item.id)?.source ?? {
         uri: thumbnailUri,
         headers: api.getAuthHeaders(thumbnailUri),
       }
       const imageUrl = imageSource.uri
-      const ocrImageUrl = encodeURI(
-        api.getBookThumbnailUrl(item.id, selectedLibrary!.id, "1200x1600"),
-      )
+      const ocrImageUrl = api.getBookThumbnailUrl(item.id, selectedLibrary!.id, "1200x1600")
       const handleBookMetadataSearch = async (query: string) => {
         libraryHook.setHeaderSearchText(query)
         await libraryHook.onSearch(query)
