@@ -44,4 +44,9 @@ services:
     command: --scope open-bookshelf
     restart: unless-stopped
 
+volumes:
+  # 自己署名証明書の永続化先。コンテナが参照する名前付きボリュームは
+  # ここで宣言しないと "refers to undefined volume" で compose が起動しない。
+  ssl-certs:
+
 
