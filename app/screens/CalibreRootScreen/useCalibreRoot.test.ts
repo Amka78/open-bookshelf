@@ -129,6 +129,16 @@ describe("useCalibreRoot", () => {
     expect(callOrder).toEqual(["setLibrary", "navigate"])
   })
 
+  test("onLibraryPress navigates when navigation state is unavailable", () => {
+    mockGetState.mockReturnValueOnce(undefined)
+    const { result } = renderUseCalibreRoot()
+
+    expect(() => result.current.onLibraryPress("library1")).not.toThrow()
+    expect(mockSetLibrary).toHaveBeenCalledWith("library1")
+    expect(mockPopTo).not.toHaveBeenCalled()
+    expect(mockNavigate).toHaveBeenCalledWith("Library")
+  })
+
   test("onLibraryPress can be called multiple times", async () => {
     const { result } = renderUseCalibreRoot()
 

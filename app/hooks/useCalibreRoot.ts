@@ -12,7 +12,9 @@ export function useCalibreRoot() {
     calibreRootStore.setLibrary(id)
 
     // デスクトップでは Library が土台に残っているため、navigate で積み増さず popTo で戻る。
-    const hasLibraryRoute = navigation.getState().routes.some((route) => route.name === "Library")
+    // モーダル内などナビゲーション状態が取れない文脈では getState() が undefined になる。
+    const hasLibraryRoute =
+      navigation.getState()?.routes.some((route) => route.name === "Library") ?? false
     if (hasLibraryRoute) {
       navigation.popTo("Library")
       return
