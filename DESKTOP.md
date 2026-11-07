@@ -43,16 +43,18 @@ Electrobun 2.x のビルドは Hutch が担当する。初回実行時に版に�
 - メインプロセスのエントリは `Resources/app/bun/index.js`、各 view は **`views/<view-name>/index.js`** に出力される（2.x は entrypoint のファイル名に依存しない）。
 - ランチャーは `Resources/app/bun/index.js` を固定で読むため、`build.bun.entrypoint` は `src-electrobun/index.ts` のままにする。
 
-## preload（ネイティブダイアログ連携）
+## preload（プロキシ origin の注入）
 
-`src-electrobun/preload.ts` が `window.__ELECTROBUN__` とネイティブダイアログの bridge を注入する。2.0.5 の Linux では `BrowserWindow` の `preload` に `views://preload/index.js` を渡しても実行されない（インライン JavaScript なら動く）。そのため `src-electrobun/index.ts` でビルド済みの `views/preload/index.js` を読み込み、インライン JavaScript として渡している。プロキシのポートは起動ごとに変わるため、preload の先頭で `window.__ELECTROBUN_PROXY_ORIGIN` も注入する。
+`src-electrobun/preload.ts` が `window.__ELECTROBUN__` を注入する。2.0.5 の Linux では `BrowserWindow` の `preload` に `views://preload/index.js` を渡しても実行されない（インライン JavaScript なら動く）。そのため `src-electrobun/index.ts` でビルド済みの `views/preload/index.js` を読み込み、インライン JavaScript として渡している。プロキシのポートは起動ごとに変わるため、preload の先頭で `window.__ELECTROBUN_PROXY_ORIGIN` も注入する。
 
 ```ts
 const preloadScript = `window.__ELECTROBUN_PROXY_ORIGIN = ${JSON.stringify(localServer.origin)};
 ${readFileSync(join(import.meta.dir, "..", "views", "preload", "index.js"), "utf8")}`
 ```
 
-`window.__ELECTROBUN__` が `true` なら preload は効いている。`false`/`undefined` の場合はネイティブダイアログではなく Web のモーダルが使われる。
+`window.__ELECTROBUN__` が `true` なら preload は効いている。
+
+**ネイティブダイアログは使わない。** `Utils.showMessageBox` は UI スレッドへ同期ディスパッチする実装で、WebView からの RPC ハンドラ内で呼ぶとダイアログが表示されないまま RPC がタイムアウトする（Windows で実測）。再開確認ダイアログでこれが起きると `viewerReady` が false のままになり、ビューアが黒画面で固まる。ConfirmModal / ErrorModal は `useElectrobunModal` から modalfy の Web モーダルへ流している。preload の `__electrobunShowConfirm` / `__electrobunShowError` は Electrobun 側の修正後に戻すため残している。
 
 ## Calibre API のプロキシ（CORS 回避）
 
