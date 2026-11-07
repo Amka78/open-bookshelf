@@ -1,61 +1,17 @@
 import type { ModalStackParams } from "@/components/Modals/Types"
-import { translate } from "@/i18n"
-import { isElectrobun, showNativeConfirm, showNativeError } from "@/utils/electrobunBridge"
-import { useCallback, useMemo } from "react"
 import { useModal } from "react-native-modalfy"
 
-type OpenModalFn = ReturnType<typeof useModal<ModalStackParams>>["openModal"]
-
 /**
- * Wraps react-native-modalfy's useModal to intercept ConfirmModal and ErrorModal
- * when running inside Electrobun desktop shell, replacing them with native OS dialogs.
- * All other modals pass through to the standard web-based modal system.
+ * デスクトップ（Electrobun）でもネイティブダイアログは使わず、modalfy の Web モーダルで表示する。
+ *
+ * Electrobun 2.0.5 の `Utils.showMessageBox` は UI スレッドへ同期ディスパッチする。
+ * WebView からの RPC ハンドラ内で呼ぶとダイアログが出ないまま RPC がタイムアウトし、
+ * `showNativeConfirm` の then/catch が呼ばれない。再開確認でこれが起きると
+ * `viewerReady` が false のままになり、ビューアが黒画面で固まる（2026-11-07 に実機で確認）。
+ *
+ * ネイティブダイアログ用の bridge（`electrobunBridge` / preload の RPC）は、
+ * Electrobun 側が修正されたときに戻せるよう残している。
  */
 export function useElectrobunModal() {
-  const modal = useModal<ModalStackParams>()
-  const electrobun = isElectrobun()
-
-  const openModal: OpenModalFn = useCallback(
-    (name, params?) => {
-      if (!electrobun) {
-        modal.openModal(name, params)
-        return
-      }
-
-      if (name === "ConfirmModal") {
-        const p = params as ModalStackParams["ConfirmModal"]
-        const title = p?.title ?? (p?.titleTx ? translate(p.titleTx) : "") ?? ""
-        const message = p?.message ?? (p?.messageTx ? translate(p.messageTx) : "") ?? ""
-        const okLabel = (p?.okTx ? translate(p.okTx) : translate("common.ok")) ?? ""
-        const cancelLabel = (p?.cancelTx ? translate(p.cancelTx) : translate("common.cancel")) ?? ""
-
-        showNativeConfirm(title, message, okLabel, cancelLabel).then((confirmed) => {
-          if (confirmed) {
-            p?.onOKPress?.()
-          } else {
-            p?.onCancelPress?.()
-          }
-        })
-        return
-      }
-
-      if (name === "ErrorModal") {
-        const p = params as ModalStackParams["ErrorModal"]
-        const title = p?.title ?? (p?.titleTx ? translate(p.titleTx) : "Error") ?? ""
-        const message = p?.message ?? (p?.messageTx ? translate(p.messageTx) : "") ?? ""
-
-        showNativeError(title, message)
-        return
-      }
-
-      modal.openModal(name, params)
-    },
-    [electrobun, modal],
-  )
-
-  // 呼び出し側の effect 依存に使われるため、毎レンダー新しいオブジェクトを返さない。
-  return useMemo(
-    () => (electrobun ? { ...modal, openModal } : modal),
-    [electrobun, modal, openModal],
-  )
+  return useModal<ModalStackParams>()
 }

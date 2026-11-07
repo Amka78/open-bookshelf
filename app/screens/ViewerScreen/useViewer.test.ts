@@ -633,6 +633,22 @@ describe("useViewer", () => {
     )
   })
 
+  test("starts from the first page when the resume dialog cannot be opened", async () => {
+    const frames = createFrameScheduler()
+    globalThis.requestAnimationFrame = frames.requestAnimationFrame
+    globalThis.cancelAnimationFrame = frames.cancelAnimationFrame
+    mockOpenModal.mockImplementationOnce(() => {
+      throw new Error("not a valid modal name")
+    })
+
+    const { result } = renderHook(() => useViewer())
+
+    await playResumeReadingPromptAppears({ flushFrame: frames.flushFrame })
+
+    expect(result.current.viewerReady).toBe(true)
+    expect(result.current.initialPage).toBe(0)
+  })
+
   test("keeps the resume reading confirm modal to a single open call across rerenders", async () => {
     const frames = createFrameScheduler()
     globalThis.requestAnimationFrame = frames.requestAnimationFrame

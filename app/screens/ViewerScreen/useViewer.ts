@@ -323,23 +323,35 @@ export function useViewer() {
 
         current.opened = true
         current.openedAt = Date.now()
-        modal.openModal("ConfirmModal", {
-          titleTx: "modal.resumeReadingConfirmModal.title",
-          messageTx: "modal.resumeReadingConfirmModal.message",
-          okTx: "common.yes",
-          cancelTx: "common.no",
-          onOKPress: () => {
-            logger.debug("User chose to resume reading", { promptKey, resumePage })
-            resumePromptState = { key: promptKey, status: "accepted" }
-            setInitialPage(resumePageRef.current)
-            setViewerReady(true)
-          },
-          onCancelPress: () => {
-            resumePromptState = { key: promptKey, status: "declined" }
-            setInitialPage(0)
-            setViewerReady(true)
-          },
-        })
+        try {
+          modal.openModal("ConfirmModal", {
+            titleTx: "modal.resumeReadingConfirmModal.title",
+            messageTx: "modal.resumeReadingConfirmModal.message",
+            okTx: "common.yes",
+            cancelTx: "common.no",
+            onOKPress: () => {
+              logger.debug("User chose to resume reading", { promptKey, resumePage })
+              resumePromptState = { key: promptKey, status: "accepted" }
+              setInitialPage(resumePageRef.current)
+              setViewerReady(true)
+            },
+            onCancelPress: () => {
+              resumePromptState = { key: promptKey, status: "declined" }
+              setInitialPage(0)
+              setViewerReady(true)
+            },
+          })
+        } catch (error) {
+          // ダイアログを開けないまま viewerReady が false に固定されると
+          // ビューアが黒画面のまま復帰できなくなるため、先頭ページで開く。
+          logger.warn("Failed to open the resume dialog, starting from the beginning", {
+            promptKey,
+            error,
+          })
+          resumePromptState = { key: promptKey, status: "declined" }
+          setInitialPage(0)
+          setViewerReady(true)
+        }
       })
     })
 

@@ -12,14 +12,6 @@ vi.doMock("@/i18n", () => ({
   translate: (key: string) => key,
 }))
 
-vi.doMock(
-  "/home/amka78/open-bookshelf/node_modules/react-native-modalfy/lib/commonjs/index.js",
-  () => ({
-    useModal: () => useModalMock(),
-    modalfy: vi.fn(),
-  }),
-)
-
 describe("useElectrobunModal", () => {
   const passthroughOpenModal = vi.fn()
   const originalElectrobunFlag = window.__ELECTROBUN__
@@ -52,7 +44,7 @@ describe("useElectrobunModal", () => {
     expect(result.current.openModal).toBe(passthroughOpenModal)
   })
 
-  test("keeps the returned object stable across re-renders inside Electrobun", async () => {
+  test("keeps the returned object stable across re-renders", async () => {
     window.__ELECTROBUN__ = true
     const { useElectrobunModal } = await import("./useElectrobunModal")
 
@@ -66,12 +58,12 @@ describe("useElectrobunModal", () => {
     expect(result.current.openModal).toBe(first.openModal)
   })
 
-  test("routes ConfirmModal to the native confirm dialog inside Electrobun", async () => {
+  // Electrobun のネイティブダイアログは RPC ハンドラ内で呼ぶとデッドロックし、
+  // 再開確認が返らないままビューアが黒画面になる。Web モーダルへ流すことを固定する。
+  test("routes ConfirmModal to modalfy even inside Electrobun", async () => {
     window.__ELECTROBUN__ = true
     const showNativeConfirmMock = vi.fn().mockResolvedValue(true)
     window.__electrobunShowConfirm = showNativeConfirmMock
-    const onOKPress = vi.fn()
-    const onCancelPress = vi.fn()
     const { useElectrobunModal } = await import("./useElectrobunModal")
 
     const { result } = renderHook(() => useElectrobunModal())
@@ -81,53 +73,22 @@ describe("useElectrobunModal", () => {
       messageTx: "modal.resumeReadingConfirmModal.message",
       okTx: "common.yes",
       cancelTx: "common.no",
-      onOKPress,
-      onCancelPress,
+      onOKPress: vi.fn(),
+      onCancelPress: vi.fn(),
     })
 
-    await new Promise((resolve) => setTimeout(resolve, 0))
-
-    expect(showNativeConfirmMock).toHaveBeenCalledWith(
-      "modal.resumeReadingConfirmModal.title",
-      "modal.resumeReadingConfirmModal.message",
-      "common.yes",
-      "common.no",
-    )
-    expect(onOKPress).toHaveBeenCalledTimes(1)
-    expect(onCancelPress).not.toHaveBeenCalled()
-    expect(passthroughOpenModal).not.toHaveBeenCalled()
-  })
-
-  test("routes a rejected native confirm choice to the cancel callback inside Electrobun", async () => {
-    window.__ELECTROBUN__ = true
-    const showNativeConfirmMock = vi.fn().mockResolvedValue(false)
-    window.__electrobunShowConfirm = showNativeConfirmMock
-    const onOKPress = vi.fn()
-    const onCancelPress = vi.fn()
-    const { useElectrobunModal } = await import("./useElectrobunModal")
-
-    const { result } = renderHook(() => useElectrobunModal())
-
-    result.current.openModal("ConfirmModal", {
-      title: "Native Confirm",
-      message: "Proceed?",
-      onOKPress,
-      onCancelPress,
+    expect(showNativeConfirmMock).not.toHaveBeenCalled()
+    expect(passthroughOpenModal).toHaveBeenCalledWith("ConfirmModal", {
+      titleTx: "modal.resumeReadingConfirmModal.title",
+      messageTx: "modal.resumeReadingConfirmModal.message",
+      okTx: "common.yes",
+      cancelTx: "common.no",
+      onOKPress: expect.any(Function),
+      onCancelPress: expect.any(Function),
     })
-
-    await new Promise((resolve) => setTimeout(resolve, 0))
-
-    expect(showNativeConfirmMock).toHaveBeenCalledWith(
-      "Native Confirm",
-      "Proceed?",
-      "common.ok",
-      "common.cancel",
-    )
-    expect(onCancelPress).toHaveBeenCalledTimes(1)
-    expect(onOKPress).not.toHaveBeenCalled()
   })
 
-  test("routes ErrorModal to the native error dialog inside Electrobun", async () => {
+  test("routes ErrorModal to modalfy even inside Electrobun", async () => {
     window.__ELECTROBUN__ = true
     const showNativeErrorMock = vi.fn().mockResolvedValue(undefined)
     window.__electrobunShowError = showNativeErrorMock
@@ -140,8 +101,11 @@ describe("useElectrobunModal", () => {
       message: "Failed to update rating.",
     })
 
-    expect(showNativeErrorMock).toHaveBeenCalledWith("common.error", "Failed to update rating.")
-    expect(passthroughOpenModal).not.toHaveBeenCalled()
+    expect(showNativeErrorMock).not.toHaveBeenCalled()
+    expect(passthroughOpenModal).toHaveBeenCalledWith("ErrorModal", {
+      titleTx: "common.error",
+      message: "Failed to update rating.",
+    })
   })
 
   test("passes non-intercepted modals through to modalfy inside Electrobun", async () => {
