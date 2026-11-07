@@ -42,8 +42,14 @@ export const LibraryMapModel = types
   }))
   .actions((root) => ({
     setBook: (bookId?: number) => {
+      if (bookId === undefined || !root.books.has(bookId.toString())) {
+        root.selectedBook = undefined
+        return false
+      }
+
       // MST resolves references by identifier at runtime; TS types don't allow direct ID assignment
       root.selectedBook = bookId as unknown as typeof root.selectedBook
+      return true
     },
     deleteBook: flow(function* (bookId: number) {
       const response = yield api.deleteBook(root.id, bookId)

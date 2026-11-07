@@ -200,10 +200,30 @@ describe("Calibre models", () => {
 
     library.setBook(10)
     expect(library.selectedBook?.id).toBe(10)
+    expect(library.setBook(999)).toBe(false)
+    expect(library.selectedBook).toBeUndefined()
 
+    library.setBook(10)
     const result = await library.deleteBook(10)
     expect(result).toBe(true)
     expect(library.selectedBook).toBeUndefined()
     expect(library.books.has("10")).toBe(false)
+  })
+
+  test("LibraryMap setBook clears a dangling selectedBook reference", () => {
+    const library = LibraryMapModel.create({
+      id: "main",
+      books: {},
+      searchSetting: null,
+      sortField: [],
+      tagBrowser: [],
+      clientSetting: [],
+      bookDisplayFields: [],
+      fieldMetadataList: {},
+      selectedBook: 10,
+    })
+
+    expect(library.setBook(10)).toBe(false)
+    expect(library.selectedBook).toBeUndefined()
   })
 })

@@ -457,8 +457,22 @@ function convertSearchResult(data: ApiBookInfoCore, selectedLibrary: LibraryMap,
     // books.clear() を使わず、新しい book_ids に含まれない古い books を個別に削除する。
     const newBookIds = new Set(data.search_result.book_ids.map((id: number) => id.toString()))
     const existingKeys = Array.from(selectedLibrary.books.keys())
+
+    // 選択中の本を detach すると safeReference が解決できなくなるため、
+    // 削除前に参照を外す。すでに壊れている場合もここでリセットする。
+    let selectedBookId: number | undefined
+    try {
+      selectedBookId = selectedLibrary.selectedBook?.id
+    } catch {
+      selectedLibrary.selectedBook = undefined
+    }
+
     for (const key of existingKeys) {
       if (!newBookIds.has(key)) {
+        if (selectedBookId !== undefined && key === selectedBookId.toString()) {
+          selectedLibrary.selectedBook = undefined
+          selectedBookId = undefined
+        }
         // detach でノードを生存させたままツリーから切り離す（HMR reaction 対策）
         const node = selectedLibrary.books.get(key)
         if (node) detach(node)

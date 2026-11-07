@@ -418,32 +418,42 @@ export const LibraryScreen: FC = observer(() => {
       }
       const imageUrl = imageSource.uri
       const ocrImageUrl = api.getBookThumbnailUrl(item.id, selectedLibrary!.id, "1200x1600")
+      // 表示中のリストが検索結果の更新で古くなっている場合、books に存在しない ID を
+      // selectedBook に設定すると MST の参照解決で落ちる。再取得してから再試行する。
+      const selectBookForAction = async (bookId: number) => {
+        const library = calibreRootStore.selectedLibrary
+        if (!library) return false
+        if (library.setBook(bookId)) return true
+
+        await calibreRootStore.searchLibrary(settingStore.booksPerPage)
+        return calibreRootStore.selectedLibrary?.setBook(bookId) ?? false
+      }
       const handleBookMetadataSearch = async (query: string) => {
         libraryHook.setHeaderSearchText(query)
         await libraryHook.onSearch(query)
       }
 
       const onOpenBook = async () => {
-        selectedLibrary!.setBook(item.id)
+        if (!(await selectBookForAction(item.id))) return
         await openViewerHook.execute(modal)
       }
 
       const onDownloadBook = async () => {
-        selectedLibrary!.setBook(item.id)
+        if (!(await selectBookForAction(item.id))) return
         await downloadBookHook.execute(modal)
       }
 
       const onConvertBook = async () => {
-        selectedLibrary!.setBook(item.id)
-        const book = selectedLibrary!.selectedBook
+        if (!(await selectBookForAction(item.id))) return
+        const book = calibreRootStore.selectedLibrary?.selectedBook
         if (!book?.metaData?.formats?.length) {
           return
         }
         modal.openModal("BookConvertModal", { imageUrl })
       }
 
-      const onEditBook = () => {
-        selectedLibrary!.setBook(item.id)
+      const onEditBook = async () => {
+        if (!(await selectBookForAction(item.id))) return
         if (convergenceHook.isLarge) {
           modal.openModal("BookEditModal", {
             imageUrl: imageUrl,
@@ -455,8 +465,8 @@ export const LibraryScreen: FC = observer(() => {
         }
       }
 
-      const onRunCoverOcr = () => {
-        selectedLibrary!.setBook(item.id)
+      const onRunCoverOcr = async () => {
+        if (!(await selectBookForAction(item.id))) return
         if (convergenceHook.isLarge) {
           modal.openModal("BookOcrReviewModal", {
             imageUrl: ocrImageUrl,
@@ -469,8 +479,8 @@ export const LibraryScreen: FC = observer(() => {
         })
       }
 
-      const onOpenBookDetail = () => {
-        selectedLibrary!.setBook(item.id)
+      const onOpenBookDetail = async () => {
+        if (!(await selectBookForAction(item.id))) return
         if (convergenceHook.isLarge) {
           modal.openModal("BookDetailModal", {
             imageUrl: imageUrl,
@@ -501,7 +511,7 @@ export const LibraryScreen: FC = observer(() => {
       }
 
       const onDeleteBook = async () => {
-        selectedLibrary!.setBook(item.id)
+        if (!(await selectBookForAction(item.id))) return
         await deleteBookHook.execute(modal)
       }
 
@@ -626,6 +636,7 @@ export const LibraryScreen: FC = observer(() => {
       thumbnailSourceById,
       viewMode,
       calibreRootStore,
+      settingStore,
       tableColumnWidths,
       tableColumnVisibility,
       customColumns,

@@ -223,6 +223,36 @@ describe("CalibreRootStore test", () => {
     expect(book!.metaData.sharpFixed).toBeNull()
   })
 
+  test("searchLibrary clears selectedBook before removing a book that disappears", async () => {
+    vi.spyOn(api, "initializeCalibre").mockResolvedValue({
+      kind: "ok" as const,
+      data: initializeData,
+    } as Awaited<ReturnType<typeof api.initializeCalibre>>)
+
+    const model = CalibreRootStore.create({})
+    await model.initialize()
+    model.setLibrary("test1")
+
+    vi.spyOn(api, "getLibrary").mockResolvedValue(
+      buildBookInfoResponse("") as Awaited<ReturnType<typeof api.getLibrary>>,
+    )
+    await model.searchLibrary()
+    expect(model.selectedLibrary.setBook(1)).toBe(true)
+
+    const empty = buildBookInfoResponse("")
+    empty.data.search_result.book_ids = []
+    empty.data.search_result.total_num = 0
+    empty.data.search_result.num = 0
+    ;(empty.data as { metadata: Record<string, unknown> }).metadata = {}
+    vi.spyOn(api, "getLibrary").mockResolvedValue(
+      empty as Awaited<ReturnType<typeof api.getLibrary>>,
+    )
+
+    await expect(model.searchLibrary()).resolves.toBe(true)
+    expect(model.selectedLibrary.selectedBook).toBeUndefined()
+    expect(model.selectedLibrary.books.has("1")).toBe(false)
+  })
+
   test("searchLibrary handles a zero-result response and keeps the virtual library", async () => {
     vi.spyOn(api, "initializeCalibre").mockResolvedValue({
       kind: "ok" as const,
