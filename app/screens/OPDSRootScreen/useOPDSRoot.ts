@@ -1,6 +1,7 @@
 import { Box, Image, Text } from "@/components"
 import { useStores } from "@/models"
 import type { ApppNavigationProp } from "@/navigators/types"
+import { api } from "@/services/api"
 import { usePalette } from "@/theme"
 import { useNavigation } from "@react-navigation/native"
 import { useEffect } from "react"
@@ -20,7 +21,7 @@ export function useODSRoot() {
             Box,
             { flexDirection: "row", alignItems: "center" },
             React.createElement(Image, {
-              source: `${settingStore.api.baseUrl}${opdsRootStore.root.icon}`,
+              source: opdsRootStore.root.icon ? api.toRequestUrl(opdsRootStore.root.icon) : "",
               style: { height: 30, width: 30 },
               resizeMode: "cover",
             }),
@@ -35,13 +36,7 @@ export function useODSRoot() {
     }
 
     void initialize()
-  }, [
-    navigation,
-    opdsRootStore.root,
-    palette.textPrimary,
-    settingStore.api.baseUrl,
-    settingStore.api.initialPath,
-  ])
+  }, [navigation, opdsRootStore.root, palette.textPrimary, settingStore.api.initialPath])
 
   const entries = opdsRootStore.root?.entry.slice() ?? []
 

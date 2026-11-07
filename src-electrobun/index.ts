@@ -1,7 +1,12 @@
 import { existsSync, readFileSync, statSync } from "node:fs"
 import { join, normalize, sep } from "node:path"
 import { BrowserView, BrowserWindow, Updater, Utils } from "electrobun/bun"
-import { proxyCalibreRequest, resolveCalibreTarget } from "./calibreProxy"
+import {
+  CALIBRE_PROXY_PREFIX,
+  buildCorsHeaders,
+  proxyCalibreRequest,
+  resolveCalibreTarget,
+} from "./calibreProxy"
 import type { AppRPCType } from "./shared/rpcTypes"
 
 const bundledWebRoot = join(import.meta.dir, "..", "views", "app")
@@ -20,6 +25,13 @@ function startLocalServer(): { origin: string; appUrl: string } {
       }
 
       const { pathname } = new URL(request.url)
+      if (pathname.startsWith(CALIBRE_PROXY_PREFIX)) {
+        return new Response("Not a Calibre proxy request", {
+          status: 404,
+          headers: buildCorsHeaders(request),
+        })
+      }
+
       const filePath = normalize(join(bundledWebRoot, decodeURIComponent(pathname)))
       if (
         filePath.startsWith(bundledWebRoot + sep) &&

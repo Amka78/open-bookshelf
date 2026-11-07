@@ -248,6 +248,75 @@ describe("Api with the Electrobun Calibre proxy", () => {
     )
   })
 
+  test("uploadFile sends the POST to the proxy base", async () => {
+    const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
+    api.setUrl("http://calibrelocal")
+
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response("ok", { status: 200 }))
+
+    const result = await api.uploadFile("test.epub", "lib", new File(["book"], "test.epub"))
+
+    expect(result).toEqual({ kind: "ok" })
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+    const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit]
+    expect(url).toBe(`${proxyBase}/cdb/add-book/0/n/test.epub/lib`)
+    expect(init.method).toBe("POST")
+    expect(init.body).toBeInstanceOf(FormData)
+    // FormData ではブラウザに multipart の boundary を付けさせるため、
+    // apisauce の application/json をそのまま渡さない。
+    const headers = init.headers as Record<string, string>
+    expect(headers["Content-Type"]).toBeUndefined()
+    expect(headers.Accept).toBe("application/atom+xml")
+  })
+
+  test("uploadFile encodes file and library names in the proxy URL", async () => {
+    const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
+    api.setUrl("http://calibrelocal")
+
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response("ok", { status: 200 }))
+
+    await api.uploadFile("テスト 本.epub", "calibre library", new File(["book"], "テスト.epub"))
+
+    const [url] = fetchSpy.mock.calls[0] as [string, RequestInit]
+    expect(url).toBe(
+      `${proxyBase}/cdb/add-book/0/n/${encodeURIComponent("テスト 本.epub")}/${encodeURIComponent(
+        "calibre library",
+      )}`,
+    )
+  })
+
+  test("fetchWithAuth proxies an upstream URL", async () => {
+    const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
+    api.setUrl("http://calibrelocal")
+
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response("ok", { status: 200 }))
+
+    await api.fetchWithAuth("http://calibrelocal/get/thumb/1/lib")
+
+    expect(fetchSpy.mock.calls[0]?.[0]).toBe(`${proxyBase}/get/thumb/1/lib`)
+  })
+
+  test("loadOPDS proxies an absolute upstream URL", async () => {
+    const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
+    api.setUrl("http://calibrelocal")
+    const getSpy = vi.spyOn(api.apisauce, "get").mockResolvedValue({
+      ok: true,
+      status: 200,
+      data: "<feed />",
+      problem: null,
+    } as never)
+
+    await api.loadOPDS("http://calibrelocal/opds")
+
+    expect(getSpy).toHaveBeenCalledWith(`${proxyBase}/opds`)
+  })
+
   test("encodes only path segments so the proxy base is not double-encoded", () => {
     const api = new Api({ timeout: 1000, url: "http://calibrelocal" })
     api.setUrl("http://calibrelocal")

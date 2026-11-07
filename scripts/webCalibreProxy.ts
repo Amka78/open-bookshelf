@@ -6,6 +6,7 @@
  * 許可リストが空の場合は全ホストを許可する（LAN 専用なら空でもよい）。
  */
 import {
+  buildCorsHeaders,
   isAllowedCalibreHost,
   parseAllowedCalibreHosts,
   proxyCalibreRequest,
@@ -40,12 +41,18 @@ const server = Bun.serve({
 
     const target = resolveCalibreTarget(request.url)
     if (!target) {
-      return new Response("Not a Calibre proxy request", { status: 404 })
+      return new Response("Not a Calibre proxy request", {
+        status: 404,
+        headers: buildCorsHeaders(request),
+      })
     }
 
     if (!isAllowedCalibreHost(target, allowedHosts)) {
       console.warn(`[calibre-proxy] blocked target: ${target.host}`)
-      return new Response("Calibre proxy target is not allowed", { status: 403 })
+      return new Response("Calibre proxy target is not allowed", {
+        status: 403,
+        headers: buildCorsHeaders(request),
+      })
     }
 
     // リダイレクトを追うと許可リストを迂回できるため、公開プロキシでは追跡しない。

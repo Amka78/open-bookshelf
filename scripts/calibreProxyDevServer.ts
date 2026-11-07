@@ -5,7 +5,11 @@
  * 通常は `bun run dev:web`（scripts/devWeb.ts）から起動し、Metro と同じコマンドで立ち上がる。
  * 単体で起動する場合は `bun run dev:proxy`。
  */
-import { proxyCalibreRequest, resolveCalibreTarget } from "../src-electrobun/calibreProxy"
+import {
+  buildCorsHeaders,
+  proxyCalibreRequest,
+  resolveCalibreTarget,
+} from "../src-electrobun/calibreProxy"
 
 const hostname = "127.0.0.1"
 
@@ -26,7 +30,11 @@ export function startCalibreProxyDevServer(options: CalibreProxyDevServerOptions
     async fetch(request) {
       const target = resolveCalibreTarget(request.url)
       if (!target) {
-        return new Response("Not a Calibre proxy request", { status: 404 })
+        // CORS ヘッダーを付けないと、パス誤りがブラウザ側で CORS エラーに見える。
+        return new Response("Not a Calibre proxy request", {
+          status: 404,
+          headers: buildCorsHeaders(request),
+        })
       }
 
       return proxyCalibreRequest(request, target)

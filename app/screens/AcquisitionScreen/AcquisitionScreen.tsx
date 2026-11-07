@@ -1,8 +1,8 @@
 import { Box, FlatList, ListItem, MaterialCommunityIcon, RootContainer, Text } from "@/components"
-import { useStores } from "@/models"
 import type { Entry } from "@/models/opds"
 import { OpdsModel, type OpdsRoot } from "@/models/opds/OpdsRootStore"
 import type { AppStackParamList, ApppNavigationProp } from "@/navigators/types"
+import { api } from "@/services/api"
 import { usePalette } from "@/theme"
 import { logger } from "@/utils/logger"
 import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
@@ -20,7 +20,6 @@ async function loadOpdsFromLink(href: string) {
 }
 
 export const AcquisitionScreen: FC = observer(() => {
-  const { settingStore } = useStores()
   const palette = usePalette()
 
   const route = useRoute<AcquisitionScreenRouteProp>()
@@ -59,7 +58,7 @@ export const AcquisitionScreen: FC = observer(() => {
         return (
           <Box flexDirection="row" alignItems={"center"}>
             <Image
-              source={`${settingStore.api.baseUrl}${currentOpds?.icon}`}
+              source={currentOpds?.icon ? api.toRequestUrl(currentOpds.icon) : ""}
               style={{ height: 30, width: 30 }}
               resizeMode={"cover"}
             />
@@ -70,7 +69,7 @@ export const AcquisitionScreen: FC = observer(() => {
         )
       },
     })
-  }, [currentOpds, navigation, palette.textPrimary, settingStore.api.baseUrl])
+  }, [currentOpds, navigation, palette.textPrimary])
 
   const renderItem = useCallback(
     ({ item }: { item: Entry }) => {
@@ -100,7 +99,7 @@ export const AcquisitionScreen: FC = observer(() => {
               <Box flexDirection={"row"} width={"$5/6"}>
                 {item.contentType !== "text" && (
                   <Image
-                    source={{ uri: thumbnail && `${settingStore.api.baseUrl}${thumbnail.href}` }}
+                    source={{ uri: thumbnail?.href ? api.toRequestUrl(thumbnail.href) : undefined }}
                     style={{ height: 50, width: 30 }}
                     resizeMode={"contain"}
                   />
@@ -132,7 +131,7 @@ export const AcquisitionScreen: FC = observer(() => {
         />
       )
     },
-    [navigation, settingStore.api.baseUrl],
+    [navigation],
   )
 
   const onRefresh = useCallback(async () => {

@@ -95,6 +95,10 @@ const buildPageCacheKey = (props: BookHtmlPageProps) => {
 }
 
 const buildRemoteBookFileUrl = (props: BookHtmlPageProps, path: string) => {
+  if (/^(https?:)?\/\//i.test(path)) {
+    return api.toRequestUrl(path)
+  }
+
   const url = api.getBookFileUrl(
     props.bookId,
     props.format,

@@ -633,10 +633,11 @@ export function useViewer() {
           return false
         }
 
-        // cachedPathList entries on web are already full URLs (http://…); use them directly.
+        // cachedPathList entries on web are already full URLs (http://…) and may still
+        // point at the original Calibre origin; normalize them to the proxy.
         // selectedBook.path entries are relative paths that need getBookFileUrl.
         const coverSourceUrl = isFullUrl
-          ? sourcePath
+          ? api.toRequestUrl(sourcePath)
           : api.getBookFileUrl(
               selectedBook.id,
               selectedFormat,

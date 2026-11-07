@@ -95,6 +95,7 @@ vi.doMock("@/services/api", () => ({
     getBookFileUrl: (...args: Parameters<typeof mockGetBookFileUrl>) => mockGetBookFileUrl(...args),
     fetchWithAuth: (...args: Parameters<typeof mockFetchWithAuth>) => mockFetchWithAuth(...args),
     setCoverBinary: (...args: Parameters<typeof mockSetCoverBinary>) => mockSetCoverBinary(...args),
+    toRequestUrl: (url: string) => url,
   },
 }))
 

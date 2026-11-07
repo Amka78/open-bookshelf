@@ -54,7 +54,7 @@ const HOP_BY_HOP_HEADERS = new Set([
   "transfer-encoding",
 ])
 
-function buildCorsHeaders(request: Request): Record<string, string> {
+export function buildCorsHeaders(request: Request): Record<string, string> {
   return {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS",

@@ -6,7 +6,11 @@
  * documentation for more details.
  */
 import Config from "@/config"
-import { buildCalibreProxyBase, toCalibreUpstreamUrl } from "@/utils/calibreProxy"
+import {
+  buildCalibreProxyBase,
+  toCalibreRequestUrl,
+  toCalibreUpstreamUrl,
+} from "@/utils/calibreProxy"
 import { logger } from "@/utils/logger"
 import { perfLog, perfNow } from "@/utils/perf"
 import { type ApiResponse, type ApisauceInstance, create } from "apisauce"
@@ -90,6 +94,14 @@ export class Api {
     this.calibreProxyBase = normalized ? buildCalibreProxyBase(normalized) : null
     // Electrobun では同一オリジンのローカルプロキシ経由にする（CORS 回避）。
     this.apisauce.setBaseURL(this.calibreProxyBase ?? normalized)
+  }
+
+  /**
+   * 上流の Calibre URL を、必要ならプロキシ URL に変換する。
+   * すでにプロキシ URL の場合はそのまま返す。
+   */
+  toRequestUrl(target: string): string {
+    return toCalibreRequestUrl(this.originalBaseUrl, target)
   }
 
   setAuthorization(token: string) {
@@ -440,10 +452,14 @@ export class Api {
     destination: FileSystemFile | Directory,
     options?: DownloadOptions,
   ): ReturnType<typeof FileSystemFile.downloadFileAsync> {
-    await this.ensureAuthNegotiated(url)
+    const requestUrl = this.toRequestUrl(url)
+    await this.ensureAuthNegotiated(requestUrl)
     const headers = this.getAuthHeaders(url)
     try {
-      return await FileSystemFile.downloadFileAsync(url, destination, { ...options, headers })
+      return await FileSystemFile.downloadFileAsync(requestUrl, destination, {
+        ...options,
+        headers,
+      })
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error)
       // Both iOS ("status 401") and Android ("status: 401") use this pattern.
@@ -453,9 +469,9 @@ export class Api {
         this.authMethod = null
         this.digestNc = 0
         this.notifyAuthStateChanged()
-        await this.ensureAuthNegotiated(url)
+        await this.ensureAuthNegotiated(requestUrl)
         const retryHeaders = this.getAuthHeaders(url)
-        return FileSystemFile.downloadFileAsync(url, destination, {
+        return FileSystemFile.downloadFileAsync(requestUrl, destination, {
           ...options,
           headers: retryHeaders,
         })
@@ -522,16 +538,25 @@ export class Api {
    * Useful for callers that bypass axios but still need per-URL Digest headers.
    */
   async fetchWithAuth(url: string, init: RequestInit = {}): Promise<Response> {
+    const requestUrl = this.toRequestUrl(url)
+    // FormData の Content-Type はブラウザに boundary 付きで設定させる。
+    // apisauce の既定ヘッダー（application/json）をそのまま渡すと
+    // multipart の boundary が付かず、サーバー側で本文を解釈できない。
+    const headers =
+      typeof FormData !== "undefined" && init.body instanceof FormData
+        ? this.withoutContentType(init.headers)
+        : init.headers
+
     if (!this.credentials) {
-      return fetch(url, init)
+      return fetch(requestUrl, { ...init, headers })
     }
 
     const method = (init.method || "GET").toUpperCase()
-    await this.ensureAuthNegotiated(url)
+    await this.ensureAuthNegotiated(requestUrl)
 
-    const response = await fetch(url, {
+    const response = await fetch(requestUrl, {
       ...init,
-      headers: this.mergeRequestHeaders(init.headers, this.getAuthHeaders(url, method)),
+      headers: this.mergeRequestHeaders(headers, this.getAuthHeaders(url, method)),
     })
 
     if (response.status !== 401) {
@@ -543,12 +568,32 @@ export class Api {
     this.digestNc = 0
     this.notifyAuthStateChanged()
 
-    await this.ensureAuthNegotiated(url)
+    await this.ensureAuthNegotiated(requestUrl)
 
-    return fetch(url, {
+    return fetch(requestUrl, {
       ...init,
-      headers: this.mergeRequestHeaders(init.headers, this.getAuthHeaders(url, method)),
+      headers: this.mergeRequestHeaders(headers, this.getAuthHeaders(url, method)),
     })
+  }
+
+  private withoutContentType(headers: HeadersInit | undefined): HeadersInit | undefined {
+    if (!headers) return headers
+
+    if (typeof Headers !== "undefined" && headers instanceof Headers) {
+      const copy = new Headers(headers)
+      copy.delete("Content-Type")
+      return copy
+    }
+
+    if (Array.isArray(headers)) {
+      return headers.filter(([key]) => key.toLowerCase() !== "content-type")
+    }
+
+    const copy: Record<string, string> = { ...(headers as Record<string, string>) }
+    for (const key of Object.keys(copy)) {
+      if (key.toLowerCase() === "content-type") delete copy[key]
+    }
+    return copy
   }
 
   getBookDownloadUrl(format: string, bookId: number, libraryId: string): string {
@@ -578,6 +623,10 @@ export class Api {
     libraryId: string,
     baseUrl?: string,
   ): string {
+    if (/^(https?:)?\/\//i.test(path)) {
+      return this.toRequestUrl(path)
+    }
+
     const targetBaseUrl = baseUrl ?? this.apisauce.getBaseURL()
     // baseURL にはプロキシのパス（%3A を含む）が入るため、URL 全体を encodeURI すると
     // %3A が %253A になって二重エンコードされる。パス要素だけを個別にエンコードする。
@@ -657,7 +706,8 @@ export class Api {
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   async loadOPDS(path?: string): Promise<{ kind: "ok"; data: any } | GeneralApiProblem> {
     // make the api call
-    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get(path ?? "")
+    const requestPath = path ? this.toRequestUrl(path) : path
+    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get(requestPath ?? "")
 
     if (!response.ok) {
       const problem = getGeneralApiProblem(response)
@@ -993,17 +1043,23 @@ export class Api {
     file: string | File,
   ): Promise<{ kind: "ok" } | GeneralApiProblem> {
     logger.debug("uploadFile", fileName, libraryName, file)
-    const uploadUrl = `${this.apisauce.getBaseURL()}/cdb/add-book/0/n/${fileName}/${libraryName}`
+    const baseUrl = this.originalBaseUrl ?? this.apisauce.getBaseURL()
+    const uploadUrl = this.toRequestUrl(
+      `${baseUrl}/cdb/add-book/0/n/${encodeURIComponent(fileName)}/${encodeURIComponent(
+        libraryName,
+      )}`,
+    )
 
     if (typeof file === "string") {
       if (Platform.OS === "web") {
         const formData = new FormData()
-        logger.debug("[Api] request", { method: "GET", url: file })
-        const response = await fetch(file)
+        const fileUrl = this.toRequestUrl(file)
+        logger.debug("[Api] request", { method: "GET", url: fileUrl })
+        const response = await fetch(fileUrl)
         logger.debug("[Api] response", {
           ok: response.ok,
           status: response.status,
-          url: file,
+          url: fileUrl,
           method: "GET",
         })
         const blob = await response.blob()

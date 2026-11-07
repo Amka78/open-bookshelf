@@ -3,6 +3,7 @@ import {
   buildCalibreProxyBase,
   getCalibreProxyOrigin,
   getCalibreRequestBase,
+  toCalibreRequestUrl,
   toCalibreUpstreamUrl,
 } from "./calibreProxy"
 
@@ -36,7 +37,7 @@ describe("getCalibreProxyOrigin", () => {
     expect(getCalibreProxyOrigin()).toBe("http://127.0.0.1:41234")
   })
 
-  test("uses the dev proxy origin during web development", () => {
+  test("uses the configured proxy origin for web builds", () => {
     process.env.EXPO_PUBLIC_CALIBRE_PROXY_ORIGIN = "http://127.0.0.1:8082/"
 
     expect(getCalibreProxyOrigin()).toBe("http://127.0.0.1:8082")
@@ -99,6 +100,75 @@ describe("getCalibreRequestBase", () => {
   })
 })
 
+describe("toCalibreRequestUrl", () => {
+  const originalBase = "http://calibre.local:8080"
+
+  test("proxies a relative path", () => {
+    window.__ELECTROBUN_PROXY_ORIGIN = "http://127.0.0.1:41234"
+
+    expect(toCalibreRequestUrl(originalBase, "/get/thumb/1/lib")).toBe(
+      "http://127.0.0.1:41234/__calibre/http%3A%2F%2Fcalibre.local%3A8080/get/thumb/1/lib",
+    )
+  })
+
+  test("proxies an absolute URL under the base URL", () => {
+    window.__ELECTROBUN_PROXY_ORIGIN = "http://127.0.0.1:41234"
+
+    expect(toCalibreRequestUrl(originalBase, "http://calibre.local:8080/get/1")).toBe(
+      "http://127.0.0.1:41234/__calibre/http%3A%2F%2Fcalibre.local%3A8080/get/1",
+    )
+  })
+
+  test("keeps the path of the base URL", () => {
+    window.__ELECTROBUN_PROXY_ORIGIN = "http://127.0.0.1:41234"
+
+    expect(toCalibreRequestUrl("http://calibre.local/calibre", "/get/1")).toBe(
+      "http://127.0.0.1:41234/__calibre/http%3A%2F%2Fcalibre.local%2Fcalibre/get/1",
+    )
+    expect(
+      toCalibreRequestUrl("http://calibre.local/calibre", "http://calibre.local/calibre/get/1"),
+    ).toBe("http://127.0.0.1:41234/__calibre/http%3A%2F%2Fcalibre.local%2Fcalibre/get/1")
+  })
+
+  test("proxies same-origin URLs outside the base path through the origin", () => {
+    window.__ELECTROBUN_PROXY_ORIGIN = "http://127.0.0.1:41234"
+
+    expect(
+      toCalibreRequestUrl("http://calibre.local/calibre", "http://calibre.local/opds/icon.png"),
+    ).toBe("http://127.0.0.1:41234/__calibre/http%3A%2F%2Fcalibre.local/opds/icon.png")
+  })
+
+  test("leaves external, special and already proxied URLs unchanged", () => {
+    window.__ELECTROBUN_PROXY_ORIGIN = "http://127.0.0.1:41234"
+
+    expect(toCalibreRequestUrl(originalBase, "https://example.com/icon.png")).toBe(
+      "https://example.com/icon.png",
+    )
+    expect(toCalibreRequestUrl(originalBase, "data:image/png;base64,abc")).toBe(
+      "data:image/png;base64,abc",
+    )
+    expect(toCalibreRequestUrl(originalBase, "blob:http://localhost/abc")).toBe(
+      "blob:http://localhost/abc",
+    )
+    expect(toCalibreRequestUrl(originalBase, "ftp://example.com/book.epub")).toBe(
+      "ftp://example.com/book.epub",
+    )
+
+    const proxyUrl = `${getCalibreRequestBase(originalBase)}/get/1`
+    expect(toCalibreRequestUrl(originalBase, proxyUrl)).toBe(proxyUrl)
+  })
+
+  test("returns the original URL when no proxy is configured", () => {
+    expect(toCalibreRequestUrl(originalBase, "http://calibre.local:8080/get/1")).toBe(
+      "http://calibre.local:8080/get/1",
+    )
+    expect(toCalibreRequestUrl(originalBase, "get/1")).toBe("http://calibre.local:8080/get/1")
+    expect(toCalibreRequestUrl("http://calibre.local/calibre", "/get/1")).toBe(
+      "http://calibre.local/calibre/get/1",
+    )
+  })
+})
+
 describe("toCalibreUpstreamUrl", () => {
   const proxyBase = "http://127.0.0.1:41234/__calibre/http%3A%2F%2Fcalibre.local%3A8080"
   const originalBase = "http://calibre.local:8080"
@@ -111,6 +181,18 @@ describe("toCalibreUpstreamUrl", () => {
         originalBase,
       ),
     ).toBe("http://calibre.local:8080/book-file/1/EPUB/10/20/Text/chapter.xhtml")
+  })
+
+  test("restores a proxy URL built for the origin", () => {
+    window.__ELECTROBUN_PROXY_ORIGIN = "http://127.0.0.1:41234"
+
+    expect(
+      toCalibreUpstreamUrl(
+        "http://127.0.0.1:41234/__calibre/http%3A%2F%2Fcalibre.local/opds/icon.png",
+        null,
+        null,
+      ),
+    ).toBe("http://calibre.local/opds/icon.png")
   })
 
   test("leaves non-proxied URLs untouched", () => {
