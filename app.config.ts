@@ -38,7 +38,7 @@ module.exports = {
     splash: {
       image: "./assets/images/splash-logo-all.png",
       resizeMode: "contain",
-      backgroundColor: "#191015",
+      backgroundColor: "#111318",
     },
     updates: {
       fallbackToCacheTimeout: 0,
@@ -51,6 +51,11 @@ module.exports = {
     assetBundlePatterns: ["**/*"],
     android: {
       package: `com.openbookshelf${idSuffix}`,
+      adaptiveIcon: {
+        foregroundImage: "./assets/images/adaptive-icon-foreground.png",
+        backgroundColor: "#111318",
+        monochromeImage: "./assets/images/adaptive-icon-monochrome.png",
+      },
     },
     ios: {
       icon: "./assets/images/app-icon.png",
