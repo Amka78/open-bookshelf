@@ -4,6 +4,7 @@ import { type MessageKey, translate } from "@/i18n"
 import { useStores } from "@/models"
 import type { AppStackParamList, ApppNavigationProp } from "@/navigators/types"
 import { api } from "@/services/api"
+import { loadFileToDataUrl } from "@/utils/loadFileToDataUrl"
 import { type RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import * as DocumentPicker from "expo-document-picker"
 import { useLayoutEffect } from "react"
@@ -200,7 +201,7 @@ export function useBookDetail() {
   }
 
   const handleDeleteFormat = async (format: string) => {
-    try {
+    const deleteFormat = async () => {
       const result = await api.editBook(selectedLibrary.id, selectedBook.id, {
         changes: { removed_formats: [format.toUpperCase()] } as never,
         loaded_book_ids: [selectedBook.id],
@@ -218,13 +219,17 @@ export function useBookDetail() {
           messageTx: "bookFormatList.deleteSuccess",
         })
       }
+    }
+
+    try {
+      await deleteFormat()
     } catch (error) {
       console.error("deleteFormat error", error)
     }
   }
 
   const handleUploadFormat = async () => {
-    try {
+    const uploadFormat = async () => {
       const result = await DocumentPicker.getDocumentAsync({ type: "*/*" })
       if (result.canceled || result.assets.length === 0) return
 
@@ -236,7 +241,7 @@ export function useBookDetail() {
       const filePayload = asset.file ?? asset.uri
       if (!filePayload) return
 
-      const { fileToDataUrl } = await import("@/utils/fileToDataUrl")
+      const { fileToDataUrl } = await loadFileToDataUrl()
       const dataUrl = await fileToDataUrl(filePayload)
 
       const uploadResult = await api.editBook(selectedLibrary.id, selectedBook.id, {
@@ -267,6 +272,10 @@ export function useBookDetail() {
           messageTx: "bookFormatList.uploadSuccess",
         })
       }
+    }
+
+    try {
+      await uploadFormat()
     } catch (error) {
       console.error("uploadFormat error", error)
     }

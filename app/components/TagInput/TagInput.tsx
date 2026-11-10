@@ -118,28 +118,32 @@ export function TagInput({
   }
 
   const handlePaste = async () => {
-    if (Platform.OS === "web" && navigator.clipboard) {
-      try {
-        const text = await navigator.clipboard.readText()
-        const parts = text
-          .split(separator)
-          .map((part) => part.trim())
-          .filter(Boolean)
-        const newTags = parts.filter((tag) => !value.includes(tag))
-        if (newTags.length > 0) {
-          const next = [...value, ...newTags]
-          onChange(next)
-          onPaste?.(next)
-        }
-      } catch (e) {
-        console.warn("TagInput: clipboard read failed", { error: String(e) })
-      }
-    } else {
+    if (Platform.OS !== "web" || !navigator.clipboard) {
       console.warn("TagInput: clipboard API not available for paste", {
         platform: Platform.OS,
         hasClipboard: typeof navigator !== "undefined" && !!navigator.clipboard,
         isSecureContext: typeof window !== "undefined" && window.isSecureContext,
       })
+      return
+    }
+
+    let text: string
+    try {
+      text = await navigator.clipboard.readText()
+    } catch (e) {
+      console.warn("TagInput: clipboard read failed", { error: String(e) })
+      return
+    }
+
+    const parts = text
+      .split(separator)
+      .map((part) => part.trim())
+      .filter(Boolean)
+    const newTags = parts.filter((tag) => !value.includes(tag))
+    if (newTags.length > 0) {
+      const next = [...value, ...newTags]
+      onChange(next)
+      onPaste?.(next)
     }
   }
 

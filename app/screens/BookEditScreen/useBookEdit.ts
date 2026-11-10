@@ -1,7 +1,9 @@
+import { useLatestCallback } from "@/hooks/useLatestCallback"
 import { useStores } from "@/models"
 import type { ApppNavigationProp } from "@/navigators/types"
 import { api } from "@/services/api"
 import type { AddedFormatEntry } from "@/services/api/api.types"
+import { loadFileToDataUrl } from "@/utils/loadFileToDataUrl"
 import { useNavigation } from "@react-navigation/native"
 import * as DocumentPicker from "expo-document-picker"
 import { getSnapshot } from "mobx-state-tree"
@@ -31,7 +33,7 @@ export function useBookEdit() {
 
   const pendingAddedFormats = useRef<AddedFormatEntry[]>([])
 
-  const onSubmit = form.handleSubmit(async (value: MetadataFormValues) => {
+  const submitHandler = useLatestCallback(async (value: MetadataFormValues) => {
     const updatedValue = hasLangNames
       ? toLanguageNamesForUpdate(value, langNames)
       : toLanguageNamesForUpdate(value, {})
@@ -56,6 +58,8 @@ export function useBookEdit() {
     calibreRootStore.bumpBookThumbnailRevision(selectedLibrary.id, selectedBook.id)
     navigation.goBack()
   })
+
+  const onSubmit = form.handleSubmit(submitHandler)
 
   const pickFormatFromAssetName = (assetName: string | undefined, fallback?: string) => {
     const normalizedFallback = String(fallback ?? "")
@@ -100,26 +104,27 @@ export function useBookEdit() {
       return { success: false }
     }
 
+    let dataUrl: string
     try {
-      const { fileToDataUrl } = await import("@/utils/fileToDataUrl")
-      const dataUrl = await fileToDataUrl(filePayload)
-
-      // Remove any prior pending entry for the same format
-      pendingAddedFormats.current = pendingAddedFormats.current.filter(
-        (e) => e.ext.toUpperCase() !== pickedFormat,
-      )
-      pendingAddedFormats.current.push({
-        ext: pickedFormat,
-        data_url: dataUrl,
-        name: pickedAsset.name,
-        size: pickedAsset.size ?? 0,
-        type: pickedAsset.mimeType ?? "application/octet-stream",
-      })
-
-      return { success: true, format: pickedFormat }
+      const { fileToDataUrl } = await loadFileToDataUrl()
+      dataUrl = await fileToDataUrl(filePayload)
     } catch {
       return { success: false }
     }
+
+    // Remove any prior pending entry for the same format
+    pendingAddedFormats.current = pendingAddedFormats.current.filter(
+      (e) => e.ext.toUpperCase() !== pickedFormat,
+    )
+    pendingAddedFormats.current.push({
+      ext: pickedFormat,
+      data_url: dataUrl,
+      name: pickedAsset.name,
+      size: pickedAsset.size ?? 0,
+      type: pickedAsset.mimeType ?? "application/octet-stream",
+    })
+
+    return { success: true, format: pickedFormat }
   }
 
   const [coverUrlInput, setCoverUrlInput] = useState("")
@@ -131,15 +136,22 @@ export function useBookEdit() {
     if (!url) return false
     setIsFetchingCover(true)
     setFetchCoverError(false)
-    try {
-      const fetchResponse = await fetch(url)
-      if (!fetchResponse.ok) {
+
+    const fetchCover = async (): Promise<boolean> => {
+      const fetchResponse = await fetch(url).catch(() => undefined)
+      if (!fetchResponse?.ok) {
         setFetchCoverError(true)
         return false
       }
-      const blob = await fetchResponse.blob()
-      const result = await api.setCoverBinary(selectedLibrary.id, selectedBook.id, blob)
-      if (result.kind === "ok") {
+      const blob = await fetchResponse.blob().catch(() => undefined)
+      if (!blob) {
+        setFetchCoverError(true)
+        return false
+      }
+      const result = await api
+        .setCoverBinary(selectedLibrary.id, selectedBook.id, blob)
+        .catch(() => undefined)
+      if (result?.kind === "ok") {
         calibreRootStore.bumpBookThumbnailRevision(selectedLibrary.id, selectedBook.id)
         // biome-ignore lint/suspicious/noExplicitAny: react-hook-form setValue path requires any for dynamic field names not in the inferred form schema
         form.setValue("cover" as any, url)
@@ -148,12 +160,9 @@ export function useBookEdit() {
       }
       setFetchCoverError(true)
       return false
-    } catch {
-      setFetchCoverError(true)
-      return false
-    } finally {
-      setIsFetchingCover(false)
     }
+
+    return fetchCover().finally(() => setIsFetchingCover(false))
   }
 
   return {

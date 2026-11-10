@@ -18,6 +18,18 @@ type StorageLike = {
   save: (key: string, value: NavigationState) => void | Promise<void>
 }
 
+async function loadNavigationState(
+  storage: StorageLike,
+  key: string,
+): Promise<NavigationStateLike | undefined> {
+  try {
+    return await storage.load(key)
+  } catch (error) {
+    logger.warn("Failed to restore navigation state", error)
+    return undefined
+  }
+}
+
 /* eslint-disable */
 export const RootNavigation = {
   navigate<RouteName extends keyof AppStackParamList>(
@@ -165,12 +177,9 @@ export function useNavigationPersistence(storage: StorageLike, persistenceKey: s
   }
 
   const restoreState = async () => {
-    try {
-      const state = await storage.load(persistenceKey)
-      if (state) setInitialNavigationState(state)
-    } finally {
-      if (isMounted()) setIsRestored(true)
-    }
+    const state = await loadNavigationState(storage, persistenceKey)
+    if (state) setInitialNavigationState(state)
+    if (isMounted()) setIsRestored(true)
   }
 
   useEffect(() => {

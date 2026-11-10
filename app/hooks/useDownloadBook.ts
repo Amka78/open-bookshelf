@@ -22,22 +22,29 @@ export function useDownloadBook() {
     const selectedLibrary = calibreRootStore.selectedLibrary
     const selectedBook = selectedLibrary?.selectedBook
     if (!selectedLibrary || !selectedBook) return
+
+    const metaData = selectedBook.metaData
+    if (!metaData) {
+      modal.openModal("ErrorModal", {
+        message: "Book metadata is unavailable",
+        title: "Error",
+      })
+      return
+    }
+
+    if (metaData.formats.length > 1) {
+      modal.openModal("FormatSelectModal", {
+        formats: metaData.formats,
+        onSelectFormat: async (format) => {
+          await executeSharing(selectedLibrary, format)
+        },
+      })
+      return
+    }
+
+    const format = metaData.formats[0]
     try {
-      const metaData = selectedBook.metaData
-      if (!metaData) {
-        throw new Error("Book metadata is unavailable")
-      }
-      if (metaData.formats.length > 1) {
-        modal.openModal("FormatSelectModal", {
-          formats: metaData.formats,
-          onSelectFormat: async (format) => {
-            await executeSharing(selectedLibrary, format)
-          },
-        })
-      } else {
-        const format = metaData.formats[0]
-        await executeSharing(selectedLibrary, format)
-      }
+      await executeSharing(selectedLibrary, format)
     } catch (e) {
       modal.openModal("ErrorModal", {
         message: (e as Error).message,

@@ -623,7 +623,7 @@ export function useViewer() {
       return false
     }
 
-    try {
+    const setCover = async (): Promise<boolean> => {
       const isLocalFileUri = sourcePath.startsWith("file://")
       const isFullUrl = sourcePath.startsWith("http://") || sourcePath.startsWith("https://")
       let blob: Blob
@@ -753,6 +753,10 @@ export function useViewer() {
         messageTx: "viewerMenu.failedToUpdateCover",
       })
       return false
+    }
+
+    try {
+      return await setCover()
     } catch (error) {
       logger.error("[onSetCoverByPage] Unexpected error", error)
       modal.openModal("ErrorModal", {

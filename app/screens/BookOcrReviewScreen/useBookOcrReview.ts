@@ -102,32 +102,19 @@ export function useBookOcrReviewController({
 
     const runOcr = async () => {
       setOcrState({ status: "loading" })
-      try {
-        const result = await recognizeCover({
-          imageUrl,
-          languages: (selectedBook.metaData as Metadata).languages.slice(),
-        })
 
-        if (!isActive) return
+      const outcome = await recognizeCover({
+        imageUrl,
+        languages: (selectedBook.metaData as Metadata).languages.slice(),
+      }).then(
+        (result) => ({ result }),
+        (error: unknown) => ({ error }),
+      )
 
-        setRecognizedText(result.text)
-        setOcrFieldEntries(result.fieldEntries)
-        setOcrState({ status: "success" })
+      if (!isActive) return
 
-        if (!hasInitializedOcrValues.current) {
-          const mergedValue = mergeDetectedMetadata(bookMetaDataSnapshot, result.mappedMetadata)
-          const normalizedMergedValue =
-            mergedValue && hasLangNames
-              ? toLanguageNamesForDisplay(mergedValue, langNames)
-              : mergedValue
-          if (normalizedMergedValue) {
-            form.reset(normalizedMergedValue)
-          }
-          hasInitializedOcrValues.current = true
-        }
-      } catch (error) {
-        if (!isActive) return
-
+      if ("error" in outcome) {
+        const error = outcome.error
         setRecognizedText("")
         setOcrFieldEntries([])
         setOcrState({
@@ -139,6 +126,24 @@ export function useBookOcrReviewController({
                 ? error.message
                 : translate("bookOcrReviewScreen.ocrFailed") ?? "",
         })
+        return
+      }
+
+      const result = outcome.result
+      setRecognizedText(result.text)
+      setOcrFieldEntries(result.fieldEntries)
+      setOcrState({ status: "success" })
+
+      if (!hasInitializedOcrValues.current) {
+        const mergedValue = mergeDetectedMetadata(bookMetaDataSnapshot, result.mappedMetadata)
+        const normalizedMergedValue =
+          mergedValue && hasLangNames
+            ? toLanguageNamesForDisplay(mergedValue, langNames)
+            : mergedValue
+        if (normalizedMergedValue) {
+          form.reset(normalizedMergedValue)
+        }
+        hasInitializedOcrValues.current = true
       }
     }
 

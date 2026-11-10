@@ -9,9 +9,10 @@ export type TextProps = ComponentProps<typeof Template> & {
 
 export function Text(props: TextProps) {
   const palette = usePalette()
-  const { color = palette.textPrimary, ...restProps } = props
+  const { color, ...restProps } = props
+  const resolvedColor = color === undefined ? palette.textPrimary : color
   return (
-    <Template {...restProps} color={color}>
+    <Template {...restProps} color={resolvedColor}>
       {props.tx ? translate(props.tx) : props.children}
     </Template>
   )

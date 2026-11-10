@@ -30,6 +30,20 @@ function buildPageHtml(
   )};  var httpHeaders = ${headersJson};  var dpr = window.devicePixelRatio || 1;  var errorEl = document.getElementById('error');  function showError(message) {    errorEl.style.display = 'block';    errorEl.textContent = message;    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', message: message }));  }  function decodeBase64(base64) {    var binary = atob(base64);    var bytes = new Uint8Array(binary.length);    for (var index = 0; index < binary.length; index += 1) {      bytes[index] = binary.charCodeAt(index);    }    return bytes;  }  try {    eval(workerCode);    globalThis.pdfjsWorker = { WorkerMessageHandler: globalThis.WorkerMessageHandler };    if (!globalThis.pdfjsLib || typeof globalThis.pdfjsLib.getDocument !== 'function') {      showError('pdfjs bundle did not initialize correctly');      return;    }    var documentSource = pdfBase64      ? { data: decodeBase64(pdfBase64) }      : { url: url, httpHeaders: httpHeaders, withCredentials: false, rangeChunkSize: 524288 };    globalThis.pdfjsLib.getDocument(documentSource).promise.then(function(pdf) {      window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'totalPages', totalPages: pdf.numPages }));      return pdf.getPage(pageNum);    }).then(function(page) {      var availWidth = window.innerWidth;      var availHeight = window.innerHeight;      var baseViewport = page.getViewport({ scale: 1 });      var scale = Math.min(availWidth / baseViewport.width, availHeight / baseViewport.height);      var viewport = page.getViewport({ scale: scale });      var canvas = document.getElementById('pdf-canvas');      var ctx = canvas.getContext('2d');      canvas.width = Math.max(1, Math.floor(viewport.width * dpr));      canvas.height = Math.max(1, Math.floor(viewport.height * dpr));      canvas.style.width = viewport.width + 'px';      canvas.style.height = viewport.height + 'px';      ctx.scale(dpr, dpr);      return page.render({ canvasContext: ctx, viewport: viewport }).promise;    }).catch(function(err) {      showError(String(err));    });  } catch (err) {    showError(String(err));  }})();</script></body></html>`
 }
 
+type PdfWebViewMessage = {
+  type?: string
+  totalPages?: number
+  message?: string
+}
+
+function parsePdfWebViewMessage(text: string): PdfWebViewMessage | undefined {
+  try {
+    return JSON.parse(text) as PdfWebViewMessage
+  } catch {
+    return undefined
+  }
+}
+
 export function PDFWebPage({
   uri,
   pageNumber,
@@ -40,14 +54,14 @@ export function PDFWebPage({
   onError,
 }: PDFWebPageProps) {
   const handleMessage = (event: WebViewMessageEvent) => {
-    try {
-      const msg = JSON.parse(event.nativeEvent.data)
-      if (msg.type === "totalPages") {
-        onTotalPages?.(msg.totalPages)
-      } else if (msg.type === "error") {
-        onError?.(msg.message)
-      }
-    } catch {}
+    const msg = parsePdfWebViewMessage(event.nativeEvent.data)
+    if (!msg) return
+
+    if (msg.type === "totalPages" && typeof msg.totalPages === "number") {
+      onTotalPages?.(msg.totalPages)
+    } else if (msg.type === "error" && typeof msg.message === "string") {
+      onError?.(msg.message)
+    }
   }
 
   const html = buildPageHtml(uri, pageNumber, headers, pdfBase64)

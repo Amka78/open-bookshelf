@@ -43,37 +43,37 @@ export function useBookConvert() {
 
     const loadConversionBookData = async () => {
       setIsLoadingFormats(true)
-      try {
-        const response = await api.getConversionBookData(
+      const response = await api
+        .getConversionBookData(
           selectedLibrary.id,
           selectedBook.id,
           preferredInputFormat ?? undefined,
         )
-
-        if (cancelled) return
-
-        if (response.kind === "ok") {
-          setOutputFormats(response.data.output_formats)
-
-          // Restore outputFormat from server-saved conversion options if available
-          const savedOutputFmt = response.data.conversion_options?.output_fmt ?? ""
-          const isValidOutputFmt =
-            savedOutputFmt && response.data.output_formats.includes(savedOutputFmt)
-          const newOutputFormat = isValidOutputFmt ? savedOutputFmt : ""
-
-          const currentOutputFormat = form.getValues("outputFormat")
-          if (currentOutputFormat !== newOutputFormat) {
-            form.setValue("outputFormat", newOutputFormat)
+        .finally(() => {
+          if (!cancelled) {
+            setIsLoadingFormats(false)
           }
-          return
-        }
+        })
 
-        setOutputFormats(inputFormats)
-      } finally {
-        if (!cancelled) {
-          setIsLoadingFormats(false)
+      if (cancelled) return
+
+      if (response.kind === "ok") {
+        setOutputFormats(response.data.output_formats)
+
+        // Restore outputFormat from server-saved conversion options if available
+        const savedOutputFmt = response.data.conversion_options?.output_fmt ?? ""
+        const isValidOutputFmt =
+          savedOutputFmt && response.data.output_formats.includes(savedOutputFmt)
+        const newOutputFormat = isValidOutputFmt ? savedOutputFmt : ""
+
+        const currentOutputFormat = form.getValues("outputFormat")
+        if (currentOutputFormat !== newOutputFormat) {
+          form.setValue("outputFormat", newOutputFormat)
         }
+        return
       }
+
+      setOutputFormats(inputFormats)
     }
 
     void loadConversionBookData()
@@ -106,23 +106,25 @@ export function useBookConvert() {
     setConvertStatus("converting")
     setErrorMessage(null)
 
-    try {
-      const jobId = await selectedBook.startConvert(values.outputFormat, selectedLibrary.id, values)
-      calibreRootStore.addConversionJob({
-        jobId,
-        libraryId: selectedLibrary.id,
-        bookId: selectedBook.id,
-        bookTitle: selectedBook.metaData?.title ?? "",
-        inputFormat: values.inputFormat ?? "",
-        outputFormat: values.outputFormat,
+    const jobId = await selectedBook
+      .startConvert(values.outputFormat, selectedLibrary.id, values)
+      .catch((e: unknown) => {
+        setConvertStatus("error")
+        setErrorMessage(e instanceof Error ? e.message : String(e))
+        return undefined
       })
-      setConvertStatus("success")
-      return jobId
-    } catch (e) {
-      setConvertStatus("error")
-      setErrorMessage(e instanceof Error ? e.message : String(e))
-      return null
-    }
+    if (jobId === undefined) return null
+
+    calibreRootStore.addConversionJob({
+      jobId,
+      libraryId: selectedLibrary.id,
+      bookId: selectedBook.id,
+      bookTitle: selectedBook.metaData?.title ?? "",
+      inputFormat: values.inputFormat ?? "",
+      outputFormat: values.outputFormat,
+    })
+    setConvertStatus("success")
+    return jobId
   }, [calibreRootStore, form, selectedBook, selectedLibrary.id])
 
   const handleReset = useCallback(() => {

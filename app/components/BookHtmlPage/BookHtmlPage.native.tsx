@@ -13,6 +13,21 @@ import {
 
 const FALLBACK_AUTO_HEIGHT = 320
 
+type WebViewMessage = {
+  type?: string
+  key?: string
+  height?: number
+  action?: string
+}
+
+function parseWebViewMessage(text: string): WebViewMessage | undefined {
+  try {
+    return JSON.parse(text) as WebViewMessage
+  } catch {
+    return undefined
+  }
+}
+
 export function BookHtmlPage(props: BookHtmlPageProps) {
   const palette = usePalette()
   const colorScheme = useColorScheme()
@@ -74,26 +89,24 @@ export function BookHtmlPage(props: BookHtmlPageProps) {
         scrollEnabled={!autoHeight}
         nestedScrollEnabled={!autoHeight}
         onMessage={(event) => {
-          try {
-            const data = JSON.parse(event.nativeEvent.data)
-            if (
-              data?.type === calibreHtmlPageSizeMessageType &&
-              data?.key === documentKey &&
-              typeof data?.height === "number"
-            ) {
-              setContentHeight(Math.max(1, Math.ceil(data.height)))
-              return
-            }
+          const data = parseWebViewMessage(event.nativeEvent.data)
+          if (!data) return
 
-            if (
-              data?.type === calibreHtmlPageInteractionMessageType &&
-              data?.key === documentKey &&
-              data?.action === calibreHtmlPageLongPressAction
-            ) {
-              props.onLongPress?.()
-            }
-          } catch {
-            // Ignore non-size messages.
+          if (
+            data.type === calibreHtmlPageSizeMessageType &&
+            data.key === documentKey &&
+            typeof data.height === "number"
+          ) {
+            setContentHeight(Math.max(1, Math.ceil(data.height)))
+            return
+          }
+
+          if (
+            data.type === calibreHtmlPageInteractionMessageType &&
+            data.key === documentKey &&
+            data.action === calibreHtmlPageLongPressAction
+          ) {
+            props.onLongPress?.()
           }
         }}
         onShouldStartLoadWithRequest={(request) => {

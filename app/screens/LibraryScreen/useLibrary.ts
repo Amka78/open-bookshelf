@@ -225,11 +225,9 @@ export function useLibrary() {
   }
   const search = async () => {
     setSearching(true)
-    try {
+    await (async () => {
       await calibreRootStore.searchLibrary(settingStore.booksPerPage)
-    } finally {
-      setSearching(false)
-    }
+    })().finally(() => setSearching(false))
   }
 
   useEffect(() => {
@@ -256,11 +254,9 @@ export function useLibrary() {
 
     const initialize = async () => {
       setSearching(true)
-      try {
+      await (async () => {
         await calibreRootStore.searchLibrary(settingStore.booksPerPage)
-      } finally {
-        setSearching(false)
-      }
+      })().finally(() => setSearching(false))
 
       calibreRootStore.getTagBrowser()
     }
@@ -281,11 +277,11 @@ export function useLibrary() {
       // ここで何もせず戻る。
       if (running) return
       running = true
-      try {
+      await (async () => {
         await calibreRootStore.getTagBrowser()
-      } finally {
+      })().finally(() => {
         running = false
-      }
+      })
       // 取得が多重ガードで後回しになった（tagBrowserPending）か、取得中に新しい編集が
       // 入った（tagBrowserDirty）場合はもう1回スケジュールする。失敗時は dirty が
       // 取得開始時に消費済み（false）のため再スケジュールされず、無限リトライにならない。
@@ -366,7 +362,7 @@ export function useLibrary() {
 
     logger.debug("onUploadFile", assets)
 
-    try {
+    const upload = async () => {
       const result = await api.uploadFile(
         assets[0].name,
         selectedLibrary!.id,
@@ -381,9 +377,9 @@ export function useLibrary() {
         return
       }
       await onSearch()
-    } finally {
-      setSearching(false)
     }
+
+    await upload().finally(() => setSearching(false))
   }
 
   const currentListStyle = convergenceHook.isLarge ? desktopViewStyle : mobileViewStyle
