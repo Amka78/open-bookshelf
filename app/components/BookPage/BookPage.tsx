@@ -1,5 +1,5 @@
 import { Image, type ImageProps } from "@/components"
-import { useRef, useState } from "react"
+import { useState } from "react"
 import { useWindowDimensions } from "react-native"
 
 export type BookImageProps = ImageProps & {
@@ -40,11 +40,9 @@ const getSourceUri = (source: ImageProps["source"]): string | undefined => {
 }
 
 // React Compiler auto-memoizes this component.
-// Source stabilization via useMemo: expo-image won't re-trigger its fade
-// animation when the parent passes a new source object with the same URI
-// (e.g. auth headers object recreated on every render).
-// useMemo is appropriate here because the memoization key (sourceUri) differs
-// from the actual prop (props.source), which React Compiler cannot infer.
+// Source stabilization: expo-image won't re-trigger its fade animation when the
+// parent passes a new source object with the same URI (e.g. auth headers object
+// recreated on every render). Keep the previous object until the URI changes.
 export function BookPage(props: BookImageProps) {
   const [sourceDimension, setSourceDimension] = useState<ImageDimension>()
   const { width: windowWidth, height: windowHeight } = useWindowDimensions()
@@ -53,16 +51,13 @@ export function BookPage(props: BookImageProps) {
 
   const sourceUri = getSourceUri(props.source)
 
-  // Keep a stable source reference that only updates when the URI changes.
-  // When URI is unchanged, stableSource is the same object so expo-image
-  // skips its loading transition.
-  const stableSourceRef = useRef(props.source)
-  const lastSourceUriRef = useRef(sourceUri)
-  if (lastSourceUriRef.current !== sourceUri) {
-    lastSourceUriRef.current = sourceUri
-    stableSourceRef.current = props.source
+  // Adjust state during render (React's documented pattern): when the URI is
+  // unchanged, keep the previous source object so expo-image skips its
+  // loading transition.
+  const [stableSource, setStableSource] = useState(props.source)
+  if (getSourceUri(stableSource) !== sourceUri) {
+    setStableSource(props.source)
   }
-  const stableSource = stableSourceRef.current
 
   const dimension = sourceDimension
     ? getContainedDimension(sourceDimension, {

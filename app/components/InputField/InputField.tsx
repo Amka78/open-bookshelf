@@ -1,6 +1,5 @@
 import { type MessageKey, translate } from "@/i18n"
 import type { ComponentProps, Ref } from "react"
-import { useCallback, useRef } from "react"
 import { Platform } from "react-native"
 import { InputField as Template } from "./template"
 
@@ -19,39 +18,21 @@ export type InputFieldProps = ComponentProps<typeof Template> & {
 }
 
 export const InputField = ({ ref, ...props }: InputFieldProps) => {
-  type TemplateElement = React.ElementRef<typeof Template>
   type TemplateOnChange = NonNullable<ComponentProps<typeof Template>["onChange"]>
   const { onChangeText, onChange: propsOnChange, placeholderTx, placeholder, ...restProps } = props
-  const inputRef = useRef<TemplateElement | null>(null)
 
-  const assignRef = useCallback(
-    (element: TemplateElement | null) => {
-      inputRef.current = element
+  const handleChange: TemplateOnChange = (event) => {
+    propsOnChange?.(event)
 
-      if (typeof ref === "function") {
-        ref(element)
-      } else if (ref) {
-        ref.current = element
-      }
-    },
-    [ref],
-  )
+    const text =
+      event.nativeEvent.text ??
+      (event as unknown as { target?: { value?: string } }).target?.value ??
+      ""
 
-  const handleChange = useCallback<TemplateOnChange>(
-    (event) => {
-      propsOnChange?.(event)
-
-      const text =
-        event.nativeEvent.text ??
-        (event as unknown as { target?: { value?: string } }).target?.value ??
-        ""
-
-      if (Platform.OS === "web") {
-        onChangeText?.(text)
-      }
-    },
-    [propsOnChange, onChangeText],
-  )
+    if (Platform.OS === "web") {
+      onChangeText?.(text)
+    }
+  }
 
   const templateProps =
     Platform.OS === "web"
@@ -59,13 +40,13 @@ export const InputField = ({ ref, ...props }: InputFieldProps) => {
           ...restProps,
           onChange: handleChange,
           onChangeText: undefined,
-          ref: assignRef,
+          ref,
         }
       : {
           ...restProps,
           onChange: handleChange,
           onChangeText,
-          ref: assignRef,
+          ref,
         }
 
   return (

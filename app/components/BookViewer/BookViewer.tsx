@@ -8,6 +8,7 @@ import {
 } from "@/components"
 import { AnnotationPanel } from "@/components/AnnotationPanel"
 import { useElectrobunModal } from "@/hooks/useElectrobunModal"
+import { useLatestCallback } from "@/hooks/useLatestCallback"
 import { useStores } from "@/models"
 import type { ApppNavigationProp } from "@/navigators/types"
 import { useAnnotations } from "@/screens/ViewerScreen/useAnnotations"
@@ -18,7 +19,7 @@ import { goToNextPage, goToPreviousPage } from "@/utils/pageTurnning"
 import { useNavigation } from "@react-navigation/native"
 import { FlashList, type FlashListRef, type ListRenderItem } from "@shopify/flash-list"
 import React from "react"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import {
   type FlexAlignType,
   type NativeScrollEvent,
@@ -118,6 +119,7 @@ function FlashListCompat(props: FlashListCompatProps) {
 }
 
 export function BookViewer(props: BookViewerProps) {
+  const { renderPage: renderPageProp, disableNavigation } = props
   const palette = usePalette()
   const viewerHook = useViewer()
   const { settingStore } = useStores()
@@ -196,14 +198,12 @@ export function BookViewer(props: BookViewerProps) {
     initialAutoPageTurnIntervalMs: settingStore.autoPageTurnIntervalMs,
     flashListRef,
   })
-  const displayData: typeof data = useMemo(() => {
-    if (!useReversedData) {
-      return data
-    }
-
-    return [...data].reverse() as typeof data
-  }, [data, useReversedData])
-  flashListDisplayStateRef.current = { itemCount: displayData.length, useReversedData }
+  const displayData: typeof data = useReversedData ? ([...data].reverse() as typeof data) : data
+  // Layout effect so the ref is fresh before the viewer hook's passive effects
+  // (initial page / reading-style conversion) call scrollToIndex in the same commit.
+  useLayoutEffect(() => {
+    flashListDisplayStateRef.current = { itemCount: displayData.length, useReversedData }
+  }, [displayData.length, useReversedData])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: jumpRequest.id is the only meaningful change trigger; full object would cause infinite loops
   useEffect(() => {
@@ -213,16 +213,17 @@ export function BookViewer(props: BookViewerProps) {
   }, [jumpRequest?.id])
 
   // Ref for scrollIndex: used only in logging inside renderPage.
-  // Avoids making scrollIndex a dependency of useCallback, which would
-  // recreate renderItem on every page turn and force FlashList to
+  // Keeping scrollIndex out of renderPage's reactive deps avoids recreating
+  // the page renderer on every page turn, which would force FlashList to
   // re-render all visible items.
   const scrollIndexRef = useRef(scrollIndex)
-  scrollIndexRef.current = scrollIndex
+  useEffect(() => {
+    scrollIndexRef.current = scrollIndex
+  }, [scrollIndex])
 
-  // Ref for viewerHook: gives renderPage access to latest hook values (e.g. onManageMenu)
-  // without making the whole unstable object a dep of useCallback.
-  const viewerHookRef = useRef(viewerHook)
-  viewerHookRef.current = viewerHook
+  // Stable wrapper for the latest handler. Passing the raw viewerHook.onManageMenu
+  // (recreated every render) as a prop would recreate renderPage every render.
+  const onManageMenu = useLatestCallback(viewerHook.onManageMenu)
 
   // Extract readingStyle as a primitive dep so renderPage is only recreated on style changes,
   // not on every page turn (which would change the whole viewerHook object reference).
@@ -251,8 +252,8 @@ export function BookViewer(props: BookViewerProps) {
     })
   }
 
-  // scrollIndex and viewerHook accessed via refs to avoid page-turn recreation of renderPage.
-  // Only primitive/stable values (readingStyle string) are kept as deps.
+  // scrollIndex is read through a ref and viewerHook.onManageMenu through a
+  // latest-callback, so page turns do not recreate renderPage.
   const renderPage = useCallback(
     (renderProps: RenderPageProps) => {
       const handlePagePress = () => {
@@ -267,7 +268,7 @@ export function BookViewer(props: BookViewerProps) {
       const pageProps = {
         ...renderProps,
         onPress: handlePagePress,
-        onLongPress: viewerHookRef.current.onManageMenu,
+        onLongPress: onManageMenu,
         annotations: annotationsForPage(renderProps.page)
           .filter((a) => a.type === "highlight")
           .map((a) => ({
@@ -303,8 +304,8 @@ export function BookViewer(props: BookViewerProps) {
         <PagePressable
           currentPage={renderProps.scrollIndex}
           direction={renderProps.direction}
-          onLongPress={viewerHookRef.current.onManageMenu}
-          disabled={props.disableNavigation}
+          onLongPress={onManageMenu}
+          disabled={disableNavigation}
           onPageChanging={(page) => {
             logger.debug(`current scroll index ${scrollIndexRef.current}`)
             logger.debug(`page pressed next page:${page}`)
@@ -318,7 +319,7 @@ export function BookViewer(props: BookViewerProps) {
             width: renderProps.availableWidth,
           }}
         >
-          {props.renderPage(pageProps)}
+          {renderPageProp(pageProps)}
         </PagePressable>
       )
     },
@@ -326,12 +327,13 @@ export function BookViewer(props: BookViewerProps) {
       isHorizontalReading,
       pages,
       viewerReadingStyle,
-      props.renderPage,
-      props.disableNavigation,
+      renderPageProp,
+      disableNavigation,
       scrollToIndex,
       annotationsForPage,
       addHighlight,
       modal,
+      onManageMenu,
     ],
   )
 
@@ -444,24 +446,21 @@ export function BookViewer(props: BookViewerProps) {
   >(undefined)
   const singlePageLongPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const clearSinglePageLongPressTimer = useCallback(() => {
+  const clearSinglePageLongPressTimer = () => {
     if (singlePageLongPressTimerRef.current != null) {
       clearTimeout(singlePageLongPressTimerRef.current)
       singlePageLongPressTimerRef.current = null
     }
-  }, [])
+  }
 
-  const navigateSinglePageDirection = useCallback(
-    (baseIndex: number, direction: "next" | "previous") => {
-      const targetIndex =
-        direction === "previous"
-          ? goToPreviousPage(baseIndex, 1)
-          : goToNextPage(baseIndex, data.length, 1)
+  const navigateSinglePageDirection = (baseIndex: number, direction: "next" | "previous") => {
+    const targetIndex =
+      direction === "previous"
+        ? goToPreviousPage(baseIndex, 1)
+        : goToNextPage(baseIndex, data.length, 1)
 
-      scrollToIndex(targetIndex, true, isHorizontalReading ? undefined : 0.5)
-    },
-    [data.length, isHorizontalReading, scrollToIndex],
-  )
+    scrollToIndex(targetIndex, true, isHorizontalReading ? undefined : 0.5)
+  }
 
   useEffect(() => {
     latestHorizontalIndexRef.current = scrollIndex
@@ -553,37 +552,26 @@ export function BookViewer(props: BookViewerProps) {
     }
   }, [data.length, estimatedItemSize, isHorizontalReading, isWeb, scrollToIndex, useReversedData])
 
-  const onListScrollSettled = useCallback(
-    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      if (!data.length) {
-        return
-      }
+  const onListScrollSettled = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    if (!data.length) {
+      return
+    }
 
-      const pageSize = isHorizontalReading ? listViewportWidth : dimension.height
-      if (pageSize <= 0) {
-        return
-      }
+    const pageSize = isHorizontalReading ? listViewportWidth : dimension.height
+    if (pageSize <= 0) {
+      return
+    }
 
-      const offset = isHorizontalReading
-        ? event.nativeEvent.contentOffset.x
-        : event.nativeEvent.contentOffset.y
-      const rawIndex = Math.round(offset / pageSize)
-      const clampedRawIndex = Math.max(0, Math.min(rawIndex, data.length - 1))
-      const resolvedIndex =
-        isInverted && !useTransformInvert ? data.length - 1 - clampedRawIndex : clampedRawIndex
+    const offset = isHorizontalReading
+      ? event.nativeEvent.contentOffset.x
+      : event.nativeEvent.contentOffset.y
+    const rawIndex = Math.round(offset / pageSize)
+    const clampedRawIndex = Math.max(0, Math.min(rawIndex, data.length - 1))
+    const resolvedIndex =
+      isInverted && !useTransformInvert ? data.length - 1 - clampedRawIndex : clampedRawIndex
 
-      syncScrollIndex(resolvedIndex)
-    },
-    [
-      data.length,
-      dimension.height,
-      isInverted,
-      isHorizontalReading,
-      listViewportWidth,
-      syncScrollIndex,
-      useTransformInvert,
-    ],
-  )
+    syncScrollIndex(resolvedIndex)
+  }
 
   return (
     <View style={styles.viewerContainer}>
@@ -695,7 +683,7 @@ export function BookViewer(props: BookViewerProps) {
                     clearSinglePageLongPressTimer()
                     singlePageTouchStartRef.current = undefined
 
-                    if (!start || props.disableNavigation || start.longPressTriggered) {
+                    if (!start || disableNavigation || start.longPressTriggered) {
                       return
                     }
 

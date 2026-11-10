@@ -1,7 +1,7 @@
 import { useStores } from "@/models"
 import type { BookReadingStyleType } from "@/type/types"
 import { usePalette } from "@/theme"
-import { useMemo, useRef } from "react"
+import { useState } from "react"
 import { useColorScheme } from "react-native"
 import { usePreparedCalibreHtmlDocument } from "../BookHtmlPage/shared"
 import { buildTextBookHtmlDocument, textBookViewerCommandMessageType } from "./textBookHtml"
@@ -53,6 +53,14 @@ export const buildTextBookSpineCommandPayload = ({
   })
 }
 
+type InitialViewerState = {
+  currentPage: number
+  documentKey: string
+  leadingBlankPage: boolean
+  pageDirection: "left" | "right"
+  readingStyle: BookReadingStyleType
+}
+
 export const useTextBookSpineDocument = (props: TextBookSpineProps) => {
   const palette = usePalette()
   const colorScheme = useColorScheme()
@@ -75,34 +83,25 @@ export const useTextBookSpineDocument = (props: TextBookSpineProps) => {
         },
   )
 
-  const initialViewerStateRef = useRef<{
-    currentPage: number
-    documentKey: string
-    leadingBlankPage: boolean
-    pageDirection: "left" | "right"
-    readingStyle: BookReadingStyleType
-  } | null>(null)
+  const [initialViewerState, setInitialViewerState] = useState<InitialViewerState | null>(null)
 
-  if (initialViewerStateRef.current?.documentKey !== documentKey) {
-    initialViewerStateRef.current = {
+  // 文書が変わったときだけ、その時点の表示位置を初期値として固定する。
+  // render 中の state 調整は React が再レンダーをやり直すため、ref の即時書き換えと同じ結果になる。
+  if (initialViewerState?.documentKey !== documentKey) {
+    setInitialViewerState({
       documentKey,
       readingStyle: props.readingStyle,
       pageDirection: props.pageDirection,
       currentPage: props.currentPage,
       leadingBlankPage: props.leadingBlankPage,
-    }
+    })
   }
 
-  const html = useMemo(() => {
-    if (props.sourceHtml) {
-      return props.sourceHtml
-    }
-
-    if (!preparedDocument || !initialViewerStateRef.current) {
-      return null
-    }
-
-    return buildTextBookHtmlDocument({
+  let html: string | null
+  if (props.sourceHtml) {
+    html = props.sourceHtml
+  } else if (preparedDocument && initialViewerState) {
+    html = buildTextBookHtmlDocument({
       documentData: preparedDocument,
       documentKey,
       annotations: props.annotations ?? [],
@@ -115,26 +114,16 @@ export const useTextBookSpineDocument = (props: TextBookSpineProps) => {
         viewerFontSizePt: settingStore.viewerFontSizePt,
         viewerTheme,
       },
-      readingStyle: initialViewerStateRef.current.readingStyle,
-      pageDirection: initialViewerStateRef.current.pageDirection,
-      initialPage: initialViewerStateRef.current.currentPage,
-      leadingBlankPage: initialViewerStateRef.current.leadingBlankPage,
+      readingStyle: initialViewerState.readingStyle,
+      pageDirection: initialViewerState.pageDirection,
+      initialPage: initialViewerState.currentPage,
+      leadingBlankPage: initialViewerState.leadingBlankPage,
       preferredWritingMode: props.preferredWritingMode ?? null,
       coverPage: props.isCoverPage ?? false,
     })
-  }, [
-    computedThemeMode,
-    documentKey,
-    palette.bg0,
-    palette.textPrimary,
-    preparedDocument,
-    props.annotations,
-    props.isCoverPage,
-    props.sourceHtml,
-    props.preferredWritingMode,
-    settingStore.viewerFontSizePt,
-    viewerTheme,
-  ])
+  } else {
+    html = null
+  }
 
   return {
     documentKey: props.sourceHtml ? props.pagePath : documentKey,

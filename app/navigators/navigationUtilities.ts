@@ -73,9 +73,6 @@ export function getActiveRouteName(state: NavigationState | PartialState<Navigat
  * the navigation or allows exiting the app.
  */
 export function useBackButtonHandler(canExit: (routeName: string) => boolean) {
-  // ignore if iOS ... no back button!
-  if (Platform.OS === "ios") return
-
   // The reason we're using a ref here is because we need to be able
   // to update the canExit function without re-setting up all the listeners
   const canExitRef = useRef(canExit)
@@ -85,6 +82,10 @@ export function useBackButtonHandler(canExit: (routeName: string) => boolean) {
   }, [canExit])
 
   useEffect(() => {
+    // iOS has no back button. Keep the early return inside the effect so hooks
+    // are still called unconditionally on every platform.
+    if (Platform.OS === "ios") return
+
     // We'll fire this when the back button is pressed on Android.
     const onBackPress = () => {
       if (!navigationRef.isReady()) {

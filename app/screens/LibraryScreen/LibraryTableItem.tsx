@@ -16,11 +16,20 @@ import {
   VStack,
 } from "@/components"
 import { useElectrobunModal } from "@/hooks/useElectrobunModal"
+import { useLatestCallback } from "@/hooks/useLatestCallback"
 import type { Book, FieldMetadataMap, MetadataSnapshotIn } from "@/models/calibre"
 import { usePalette } from "@/theme"
 import { observer } from "mobx-react-lite"
-import { useEffect, useMemo, useRef, useState } from "react"
-import { PanResponder, Platform, Pressable, StyleSheet, View, type ViewStyle } from "react-native"
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import {
+  PanResponder,
+  type PanResponderInstance,
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+  type ViewStyle,
+} from "react-native"
 
 const BOOK_COLUMN_WIDTH = 150
 const TITLE_COLUMN_WIDTH = 180
@@ -130,15 +139,17 @@ type ResizeHandleProps = {
 
 function ResizeHandle({ column, width, onResize, offsetRight = -6 }: ResizeHandleProps) {
   const widthRef = useRef(width)
-  widthRef.current = width
   const startWidthRef = useRef(width)
   const startPageXRef = useRef(0)
 
-  const onResizeRef = useRef(onResize)
-  onResizeRef.current = onResize
+  const onResizeLatest = useLatestCallback(onResize)
 
-  const panResponder = useMemo(
-    () =>
+  // PanResponder reads refs inside its handlers, and React Compiler rejects
+  // creating it during render for that reason. Create it in a layout effect so
+  // the handlers are attached before the first paint.
+  const [panResponder, setPanResponder] = useState<PanResponderInstance | null>(null)
+  useLayoutEffect(() => {
+    setPanResponder(
       PanResponder.create({
         onStartShouldSetPanResponder: () => true,
         onMoveShouldSetPanResponder: () => true,
@@ -148,15 +159,21 @@ function ResizeHandle({ column, width, onResize, offsetRight = -6 }: ResizeHandl
         },
         onPanResponderMove: (event) => {
           const delta = event.nativeEvent.pageX - startPageXRef.current
-          onResizeRef.current(column, clampColumnWidth(startWidthRef.current + delta))
+          onResizeLatest(column, clampColumnWidth(startWidthRef.current + delta))
         },
       }),
-    [column],
-  )
+    )
+  }, [column, onResizeLatest])
+
+  // PanResponder is created once per column, so the latest width is synced
+  // through a ref outside render (React Compiler forbids ref writes in render).
+  useEffect(() => {
+    widthRef.current = width
+  }, [width])
 
   return (
     <View
-      {...panResponder.panHandlers}
+      {...(panResponder?.panHandlers ?? {})}
       style={[
         styles.resizeHandle,
         { right: offsetRight },
