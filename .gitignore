@@ -116,3 +116,6 @@ build/
 .hutch/
 .cottontail-tmp/
 artifacts/
+
+# 開発ログの収集先（bun run logs / logs:web が書き出す）
+logs/

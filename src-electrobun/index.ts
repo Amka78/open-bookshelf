@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, statSync } from "node:fs"
 import { join, normalize, sep } from "node:path"
 import { BrowserView, BrowserWindow, Updater, Utils } from "electrobun/bun"
+import { DEFAULT_LOG_SINK_PORT, startLogSink } from "../scripts/logSink"
 import {
   CALIBRE_PROXY_PREFIX,
   buildCorsHeaders,
@@ -50,10 +51,26 @@ function startLocalServer(): { origin: string; appUrl: string } {
 
 const localServer = startLocalServer()
 
+// ELECTROBUN_WEB_URL は開発時のみ設定する（bun run desktop）。未設定なら同梱バンドルを配信する。
+const devServerUrl = process.env.ELECTROBUN_WEB_URL
+
+// 開発時はブラウザ側のログを logs/electrobun.ndjson に落とす。
+// ポートが埋まっている（dev:web が起動済みなど）場合は既存の受け口に相乗りする。
+const logSinkUrl = devServerUrl
+  ? (() => {
+      try {
+        return startLogSink({ echo: true }).url
+      } catch {
+        return `http://127.0.0.1:${DEFAULT_LOG_SINK_PORT}`
+      }
+    })()
+  : ""
+
 // Electrobun 2.0.5 の Linux では preload に views:// URL を渡しても実行されないため、
 // ビルド済みの preload バンドルを読み込んでインライン JavaScript として渡す。
 // プロキシのポートは起動ごとに変わるので、preload の先頭で注入する。
 const preloadScript = `window.__ELECTROBUN_PROXY_ORIGIN = ${JSON.stringify(localServer.origin)};
+window.__LOG_SINK_URL = ${JSON.stringify(logSinkUrl)};
 ${readFileSync(join(import.meta.dir, "..", "views", "preload", "index.js"), "utf8")}`
 
 const rpc = BrowserView.defineRPC<AppRPCType>({
@@ -84,9 +101,6 @@ const rpc = BrowserView.defineRPC<AppRPCType>({
     messages: {},
   },
 })
-
-// ELECTROBUN_WEB_URL は開発時のみ設定する（bun run desktop）。未設定なら同梱バンドルを配信する。
-const devServerUrl = process.env.ELECTROBUN_WEB_URL
 
 new BrowserWindow({
   title: "Open BookShelf",

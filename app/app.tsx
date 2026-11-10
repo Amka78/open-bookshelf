@@ -26,9 +26,14 @@ import { AppNavigator, type NavigationStateLike, useNavigationPersistence } from
 import { ErrorBoundary } from "./screens/ErrorScreen/ErrorBoundary"
 import { customFontsToLoad } from "./theme"
 import { logger } from "./utils/logger"
+import { installLogSink } from "./utils/logSink"
 import * as storage from "./utils/storage"
 
 const IS_STORYBOOK_ENABLED = process.env.EXPO_PUBLIC_STORYBOOK_ENABLED === "true"
+
+// 開発中だけ、ログをローカルの受け口（logs/*.ndjson）へも流す。
+// scripts/logSink.ts を起動していなければ自動で無効化されるので、本番・通常起動には影響しない。
+installLogSink()
 
 // Set up Reactotron, which is a free desktop app for inspecting and debugging
 // React Native apps. Learn more here: https://github.com/infinitered/reactotron

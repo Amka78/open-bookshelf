@@ -1,3 +1,5 @@
+import { enqueueLog } from "./logSink"
+
 type LogLevel = "debug" | "info" | "warn" | "error" | "silent"
 
 const LOG_LEVELS: Record<LogLevel, number> = {
@@ -52,8 +54,14 @@ function sendToReactotron(level: LogLevel, args: unknown[]) {
   }
 }
 
+// 開発ログの収集（logs/*.ndjson）へはレベルに関係なく全件送る。表示のフィルタとは別目的。
+function send(level: Exclude<LogLevel, "silent">, args: unknown[]) {
+  sendToReactotron(level, args)
+  enqueueLog(level, args)
+}
+
 function logDebug(...args: unknown[]) {
-  sendToReactotron("debug", args)
+  send("debug", args)
   if (!shouldLog("debug")) return
   if (console.debug) {
     console.debug("[DEBUG]", ...args)
@@ -63,7 +71,7 @@ function logDebug(...args: unknown[]) {
 }
 
 function logInfo(...args: unknown[]) {
-  sendToReactotron("info", args)
+  send("info", args)
   if (!shouldLog("info")) return
   if (console.info) {
     console.info("[INFO]", ...args)
@@ -73,13 +81,13 @@ function logInfo(...args: unknown[]) {
 }
 
 function logWarn(...args: unknown[]) {
-  sendToReactotron("warn", args)
+  send("warn", args)
   if (!shouldLog("warn")) return
   console.warn("[WARN]", ...args)
 }
 
 function logError(...args: unknown[]) {
-  sendToReactotron("error", args)
+  send("error", args)
   if (!shouldLog("error")) return
   console.error("[ERROR]", ...args)
 }
