@@ -62,13 +62,13 @@ describe("textBookHtml", () => {
     })
 
     expect(html).toContain("const blockViewportSize = Math.max(")
-    expect(html).toContain(
-      "const getPageInlineSize = (inlineViewportSize, spreadPageCount, isVerticalWriting) => {",
-    )
+    expect(html).toContain("const getPagedColumnMetrics = (")
     expect(html).toContain("-webkit-column-width")
     expect(html).toContain("column-width")
-    expect(html).toContain("const pageInlineSize = getPageInlineSize(")
-    expect(html).toContain("isVerticalWriting,\n          )")
+    expect(html).toContain("const columnMetrics = getPagedColumnMetrics(")
+    expect(html).toContain("const pageInlineSize = columnMetrics.columnSize")
+    expect(html).toContain('columnMetrics.columnGap + "px"')
+    expect(html).toContain("isVerticalWriting,\n            pageGap,")
   })
 
   test("splits a spread along the block axis for vertical writing", () => {
@@ -102,7 +102,7 @@ describe("textBookHtml", () => {
       "const getLogicalPagesPerUnit = (isVerticalWriting, spreadPageCount) => {",
     )
     expect(html).toContain("return isVerticalWriting ? Math.max(1, spreadPageCount) : 1")
-    expect(html).toContain("return Math.max(1, Math.floor(inlineViewportSize))")
+    expect(html).toContain("const columnSize = Math.max(1, Math.floor(inlineViewportSize))")
     expect(html).toContain(
       "const logicalPagesPerUnit = getLogicalPagesPerUnit(isVerticalWriting, spreadPageCount)",
     )
@@ -110,7 +110,9 @@ describe("textBookHtml", () => {
     // 論理ページ → ユニット換算（横書きは perUnit=1 なので従来通り）
     expect(html).toContain("const perUnit = Math.max(1, layoutState.logicalPagesPerUnit || 1)")
     expect(html).toContain("const unit = Math.floor(internalPage / perUnit)")
-    expect(html).toContain("const offset = unit * layoutState.inlinePageSize")
+    expect(html).toContain(
+      "const offset = unit * (layoutState.twoPageSpread ? perUnit : 1) * advance",
+    )
     // ユニット → 論理ページ換算
     expect(html).toContain(
       "const logicalPage = unit * Math.max(1, layoutState.logicalPagesPerUnit || 1)",
@@ -222,15 +224,15 @@ describe("textBookHtml", () => {
       leadingBlankPage: false,
     })
 
-    expect(html).toContain("const normalizePaginatedRootContainers = () => {")
+    expect(html).toContain("const normalizePaginatedRootContainers = (layoutRootOverride) => {")
     expect(html).toContain('child.style.setProperty("column-span", "none", "important")')
     expect(html).toContain("normalizePaginatedRootContainers()")
 
     // #obs-page-wrapper is the multicol container: column-fill:auto only fragments
     // when it keeps a definite block size, so normalization must target the wrapper's
     // children (Calibre's "body > *") and never the wrapper itself.
-    expect(html).toContain("const layoutRoot = getPageWrapper() ?? document.body")
-    expect(html).toContain("const { contentChildren } = getPrimaryLayoutElements()")
+    expect(html).toContain("const layoutRoot = layoutRootOverride ?? getPageWrapper() ?? document.body")
+    expect(html).toContain("const { contentChildren } = getPrimaryLayoutElements(layoutRootOverride)")
     expect(html).not.toContain("Array.from(document.body.children)")
     expect(html).not.toContain('document.querySelectorAll("body > *")')
   })
@@ -309,15 +311,20 @@ describe("textBookHtml", () => {
     expect(html).toContain("const VERTICAL_PAGE_ASPECT_RATIO = 210 / 297")
     expect(html).toContain("const getVerticalPageWidth = (viewportWidth, viewportHeight) => {")
     expect(html).toContain("Math.floor(viewportHeight * VERTICAL_PAGE_ASPECT_RATIO)")
-    expect(html).toContain("const contentWidth = verticalPageWidth * spreadPageCount")
-    expect(html).toContain('applyImportantStyle(pw, "width", contentWidth + "px")')
+    expect(html).toContain("const pageBoxesWidth = verticalPageWidth * spreadPageCount")
+    expect(html).toContain('applyImportantStyle(pw, "width", pageBoxesWidth + "px")')
     expect(html).not.toContain('applyImportantStyle(pw, "width", "100%")')
     // vertical-rl では block-start が右。margin-left / margin-inline-* は効かないので
     // 中央寄せは物理プロパティの margin-right を px 指定する。
     expect(html).toContain('"margin-right",')
-    expect(html).toContain("Math.floor((viewportWidth - contentWidth) / 2)")
+    expect(html).toContain("Math.floor((contentWidth - pageBoxesWidth) / 2)")
+    // Calibre の既定ページ余白（上下左右 20px）。表紙は getContentViewport で 0 になる。
+    expect(html).toContain("const VIEWER_PAGE_MARGIN = 20")
+    expect(html).toContain('applyImportantStyle(document.body, "width", contentWidth + "px")')
+    expect(html).toContain('applyImportantStyle(document.body, "margin-left", pageMargin + "px")')
+    expect(html).toContain('applyImportantStyle(document.body, "margin-top", pageMargin + "px")')
     // 見開きでも画像は論理1ページ分に収める
-    expect(html).toContain('applyImportantStyle(element, "max-width", verticalPageWidth + "px")')
+    expect(html).toContain('applyImportantStyle(element, "max-width", verticalMediaWidth + "px")')
     // 横書きへ切り替えた時に中央寄せの margin が残らないようにする
     expect(html).toContain('pw.style.removeProperty("margin-right")')
     expect(html).toContain('pw.style.removeProperty("margin-left")')
@@ -673,11 +680,18 @@ describe("textBookHtml", () => {
     // normalizeFirstColumnElements() は wrapper 直下の唯一の子に height:auto を当てるため、
     // 表紙のフィット指定は正規化の後に再適用しないと打ち消される
     // （wrapper 直下に img がある AZW3 で表紙が自然サイズのまま描画される回帰）。
-    const normalizeIndex = html.indexOf(
-      "normalizeFirstColumnElements()\n          applyCoverMediaLayout()",
+    // 注: indexOf は applyCoverMediaLayout のコメント内の同文字列を拾うため lastIndexOf で判定する。
+    const baseNormalizeIndex = html.lastIndexOf("normalizeFirstColumnElements()")
+    expect(baseNormalizeIndex).toBeGreaterThan(-1)
+    expect(html.indexOf("const applyCoverMediaLayout = () => {")).toBeLessThan(baseNormalizeIndex)
+    // 縦書き見開きの左ペイン（clone）は生成が normalize より前のため本の CSS が残り、
+    // 1 列に潰れる。base と同じ正規化を clone にも適用して左右の分页を揃える。
+    const cloneNormalizeIndex = html.indexOf(
+      "normalizeFirstColumnElements(normalizedLeftPageWrapper)",
     )
-    expect(normalizeIndex).toBeGreaterThan(-1)
-    expect(html.indexOf("const applyCoverMediaLayout = () => {")).toBeLessThan(normalizeIndex)
+    expect(cloneNormalizeIndex).toBeGreaterThan(-1)
+    expect(cloneNormalizeIndex).toBeGreaterThan(baseNormalizeIndex)
+    expect(html.lastIndexOf("applyCoverMediaLayout()")).toBeGreaterThan(cloneNormalizeIndex)
     expect(html).not.toContain("normalizeFirstColumnElements()\n          applyThemeOverrides()")
     // 表紙は1枚で1ページ。multicol の空き領域が見えない列として残るので wrapper を clip する。
     expect(html).toContain('applyImportantStyle(coverWrapper, "overflow", "hidden")')
