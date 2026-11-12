@@ -1,9 +1,11 @@
 import { Text } from "@/components"
+import { logger } from "@/utils/logger"
 import { observer } from "mobx-react-lite"
 import type React from "react"
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react"
 import { ActivityIndicator, Platform, StyleSheet, View } from "react-native"
 import {
+  textBookViewerDebugMessageType,
   textBookViewerInteractionMessageType,
   textBookViewerLongPressAction,
   textBookViewerPaginationMessageType,
@@ -26,6 +28,11 @@ export const TextBookSpine = observer(function TextBookSpine(props: TextBookSpin
   const handleMessagePayload = useCallback(
     (payload: Record<string, unknown>) => {
       if (payload?.key !== documentKey) {
+        return
+      }
+
+      if (payload?.type === textBookViewerDebugMessageType) {
+        logger.debug("[tb-debug]", { message: payload?.message })
         return
       }
 
