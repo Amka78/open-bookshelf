@@ -25,6 +25,16 @@ const isFacingReadingStyle = (readingStyle: BookReadingStyleType) => {
   return readingStyle === "facingPage" || readingStyle === "facingPageWithTitle"
 }
 
+// 表示ページが属する見開き（スプレッド）グループ。見開きでは 2 つの表示ページ（例: 6 と 7）
+// が同じスプレッドに載るため、webview が「スプレッドの左端ページ」を報告して表示ページが
+// 1つ前の値（例: 6）になっても、同じスプレッド内なら巻き戻し扱いしない根拠に使う。
+const getFacingSpreadGroup = (readingStyle: BookReadingStyleType, page: number) => {
+  if (readingStyle === "facingPageWithTitle") {
+    return page === 0 ? -1 : Math.floor(page / 2)
+  }
+  return Math.floor(page / 2)
+}
+
 type TextBookViewerProps = {
   viewerHook: ReturnType<typeof useViewer>
   getAuthHeader?: (path: string) => Record<string, string> | undefined
@@ -60,6 +70,7 @@ export function TextBookViewer({
 
   const selectedBook = viewerHook.selectedBook
   const selectedLibrary = viewerHook.selectedLibrary
+
   const spinePaths: string[] = selectedBook ? Array.from(selectedBook.path) : []
   const spineContentLengths: number[] = selectedBook
     ? Array.from(selectedBook.spineItemLengths)
@@ -357,7 +368,27 @@ export function TextBookViewer({
         totalSpines,
         nextEstimatedCounts,
       )
-      setCurrentDisplayPage((prev) => (prev === nextDisplayPage ? prev : nextDisplayPage))
+      setCurrentDisplayPage((prev) => {
+        if (prev === nextDisplayPage) {
+          return prev
+        }
+
+        // 見開きモードでは webview は奇数ページの要求でも同じスプレッドを表示し、
+        // 「スプレッドの左端ページ」の currentPage を報告する。その報告で表示ページを
+        // 書き換えると normalize の丸め（例: 6 → 5）がスパイン境界をまたいで前の章の
+        // 先頭を指し、1 ページの章の境界で再マウントの無限ループになる（実機ログで
+        // part0004 ↔ part0005 を確認）。同じスプレッド内の報告値のブレなら直前の
+        // 表示ページを維持する。
+        if (
+          isFacingReadingStyle(viewerHook.readingStyle) &&
+          getFacingSpreadGroup(viewerHook.readingStyle, prev) ===
+            getFacingSpreadGroup(viewerHook.readingStyle, nextDisplayPage)
+        ) {
+          return prev
+        }
+
+        return nextDisplayPage
+      })
 
       if (pendingAnchorSpineIndex === currentSpineIndex) {
         setPendingAnchor(null)
@@ -370,6 +401,7 @@ export function TextBookViewer({
       pendingResumeLocation,
       spineContentLengths,
       totalSpines,
+      viewerHook.readingStyle,
     ],
   )
 
@@ -464,7 +496,7 @@ export function TextBookViewer({
                 currentSpineIndex === 0 && viewerHook.readingStyle === "facingPageWithTitle"
               }
               isCoverPage={currentSpineIndex === 0}
-              preferredWritingMode={selectedBook.primaryWritingMode ?? "horizontal-tb"}
+              preferredWritingMode={selectedBook.primaryWritingMode ?? null}
               anchor={pendingAnchorSpineIndex === currentSpineIndex ? pendingAnchor : null}
               annotations={currentSpineAnnotations}
               onPaginationChange={handlePaginationChange}

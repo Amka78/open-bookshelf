@@ -192,6 +192,64 @@ describe("TextBookViewer", () => {
     expect(latestTextBookSpineProps?.pagePath).toBe("text/chapter-2.xhtml")
   })
 
+  test("keeps the turned page at a 1-page spine boundary when the view reports the spread's left edge", () => {
+    // 縦書き見開き（facingPageWithTitle）で、1 ページしかない章（part0004）から次の章
+    // （part0005、16 ページ）へ進むと、webview は「奇数ページ要求でも同じスプレッドを表示し、
+    // スプレッドの左端（= 偶数 currentPage）を報告する」。その報告で表示ページを書き換えると
+    // normalize の丸め（例: 偶数 2 → 1）がスパイン境界をまたいで前の章を指し、再マウントの
+    // 無限ループになる（実機ログで part0004 ↔ part0005 を確認）。同じスプレッド内の報告は
+    // 巻き戻さないことを確認する。
+    const viewerHook = () =>
+      createViewerHook({
+        selectedBook: {
+          id: 1,
+          path: ["text/chapter-1.xhtml", "text/part0004.html", "text/part0005.html"],
+          spineItemLengths: [100, 10, 1000],
+          primaryWritingMode: "vertical-rl",
+          hash: 101,
+          metaData: {
+            title: "Sample Book",
+            selectedFormat: "AZW3",
+            formatSizes: new Map([["AZW3", 100]]),
+          },
+        },
+        initialPage: 1,
+        textSpinePageCounts: [1, 1, 16],
+        readingStyle: "facingPageWithTitle",
+        pageDirection: "left",
+      }) as never
+
+    render(<TextBookViewer viewerHook={viewerHook()} />)
+    expect(latestTextBookSpineProps?.pagePath).toBe("text/part0004.html")
+
+    // 次へ進む（右開きなので左側タップ）。part0005 の 1 ページ目が表示される。
+    act(() => {
+      ;(
+        latestTextBookSpineProps?.onNavigate as
+          | ((payload: { x: number; y: number; width: number; height: number }) => void)
+          | undefined
+      )?.({ x: 10, y: 10, width: 1920, height: 528 })
+    })
+
+    expect(latestTextBookSpineProps?.pagePath).toBe("text/part0005.html")
+    expect(latestTextBookSpineProps?.currentPage).toBe(1)
+
+    // webview がスプレッドの左端（currentPage=0）を報告しても表示ページは巻き戻らない。
+    act(() => {
+      ;(
+        latestTextBookSpineProps?.onPaginationChange as
+          | ((payload: { currentPage: number; totalPages: number }) => void)
+          | undefined
+      )?.({
+        currentPage: 0,
+        totalPages: 16,
+      })
+    })
+
+    expect(latestTextBookSpineProps?.pagePath).toBe("text/part0005.html")
+    expect(latestTextBookSpineProps?.currentPage).toBe(1)
+  })
+
   test("maps persisted text spine page counts back to the correct spine page", () => {
     render(
       <TextBookViewer
