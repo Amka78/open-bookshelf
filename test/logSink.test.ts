@@ -1,5 +1,28 @@
 import { describe, expect, test } from "vitest"
-import { logFilePath, normalizeEntries } from "../scripts/logSink"
+import { logFilePath, normalizeEntries, parseLogSinkBody } from "../scripts/logSink"
+
+describe("logSink parseLogSinkBody", () => {
+  test("NDJSON（1 行 1 JSON）を複数件として読む", () => {
+    const body = ['{"level":"debug","msg":"one"}', '{"level":"info","msg":"two"}'].join("\n")
+
+    expect(parseLogSinkBody(body)).toEqual([
+      { level: "debug", msg: "one" },
+      { level: "info", msg: "two" },
+    ])
+  })
+
+  test("単体 JSON と JSON 配列も受け付ける", () => {
+    expect(parseLogSinkBody('{"level":"warn","msg":"solo"}')).toEqual([
+      { level: "warn", msg: "solo" },
+    ])
+    expect(parseLogSinkBody('[{"msg":"a"},{"msg":"b"}]')).toEqual([{ msg: "a" }, { msg: "b" }])
+  })
+
+  test("空行は無視し、壊れた行があれば全体を拒否する", () => {
+    expect(parseLogSinkBody("\n\n")).toEqual([])
+    expect(parseLogSinkBody('{"msg":"ok"}\nnot json')).toBeNull()
+  })
+})
 
 describe("logSink normalizeEntries", () => {
   test("配列と単体の両方を受け付け、フィールドを補完する", () => {

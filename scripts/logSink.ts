@@ -5,7 +5,7 @@
  *   bun run dev:web   # scripts/devWeb.ts がこのモジュールを内蔵起動する
  *   bun run desktop   # src-electrobun/index.ts が開発時のみ内蔵起動する
  *
- * アプリ側（app/utils/logSink.ts）は __DEV__ のときだけここへ NDJSON を POST する。
+ * アプリ側（app/utils/logSink.ts）は __DEV__ のときだけここへログの JSON 配列を POST する。
  * 保存先は logs/<platform>.ndjson で、エージェントはこのファイルを直接読む。
  * 本番ビルドでは送信側が動かないため、このサーバーも開発専用。
  */
@@ -49,6 +49,35 @@ function clipData(data: unknown): unknown {
   } catch {
     return "[unserializable]"
   }
+}
+
+/**
+ * アプリ側（app/utils/logSink.ts）は複数エントリを JSON 配列でまとめて送る。
+ * 過去の NDJSON（1 行 1 JSON）や単体 JSON も受け付けるが、壊れた行が 1 つでもあれば
+ * 部分書き込みを避けて null を返す。
+ */
+export function parseLogSinkBody(body: string): unknown[] | null {
+  const lines = body
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+
+  const items: unknown[] = []
+  for (const line of lines) {
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(line)
+    } catch {
+      return null
+    }
+    if (Array.isArray(parsed)) {
+      items.push(...parsed)
+    } else {
+      items.push(parsed)
+    }
+  }
+
+  return items
 }
 
 /** 受信した任意の JSON を、書き出して安全な形へ正規化する（テスト対象） */
@@ -144,10 +173,8 @@ export function startLogSink(options: LogSinkOptions = {}) {
         return new Response("Payload Too Large", { status: 413, headers: corsHeaders() })
       }
 
-      let payload: unknown
-      try {
-        payload = JSON.parse(body)
-      } catch {
+      const payload = parseLogSinkBody(body)
+      if (payload === null) {
         return new Response("Bad JSON", { status: 400, headers: corsHeaders() })
       }
 

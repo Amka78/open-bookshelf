@@ -1,5 +1,5 @@
 /**
- * 開発中だけ、ログをローカルの受け口（scripts/logSink.ts）へ NDJSON で送る。
+ * 開発中だけ、ログをローカルの受け口（scripts/logSink.ts）へ JSON 配列で送る。
  *
  * 目的は「ユーザーがログを貼り付けなくても、エージェントが logs/*.ndjson を読める」こと。
  * __DEV__ 以外では一切動かない。受け口が起動していなくても、送信失敗を数回数えたら
@@ -107,7 +107,7 @@ function flush(useBeacon = false) {
   }
   if (!enabled || !sinkUrl || queue.length === 0 || consecutiveFailures >= MAX_FAILURES) return
 
-  const body = queue.map((entry) => JSON.stringify(entry)).join("\n")
+  const body = JSON.stringify(queue)
   queue = []
 
   try {
