@@ -282,6 +282,12 @@ const resolveRelativeDescriptor = (basePath: string, rawValue: string) => {
 }
 
 const resolveBookRelativePathCandidates = (basePath: string, rawValue: string) => {
+  // data: などの絶対 URL に仮想パス用の正規表現を当てると、巨大な data URL で
+  // 深いバックトラック（too much recursion）になる。解決対象外は最初に切る。
+  if (shouldIgnoreResourceValue(rawValue)) {
+    return []
+  }
+
   const candidates: BookResourceDescriptor[] = []
   const seen = new Set<string>()
   const decodedBasePath = decodeTextResourcePath(basePath)
@@ -688,15 +694,18 @@ const loadStylesheetDataUrl = async (
   parentStack: Set<string>,
 ) => {
   const cacheKey = `css:${buildBookCachePrefix(props)}:${path}`
+  // 循環 @import はキャッシュより先に切る。キャッシュ済み promise を返すと
+  // A→B→A の相互待ちで解決しなくなる。
+  if (parentStack.has(path)) {
+    return textToDataUrl("", "text/css")
+  }
+
   const cached = stylesheetDataUrlCache.get(cacheKey)
   if (cached) {
     return cached
   }
 
   const request = (async () => {
-    if (parentStack.has(path)) {
-      return textToDataUrl("", "text/css")
-    }
     logger.debug("Loading stylesheet", { path })
     const response = await fetchBookFileResponse(props, path)
     logger.debug("Loaded stylesheet", { path, status: response.status })
