@@ -18,6 +18,7 @@ import { logger } from "@/utils/logger"
 import { goToNextPage, goToPreviousPage } from "@/utils/pageTurnning"
 import { useNavigation } from "@react-navigation/native"
 import { FlashList, type FlashListRef, type ListRenderItem } from "@shopify/flash-list"
+import { observer } from "mobx-react-lite"
 import React from "react"
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import {
@@ -118,7 +119,7 @@ function FlashListCompat(props: FlashListCompatProps) {
   )
 }
 
-export function BookViewer(props: BookViewerProps) {
+export const BookViewer = observer(function BookViewer(props: BookViewerProps) {
   const { renderPage: renderPageProp, disableNavigation } = props
   const palette = usePalette()
   const viewerHook = useViewer()
@@ -807,7 +808,7 @@ export function BookViewer(props: BookViewerProps) {
       ) : null}
     </View>
   )
-}
+})
 
 const styles = StyleSheet.create({
   viewerContainer: {

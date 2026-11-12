@@ -1,6 +1,7 @@
 import { GradientBackground, PageManager, ViewerHeader } from "@/components"
 import { AnnotationPanel } from "@/components/AnnotationPanel"
 import { useElectrobunModal } from "@/hooks/useElectrobunModal"
+import { observer } from "mobx-react-lite"
 import { useStores } from "@/models"
 import type { Annotation } from "@/models/calibre"
 import type { ApppNavigationProp } from "@/navigators/types"
@@ -43,7 +44,7 @@ type TextBookViewerProps = {
   onNextSeriesBook?: () => void
 }
 
-export function TextBookViewer({
+export const TextBookViewer = observer(function TextBookViewer({
   getAuthHeader,
   viewerHook,
   seriesInfo,
@@ -542,7 +543,7 @@ export function TextBookViewer({
       ) : null}
     </>
   )
-}
+})
 
 const styles = StyleSheet.create({
   annotationPanelOverlay: {
