@@ -4,7 +4,7 @@ export default {
   app: {
     name: "shoin",
     identifier: "com.electrobun.shoin",
-    version: "0.1.6",
+    version: "0.1.7",
   },
   build: {
     mainProcess: "bun",

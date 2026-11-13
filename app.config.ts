@@ -29,7 +29,7 @@ module.exports = {
   expo: {
     name: `Shoin${appNameSuffix}`,
     slug: "shoin",
-    version: "0.1.6",
+    version: "0.1.7",
     orientation: "default",
     icon: "./assets/images/app-icon.png",
     experiments: {
