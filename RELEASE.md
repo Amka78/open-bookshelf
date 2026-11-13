@@ -50,7 +50,7 @@ bun run version <patch|minor|major|x.y.z> [--push]
 
 1. GitHub の Actions タブ → **Preview APK Build (Manual)** → **Run workflow**
 2. リリースバージョン（例: `v1.2.3`）を入力して実行
-3. 完了後、`open-bookshelf-<version>-preview.apk` が**GitHub Prerelease** に添付されて作成される
+3. 完了後、`shoin-<version>-preview.apk` が**GitHub Prerelease** に添付されて作成される
 
 本番（production）チャンネルへの OTA は `eas update --channel production`（リリース手順に合わせて手動実行）。
 

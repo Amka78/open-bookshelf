@@ -24,7 +24,7 @@ sudo apt install -y libwebkit2gtk-4.1-0 libayatana-appindicator3-1
 不足ライブラリは次で確認できる（`libasar.so` は同梱済みのため not found でも無害）。
 
 ```sh
-ldd build/dev-linux-x64/open-book-shelf-dev/bin/libNativeWrapper.so | grep 'not found'
+ldd build/dev-linux-x64/shoin-dev/bin/libNativeWrapper.so | grep 'not found'
 ```
 
 ## WSLg での GLX エラー
@@ -89,7 +89,7 @@ Electrobun は **自動更新（Updater）を内蔵**している。このリポ
 `bun run desktop:build`（`bun run build:web` + `electrobun build --env=canary`）で `artifacts/` に次が出る。`artifacts/` は gitignore 済み。
 
 - `canary-<os>-<arch>-update.json` … 更新マニフェスト（チャンネル / ハッシュ / tar 名）
-- `canary-<os>-<arch>-open-book-shelf-canary.tar.zst` … 更新本体
+- `canary-<os>-<arch>-shoin-canary.tar.zst` … 更新本体
 - `canary-<os>-<arch>-<hash>.patch` … 前版との差分（前回リリースがある場合）
 - `*-Setup.*` … インストーラ
 
@@ -98,7 +98,7 @@ Electrobun は **自動更新（Updater）を内蔵**している。このリポ
 GitHub Releases の**固定タグ** `desktop-canary`（prerelease）に、インストーラと更新ファイルを同居させ、`gh release upload --clobber` で上書きする。`electrobun.config.ts` の `release.baseUrl` は次で固定。
 
 ```
-https://github.com/Amka78/open-bookshelf/releases/download/desktop-canary
+https://github.com/Amka78/shoin/releases/download/desktop-canary
 ```
 
 アプリはトークン無しでここを取得するため、**リポジトリが public であること**が前提。

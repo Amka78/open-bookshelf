@@ -8,9 +8,9 @@ Web 版を Docker イメージとしてビルドし、GHCR 経由でサーバー
 ```
 v* タグ push
    └─ .github/workflows/docker.yml
-        └─ ghcr.io/amka78/open-bookshelf:{latest, x.y.z, x.y}
-             └─ サーバーの Watchtower（5分ポーリング、scope=open-bookshelf）
-                  └─ open-bookshelf コンテナ（nginx:alpine が dist を SPA 配信）
+        └─ ghcr.io/amka78/shoin:{latest, x.y.z, x.y}
+             └─ サーバーの Watchtower（5分ポーリング、scope=shoin）
+                  └─ shoin コンテナ（nginx:alpine が dist を SPA 配信）
 ```
 
 - イメージは**公開**（pull に認証不要）
@@ -54,9 +54,9 @@ git push origin main
 `nginx.conf` はテンプレート（`${HTTPS_PORT}` をエントリポイントが展開）のため、**イメージをローカルビルドしてエントリポイント経由で検証**するのが最も確実です:
 
 ```bash
-docker build -t open-bookshelf:test .
+docker build -t shoin:test .
 # エントリポイントが証明書生成 → テンプレート展開 を実行してから nginx -t が走る
-docker run --rm -e HTTPS_PORT=443 open-bookshelf:test nginx -t
+docker run --rm -e HTTPS_PORT=443 shoin:test nginx -t
 ```
 
 > `docker build` は `expo export`（5〜10分）を含むため時間がかかります。サクッと構文だけ確認したい場合は、
@@ -97,11 +97,11 @@ Watchtower は最大5分後に自動で pull & 再起動します。待てない
 # 即時に更新チェックを1回だけ実行
 docker run --rm \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  containrrr/watchtower --run-once --scope open-bookshelf --cleanup
+  containrrr/watchtower --run-once --scope shoin --cleanup
 
 # 反映確認
-docker images --digests ghcr.io/amka78/open-bookshelf     # latest の digest / IMAGE ID が変わったか
-docker inspect -f '{{.State.StartedAt}}' open-bookshelf   # 再起動時刻
+docker images --digests ghcr.io/amka78/shoin     # latest の digest / IMAGE ID が変わったか
+docker inspect -f '{{.State.StartedAt}}' shoin   # 再起動時刻
 curl -skI https://localhost:${HTTPS_PORT:-8443}/ | grep -iE 'cache-control|last-modified|etag'
 curl -sk  https://localhost:${HTTPS_PORT:-8443}/ | grep -oE 'AppEntry-[a-f0-9]+\.js'
 ```
@@ -117,10 +117,10 @@ curl -sI http://localhost:${PORT:-3000}/ | head -5   # 301 と Location: https:/
 イメージ側の中身を確認したい場合（docker が無い環境でも可、公開イメージなので匿名で取得できます）:
 
 ```bash
-TOKEN=$(curl -s "https://ghcr.io/token?scope=repository:amka78/open-bookshelf:pull" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
+TOKEN=$(curl -s "https://ghcr.io/token?scope=repository:amka78/shoin:pull" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
 curl -s -H "Authorization: Bearer $TOKEN" \
   -H "Accept: application/vnd.oci.image.index.v1+json" \
-  https://ghcr.io/v2/amka78/open-bookshelf/manifests/latest
+  https://ghcr.io/v2/amka78/shoin/manifests/latest
 ```
 
 ### 6. 既存クライアントは一度ハードリロード
@@ -158,7 +158,7 @@ curl -skI "https://localhost:${HTTPS_PORT:-8443}/__calibre/http%3A%2F%2F192.168.
 
 ```
 level=error msg="Unable to find default config file: /config.json: read /config.json: is a directory"
-level=info  msg="Unable to update container \"/open-bookshelf\": /config.json: read /config.json: is a directory. Proceeding to next."
+level=info  msg="Unable to update container \"/shoin\": /config.json: read /config.json: is a directory. Proceeding to next."
 level=info  msg="Session done" Failed=0 Scanned=1 Updated=0
 ```
 

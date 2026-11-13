@@ -1,8 +1,8 @@
-# Open BookShelf
+# Shoin
 
 [English](./README.md) | [日本語](./README.ja.md) | [中文](./README.zh.md)
 
-Open BookShelf 是一个面向 [Calibre](https://calibre-ebook.com/) 书库的跨平台客户端。你可以在 iOS、Android 和 Web 上浏览、搜索、编辑和阅读自己的藏书。
+Shoin 是一个面向 [Calibre](https://calibre-ebook.com/) 书库的跨平台客户端。你可以在 iOS、Android 和 Web 上浏览、搜索、编辑和阅读自己的藏书。
 
 它通过 Calibre 内容服务器（REST/OPDS）工作，不包含 Calibre 本体。
 
@@ -36,7 +36,7 @@ Open BookShelf 是一个面向 [Calibre](https://calibre-ebook.com/) 书库的�
 ## 目录结构
 
 ```
-open-bookshelf
+shoin
 ├── app/
 │   ├── components/     # UI 组件（按需放置 *.stories.tsx）
 │   ├── config/         # 环境相关配置
@@ -72,19 +72,19 @@ Android/iOS 的发布构建通常使用 EAS Build，因此开发 Android 不需�
 ### 安装与启动
 
 ```bash
-git clone git@github.com:Amka78/open-bookshelf.git
-cd open-bookshelf
+git clone git@github.com:Amka78/shoin.git
+cd shoin
 bun install
 
 bun run start        # Expo Go（仅 JS 的开发）
-bun run expo:web     # Web 开发服务器
+bun run dev:web      # Web 开发服务器（含 Calibre 代理）
 ```
 
 阅读器使用了原生模块，需要完整验证原生功能时请使用开发构建：
 
 ```bash
 bun run eas:android:dev   # 构建并安装开发客户端
-bun run start:dev-client
+bun run start --dev-client
 ```
 
 启动后输入 Calibre 服务器地址和凭据，然后选择书库。
@@ -109,9 +109,9 @@ bun run version 0.2.0    # 更新 app.config.ts 与 package.json 并创建标签
 搜索耗时日志默认关闭。将 `EXPO_PUBLIC_PERF_LOG` 设为以逗号分隔的模式列表（`search` 或 `all`）：
 
 ```bash
-bun run start:perf            # Expo Go，输出搜索耗时日志
-bun run start:perf:dev-client # 开发客户端，输出搜索耗时日志
-bun run debug:web:perf        # Web，输出搜索耗时日志
+bun run start --perf              # Expo Go，输出搜索耗时日志
+bun run start --dev-client --perf # 开发客户端，输出搜索耗时日志
+bun run dev:web --perf            # Web，输出搜索耗时日志
 ```
 
 日志是以 `[PERF]` 开头的单行 JSON，并带有共享的 `performance.now()` 时钟（`t`）。一次搜索会输出 `menu.press`、`onSearch.start`、`request`、`api.getLibrary`、`converted`、`onSearch.end`、`menu.done`，因此可以直接比较 `waitMs`（服务器与网络）和 `convertMs`（客户端模型转换）。未指定模式时不会输出任何内容。
@@ -128,14 +128,14 @@ Web 构建以公开镜像发布，由 nginx 通过 HTTPS 提供。
 
 ```bash
 docker run -d \
-  --name open-bookshelf \
+  --name shoin \
   --restart unless-stopped \
   -p 3000:80 \
   -p 8443:443 \
   -e HTTPS_PORT=8443 \
   -e HTTPS_CN=localhost \
   -v ssl-certs:/etc/nginx/ssl \
-  ghcr.io/amka78/open-bookshelf:latest
+  ghcr.io/amka78/shoin:latest
 ```
 
 打开 `https://localhost:8443`。容器首次启动时会生成自签名证书，浏览器会提示一次警告。剪贴板 API 只在安全上下文中可用，因此必须使用 HTTPS。
@@ -166,6 +166,6 @@ docker run -d \
 
 商业用途需要单独的商用许可证。这包括在企业业务中使用（含公司内部业务使用）、集成到商业产品或服务中，以及有偿再分发。
 
-商用许可证条款仍在准备中。如有商业授权需求，请在 [github.com/Amka78/open-bookshelf](https://github.com/Amka78/open-bookshelf/issues) 提交 Issue 联系。
+商用许可证条款仍在准备中。如有商业授权需求，请在 [github.com/Amka78/shoin](https://github.com/Amka78/shoin/issues) 提交 Issue 联系。
 
 完整许可证文本见 [LICENSE](./LICENSE)。第三方依赖仍遵循各自的许可证。

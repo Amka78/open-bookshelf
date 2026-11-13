@@ -1,6 +1,6 @@
-# Open BookShelf — Design System
+# Shoin — Design System
 
-A living design reference for Open BookShelf — a cross-platform digital library manager for iOS, Android, Web, and Desktop.
+A living design reference for Shoin — a cross-platform digital library manager for iOS, Android, Web, and Desktop.
 
 ---
 
@@ -8,7 +8,7 @@ A living design reference for Open BookShelf — a cross-platform digital librar
 
 ### Visual Identity
 
-Open BookShelf should feel **cool and intellectual** — the digital equivalent of a well-curated private library or an architecture monograph. Think: clean lines, deliberate silence, the confidence of a space that doesn't need to shout. The interface earns authority through restraint, not ornamentation.
+Shoin should feel **cool and intellectual** — the digital equivalent of a well-curated private library or an architecture monograph. Think: clean lines, deliberate silence, the confidence of a space that doesn't need to shout. The interface earns authority through restraint, not ornamentation.
 
 The visual mood draws from references like:
 - Academic and literary journals — sparse, high-contrast, typographically rigorous

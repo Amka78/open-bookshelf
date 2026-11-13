@@ -1,11 +1,11 @@
-# open-bookshelf
+# shoin
 
-**Open BookShelf** の Web UI を nginx で配信する Docker イメージです。認証なしで取得できます。
+**Shoin** の Web UI を nginx で配信する Docker イメージです。認証なしで取得できます。
 
-Docker image that serves the **Open BookShelf** web UI via nginx. No authentication required to pull.
+Docker image that serves the **Shoin** web UI via nginx. No authentication required to pull.
 
 ```
-ghcr.io/amka78/open-bookshelf:latest
+ghcr.io/amka78/shoin:latest
 ```
 
 ---
@@ -14,14 +14,14 @@ ghcr.io/amka78/open-bookshelf:latest
 
 ```bash
 docker run -d \
-  --name open-bookshelf \
+  --name shoin \
   --restart unless-stopped \
   -p 3000:80 \
   -p 8443:443 \
   -e HTTPS_PORT=8443 \
   -e HTTPS_CN=localhost \
   -v ssl-certs:/etc/nginx/ssl \
-  ghcr.io/amka78/open-bookshelf:latest
+  ghcr.io/amka78/shoin:latest
 ```
 
 ブラウザで `https://localhost:8443` を開いてください。
@@ -77,7 +77,7 @@ Using `docker-compose.yml` starts the app together with Watchtower, which polls 
 
 ```bash
 # ファイルを取得 / Get the file
-curl -O https://raw.githubusercontent.com/Amka78/open-bookshelf/main/docker-compose.yml
+curl -O https://raw.githubusercontent.com/Amka78/shoin/main/docker-compose.yml
 
 # 起動 / Start
 docker compose up -d
@@ -103,7 +103,7 @@ HTTPS_CN=localhost HTTPS_SAN_IP=192.168.1.50 docker compose up -d   # → https:
 
 ```bash
 # 手動で最新イメージに更新 / Manually update to latest
-docker pull ghcr.io/amka78/open-bookshelf:latest
+docker pull ghcr.io/amka78/shoin:latest
 docker compose down && docker compose up -d
 
 # 停止 / Stop
@@ -133,7 +133,7 @@ Error: bind: address already in use
 
 ```bash
 docker compose down
-docker volume rm open-bookshelf_ssl-certs   # プロジェクト名(open-bookshelf_)が付く場合あり
+docker volume rm shoin_ssl-certs   # プロジェクト名(shoin_)が付く場合あり
 docker compose up -d
 ```
 
@@ -148,6 +148,6 @@ at an HTTPS endpoint (e.g. an Nginx Proxy Manager reverse-proxy URL).
 **ログ確認 / View logs**
 
 ```bash
-docker compose logs -f open-bookshelf
+docker compose logs -f shoin
 ```
 

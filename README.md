@@ -1,8 +1,8 @@
-# Open BookShelf
+# Shoin
 
 [English](./README.md) | [日本語](./README.ja.md) | [中文](./README.zh.md)
 
-Open BookShelf is a cross-platform client for a [Calibre](https://calibre-ebook.com/) book library. Browse, search, edit, and read your books on iOS, Android, and the web.
+Shoin is a cross-platform client for a [Calibre](https://calibre-ebook.com/) book library. Browse, search, edit, and read your books on iOS, Android, and the web.
 
 It talks to a Calibre content server (REST/OPDS) — it does not bundle Calibre itself.
 
@@ -36,7 +36,7 @@ It talks to a Calibre content server (REST/OPDS) — it does not bundle Calibre 
 ## Project Structure
 
 ```
-open-bookshelf
+shoin
 ├── app/
 │   ├── components/     # UI components (each with *.stories.tsx where useful)
 │   ├── config/         # Environment-specific configuration
@@ -72,19 +72,19 @@ iOS and Android release builds are normally produced with EAS Build, so a Mac is
 ### Install and run
 
 ```bash
-git clone git@github.com:Amka78/open-bookshelf.git
-cd open-bookshelf
+git clone git@github.com:Amka78/shoin.git
+cd shoin
 bun install
 
 bun run start        # Expo Go (JavaScript-only development)
-bun run expo:web     # Web development server
+bun run dev:web      # Web development server (with Calibre proxy)
 ```
 
 Native modules are used by the reader and the viewer, so use a development build for full native testing:
 
 ```bash
 bun run eas:android:dev   # Build and install a development client
-bun run start:dev-client
+bun run start --dev-client
 ```
 
 Then open the app, enter your Calibre server URL and credentials, and pick a library.
@@ -109,9 +109,9 @@ bun run version 0.2.0    # Bump app.config.ts + package.json and tag
 Search timing logs are opt-in. Set `EXPO_PUBLIC_PERF_LOG` to a comma-separated list of modes (`search`, or `all`):
 
 ```bash
-bun run start:perf            # Expo Go, search timing logs
-bun run start:perf:dev-client # development client, search timing logs
-bun run debug:web:perf        # web, search timing logs
+bun run start --perf              # Expo Go, search timing logs
+bun run start --dev-client --perf # development client, search timing logs
+bun run dev:web --perf            # web, search timing logs
 ```
 
 Logs are printed as one-line JSON prefixed with `[PERF]` and share a `performance.now()` clock (`t`). A search emits `menu.press`, `onSearch.start`, `request`, `api.getLibrary`, `converted`, `onSearch.end`, and `menu.done`, so `waitMs` (server + network) and `convertMs` (client-side model conversion) can be compared directly. Nothing is logged unless a mode is requested.
@@ -128,14 +128,14 @@ The web build is published as a public image and served over HTTPS by nginx.
 
 ```bash
 docker run -d \
-  --name open-bookshelf \
+  --name shoin \
   --restart unless-stopped \
   -p 3000:80 \
   -p 8443:443 \
   -e HTTPS_PORT=8443 \
   -e HTTPS_CN=localhost \
   -v ssl-certs:/etc/nginx/ssl \
-  ghcr.io/amka78/open-bookshelf:latest
+  ghcr.io/amka78/shoin:latest
 ```
 
 Open `https://localhost:8443`. The container generates a self-signed certificate on first start, so the browser will warn once. HTTPS is required because the clipboard API only works in a secure context.
@@ -166,6 +166,6 @@ This project is licensed under the **PolyForm Noncommercial License 1.0.0**. You
 
 Commercial use requires a separate commercial license. This includes use in the course of business (including internal business use at a company), incorporation into a commercial product or service, and redistribution for a fee.
 
-The commercial license terms are not finalized yet. For commercial licensing inquiries, please open an issue at [github.com/Amka78/open-bookshelf](https://github.com/Amka78/open-bookshelf/issues).
+The commercial license terms are not finalized yet. For commercial licensing inquiries, please open an issue at [github.com/Amka78/shoin](https://github.com/Amka78/shoin/issues).
 
 See [LICENSE](./LICENSE) for the full license text. Third-party dependencies remain under their own licenses.

@@ -1,8 +1,8 @@
-# Open BookShelf
+# Shoin
 
 [English](./README.md) | [日本語](./README.ja.md) | [中文](./README.zh.md)
 
-Open BookShelf は [Calibre](https://calibre-ebook.com/) の蔵書を扱うクロスプラットフォームのクライアントです。iOS・Android・Web で、蔵書の閲覧・検索・編集・読書ができます。
+Shoin は [Calibre](https://calibre-ebook.com/) の蔵書を扱うクロスプラットフォームのクライアントです。iOS・Android・Web で、蔵書の閲覧・検索・編集・読書ができます。
 
 Calibre のコンテンツサーバー（REST/OPDS）に接続して使うアプリで、Calibre 本体を同梱しているわけではありません。
 
@@ -36,7 +36,7 @@ Calibre のコンテンツサーバー（REST/OPDS）に接続して使うアプ
 ## ディレクトリ構成
 
 ```
-open-bookshelf
+shoin
 ├── app/
 │   ├── components/     # UI コンポーネント（必要に応じて *.stories.tsx を同居）
 │   ├── config/         # 環境別の設定
@@ -72,19 +72,19 @@ Android/iOS の配布ビルドは通常 EAS Build で作るため、Android の�
 ### インストールと起動
 
 ```bash
-git clone git@github.com:Amka78/open-bookshelf.git
-cd open-bookshelf
+git clone git@github.com:Amka78/shoin.git
+cd shoin
 bun install
 
 bun run start        # Expo Go（JS のみの開発）
-bun run expo:web     # Web 開発サーバー
+bun run dev:web      # Web 開発サーバー（Calibre プロキシ込み）
 ```
 
 ビューアはネイティブモジュールを使うため、ネイティブ機能まで確認するときは開発ビルドを使います。
 
 ```bash
 bun run eas:android:dev   # 開発クライアントをビルドしてインストール
-bun run start:dev-client
+bun run start --dev-client
 ```
 
 起動後、Calibre サーバーの URL と認証情報を入力し、ライブラリを選択してください。
@@ -109,9 +109,9 @@ bun run version 0.2.0    # app.config.ts と package.json を更新してタグ�
 検索の計測ログは必要なときだけ有効にします。`EXPO_PUBLIC_PERF_LOG` にモード（`search`、または `all`）をカンマ区切りで指定します。
 
 ```bash
-bun run start:perf            # Expo Go で検索の計測ログ
-bun run start:perf:dev-client # 開発クライアントで検索の計測ログ
-bun run debug:web:perf        # Web で検索の計測ログ
+bun run start --perf              # Expo Go で検索の計測ログ
+bun run start --dev-client --perf # 開発クライアントで検索の計測ログ
+bun run dev:web --perf            # Web で検索の計測ログ
 ```
 
 ログは `[PERF]` 接頭辞付きの1行 JSON で出力され、共通の `performance.now()` 時計（`t`）を持ちます。検索では `menu.press`、`onSearch.start`、`request`、`api.getLibrary`、`converted`、`onSearch.end`、`menu.done` が出るため、`waitMs`（サーバー＋ネットワーク）と `convertMs`（クライアントのモデル変換）を直接比較できます。モードを指定しない限り何も出力しません。
@@ -128,14 +128,14 @@ Web ビルドは公開イメージとして配布し、nginx で HTTPS 配信し
 
 ```bash
 docker run -d \
-  --name open-bookshelf \
+  --name shoin \
   --restart unless-stopped \
   -p 3000:80 \
   -p 8443:443 \
   -e HTTPS_PORT=8443 \
   -e HTTPS_CN=localhost \
   -v ssl-certs:/etc/nginx/ssl \
-  ghcr.io/amka78/open-bookshelf:latest
+  ghcr.io/amka78/shoin:latest
 ```
 
 `https://localhost:8443` を開いてください。初回起動時に自己署名証明書を生成するため、ブラウザに一度警告が出ます。クリップボード API は Secure Context でのみ動くため HTTPS が必要です。
@@ -166,6 +166,6 @@ Watchtower による自動更新にも対応しています。リポジトリ内
 
 法人や個人事業主による商用利用には、別途商用ライセンスが必要です。企業の社内業務での利用、商用製品・サービスへの組み込み、有償での再頒布が含まれます。
 
-商用ライセンスの条件は現在準備中です。ご相談は [github.com/Amka78/open-bookshelf](https://github.com/Amka78/open-bookshelf/issues) の Issue でお願いします。
+商用ライセンスの条件は現在準備中です。ご相談は [github.com/Amka78/shoin](https://github.com/Amka78/shoin/issues) の Issue でお願いします。
 
 ライセンス全文は [LICENSE](./LICENSE) を参照してください。依存ライブラリはそれぞれのライセンスに従います。

@@ -56,7 +56,7 @@ bun run storybook:deploy
 デプロイ後、以下の URL で Storybook にアクセスできます：
 
 ```
-https://<your-username>.github.io/open-bookshelf/
+https://<your-username>.github.io/shoin/
 ```
 
 ## トラブルシューティング
