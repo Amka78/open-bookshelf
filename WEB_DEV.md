@@ -12,6 +12,7 @@ bun run dev:web
 
 - プロキシは既定で `127.0.0.1:8082` を使う。使用中なら自動で空きポートに切り替わり、そのポートが Metro に渡される。
 - ポートを固定したい場合は `CALIBRE_PROXY_PORT=8083 bun run dev:web`。
+- ログレベルを上げる場合は `bun run dev:web --debug`、計測ログを有効にする場合は `bun run dev:web --perf`（`--perf=all` でモード指定）。フラグ以外の引数は `expo start` へ渡る。
 - Ctrl+C で Metro とプロキシの両方が終了する。
 - `EXPO_PUBLIC_*` は Metro の起動時にバンドルへ埋め込まれる。値は `dev:web` が自動設定するため、通常は意識しなくてよい。
 - Web リリース（Docker）では、nginx が `index.html` に注入する `window.__CALIBRE_WEB_PROXY__` を見て同じ `/__calibre/` 経由になる（`DOCKER_DEPLOY.md` 参照）。`EXPO_PUBLIC_CALIBRE_PROXY_ORIGIN` は production ビルドでも有効。
@@ -27,7 +28,7 @@ bun run dev:proxy
 ターミナル2（表示されたポートに合わせる）:
 
 ```bash
-EXPO_PUBLIC_CALIBRE_PROXY_ORIGIN=http://127.0.0.1:8082 bun run expo:web
+EXPO_PUBLIC_CALIBRE_PROXY_ORIGIN=http://127.0.0.1:8082 bun run web:metro
 ```
 
 ## 仕組み

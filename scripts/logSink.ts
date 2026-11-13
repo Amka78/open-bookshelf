@@ -1,7 +1,7 @@
 /**
  * Web / Android / Electrobun の開発ログを 1 か所に集める受け口。
  *
- *   bun run logs      # 単体起動（127.0.0.1:8790）
+ *   bun run logs:sink # 単体起動（127.0.0.1:8790）
  *   bun run dev:web   # scripts/devWeb.ts がこのモジュールを内蔵起動する
  *   bun run desktop   # src-electrobun/index.ts が開発時のみ内蔵起動する
  *

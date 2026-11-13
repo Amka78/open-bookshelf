@@ -4,7 +4,7 @@
 
 ```sh
 # ターミナル1: Web バンドル（Metro）
-bun run expo:web
+bun run web:metro
 
 # ターミナル2: デスクトップシェル
 bun run desktop

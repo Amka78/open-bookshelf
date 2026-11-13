@@ -1,15 +1,20 @@
 /**
  * Web 開発をコマンド1つで起動する。
  *
- *   bun run dev:web
+ *   bun run dev:web               # Calibre プロキシ + Expo Web（Metro）
+ *   bun run dev:web --debug       # EXPO_PUBLIC_LOG_LEVEL=debug
+ *   bun run dev:web --perf        # EXPO_PUBLIC_PERF_LOG=search（--perf=all でモード指定）
  *
  * Calibre プロキシ（127.0.0.1）と Expo Web（Metro）を起動し、
  * プロキシの実ポートを EXPO_PUBLIC_CALIBRE_PROXY_ORIGIN として Metro に渡す。
  */
 import { startCalibreProxyDevServer } from "./calibreProxyDevServer"
+import { parseDevFlags } from "./devFlags"
 import { startLogSink } from "./logSink"
 
 const preferredPort = Number(process.env.CALIBRE_PROXY_PORT ?? 8082)
+const expoArgs = process.argv.slice(2)
+const flags = parseDevFlags(expoArgs)
 
 function startProxy() {
   try {
@@ -47,13 +52,15 @@ function startSink() {
 
 const sink = startSink()
 
-const expo = Bun.spawn(
-  [process.execPath, "x", "expo", "start", "--web", ...process.argv.slice(2)],
-  {
-    env: { ...process.env, EXPO_PUBLIC_CALIBRE_PROXY_ORIGIN: proxyOrigin },
-    stdio: ["inherit", "inherit", "inherit"],
+const expo = Bun.spawn([process.execPath, "x", "expo", "start", "--web", ...expoArgs], {
+  env: {
+    ...process.env,
+    EXPO_PUBLIC_CALIBRE_PROXY_ORIGIN: proxyOrigin,
+    ...(flags.logLevel ? { EXPO_PUBLIC_LOG_LEVEL: flags.logLevel } : {}),
+    ...(flags.perfMode ? { EXPO_PUBLIC_PERF_LOG: flags.perfMode } : {}),
   },
-)
+  stdio: ["inherit", "inherit", "inherit"],
+})
 
 let stopping = false
 const shutdown = (code: number) => {

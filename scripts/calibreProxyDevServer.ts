@@ -47,7 +47,7 @@ if (import.meta.main) {
     const server = startCalibreProxyDevServer()
     console.log(`Calibre dev proxy listening on http://${hostname}:${server.port}`)
     console.log(
-      `For a separate Metro: EXPO_PUBLIC_CALIBRE_PROXY_ORIGIN=http://${hostname}:${server.port} bun run expo:web`,
+      `For a separate Metro: EXPO_PUBLIC_CALIBRE_PROXY_ORIGIN=http://${hostname}:${server.port} bun run web:metro`,
     )
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error))

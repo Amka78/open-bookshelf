@@ -48,7 +48,7 @@ bun run storybook:web
 ## ローカルから手動デプロイ
 
 ```bash
-bun run deploy:pages
+bun run storybook:deploy
 ```
 
 ## アクセス URL

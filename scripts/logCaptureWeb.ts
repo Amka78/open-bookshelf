@@ -1,9 +1,9 @@
 /**
  * Web 版のログをエージェントが直接回収するための取り込みスクリプト。
  *
- *   bun run logs:web                    # http://localhost:8081 を開いて記録
- *   bun run logs:web http://localhost:8081/some/path
- *   HEADED=1 bun run logs:web           # 画面を表示して操作する
+ *   bun run logs:capture                    # http://localhost:8081 を開いて記録
+ *   bun run logs:capture http://localhost:8081/some/path
+ *   HEADED=1 bun run logs:capture           # 画面を表示して操作する
  *
  * 記録先は logs/web-playwright.ndjson（logs/*.ndjson と同じ 1 行 1 JSON）。
  * アプリ側の送信（app/utils/logSink.ts）が使えない場面や、再現手順を固定したい調査で使う。

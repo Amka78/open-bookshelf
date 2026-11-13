@@ -4,7 +4,7 @@
  * Enable with the `EXPO_PUBLIC_PERF_LOG` environment variable, which accepts a
  * comma-separated list of modes (`search`, or `all`). Example:
  *
- *   EXPO_PUBLIC_PERF_LOG=search bun run start:perf
+ *   bun run start --perf
  *
  * Logs are emitted as a single-line JSON string with a shared `performance.now()`
  * clock (`t`) so callers, requests, and conversions can be correlated by time.
