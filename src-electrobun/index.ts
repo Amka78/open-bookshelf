@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, statSync } from "node:fs"
+import { existsSync, mkdirSync, readFileSync, rmSync, statSync } from "node:fs"
 import { join, normalize, sep } from "node:path"
 import { BrowserView, BrowserWindow, Updater, Utils } from "electrobun/bun"
 import { DEFAULT_LOG_SINK_PORT, startLogSink } from "../scripts/logSink"
@@ -73,6 +73,38 @@ const preloadScript = `window.__ELECTROBUN_PROXY_ORIGIN = ${JSON.stringify(local
 window.__LOG_SINK_URL = ${JSON.stringify(logSinkUrl)};
 ${readFileSync(join(import.meta.dir, "..", "views", "preload", "index.js"), "utf8")}`
 
+// WebView の localStorage はランダムポート由来の origin 単位なので起動をまたいで
+// 共有できない。アプリ状態（接続設定・選択ライブラリ・ナビゲーションなど）は
+// ユーザーデータ領域のファイルにキー単位で保存する。
+const storageRoot = join(Utils.paths.appData, "com.electrobun.shoin", "storage")
+mkdirSync(storageRoot, { recursive: true })
+
+function storageFilePath(key: string): string {
+  const safeKey = key.replace(/[^a-zA-Z0-9._-]/g, "_")
+  return join(storageRoot, `${safeKey}.json`)
+}
+
+async function storageRead(key: string): Promise<string | null> {
+  const filePath = storageFilePath(key)
+  try {
+    if (!existsSync(filePath)) return null
+    return readFileSync(filePath, "utf8")
+  } catch (error) {
+    console.error("[electrobun] storage read failed", key, error)
+    return null
+  }
+}
+
+async function storageWrite(key: string, value: string): Promise<void> {
+  try {
+    await Bun.write(storageFilePath(key), value)
+  } catch (error) {
+    // 状態保存の失敗は致命的ではないが、次回起動時に設定が再開されなくなる
+    // ため握りつぶさずログへ残す。
+    console.error("[electrobun] storage write failed", key, error)
+  }
+}
+
 const rpc = BrowserView.defineRPC<AppRPCType>({
   maxRequestTime: 10000,
   handlers: {
@@ -96,6 +128,27 @@ const rpc = BrowserView.defineRPC<AppRPCType>({
           message,
           buttons: ["OK"],
         })
+      },
+      storageGet: async ({ key }) => {
+        return { value: await storageRead(key) }
+      },
+      storageSet: async ({ key, value }) => {
+        await storageWrite(key, value)
+      },
+      storageRemove: async ({ key }) => {
+        try {
+          rmSync(storageFilePath(key), { force: true })
+        } catch (error) {
+          console.error("[electrobun] storage remove failed", key, error)
+        }
+      },
+      storageClear: async () => {
+        try {
+          rmSync(storageRoot, { recursive: true, force: true })
+          mkdirSync(storageRoot, { recursive: true })
+        } catch (error) {
+          console.error("[electrobun] storage clear failed", error)
+        }
       },
     },
     messages: {},

@@ -34,3 +34,22 @@ const electroview = new Electroview({ rpc })
 ): Promise<void> => {
   await electroview.rpc.request.showNativeError({ title, message })
 }
+
+// 永続化ストレージ。WebView の localStorage はランダムポートで origin が変わり
+// 引き継がれないため、メインプロセスのユーザーデータ領域へファイル保存する。
+;(globalThis as any).__electrobunStorageGet = async (key: string): Promise<string | null> => {
+  const { value } = await electroview.rpc.request.storageGet({ key })
+  return value
+}
+
+;(globalThis as any).__electrobunStorageSet = async (key: string, value: string): Promise<void> => {
+  await electroview.rpc.request.storageSet({ key, value })
+}
+
+;(globalThis as any).__electrobunStorageRemove = async (key: string): Promise<void> => {
+  await electroview.rpc.request.storageRemove({ key })
+}
+
+;(globalThis as any).__electrobunStorageClear = async (): Promise<void> => {
+  await electroview.rpc.request.storageClear({})
+}

@@ -56,6 +56,12 @@ ${readFileSync(join(import.meta.dir, "..", "views", "preload", "index.js"), "utf
 
 **ネイティブダイアログは使わない。** `Utils.showMessageBox` は UI スレッドへ同期ディスパッチする実装で、WebView からの RPC ハンドラ内で呼ぶとダイアログが表示されないまま RPC がタイムアウトする（Windows で実測）。再開確認ダイアログでこれが起きると `viewerReady` が false のままになり、ビューアが黒画面で固まる。ConfirmModal / ErrorModal は `useElectrobunModal` から modalfy の Web モーダルへ流している。preload の `__electrobunShowConfirm` / `__electrobunShowError` は Electrobun 側の修正後に戻すため残している。
 
+## 状態の永続化（localStorage は使わない）
+
+同梱 Web バンドルを配信する Bun サーバーは `port: 0`（ランダム）で起動するため、WebView の origin は起動ごとに変わる。localStorage（AsyncStorage の Web 実装）は origin 単位なので、起動をまたいで接続設定・選択ライブラリ・ナビゲーション状態などを保持できない。
+
+アプリ状態はメインプロセス（Bun）のファイル保存へ切り替えている。`src-electrobun/index.ts` の RPC（`storageGet/Set/Remove/Clear`）が `Utils.paths.appData/com.electrobun.shoin/storage/<key>.json` に保存し、`preload.ts` が `window.__electrobunStorageGet/Set/Remove/Clear` として注入する。`app/utils/storage/storage.ts` は `isElectrobun()` のときだけこのブリッジを使い、それ以外（Android/iOS は AsyncStorage ネイティブ、Web は固定オリジンの localStorage）は従来どおり。保存内容は `root-v1`（接続設定・認証・ライブラリ・読書履歴などの RootStore 全体）と `NAVIGATION_STATE`（最後に開いていた画面）で、起動時に復元される。
+
 ## Calibre API のプロキシ（CORS 回避）
 
 Electrobun の WebView はブラウザと同じ CORS 判定を行うため、`http://127.0.0.1:<port>` から Calibre へ直接アクセスすると CORS で失敗する（Android はネイティブ通信なので発生しない）。Electrobun の API には CORS を無効化する設定が無いため、同梱 Web バンドルを配信している Bun サーバーがリバースプロキシになる。
