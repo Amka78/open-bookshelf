@@ -29,6 +29,7 @@ module.exports = {
   expo: {
     name: `Shoin${appNameSuffix}`,
     slug: "shoin",
+    owner: "amka78",
     version: "0.1.7",
     orientation: "default",
     icon: "./assets/images/app-icon.png",
@@ -42,7 +43,7 @@ module.exports = {
     },
     updates: {
       fallbackToCacheTimeout: 0,
-      url: "https://u.expo.dev/53ae3c74-456c-46e1-bc15-f0604a49ea8f",
+      url: "https://u.expo.dev/7719045d-a8e6-4d5a-a92c-97b8143322aa",
     },
     runtimeVersion: {
       policy: "sdkVersion",
@@ -129,7 +130,7 @@ module.exports = {
     ],
     extra: {
       eas: {
-        projectId: "53ae3c74-456c-46e1-bc15-f0604a49ea8f",
+        projectId: "7719045d-a8e6-4d5a-a92c-97b8143322aa",
       },
     },
   },
