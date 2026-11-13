@@ -1,5 +1,5 @@
 #!/bin/sh
-# open-bookshelf 用カスタムエントリポイント
+# Shoin 用カスタムエントリポイント
 #   1) 自己署名証明書が無ければ /etc/nginx/ssl に生成（HTTPS 対応）
 #   2) nginx.conf テンプレートへ HTTPS_PORT（リダイレクト先のホスト側ポート）を展開
 #   3) Calibre プロキシを起動し、index.html に有効フラグを注入（CALIBRE_PROXY=0 で無効）

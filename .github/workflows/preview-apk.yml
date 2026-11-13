@@ -56,7 +56,7 @@ jobs:
 
       - name: Set output filename
         id: set-filename
-        run: echo "filename=open-bookshelf-${{ inputs.version }}-preview.apk" >> $GITHUB_OUTPUT
+        run: echo "filename=shoin-${{ inputs.version }}-preview.apk" >> $GITHUB_OUTPUT
 
       - name: Build Android Preview (Local)
         run: |
@@ -95,7 +95,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "${{ inputs.version }}" \
-            --title "OpenBookShelf ${{ inputs.version }} Preview" \
+            --title "Shoin ${{ inputs.version }} Preview" \
             --generate-notes \
             --prerelease \
-            "open-bookshelf-${{ inputs.version }}-preview.apk"
+            "shoin-${{ inputs.version }}-preview.apk"

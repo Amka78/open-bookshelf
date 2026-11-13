@@ -1,11 +1,11 @@
 import type { PreparedCalibreHtmlDocument } from "@/components/BookHtmlPage/shared"
 import type { BookReadingStyleType } from "@/type/types"
 
-export const textBookViewerPaginationMessageType = "open-bookshelf:text-book-pagination"
-export const textBookViewerInteractionMessageType = "open-bookshelf:text-book-interaction"
-export const textBookViewerSelectionMessageType = "open-bookshelf:text-book-selection"
-export const textBookViewerCommandMessageType = "open-bookshelf:text-book-command"
-export const textBookViewerDebugMessageType = "open-bookshelf:text-book-debug"
+export const textBookViewerPaginationMessageType = "shoin:text-book-pagination"
+export const textBookViewerInteractionMessageType = "shoin:text-book-interaction"
+export const textBookViewerSelectionMessageType = "shoin:text-book-selection"
+export const textBookViewerCommandMessageType = "shoin:text-book-command"
+export const textBookViewerDebugMessageType = "shoin:text-book-debug"
 export const textBookViewerTapAction = "tap"
 export const textBookViewerLongPressAction = "long-press"
 

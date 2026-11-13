@@ -2,8 +2,8 @@ import type { ElectrobunConfig } from "electrobun"
 
 export default {
   app: {
-    name: "open-book-shelf",
-    identifier: "com.electrobun.open-book-shelf",
+    name: "shoin",
+    identifier: "com.electrobun.shoin",
     version: "0.1.6",
   },
   build: {
@@ -36,7 +36,7 @@ export default {
   },
   release: {
     // canary は手動 CI と v* タグ CI の両方がこの固定タグ Release に成果物を上書きする
-    baseUrl: "https://github.com/Amka78/open-bookshelf/releases/download/desktop-canary",
+    baseUrl: "https://github.com/Amka78/shoin/releases/download/desktop-canary",
     generatePatch: true,
   },
 } satisfies ElectrobunConfig

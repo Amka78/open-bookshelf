@@ -64,14 +64,14 @@ type UsePreparedCalibreHtmlDocumentResult = {
   preparedDocument: PreparedCalibreHtmlDocument | null
 }
 
-const DUMMY_ORIGIN = "https://open-bookshelf.local/"
+const DUMMY_ORIGIN = "https://shoin.local/"
 const BASE64_TABLE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 const BASE64_INDEX = new Map(Array.from(BASE64_TABLE).map((char, index) => [char, index]))
 const CALIBRE_VIRTUAL_RESOURCE_PATTERN = /(?:^|\/)[^/|?#]+\|([^|]+)\|$/
 const CALIBRE_VIRTUAL_RESOURCE_TOKEN_PATTERN = /[^/|?#]+\|([^|]+)\|/g
-export const calibreHtmlPageSizeMessageType = "open-bookshelf:calibre-html-size"
-export const calibreHtmlPageInteractionMessageType = "open-bookshelf:calibre-html-interaction"
-export const calibreHtmlPageSelectionMessageType = "open-bookshelf:calibre-html-selection"
+export const calibreHtmlPageSizeMessageType = "shoin:calibre-html-size"
+export const calibreHtmlPageInteractionMessageType = "shoin:calibre-html-interaction"
+export const calibreHtmlPageSelectionMessageType = "shoin:calibre-html-selection"
 export const calibreHtmlPageTapAction = "tap"
 export const calibreHtmlPageLongPressAction = "long-press"
 

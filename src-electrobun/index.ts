@@ -156,7 +156,7 @@ const rpc = BrowserView.defineRPC<AppRPCType>({
 })
 
 new BrowserWindow({
-  title: "Open BookShelf",
+  title: "Shoin",
   frame: {
     width: 1200,
     height: 800,

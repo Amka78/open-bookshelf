@@ -61,7 +61,7 @@ const ar: Translations = {
   },
   connectScreen: {
     welcome: "مرحبًا!!",
-    detail: "شكرًا لاستخدام OpenBookshelf. يرجى إعداد رابط Calibre أولًا.",
+    detail: "شكرًا لاستخدام Shoin. يرجى إعداد رابط Calibre أولًا.",
     connectDetail: "اضبط رابط Calibre.",
     connect: "اتصال",
     placeHolder: "(http أو https)://{Address}:{Port}",

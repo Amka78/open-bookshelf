@@ -55,7 +55,7 @@ jobs:
       - name: Download Android artifact
         id: download
         run: |
-          FILENAME="open-bookshelf-${{ inputs.version }}-android.aab"
+          FILENAME="shoin-${{ inputs.version }}-android.aab"
           curl -L "${{ steps.build.outputs.url }}" -o "$FILENAME"
           echo "path=$FILENAME" >> $GITHUB_OUTPUT
 
@@ -109,7 +109,7 @@ jobs:
       - name: Download iOS artifact
         id: download
         run: |
-          FILENAME="open-bookshelf-${{ inputs.version }}-ios.ipa"
+          FILENAME="shoin-${{ inputs.version }}-ios.ipa"
           curl -L "${{ steps.build.outputs.url }}" -o "$FILENAME"
           echo "path=$FILENAME" >> $GITHUB_OUTPUT
 
@@ -146,7 +146,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "${{ inputs.version }}" \
-            --title "OpenBookShelf ${{ inputs.version }}" \
+            --title "Shoin ${{ inputs.version }}" \
             --generate-notes \
-            "open-bookshelf-${{ inputs.version }}-android.aab" \
-            "open-bookshelf-${{ inputs.version }}-ios.ipa"
+            "shoin-${{ inputs.version }}-android.aab" \
+            "shoin-${{ inputs.version }}-ios.ipa"

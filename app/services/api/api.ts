@@ -1224,7 +1224,7 @@ export class Api {
     cfi: string,
   ): Promise<{ kind: "ok" } | GeneralApiProblem> {
     const body: Record<string, unknown> = {
-      device: "open-bookshelf",
+      device: "shoin",
       cfi,
       pos_frac: posFrac,
     }

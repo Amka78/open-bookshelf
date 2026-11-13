@@ -31,7 +31,7 @@ export const Basic: StoryProps = {
     expect(await canvas.findByTestId("about-contact-link")).toBeTruthy()
     expect(await canvas.findByTestId("about-license-link")).toBeTruthy()
     expect((await canvas.findByTestId("about-repository-link")).textContent).toContain(
-      "github.com/Amka78/open-bookshelf",
+      "github.com/Amka78/shoin",
     )
   },
 }

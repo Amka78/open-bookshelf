@@ -4,7 +4,7 @@ import { usePalette } from "@/theme"
 import { Linking } from "react-native"
 
 export const ABOUT_AUTHOR = "Amemiya Hikaru (Amka78)"
-export const ABOUT_REPOSITORY_URL = "https://github.com/Amka78/open-bookshelf"
+export const ABOUT_REPOSITORY_URL = "https://github.com/Amka78/shoin"
 export const ABOUT_ISSUES_URL = `${ABOUT_REPOSITORY_URL}/issues`
 export const ABOUT_LICENSE_URL = `${ABOUT_REPOSITORY_URL}/blob/main/LICENSE`
 
@@ -23,7 +23,7 @@ export function AboutContent({ version }: AboutContentProps) {
   return (
     <VStack space="lg" testID="about-content">
       <VStack space="xs">
-        <Heading size="lg">Open BookShelf</Heading>
+        <Heading size="lg">Shoin</Heading>
         <Text testID="about-version" color={palette.textSecondary} fontSize="$sm">
           {translate("about.version", { version: displayVersion })}
         </Text>

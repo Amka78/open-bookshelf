@@ -24,11 +24,11 @@ switch (process.env.APP_VARIANT) {
 const isPreviewVariant = process.env.APP_VARIANT === "preview"
 
 module.exports = {
-  name: "OpenBookShelf",
-  displayName: "OpenBookShelf",
+  name: "Shoin",
+  displayName: "Shoin",
   expo: {
-    name: `OpenBookShelf${appNameSuffix}`,
-    slug: "OpenBookShelf",
+    name: `Shoin${appNameSuffix}`,
+    slug: "shoin",
     version: "0.1.6",
     orientation: "default",
     icon: "./assets/images/app-icon.png",
@@ -50,7 +50,7 @@ module.exports = {
     jsEngine: "hermes",
     assetBundlePatterns: ["**/*"],
     android: {
-      package: `com.openbookshelf${idSuffix}`,
+      package: `com.amka78.shoin${idSuffix}`,
       adaptiveIcon: {
         foregroundImage: "./assets/images/adaptive-icon-foreground.png",
         backgroundColor: "#111318",
@@ -60,13 +60,13 @@ module.exports = {
     ios: {
       icon: "./assets/images/app-icon.png",
       supportsTablet: true,
-      bundleIdentifier: `com.openbookshelf${idSuffix}`,
+      bundleIdentifier: `com.amka78.shoin${idSuffix}`,
     },
     web: {
       bundler: "metro",
       favicon: "./assets/images/app-icon-web.png",
       output: "single",
-      publicPath: process.env.GITHUB_PAGES === "true" ? "/open-bookshelf/" : "/",
+      publicPath: process.env.GITHUB_PAGES === "true" ? "/shoin/" : "/",
     },
     plugins: [
       "@config-plugins/react-native-blob-util",

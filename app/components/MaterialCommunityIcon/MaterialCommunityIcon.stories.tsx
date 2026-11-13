@@ -7,7 +7,7 @@ export default {
   title: "MaterialCommunityIcon",
   component: MaterialCommunityIcon,
   parameters: {
-    notes: `OpenBookShelf's common icons`,
+    notes: `Shoin's common icons`,
   },
   args: {
     name: "newspaper",

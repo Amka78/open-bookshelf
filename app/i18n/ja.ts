@@ -74,7 +74,7 @@ const ja: Translations = {
   connectScreen: {
     welcome: "ようこそ!!",
     detail:
-      "OpenBookshelf をご利用いただきありがとうございます。まず Calibre の URL を設定してください。",
+      "Shoin をご利用いただきありがとうございます。まず Calibre の URL を設定してください。",
     connectDetail: "Calibre の URL を設定してください。",
     connect: "接続",
     placeHolder: "(http または https)://{Address}:{Port}",

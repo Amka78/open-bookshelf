@@ -216,7 +216,7 @@ const splash = [
   "  </g>",
   `  <text x="${SPLASH.width / 2}" y="${
     SPLASH.baselineY
-  }" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="64" letter-spacing="8" fill="${INK_LOW}">Open BookShelf</text>`,
+  }" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="64" letter-spacing="8" fill="${INK_LOW}">Shoin</text>`,
   "</svg>",
 ].join("\n")
 

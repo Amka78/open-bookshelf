@@ -3,7 +3,7 @@
   "configVersion": 0,
   "workspaces": {
     "": {
-      "name": "open-book-shelf",
+      "name": "shoin",
       "dependencies": {
         "@expo-google-fonts/noto-serif-jp": "^0.2.3",
         "@expo-google-fonts/space-grotesk": "^0.2.3",
